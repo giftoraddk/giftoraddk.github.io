@@ -1,0 +1,1 @@
+import"./web-board.n2FoOv60.js";
