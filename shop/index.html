@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth overflow-hidden" data-theme="light" data-ui="spatial" data-astro-cid-zzsknrz5>
+<html lang="vi" class="scroll-smooth overflow-hidden" data-theme="light" data-ui="spatial" data-astro-cid-zzsknrz5>
 	<head>
 		<meta name="astro-view-transitions-enabled" content="true">
 <meta name="astro-view-transitions-fallback" content="animate">
 <script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.BxvqaeRw.js"></script>
+		<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Giftora DDK","url":"https://giftoraddk.com","logo":"https://giftoraddk.com/logo.png","sameAs":["https://www.facebook.com/giftoraddk"]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Giftora DDK","url":"https://giftoraddk.com"}</script>
 		<!-- Global Metadata -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -42,16 +43,22 @@
 html[data-theme='dark'] { --color-primary: #d4af37; --color-secondary: #0b2d5b; --color-accent: #c1e5a9; --color-info: #a1a6d3; --color-warning: #e2a9db; --color-base-100: #000000; --color-base-200: #0d0d0d; --color-base-300: #222222; --color-base-content: #d4af37; --bg-wrap-image: url("/images/common/gift-dark.webp"); }</style>
 		<!-- Apply saved theme before first paint to prevent flash -->
 		<script>(function(){const themeCookie = "dark";
+const langCookie = "en";
 
 			(function() {
 				const m = document.cookie.match(new RegExp('(?:^|; )' + themeCookie + '=([^;]*)'));
 				const t = m ? decodeURIComponent(m[1]) : null;
 				if (t) document.documentElement.setAttribute('data-theme', t);
+				const lm = document.cookie.match(new RegExp('(?:^|; )' + langCookie + '=([^;]*)'));
+				const l = lm ? decodeURIComponent(lm[1]) : null;
+				if (l) document.documentElement.setAttribute('lang', l);
 			})();
-			// Carry theme across SPA transitions before Astro swaps the new document in
+			// Carry theme/lang across SPA transitions before Astro swaps the new document in
 			document.addEventListener('astro:before-swap', function(e) {
 				const theme = document.documentElement.getAttribute('data-theme');
 				if (theme) e.newDocument.documentElement.setAttribute('data-theme', theme);
+				const lang = document.documentElement.getAttribute('lang');
+				if (lang) e.newDocument.documentElement.setAttribute('lang', lang);
 			});
 		})();</script><script>
       document.addEventListener('click', (e) => {
@@ -76,6 +83,7 @@ html[data-theme='dark'] { --color-primary: #d4af37; --color-secondary: #0b2d5b; 
         el.scrollIntoView({ behavior: 'smooth', block: 'start' })
       })
     </script><link rel="stylesheet" href="/assets/css/Base.css">
+<link rel="stylesheet" href="/assets/css/jsonld.css">
 <link rel="stylesheet" href="/assets/css/shop@_@astro.css"><style>[data-astro-transition-scope="astro-qtaeuqle-1"] { view-transition-name: astro-qtaeuqle-1; }@layer astro { ::view-transition-old(astro-qtaeuqle-1) { 
 	animation-duration: 0.5s;
 	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
@@ -118,21 +126,22 @@ html[data-theme='dark'] { --color-primary: #d4af37; --color-secondary: #0b2d5b; 
 		<div id="main-wrap" class="flex-col flex bg-base-100 h-screen overflow-y-auto overflow-x-hidden bg-wrap" data-astro-cid-zzsknrz5>
 			<!-- Utility bar: chỉ render khi có prop bar -->
 			<div class="z-1 relative w-full bg-primary text-white ">
-		<div class="mx-auto max-w-6xl px-4 flex items-center justify-between gap-4 min-h-9 text-xs">
-			<div class="flex items-center gap-4 flex-wrap">
-				<span class="flex items-center gap-1.5">
-						<iconify-icon icon="ri:phone-fill" class="text-sm"></iconify-icon>
-						<span class="hidden sm:inline">Hotline đặt hàng:</span> 0934561501
-					</span>
-				<span class="hidden sm:inline w-px h-3 bg-white/30"></span>
-				<span class="hidden sm:inline flex items-center gap-1.5">
-						<iconify-icon icon="ri:map-pin-2-fill" class="text-sm"></iconify-icon>
-						Quận 4 TP.HCM
-					</span>
-			</div>
+	<div class="mx-auto max-w-6xl px-4 flex items-center justify-between gap-4 min-h-9 text-xs">
+		<div class="flex items-center gap-4 flex-wrap">
+			<span class="flex items-center gap-1.5">
+					<iconify-icon icon="ri:phone-fill" class="text-sm"></iconify-icon>
+					<span class="hidden sm:inline"><span class="i18n-vi">Hotline đặt hàng</span><span class="i18n-en">Order hotline</span>:</span> 0934561501
+				</span>
+			<span class="hidden sm:inline w-px h-3 bg-white/30"></span>
+			<span class="hidden sm:inline flex items-center gap-1.5">
+					<iconify-icon icon="ri:map-pin-2-fill" class="text-sm"></iconify-icon>
+					Quận 4 TP.HCM
+				</span>
+		</div>
 
-			<div class="flex items-center gap-3 shrink-0">
-					<span class="hidden sm:inline">Mạng xã hội</span>
+		<div class="flex items-center gap-3 shrink-0">
+			
+					<span class="hidden sm:inline"><span class="i18n-vi">Mạng xã hội</span><span class="i18n-en">Follow us</span></span>
 					<div class="flex items-center gap-2">
 						<a href="https://www.facebook.com/giftoraddk" aria-label="Facebook" target="_blank" rel="noopener" class="flex items-center justify-center w-6 h-6 rounded-full bg-white text-primary hover:opacity-80 transition-opacity">
 								<iconify-icon icon="ri:facebook-fill" class="text-sm"></iconify-icon>
@@ -140,9 +149,16 @@ html[data-theme='dark'] { --color-primary: #d4af37; --color-secondary: #0b2d5b; 
 								<iconify-icon icon="ri:tiktok-fill" class="text-sm"></iconify-icon>
 							</a>
 					</div>
-				</div>
+				
+			<div class="lang-toggle flex items-center gap-0.5 rounded-full bg-white/15 p-0.5 text-[11px] font-semibold uppercase leading-none" data-astro-cid-s4ddrbzd>
+	<button type="button" data-lang="vi" class="lang-btn rounded-full px-2.5 py-1.5 transition-colors" aria-label="Tiếng Việt" data-astro-cid-s4ddrbzd>VI</button>
+	<button type="button" data-lang="en" class="lang-btn rounded-full px-2.5 py-1.5 transition-colors" aria-label="English" data-astro-cid-s4ddrbzd>EN</button>
+</div>
+
+<script type="module" src="/_astro/BtnLang.astro_astro_type_script_index_0_lang.DKgb7hbk.js"></script>
 		</div>
 	</div>
+</div>
 			<!-- Nav -->
 			
 <nav class="fixed bottom-0 left-0 right-0 mx-auto rounded-3xl z-[100] bg-base-100/30 backdrop-blur-2xl border-white/10 border-t pb-[env(safe-area-inset-bottom,0px)] max-w-lg lg:hidden  " data-astro-cid-kqnrq3lk>
@@ -160,12 +176,12 @@ html[data-theme='dark'] { --color-primary: #d4af37; --color-secondary: #0b2d5b; 
 									<li>
 													<a href="/#showcaseModernSlideNeat">
 														
-														<span class="menu-text">Giới thiệu</span>
+														<span class="menu-text"><span class="i18n-vi">Giới thiệu</span><span class="i18n-en">Introduction</span></span>
 													</a>
 												</li><li>
 													<a href="/#giftsModernStatsIntro">
 														
-														<span class="menu-text">Bộ sưu tập</span>
+														<span class="menu-text"><span class="i18n-vi">Bộ sưu tập</span><span class="i18n-en">Collection</span></span>
 													</a>
 												</li>
 								</ul>
@@ -187,17 +203,17 @@ html[data-theme='dark'] { --color-primary: #d4af37; --color-secondary: #0b2d5b; 
 									<li>
 													<a href="/#giftsModernServiceGrid">
 														
-														<span class="menu-text">Dịch vụ</span>
+														<span class="menu-text"><span class="i18n-vi">Dịch vụ</span><span class="i18n-en">Services</span></span>
 													</a>
 												</li><li>
 													<a href="/#giftsModernSlideBestSeller">
 														
-														<span class="menu-text">Bán chạy nhất</span>
+														<span class="menu-text"><span class="i18n-vi">Bán chạy nhất</span><span class="i18n-en">Best sellers</span></span>
 													</a>
 												</li><li>
 													<a href="/#giftsModernGalleryStrip">
 														
-														<span class="menu-text">Hình ảnh nổi bật</span>
+														<span class="menu-text"><span class="i18n-vi">Hình ảnh nổi bật</span><span class="i18n-en">Featured gallery</span></span>
 													</a>
 												</li>
 								</ul>
@@ -219,12 +235,12 @@ html[data-theme='dark'] { --color-primary: #d4af37; --color-secondary: #0b2d5b; 
 									<li>
 													<a href="/#giftsModernSlideTestimonials">
 														
-														<span class="menu-text">Khách hàng nói gì</span>
+														<span class="menu-text"><span class="i18n-vi">Khách hàng nói gì</span><span class="i18n-en">What customers say</span></span>
 													</a>
 												</li><li>
 													<a href="/#giftsModernSlideBrands">
 														
-														<span class="menu-text">Thương hiệu đối tác</span>
+														<span class="menu-text"><span class="i18n-vi">Thương hiệu đối tác</span><span class="i18n-en">Partner brands</span></span>
 													</a>
 												</li>
 								</ul>
@@ -258,7 +274,7 @@ html[data-theme='dark'] { --color-primary: #d4af37; --color-secondary: #0b2d5b; 
 	</svg>
 </label>
 
-<script type="module">var t={path:"/",httpOnly:!1,secure:!0,sameSite:"lax",maxAge:31536e3},e=class{static get(t){if("undefined"!=typeof document)return document.cookie.split("; ").find(e=>e.startsWith(`${t}=`))?.split("=")[1]}static set(e,a,n=t){if("undefined"==typeof document)return;const i=n.secure?"; secure":"",c=`; samesite=${n.sameSite}`,r=`; max-age=${n.maxAge}`;document.cookie=`${e}=${a}; path=${n.path}${i}${c}${r}`}static has(t){return void 0!==this.get(t)}static remove(t){"undefined"!=typeof document&&(document.cookie=`${t}=; path=/; max-age=0`)}static removeAll(t){t.forEach(t=>this.remove(t))}static getJSON(t,e){const a=this.get(t);if(!a)return e;try{return JSON.parse(a)}catch{return e}}static setJSON(e,a,n=t){const i=JSON.stringify(a);this.set(e,i,n)}},a="dark",n=()=>{const t=document.querySelectorAll(".theme-toggle");if(!t.length)return;const n=e.get(a)??document.documentElement.getAttribute("data-theme")??"dark",i=n=>{document.documentElement.setAttribute("data-theme",n),e.set(a,n),t.forEach(t=>{const e=t.querySelector('input[type="checkbox"]');e&&(e.checked="dark"===n)})};i(n),t.forEach(t=>{t.hasAttribute("data-initialized")||(t.setAttribute("data-initialized","true"),t.addEventListener("click",t=>{t.preventDefault();const e="dark"===(document.documentElement.getAttribute("data-theme")||"dark")?"light":"dark";i(e)}))})};document.addEventListener("astro:page-load",n),"loading"===document.readyState?document.addEventListener("DOMContentLoaded",n):n();</script></div></div>
+<script type="module" src="/_astro/BtnTheme.astro_astro_type_script_index_0_lang.CMxVzPfP.js"></script></div></div>
 	</div>
 </nav>
 
@@ -285,19 +301,19 @@ html[data-theme='dark'] { --color-primary: #d4af37; --color-secondary: #0b2d5b; 
 								<summary>
 									
 											
-											<span class="menu-text">Tổng quan</span>
+											<span class="menu-text"><span class="i18n-vi">Tổng quan</span><span class="i18n-en">Overview</span></span>
 										
 								</summary>
 								<ul>
 									<li>
 													<a href="/#showcaseModernSlideNeat">
 														
-														<span class="menu-text">Giới thiệu</span>
+														<span class="menu-text"><span class="i18n-vi">Giới thiệu</span><span class="i18n-en">Introduction</span></span>
 													</a>
 												</li><li>
 													<a href="/#giftsModernStatsIntro">
 														
-														<span class="menu-text">Bộ sưu tập</span>
+														<span class="menu-text"><span class="i18n-vi">Bộ sưu tập</span><span class="i18n-en">Collection</span></span>
 													</a>
 												</li>
 								</ul>
@@ -307,24 +323,24 @@ html[data-theme='dark'] { --color-primary: #d4af37; --color-secondary: #0b2d5b; 
 								<summary>
 									
 											
-											<span class="menu-text">Sản phẩm &amp; Dịch vụ</span>
+											<span class="menu-text"><span class="i18n-vi">Sản phẩm &amp; Dịch vụ</span><span class="i18n-en">Products &amp; Services</span></span>
 										
 								</summary>
 								<ul>
 									<li>
 													<a href="/#giftsModernServiceGrid">
 														
-														<span class="menu-text">Dịch vụ</span>
+														<span class="menu-text"><span class="i18n-vi">Dịch vụ</span><span class="i18n-en">Services</span></span>
 													</a>
 												</li><li>
 													<a href="/#giftsModernSlideBestSeller">
 														
-														<span class="menu-text">Bán chạy nhất</span>
+														<span class="menu-text"><span class="i18n-vi">Bán chạy nhất</span><span class="i18n-en">Best sellers</span></span>
 													</a>
 												</li><li>
 													<a href="/#giftsModernGalleryStrip">
 														
-														<span class="menu-text">Hình ảnh nổi bật</span>
+														<span class="menu-text"><span class="i18n-vi">Hình ảnh nổi bật</span><span class="i18n-en">Featured gallery</span></span>
 													</a>
 												</li>
 								</ul>
@@ -334,19 +350,19 @@ html[data-theme='dark'] { --color-primary: #d4af37; --color-secondary: #0b2d5b; 
 								<summary>
 									
 											
-											<span class="menu-text">Khách hàng</span>
+											<span class="menu-text"><span class="i18n-vi">Khách hàng</span><span class="i18n-en">Customers</span></span>
 										
 								</summary>
 								<ul>
 									<li>
 													<a href="/#giftsModernSlideTestimonials">
 														
-														<span class="menu-text">Khách hàng nói gì</span>
+														<span class="menu-text"><span class="i18n-vi">Khách hàng nói gì</span><span class="i18n-en">What customers say</span></span>
 													</a>
 												</li><li>
 													<a href="/#giftsModernSlideBrands">
 														
-														<span class="menu-text">Thương hiệu đối tác</span>
+														<span class="menu-text"><span class="i18n-vi">Thương hiệu đối tác</span><span class="i18n-en">Partner brands</span></span>
 													</a>
 												</li>
 								</ul>
@@ -354,7 +370,7 @@ html[data-theme='dark'] { --color-primary: #d4af37; --color-secondary: #0b2d5b; 
 						</li><li>
 							<a href="/shop" class="menu-active">
 								
-								<span class="menu-text">Shop</span>
+								<span class="menu-text"><span class="i18n-vi">Shop</span><span class="i18n-en">Shop</span></span>
 							</a>
 						</li>
 </ul>
@@ -398,9 +414,9 @@ html[data-theme='dark'] { --color-primary: #d4af37; --color-secondary: #0b2d5b; 
 			<!-- Main -->
 			<main id="main" class="text-base-content flex-1" data-astro-cid-zzsknrz5>
         <script type="module" src="/_astro/CoreShop.astro_astro_type_script_index_0_lang.B9ajtOdF.js"></script><web-bg id="main-bg" class="-mt-1" spatial="true" gradient="true" tint="#0b2d5b" total="2" type="circleOverlap" deg="325" move="pulse" pattern="dot~24" data-astro-transition-persist="main-bg" data-astro-cid-zzsknrz5="true"></web-bg>
-				<div class="min-h-dvh" data-astro-cid-zzsknrz5>
+				<div class="min-h-dvh relative" data-astro-cid-zzsknrz5>
           
-	<script type="module" src="/_astro/shop.astro_astro_type_script_index_0_lang.Dda_PIkv.js"></script><div>
+	<script type="module" src="/_astro/shop.astro_astro_type_script_index_0_lang.Bi1b63rl.js"></script><div>
 		<web-board unlock="TGljZW5zZSBleHBpcmVkLiBQbGVhc2UgY29udGFjdCBzdXBwb3J0Lg~MTgxNzk4MDc4OTgyM2shdEBk" variant="{&quot;theme&quot;:&quot;light&quot;,&quot;light&quot;:{&quot;ui&quot;:&quot;spatial&quot;,&quot;mainColors&quot;:&quot;#0b2d5b|#d4af37|#c1e5a9|#a1a6d3|#e2a9db&quot;,&quot;bgColors&quot;:&quot;#ffffff|#f2f2f2|#f7f2eb&quot;,&quot;textColor&quot;:&quot;#0b2d5b&quot;,&quot;bgImage&quot;:&quot;/images/common/gift-light.webp&quot;},&quot;dark&quot;:{&quot;ui&quot;:&quot;spatial&quot;,&quot;mainColors&quot;:&quot;#d4af37|#0b2d5b|#c1e5a9|#a1a6d3|#e2a9db&quot;,&quot;bgColors&quot;:&quot;#000000|#0d0d0d|#222222&quot;,&quot;textColor&quot;:&quot;#d4af37&quot;,&quot;bgImage&quot;:&quot;/images/common/gift-dark.webp&quot;},&quot;bg&quot;:{&quot;spatial&quot;:true,&quot;gradient&quot;:true,&quot;tint&quot;:&quot;#0b2d5b&quot;,&quot;total&quot;:2,&quot;type&quot;:&quot;circleOverlap&quot;,&quot;deg&quot;:325,&quot;move&quot;:&quot;pulse&quot;,&quot;pattern&quot;:&quot;dot~24&quot;}}"><script type="application/json">[{"id":"showcaseModernSlideNeat","data":[{"title":"Giftora DDK","slider":[{"pics":"/images/common/gift-banner.webp"},{"pics":"/images/common/gift-light.webp"},{"pics":"/images/common/gift-dark.webp"}]}],"config":{"tiersCol":[[12],12],"tiers":[[{"dataKey":"slider","groupCol":["12","12"],"groupRow":["auto","auto"],"groupJustify":["none","none"],"groupStyle":[{},{"padding":"1.25rem 1.5rem 1.5rem"}],"makes":[[{"bit":"pics","opt":{"mode":"gallery","rounded":"1.75rem","stys":{"width":"100%","aspectRatio":"21/9","objectFit":"cover","display":"block"}}}]],"stys":{"overflow":"hidden"},"bg":{"rounded":"1.75rem","spatial":true,"gradient":false,"tint":"","total":2,"type":"ellipse","mono":false,"deg":135,"pattern":"","move":"","distance":86,"pics":""},"slider":{"autoplay":5000,"loop":true,"slides":1,"spacing":0,"nav":false,"dots":false}}],{"groupCol":[12],"groupRow":["auto"],"groupJustify":["center"],"groupStyle":[{"padding":"2.5rem 0"}],"makes":[[{"bit":"title","opt":{"mode":"h1","motion":true,"word":false,"effect":"scatterIn","stys":{"fontSize":"clamp(2rem, 4vw, 3.5rem)"}}}]]}]},"sort":0,"col":"12","container":true,"stys":{"marginTop":"1rem"}},{"id":"productsShopCard","showSearch":true,"emptyText":"Không tìm thấy sản phẩm phù hợp","tags":{"filterField":"tags","filterColor":"primary","data":[]},"config":{"groupCol":[12,12,12,12],"groupRow":["auto","auto","auto","auto"],"groupJustify":["none","left","none","between"],"groupStyle":[{"position":"relative","margin":"0 0 1.5rem","display":"flex","justifyContent":"center","alignItems":"center","minHeight":"160px"},{"marginBottom":"0"},{"marginBottom":"0.75rem","gap":"0.5rem"},{"marginBottom":"0"}],"makes":[[{"bitLocal":"","opt":{"mode":"span","stys":{"position":"absolute","top":"50%","left":"50%","transform":"translate(-50%, -50%) rotate(-8deg)","width":"68%","aspectRatio":"1/1","background":"var(--color-primary)","borderRadius":"1.25rem","zIndex":"0"}}},{"bit":"pics","opt":{"mode":"gallery","stys":{"width":"62%","margin":"0 auto","objectFit":"contain","position":"relative","zIndex":"1","filter":"drop-shadow(0 10px 14px color-mix(in oklab, var(--color-base-content) 25%, transparent))"}}},{"bitLocal":"HOT","opt":{"mode":"badge","type":"fill","color":"error","stys":{"position":"absolute","top":"0.5rem","left":"-0.5rem","transform":"rotate(-12deg)","fontWeight":"800","letterSpacing":"0.05em","zIndex":"2","padding":"0.25rem 1rem"}}},{"bit":"description","opt":{"mode":"popover","icon":"ri:information-line","ui":"modern","placement":"bottom-end","iconSize":"1.25rem","stys":{"position":"absolute","top":"0","right":"0","zIndex":"2"}}}],[{"bit":"tags","opt":{"mode":"tags"}}],[{"bit":"title","opt":{"mode":"h2","stys":{"fontSize":"clamp(1.375rem, 2.2vw, 1.75rem)","fontWeight":"800","color":"var(--color-base-description)","lineHeight":"1.1","margin":"0"}}},{"bit":"score","opt":{"mode":"rating","size":"md","disabled":true,"color":"error","mask":"mask-star-2"}}],[{"bit":"pricing","ext":{"currency":"đ"},"opt":{"mode":"span","stys":{"fontSize":"clamp(1.375rem, 2.2vw, 1.75rem)","fontWeight":"900","color":"var(--color-primary)"}}},{"bitLocal":"","opt":{"mode":"button","prefix":"ri:shopping-cart-line","iconSize":"1rem","ui":"modern","type":"fill","color":"primary","height":"45px","rounded":"8px","action":"add-to-cart"}}]],"stys":{"padding":"1.75rem","height":"100%","border":"2px solid color-mix(in oklab, #de8daf 35%, transparent)"},"bg":{"rounded":"0","spatial":true,"gradient":true,"tint":"#de8daf","total":1,"type":"circle","mono":false,"deg":45,"pattern":"","move":"","distance":86,"pics":""},"anime":"slide-in-blurred-top"},"configList":[{"key":"card","config":{"groupCol":[12,12,12,12],"groupRow":["auto","auto","auto","auto"],"groupJustify":["none","left","none","between"],"groupStyle":[{"position":"relative","margin":"0 0 1.5rem","display":"flex","justifyContent":"center","alignItems":"center","minHeight":"160px"},{"marginBottom":"0"},{"marginBottom":"0.75rem","gap":"0.5rem"},{"marginBottom":"0"}],"makes":[[{"bitLocal":"","opt":{"mode":"span","stys":{"position":"absolute","top":"50%","left":"50%","transform":"translate(-50%, -50%) rotate(-8deg)","width":"68%","aspectRatio":"1/1","background":"var(--color-primary)","borderRadius":"1.25rem","zIndex":"0"}}},{"bit":"pics","opt":{"mode":"gallery","stys":{"width":"62%","margin":"0 auto","objectFit":"contain","position":"relative","zIndex":"1","filter":"drop-shadow(0 10px 14px color-mix(in oklab, var(--color-base-content) 25%, transparent))"}}},{"bitLocal":"HOT","opt":{"mode":"badge","type":"fill","color":"error","stys":{"position":"absolute","top":"0.5rem","left":"-0.5rem","transform":"rotate(-12deg)","fontWeight":"800","letterSpacing":"0.05em","zIndex":"2","padding":"0.25rem 1rem"}}},{"bit":"description","opt":{"mode":"popover","icon":"ri:information-line","ui":"modern","placement":"bottom-end","iconSize":"1.25rem","stys":{"position":"absolute","top":"0","right":"0","zIndex":"2"}}}],[{"bit":"tags","opt":{"mode":"tags"}}],[{"bit":"title","opt":{"mode":"h2","stys":{"fontSize":"clamp(1.375rem, 2.2vw, 1.75rem)","fontWeight":"800","color":"var(--color-base-description)","lineHeight":"1.1","margin":"0"}}},{"bit":"score","opt":{"mode":"rating","size":"md","disabled":true,"color":"error","mask":"mask-star-2"}}],[{"bit":"pricing","ext":{"currency":"đ"},"opt":{"mode":"span","stys":{"fontSize":"clamp(1.375rem, 2.2vw, 1.75rem)","fontWeight":"900","color":"var(--color-primary)"}}},{"bitLocal":"","opt":{"mode":"button","prefix":"ri:shopping-cart-line","iconSize":"1rem","ui":"modern","type":"fill","color":"primary","height":"45px","rounded":"8px","action":"add-to-cart"}}]],"stys":{"padding":"1.75rem","height":"100%","border":"2px solid color-mix(in oklab, #de8daf 35%, transparent)"},"bg":{"rounded":"0","spatial":true,"gradient":true,"tint":"#de8daf","total":1,"type":"circle","mono":false,"deg":45,"pattern":"","move":"","distance":86,"pics":""},"anime":"slide-in-blurred-top"},"label":"Card"},{"key":"cardMaverick","config":{"groupCol":[12,12,12,12],"groupRow":["auto","auto","auto","auto"],"groupJustify":["none","left","none","between"],"groupStyle":[{"position":"relative","margin":"0 0 1.25rem","display":"flex","justifyContent":"center","alignItems":"center","minHeight":"140px"},{"marginBottom":"0"},{"marginBottom":"0.6rem","flexDirection":"column","alignItems":"flex-start","gap":"0.2rem"},{"marginBottom":"0"}],"makes":[[{"bitLocal":"","opt":{"mode":"span","stys":{"position":"absolute","top":"-15%","left":"-10%","width":"81%","aspectRatio":"1/1","background":"var(--color-primary)","borderRadius":"50%","opacity":"0.12","zIndex":"0"}}},{"bit":"pics","opt":{"mode":"gallery","stys":{"width":"62%","margin":"0 auto","objectFit":"contain","position":"relative","zIndex":"1"}}},{"bit":"description","opt":{"mode":"popover","icon":"ri:information-line","ui":"spatial","placement":"bottom-end","iconSize":"1.25rem","stys":{"position":"absolute","top":"0","right":"0","zIndex":"2"}}}],[{"bit":"tags","opt":{"mode":"tags"}}],[{"bit":"brand","opt":{"mode":"span","stys":{"fontSize":"clamp(0.7rem, 1vw, 0.75rem)","fontWeight":"600","opacity":"0.45","textTransform":"uppercase","letterSpacing":"0.06em"}}},{"bit":"title","opt":{"mode":"h2","stys":{"fontSize":"clamp(1.25rem, 2vw, 1.75rem)","color":"var(--color-base-description)","lineHeight":"1.2","margin":"0"}}},{"bit":"score","opt":{"mode":"rating","size":"xs","disabled":true,"color":"warning","mask":"mask-star-2"}}],[{"bit":"pricing","ext":{"currency":"đ"},"opt":{"mode":"span","stys":{"fontSize":"clamp(1.25rem, 2vw, 1.625rem)","fontWeight":"900","color":"var(--color-base-description)"}}},{"bitLocal":"","opt":{"mode":"button","prefix":"ri:shopping-cart-line","iconSize":"1rem","ui":"modern","type":"fill","color":"primary","height":"40px","rounded":"12px","action":"add-to-cart"}}]],"stys":{"padding":"1.5rem","height":"100%"},"bg":{"rounded":"1.75rem","spatial":true,"gradient":true,"tint":"#ffbb24","total":2,"type":"ellipse","mono":false,"deg":135,"pattern":"","move":"","distance":86,"pics":""},"anime":"fade-in-fwd"},"label":"Card 2"}],"sort":1,"col":"12","container":true,"responsive":true,"isOccasions":true,"dataTable":"products","loadLimit":20,"cache":1,"filters":{"status":"active"},"stys":{"marginBottom":"1rem"}}]</script></web-board>
 	</div>
 
@@ -424,45 +440,45 @@ html[data-theme='dark'] { --color-primary: #d4af37; --color-secondary: #0b2d5b; 
 
 			<nav class="grid grid-cols-2 gap-x-10 gap-y-8 sm:grid-cols-4 flex-1" aria-label="Footer navigation">
 					<div class="flex flex-col gap-3">
-							<p class="text-xs font-semibold uppercase tracking-widest text-base-content/50">Tổng quan</p>
+							<p class="text-xs font-semibold uppercase tracking-widest text-base-content/50"><span class="i18n-vi">Tổng quan</span><span class="i18n-en">Overview</span></p>
 							<ul class="flex flex-col gap-2">
 								<li>
 										<a href="/#showcaseModernSlideNeat" class="text-sm text-base-content/70 hover:text-base-content transition-colors no-underline">
-											Giới thiệu
+											<span class="i18n-vi">Giới thiệu</span><span class="i18n-en">Introduction</span>
 										</a>
 									</li><li>
 										<a href="/#giftsModernStatsIntro" class="text-sm text-base-content/70 hover:text-base-content transition-colors no-underline">
-											Bộ sưu tập
+											<span class="i18n-vi">Bộ sưu tập</span><span class="i18n-en">Collection</span>
 										</a>
 									</li>
 							</ul>
 						</div><div class="flex flex-col gap-3">
-							<p class="text-xs font-semibold uppercase tracking-widest text-base-content/50">Sản phẩm &amp; Dịch vụ</p>
+							<p class="text-xs font-semibold uppercase tracking-widest text-base-content/50"><span class="i18n-vi">Sản phẩm &amp; Dịch vụ</span><span class="i18n-en">Products &amp; Services</span></p>
 							<ul class="flex flex-col gap-2">
 								<li>
 										<a href="/#giftsModernServiceGrid" class="text-sm text-base-content/70 hover:text-base-content transition-colors no-underline">
-											Dịch vụ
+											<span class="i18n-vi">Dịch vụ</span><span class="i18n-en">Services</span>
 										</a>
 									</li><li>
 										<a href="/#giftsModernSlideBestSeller" class="text-sm text-base-content/70 hover:text-base-content transition-colors no-underline">
-											Bán chạy nhất
+											<span class="i18n-vi">Bán chạy nhất</span><span class="i18n-en">Best sellers</span>
 										</a>
 									</li><li>
 										<a href="/#giftsModernGalleryStrip" class="text-sm text-base-content/70 hover:text-base-content transition-colors no-underline">
-											Hình ảnh nổi bật
+											<span class="i18n-vi">Hình ảnh nổi bật</span><span class="i18n-en">Featured gallery</span>
 										</a>
 									</li>
 							</ul>
 						</div><div class="flex flex-col gap-3">
-							<p class="text-xs font-semibold uppercase tracking-widest text-base-content/50">Khách hàng</p>
+							<p class="text-xs font-semibold uppercase tracking-widest text-base-content/50"><span class="i18n-vi">Khách hàng</span><span class="i18n-en">Customers</span></p>
 							<ul class="flex flex-col gap-2">
 								<li>
 										<a href="/#giftsModernSlideTestimonials" class="text-sm text-base-content/70 hover:text-base-content transition-colors no-underline">
-											Khách hàng nói gì
+											<span class="i18n-vi">Khách hàng nói gì</span><span class="i18n-en">What customers say</span>
 										</a>
 									</li><li>
 										<a href="/#giftsModernSlideBrands" class="text-sm text-base-content/70 hover:text-base-content transition-colors no-underline">
-											Thương hiệu đối tác
+											<span class="i18n-vi">Thương hiệu đối tác</span><span class="i18n-en">Partner brands</span>
 										</a>
 									</li>
 							</ul>
@@ -504,15 +520,15 @@ html[data-theme='dark'] { --color-primary: #d4af37; --color-secondary: #0b2d5b; 
 	</div>
 </footer>
 			</main>
-      	<script type="module" src="/_astro/CoreShop.astro_astro_type_script_index_1_lang.YlhP8FcU.js"></script><svc-pay id="pay-factor" isCart="true" position="fixed" role="buyer" onlyDelivery="true" sellerId="01JUU9AA1EB3J1NRZEGPQXJY3B" seller="Cafe ABC~0934561501~Quan 1 TP.HCM~invoice@cafe.vn~0123456789" wallet="{&quot;momo&quot;:{&quot;phone&quot;:&quot;0934561501&quot;,&quot;accountName&quot;:&quot;LE THI KIM DAN&quot;,&quot;bin&quot;:&quot;971025&quot;},&quot;bank&quot;:{&quot;accountNo&quot;:&quot;00951018802&quot;,&quot;accountName&quot;:&quot;LE THI KIM DAN&quot;,&quot;bankName&quot;:&quot;TPBank&quot;,&quot;bin&quot;:&quot;970423&quot;}}" vietqr="{&quot;clientId&quot;:&quot;6d04884c-5a4c-4c07-ab9f-a4285b853e2b&quot;,&quot;apiKey&quot;:&quot;a10eeaa5-472b-4c01-bf26-6dcb9adf460e&quot;}" cashDisabled="true" data-astro-transition-persist="pay-factor" data-astro-cid-zzsknrz5="true"></svc-pay>
+      	<script type="module" src="/_astro/CoreShop.astro_astro_type_script_index_1_lang.B7oyxG50.js"></script><svc-pay id="pay-factor" isCart="true" position="fixed" role="buyer" onlyDelivery="true" sellerId="01JUU9AA1EB3J1NRZEGPQXJY3B" seller="Cafe ABC~0934561501~Quan 1 TP.HCM~invoice@cafe.vn~0123456789" wallet="{&quot;momo&quot;:{&quot;phone&quot;:&quot;0934561501&quot;,&quot;accountName&quot;:&quot;LE THI KIM DAN&quot;,&quot;bin&quot;:&quot;971025&quot;},&quot;bank&quot;:{&quot;accountNo&quot;:&quot;00951018802&quot;,&quot;accountName&quot;:&quot;LE THI KIM DAN&quot;,&quot;bankName&quot;:&quot;TPBank&quot;,&quot;bin&quot;:&quot;970423&quot;}}" vietqr="{&quot;clientId&quot;:&quot;6d04884c-5a4c-4c07-ab9f-a4285b853e2b&quot;,&quot;apiKey&quot;:&quot;a10eeaa5-472b-4c01-bf26-6dcb9adf460e&quot;}" cashDisabled="true" data-astro-transition-persist="pay-factor" data-astro-cid-zzsknrz5="true"></svc-pay>
 
-        <script type="module" src="/_astro/CoreShop.astro_astro_type_script_index_2_lang.Bh86HQ7_.js"></script><svc-pay-warden id="shop-orders-warden" position="fixed" x="99%" y="calc(100% - 13rem)" ui="spatial" theme="light" mainColors="#0b2d5b|#d4af37|#c1e5a9|#a1a6d3|#e2a9db" lang="vi" data-astro-transition-persist="shop-orders-warden" data-astro-cid-zzsknrz5="true">
+        <script type="module" src="/_astro/CoreShop.astro_astro_type_script_index_2_lang.CpDHO9GN.js"></script><svc-pay-warden id="shop-orders-warden" position="fixed" x="99%" y="calc(100% - 13rem)" ui="spatial" theme="light" mainColors="#0b2d5b|#d4af37|#c1e5a9|#a1a6d3|#e2a9db" lang="vi" data-astro-transition-persist="shop-orders-warden" data-astro-cid-zzsknrz5="true">
         </svc-pay-warden>
 
-        <script type="module" src="/_astro/CoreShop.astro_astro_type_script_index_3_lang.cC6qv3bM.js"></script><svc-pay-stats id="shop-stats" position="fixed" x="99%" y="calc(100% - 18.5rem)" style="display:none" ui="spatial" theme="light" mainColors="#0b2d5b|#d4af37|#c1e5a9|#a1a6d3|#e2a9db" lang="vi" data-astro-transition-persist="shop-stats" data-astro-cid-zzsknrz5="true">
+        <script type="module" src="/_astro/CoreShop.astro_astro_type_script_index_3_lang.CqIOeVWb.js"></script><svc-pay-stats id="shop-stats" position="fixed" x="99%" y="calc(100% - 18.5rem)" style="display:none" ui="spatial" theme="light" mainColors="#0b2d5b|#d4af37|#c1e5a9|#a1a6d3|#e2a9db" lang="vi" data-astro-transition-persist="shop-stats" data-astro-cid-zzsknrz5="true">
         </svc-pay-stats>
 
-        <script type="module" src="/_astro/CoreShop.astro_astro_type_script_index_4_lang.C8VmEJ6a.js"></script><svc-logged id="svc-logged" pathLink="/" data-astro-transition-persist="svc-logged" data-astro-cid-zzsknrz5="true"></svc-logged>
+        <script type="module" src="/_astro/CoreShop.astro_astro_type_script_index_4_lang.Ct17won3.js"></script><svc-logged id="svc-logged" pathLink="/" data-astro-transition-persist="svc-logged" data-astro-cid-zzsknrz5="true"></svc-logged>
 
 		</div>
 
