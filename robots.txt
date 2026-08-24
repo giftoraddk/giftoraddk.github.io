@@ -1,32 +1,6 @@
-# AI / LLM crawlers — explicitly allowed so assistants (ChatGPT, Claude, Perplexity,
-# Google AI Overviews...) can discover and cite giftoraddk.com products.
-User-agent: GPTBot
-Allow: /
-
-User-agent: ChatGPT-User
-Allow: /
-
-User-agent: ClaudeBot
-Allow: /
-
-User-agent: anthropic-ai
-Allow: /
-
-User-agent: PerplexityBot
-Allow: /
-
-User-agent: Google-Extended
-Allow: /
-
-User-agent: CCBot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
 User-agent: *
 Allow: /
-Disallow: /admin
-Disallow: /login
+Disallow: /admin/
+Disallow: /gift/login
 
 Sitemap: https://giftoraddk.com/sitemap.xml
