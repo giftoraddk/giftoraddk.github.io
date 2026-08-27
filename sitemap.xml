@@ -26,7 +26,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://giftoraddk.com/gift/corporate_gift</loc>
+    <loc>https://giftoraddk.com/gift/corporate</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -41,12 +41,12 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://giftoraddk.com/gift/new_year</loc>
+    <loc>https://giftoraddk.com/gift/new-year</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://giftoraddk.com/gift/lunar_new_year</loc>
+    <loc>https://giftoraddk.com/gift/lunar-new-year</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -263,6 +263,12 @@
   <url>
     <loc>https://giftoraddk.com/product/01K0M7RV1IHMYKD5S90J2Z41NV</loc>
     <lastmod>2026-08-23T07:38:15.400Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://giftoraddk.com/product/01K1166LI64DV4G7WCPKPT60HH</loc>
+    <lastmod>2026-08-27T08:43:21.748Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
