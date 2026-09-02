@@ -140,6 +140,7 @@ export default defineConfig({
 	// 	svgo: true,
 	// },
 	output: 'static',
+	outDir: './docs',
 	// Only routes with `export const prerender = false` (e.g. the fake CRUD mock under
 	// /api/products, or the 4 ISR routes swapped in by renderModeIntegration when
 	// PUBLIC_RENDER=isr) run through an adapter — everything else stays a fully static build.

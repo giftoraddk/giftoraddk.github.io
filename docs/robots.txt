@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /gift/login
+
+Sitemap: https://giftoraddk.com/sitemap.xml
