@@ -1,0 +1,21 @@
+:host {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    --core-font: var(--font-sans, 'system-ui');
+    font-family: var(--core-font);
+    color: var(--color-base-content);
+}
+
+.reason-form { display: flex; flex-direction: column; gap: 0.5rem; width: 100%; margin-top: 0.5rem; }
+
+/* min-height forced bởi parent (svc-pay.css's .reason-columns) qua CSS var xuyên Shadow DOM — để
+   title 2 cột dài/ngắn khác nhau vẫn CHIẾM CÙNG 1 chiều cao, kéo mọi field bên dưới thẳng hàng
+   giữa 2 cột. `<p>` này chỉ tồn tại khi `title` có giá trị (xem svc-pay-reason.js) — đơn lẻ (không
+   đặt trong .reason-columns, không truyền title) → không render gì, không tốn khoảng trắng thừa. */
+.reason-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.reason-title { font-weight: 600; font-size: 0.95rem; line-height: 1.3; min-height: var(--reason-title-min-height, auto); }
+
+.reason-input { width: 100%; box-sizing: border-box; }
+
+.reason-quickfill { align-self: flex-start; }

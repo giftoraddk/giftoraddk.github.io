@@ -1,0 +1,41 @@
+{
+	"extends": "astro/tsconfigs/strict",
+	"include": [
+		".astro/types.d.ts",
+		"src/**/*",
+		"src/webs/**/*",
+		"env.d.ts"
+, "src/modules/landing/main.js"	],
+	"exclude": [
+		"dist"
+	],
+	"compilerOptions": {
+		"strictNullChecks": true,
+		"baseUrl": ".",
+		"paths": {
+			"@/*": [
+				"./src/*"
+			],
+			"@public/*": [
+				"./public/*"
+			],
+			// "@react/*": ["./react/*"],
+		},
+		// "jsx": "react-jsx",
+		// "jsxImportSource": "react",
+		"allowJs": true,
+		"allowImportingTsExtensions": true,
+		"moduleResolution": "bundler",
+		"module": "ESNext",
+		"target": "ESNext",
+		"lib": [
+			"ESNext",
+			"DOM",
+			"DOM.Iterable"
+		],
+		"types": [
+			"astro/client",
+			"node"
+		]
+	}
+}

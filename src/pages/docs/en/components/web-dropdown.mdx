@@ -1,0 +1,89 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-dropdown'
+description: 'Dropdown menu with configurable trigger label, items, and alignment'
+---
+
+# web-dropdown
+
+A trigger-activated dropdown menu. The trigger shows a label (or slotted content); clicking it opens a panel listing menu items passed as a JSON array.
+
+## When to use
+
+- Navigation menus or "More options" action menus
+- Context-specific action lists on rows in a table or card
+- Profile/account menus in a nav bar
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-dropdown.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `label` | string | `''` | Text for the trigger button |
+| `items` | string (JSON) | `'[]'` | Serialized array of `{ value: string, label: string, disabled?: boolean }` |
+| `align` | string | `'left'` | Panel alignment: `left` \| `right` \| `center` |
+| `trigger` | string | `'click'` | Open on `click` or `hover` |
+| `disabled` | boolean | `false` | Disable the entire dropdown |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+
+## Basic Example
+
+```html
+<web-dropdown
+  label="Actions"
+  items='[
+    {"value": "edit",   "label": "Edit"},
+    {"value": "share",  "label": "Share"},
+    {"value": "delete", "label": "Delete"}
+  ]'
+></web-dropdown>
+
+<script type="module" src="/src/webs/apex/web-dropdown.js"></script>
+```
+
+## Advanced Examples
+
+Right-aligned account menu:
+
+```html
+<web-dropdown
+  label="My Account"
+  align="right"
+  items='[
+    {"value": "profile",  "label": "Profile"},
+    {"value": "settings", "label": "Settings"},
+    {"value": "logout",   "label": "Sign Out"}
+  ]'
+></web-dropdown>
+```
+
+Hover-triggered dropdown with a disabled item:
+
+```html
+<web-dropdown
+  label="Export"
+  trigger="hover"
+  items='[
+    {"value": "csv",  "label": "Export as CSV"},
+    {"value": "xlsx", "label": "Export as Excel"},
+    {"value": "pdf",  "label": "Export as PDF", "disabled": true}
+  ]'
+></web-dropdown>
+```
+
+## Events
+
+| Event | When | Detail |
+|---|---|---|
+| `web-dropdown-select` | User selects an item | `{ value: string, label: string }` |
+
+```js
+document.querySelector('web-dropdown').addEventListener('web-dropdown-select', e => {
+  console.log('Selected:', e.detail.value);
+});
+```

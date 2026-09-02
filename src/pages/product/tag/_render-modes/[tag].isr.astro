@@ -1,0 +1,47 @@
+---
+export const prerender = false;
+
+import Core from '@/layouts/Core.astro';
+import ProductTagBody from '@/components/Product/TagBody.astro';
+import { fetchCollection } from '@/services/firestore.server.ts';
+import { productSlug, tagSlugMap, pickLang } from '@/services/helper.js';
+import { site } from '@/services/constants/site.js';
+import { menuItems, policies, socials } from '@/modules/landing/home.js';
+import I18nText from '@/components/I18nText.astro';
+
+// Biến thể ISR của src/pages/product/tag/[tag].astro — xem
+// src/pages/product/_render-modes/[slug].isr.astro để biết cơ chế swap (renderModeIntegration,
+// astro.config.mjs). Không có getStaticPaths — mỗi request tự fetch collection + tra tagSlugMap()
+// theo đúng slug param, y hệt cách getStaticPaths làm ở biến thể SSG.
+
+const tagSlug = Astro.params.tag as string;
+const products = await fetchCollection('products');
+const entry = tagSlugMap(products).get(tagSlug);
+
+if (!entry) Astro.response.status = 404;
+
+const tag = entry?.label ?? '';
+const taggedProducts = (entry?.items ?? []).map((p: any) => ({
+	...p,
+	meta: { ...(p.meta ?? {}), url: `/product/${productSlug(p)}/`, ctaLabel: 'Xem chi tiết' },
+}));
+
+const pageTitle = entry
+	? `${pickLang({ en: 'Product', vi: 'Sản phẩm' })} ${tag}`
+	: pickLang({ en: 'Not found', vi: 'Không tìm thấy' });
+const pageDescription = entry ? pickLang({
+	en: `Explore products in the "${tag}" category at ${site.subtitle}.`,
+	vi: `Khám phá các sản phẩm thuộc danh mục "${tag}" tại ${site.subtitle}.`,
+}) : '';
+const bg = { blur: true, gradient: true, tint: '#2ebd85', total: 3, blobType: 'circleOverlap', blobMove: 'swap', deg: 180 };
+---
+
+<Core title={pageTitle} description={pageDescription} footer={{ columns: menuItems, policies, socials, bg }}>
+	{entry ? (
+		<ProductTagBody tag={tag} tagSlug={tagSlug} products={taggedProducts} />
+	) : (
+		<div class="mx-auto max-w-6xl px-4 py-24 text-center opacity-60">
+			<I18nText text={{ en: 'Category not found.', vi: 'Không tìm thấy danh mục này.' }} />
+		</div>
+	)}
+</Core>

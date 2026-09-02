@@ -1,0 +1,52 @@
+---
+import Core from '@/layouts/Core.astro';
+import I18nText from '@/components/I18nText.astro';
+// dùng nguồn từ modules/shop/gift vì hrefs của menuItems/footerMenuItems ở đây đã tuyệt đối
+// ('/gift#...') — an toàn khi tái sử dụng trên trang khác /gift, khác với landing/gift.js chỉ
+// dùng hash tương đối ('#...') vì chỉ phục vụ 1 trang index.astro duy nhất
+import { variant, bar, menuItems, footerMenuItems, policies as footerPolicies, socials, contact } from '@/modules/shop/gift';
+import { policies as policyDocs } from '@/modules/policies';
+
+export function getStaticPaths() {
+	return policyDocs.map((doc) => ({ params: { slug: doc.slug }, props: { doc } }));
+}
+
+const { doc } = Astro.props;
+const bg = { blur: true };
+---
+
+<Core
+	title={`${doc.title.vi} — Giftora DDK`}
+	description={doc.intro.vi}
+	menu={{ type: 'top', position: 'prefix', menuItems }}
+	footer={{ columns: footerMenuItems, policies: footerPolicies, socials, contact, bg }}
+	bg={variant.bg}
+	theme={variant.theme}
+	variant={variant}
+	bar={bar}
+>
+	<article class='mx-auto max-w-3xl px-4 py-16'>
+		<h1 class='text-3xl font-bold text-base-content mb-4'><I18nText text={doc.title} /></h1>
+		{doc.intro && <p class='text-base-content/70 mb-10'><I18nText text={doc.intro} /></p>}
+
+		{doc.sections.map((sec: { heading: any; blocks: any[] }) => (
+			<section class='mb-8'>
+				<h2 class='text-xl font-semibold text-base-content mb-3'><I18nText text={sec.heading} /></h2>
+				{sec.blocks.map((b) => (
+					b.items ? (
+						<ul class='list-disc pl-5 space-y-1 text-base-content/80 mb-3'>
+							{b.items.map((it: any) => <li><I18nText text={it} /></li>)}
+						</ul>
+					) : b.text?.vi ? (
+						<p class='text-base-content/80 mb-3'>
+							{b.label && <strong class='text-base-content'><I18nText text={b.label} />: </strong>}
+							<I18nText text={b.text} />
+						</p>
+					) : (
+						<p class='font-semibold text-base-content mb-2'><I18nText text={b.label} /></p>
+					)
+				))}
+			</section>
+		))}
+	</article>
+</Core>

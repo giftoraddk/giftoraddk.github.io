@@ -1,0 +1,120 @@
+/* src/webs/media/styles/svc-player.css */
+:host {
+	display: block;
+	position: relative;
+	width: 100%;
+}
+
+/* fill mode — host fills whatever positioned ancestor wraps it (e.g. a
+   full-bleed hero background) instead of sizing itself from `ratio`. */
+:host([fill]) {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.svc-player-box {
+	position: relative;
+	width: 100%;
+	overflow: hidden;
+}
+
+:host([fill]) .svc-player-box {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+
+/* ── Active media (video/iframe fill) ────────────────────────────── */
+.embed-media {
+	display: block;
+	width: 100%;
+	height: 100%;
+	border: 0;
+	object-fit: cover;
+}
+
+/* fill mode, iframe case only — `object-fit` has no effect on iframe content
+   (it's a separate browsing context, not a replaced element like <video>), so
+   this reproduces "cover" by oversizing + centering + cropping via the host's
+   `overflow: hidden`. <video> doesn't need this: object-fit above already
+   covers it correctly once the host fills its parent. Also non-interactive by
+   design — a full-bleed background embed shouldn't intercept clicks/scroll
+   meant for content layered on top of it. */
+:host([fill]) iframe.embed-media {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 100%;
+	aspect-ratio: 16 / 9;
+	transform: translate(-50%, -50%) scale(var(--fill-scale, 1.6));
+	transform-origin: center;
+	pointer-events: none;
+}
+
+/* ── Facade (poster + play button) ───────────────────────────────── */
+.facade {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	cursor: pointer;
+	background: var(--color-base-300, #000);
+	border: none;
+	padding: 0;
+}
+
+.facade-poster {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.facade-scrim {
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.25);
+	transition: background 0.2s ease;
+}
+
+.facade:hover .facade-scrim {
+	background: rgba(0, 0, 0, 0.4);
+}
+
+.facade-play {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 4rem;
+	height: 4rem;
+	border-radius: 9999px;
+	background: var(--color-primary, #2ebd85);
+	color: var(--color-base-content, #ffffff);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: none;
+	cursor: pointer;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+	transition: transform 0.2s ease;
+}
+
+.facade:hover .facade-play {
+	transform: translate(-50%, -50%) scale(1.08);
+}
+
+.facade-play svg {
+	width: 2rem;
+	height: 2rem;
+}
+
+/* spatial UI variant — glassmorphism play button */
+.facade.spatial .facade-play {
+	background: color-mix(in oklab, var(--color-primary, #2ebd85), transparent 15%);
+	backdrop-filter: blur(var(--core-blur, 12px));
+}

@@ -1,0 +1,68 @@
+---
+import LayoutUI from "@/layouts/LayoutUI.astro";
+import { UNDERLAY_PRESETS } from "@/webs/underlay/tools/constant.js";
+
+const pageTitle = "Underlay Demo";
+const pageDescription = "svc-underlay — WebGL background concept presets (bubbles / stars / dots / leaf / snowflake)";
+
+const CONCEPT_LABELS = { bubbles: "Bubbles", stars: "Stars", dots: "Dots", leaf: "Leaf", snowflake: "Snowflake" };
+const GROUPS = Object.keys(CONCEPT_LABELS).map((concept) => ({
+    concept,
+    label: CONCEPT_LABELS[concept],
+    presets: UNDERLAY_PRESETS.filter((preset) => preset.concept === concept),
+}));
+---
+
+<LayoutUI title={pageTitle} description={pageDescription}>
+    <script src="@/webs/underlay/svc-underlay.js"></script>
+
+    <div class="p-6">
+        <h1 class="text-2xl font-bold mb-1">{pageTitle}</h1>
+        <p class="text-sm opacity-60 mb-8">
+            Mỗi card là 1 instance &lt;svc-underlay&gt; độc lập — cuộn ra khỏi viewport để xem
+            fade-out + huỷ WebGL context; di chuột qua card có "push enabled" để xem hiệu ứng
+            đẩy hạt ra xa con trỏ (dùng được cho cả 5 concept, không riêng dots).
+        </p>
+
+        {GROUPS.map((group) => (
+            <section class="mb-12">
+                <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                    {group.label}
+                    <span class="badge badge-soft badge-info">{group.presets.length}</span>
+                </h2>
+                <div class="gap-8 grid md:grid-cols-2 place-items-stretch">
+                    {group.presets.map((preset) => (
+                        <figure class="relative h-96 rounded-lg overflow-hidden bg-white/20">
+                            <div class="badge badge-soft badge-info absolute top-2 left-2 z-10">
+                                {preset.label}
+                            </div>
+                            <svc-underlay
+                                concept={preset.concept}
+                                theme={preset.theme || undefined}
+                                tint={preset.tint}
+                                total={preset.total}
+                                colorful={preset.colorful}
+                                deg={preset.deg}
+                                density={preset.density}
+                                limit={preset.limit || undefined}
+                                speed={preset.speed}
+                                size={preset.size}
+                                quality={preset.quality || undefined}
+                                debug={preset.debug}
+                                push={preset.push}
+                                pushRadius={preset.pushRadius}
+                                pushStrength={preset.pushStrength}
+                                trail={preset.trail || undefined}
+                                blur={preset.blur}
+                                gradient={preset.gradient}
+                                blobType={preset.blobType || undefined}
+                                distance={preset.distance}
+                                blobMove={preset.blobMove || undefined}
+                            ></svc-underlay>
+                        </figure>
+                    ))}
+                </div>
+            </section>
+        ))}
+    </div>
+</LayoutUI>

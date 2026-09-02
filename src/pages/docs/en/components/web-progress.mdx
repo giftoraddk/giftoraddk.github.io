@@ -1,0 +1,76 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-progress'
+description: 'Progress bar or circle indicator with value, color, striped, and animated options'
+---
+
+# web-progress
+
+Displays task or upload progress as a horizontal bar or a circular gauge. Supports color, striped texture, and an animated fill effect.
+
+## When to use
+
+- File upload or download progress
+- Step completion percentage in onboarding flows
+- Skill or proficiency level visualizations
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-progress.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `value` | number | `0` | Progress value from 0 to 100 |
+| `type` | string | `'bar'` | Display type: `bar` \| `circle` |
+| `color` | string | `'primary'` | ApexUI color name |
+| `striped` | boolean | `false` | Apply a striped texture to the bar |
+| `animate` | boolean | `false` | Animate the fill (striped animation or pulse) |
+| `size` | string | `'md'` | Size: `xs` \| `sm` \| `md` \| `lg` — affects bar height or circle diameter |
+| `label` | string | `''` | Accessible label (also shown inside circle type) |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+
+## Basic Example
+
+```html
+<!-- Progress bar at 70% -->
+<web-progress value="70" color="primary"></web-progress>
+
+<!-- Circle gauge at 45% -->
+<web-progress value="45" type="circle" color="success" label="45%"></web-progress>
+
+<script type="module" src="/src/webs/apex/web-progress.js"></script>
+```
+
+## Advanced Examples
+
+Animated striped upload bar:
+
+```html
+<web-progress
+  value="60"
+  striped
+  animate
+  color="info"
+  size="lg"
+  label="Uploading…"
+></web-progress>
+```
+
+Skill level display using multiple bars:
+
+```html
+<div style="display: flex; flex-direction: column; gap: 0.5rem; max-width: 320px;">
+  <label>HTML / CSS</label>
+  <web-progress value="95" color="primary" size="sm"></web-progress>
+
+  <label>JavaScript</label>
+  <web-progress value="80" color="secondary" size="sm"></web-progress>
+
+  <label>TypeScript</label>
+  <web-progress value="70" color="accent" size="sm"></web-progress>
+</div>
+```

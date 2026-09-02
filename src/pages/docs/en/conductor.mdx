@@ -1,0 +1,211 @@
+---
+layout: '../../../layouts/LayoutDoc.astro'
+title: 'Conductor'
+description: 'State management and data fetching — nanostores + IndexedDB cache'
+---
+
+# Conductor
+
+<div class="doc-intro">
+  <p>Conductor is the single shared data layer for all Astro Micro services — one nanostores atom where each service/component owns its own section, plus automatic fetching through <code>crud.js</code> and IndexedDB caching.</p>
+</div>
+
+## What Conductor Is
+
+`src/services/conductor.js` exports a **single nanostores atom** (`state`) shared across the entire application. There's no "store per feature" — every service uses the same conductor, but each one **owns its own section** in `state.sections[]` (an **array**, not an object map), keyed by `id`.
+
+```js
+// Global state shape
+{
+  apiUrl: 'https://api.example.com/',   // root-level field, set via patch()
+  sections: [
+    { id: 'product-list', data: [...] },
+    { id: 'cart',         items: [...], total: 0 },
+    { id: 'blog-posts',   data: [...] },
+  ]
+}
+```
+
+## `setup(initialState, opts?)` — Bootstrapping
+
+Called once on page load (typically from `shopSetup` or similar). Merges `initialState.sections` with whatever was saved to IndexedDB (default key `conductor_config`), while **preserving** sections already in memory (basket, payment…) so they survive `setup()` re-running on every Astro ViewTransitions navigation.
+
+```js
+import { setup } from '@/services/conductor.js';
+
+await setup({
+  apiUrl: 'https://api.example.com/',
+  sections: [{ id: 'theme', mode: 'dark' }],
+}, {
+  storageKey: 'conductor_config',   // default — change if you need separate persisted stores
+});
+```
+
+## `all(sectionId, opts?)` — Fetch with Cache
+
+`all()` is the main function for loading data into a section:
+
+```js
+import { all } from '@/services/conductor.js';
+
+await all('products', {
+  dataTable: 'products',   // Firestore collection
+});
+
+await all('news', {
+  dataSrc: '/api/news.json',   // REST endpoint (`url` is the legacy alias, still accepted)
+  cache:   10,                 // minutes — default 5, 0 = no cache
+});
+```
+
+### Options
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `dataSrc` (or `url`) | `String` | — | REST endpoint |
+| `dataTable` | `String` | `''` | Firestore collection (or REST resource when paired with `dataSrc`) |
+| `cache` | `Number` (minutes) | `5` | IndexedDB TTL; `0` disables caching |
+
+There's no custom `cacheKey` option anymore — the cache key is derived automatically from `dataSrc`/`dataTable` (via `loadKey()` in `crud.js`), so `conductor.all()` and `crud.loadData()` always share the same cache entry for the same source.
+
+### Flow
+
+```
+all(sectionId, opts)
+  │
+  ├─ section already has data in state (RAM)?
+  │     └─ yes → return immediately, no fetch, no IndexedDB touch
+  │
+  └─ no → loadData({ dataSrc, dataTable, cache })   (from crud.js)
+        │
+        ├─ IndexedDB hit (within TTL) → return immediately
+        └─ miss/expired → real fetch (REST or Firestore) → write IndexedDB → return
+        │
+        └─ got data → write to section.data
+```
+
+In other words: **in-memory state is the fastest cache layer** — IndexedDB (via `crud.js`) is underneath, and network is the last resort. Multiple components calling `all()` with the same `sectionId` only trigger one fetch.
+
+### Retry Strategy
+
+Retry logic does **not** live in `conductor.js` — it's `crud.js`'s behavior when fetching REST (`dataSrc`), and it applies to every caller including `all()`:
+
+| Attempt | Delay before retry |
+|---|---|
+| 1st retry | 500 ms |
+| 2nd retry | 1000 ms |
+| 3rd retry | 2000 ms |
+
+Firestore (`dataTable`) has no retry — a failing collection is isolated (doesn't block other pipe-separated collections), it just doesn't get retried.
+
+## `sift(sectionId, params, operator?)` — Client-Side Filtering
+
+Reads the current `section.data` and returns a filtered array — **no** API call, **no** store mutation:
+
+```js
+import { sift } from '@/services/conductor.js';
+
+// Exact-match filter (operator defaults to 'absolute')
+const results = sift('products', { tags: ['coffee', 'hot'] });
+
+// Full-text search (special 'q' key)
+const found = sift('products', { q: 'espresso' }, 'like');
+```
+
+| Param | Type | Description |
+|---|---|---|
+| `sectionId` | `String` | Section to filter |
+| `params` | `Object` | Fields to match; empty/`null`/empty-array values are skipped |
+| `operator` | `'absolute' \| 'like'` | `absolute` = exact match; `like` = case-insensitive substring |
+
+Returns `[]` if the section doesn't exist or `section.data` isn't an array.
+
+## Subscribe Pattern in Lit
+
+```js
+import { subscribe, all } from '@/services/conductor.js';
+
+class SvcProductList extends LitElement {
+  static properties = {
+    service: { type: String },
+    _data:   { state: true },
+  };
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    // IMPORTANT: subscribe BEFORE calling all() — avoids missing data
+    this._unsub = subscribe(this.service, section => {
+      this._data = section?.data ?? [];
+    });
+
+    all(this.service, { dataTable: this.service });
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._unsub?.();   // clean up — avoid memory leaks
+  }
+}
+```
+
+`subscribe()` only fires when the section actually changes (reference equality) — not on every `state.set()` elsewhere in the app.
+
+## `make()` / `patch()` — Direct Store Updates
+
+Use these when you need to change state without fetching (adding to cart, switching theme…):
+
+```js
+import { make, patch, get } from '@/services/conductor.js';
+
+// make: upsert one section — creates it if missing, merges fields if it exists
+make('cart', { items: [...(get('cart')?.items ?? []), newItem] });
+
+// patch: merges into ROOT-level state (apiUrl, ui, theme…) — does NOT touch sections
+patch({ apiUrl: 'https://api2.example.com/' });
+```
+
+Note: `patch()` doesn't take a `sectionId` — to update one section, use `make(sectionId, fields)`.
+
+## No Automatic `loading` / `error` State
+
+Conductor doesn't expose a separate fetch-state atom (no `loading`/`success`/`error`). State is inferred indirectly: check whether `get(sectionId)?.data` has data after `all()` resolves. If you need an explicit loading indicator, manage it in the component itself (e.g. a `loader` property on `svc-*` elements).
+
+## Synchronous Event Listener Rule
+
+In `service.js` files, event listeners **must be registered synchronously** before any `await`. If they are registered after an `await`, they can miss events that fired during the asynchronous operation.
+
+```js
+// Correct
+export function initShopService(element) {
+  element.addEventListener('add-to-cart', handleAddToCart);   // sync — registers immediately
+  return all('products', { dataTable: 'products' });          // async — fine after
+}
+
+// Wrong
+export async function initShopService(element) {
+  await all('products', { dataTable: 'products' });
+  element.addEventListener('add-to-cart', handleAddToCart);   // too late — may miss events
+}
+```
+
+## API Summary
+
+```js
+import { state, setup, all, make, patch, get, subscribe, sift } from '@/services/conductor.js';
+
+await setup(initialState, opts);            // bootstrap + merge from IndexedDB
+await all(sectionId, opts);                 // fetch (if not already present) + cache + write section.data
+make(sectionId, fields);                    // upsert one section
+patch(partial);                             // merge into root state
+const section = get(sectionId);             // read one section, null if absent
+const unsub   = subscribe(sectionId, fn);   // listen to one section
+unsub();                                     // stop listening
+const filtered = sift(sectionId, params, operator);   // client-side filtering
+```
+
+## Next Steps
+
+- [Architecture](/docs/en/architecture) — how Conductor fits in the layer diagram
+- [Data Flow](/docs/en/dataflow) — end-to-end fetch and render walkthrough
+- [Section Config](/docs/en/section-config) — declaring `dataSrc`/`dataTable`/`cache` per section

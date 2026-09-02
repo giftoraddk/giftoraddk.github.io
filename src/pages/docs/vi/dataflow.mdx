@@ -1,0 +1,235 @@
+---
+layout: '../../../layouts/LayoutDoc.astro'
+title: 'Luồng dữ liệu'
+description: 'Từ config file đến UI: build time, runtime load, render, events'
+---
+
+# Luồng dữ liệu
+
+<div class="doc-intro">
+  <p>Hiểu toàn bộ hành trình dữ liệu — từ lúc bạn viết config object đến lúc user nhìn thấy card grid trên màn hình và tương tác với nó.</p>
+</div>
+
+## Tổng quan luồng
+
+```
+Config file  →  Astro page  →  web-board  →  web-boxs
+    ↓                                            ↓
+baseConfig                               web-box → web-cell
+                                                ↓
+User event  →  svc-*  →  conductor.all()  →  IndexedDB/API
+    ↑               ↓
+    └──── nanostores subscribe → re-render
+```
+
+## Bước 1 — Config file định nghĩa cấu trúc
+
+File `src/sections/<domain>/config.js` export một `baseConfig` object mô tả toàn bộ layout:
+
+```js
+// src/sections/shop/config.js
+export const productConfig = {
+  id: 'product-list',
+  title: 'Sản phẩm nổi bật',
+  dataApi: '/api/products.json',
+  cacheKey: 'products-v1',
+  cacheTtl: 60000, // 60 giây
+
+  config: {
+    // Số cột ở các breakpoint
+    tiers: { base: 1, sm: 2, lg: 3, xl: 4 },
+
+    // Các cell trong mỗi card
+    makes: [
+      { opt: 'img',   val: 'image',  stys: 'aspect-square object-cover' },
+      { opt: 'text',  val: 'name',   stys: 'font-bold text-lg' },
+      { opt: 'price', val: 'price',  stys: 'text-primary' },
+      { opt: 'btn',   val: 'Thêm vào giỏ', stys: 'btn-primary w-full' },
+    ],
+  },
+
+  anime: 'fade-up', // animation khi card xuất hiện
+};
+```
+
+## Bước 2 — Astro page import và pass config
+
+Trang Astro import config và truyền xuống component:
+
+```astro
+---
+// src/pages/shop.astro
+import Layout from '@/layouts/Layout.astro';
+import { productConfig } from '@/sections/shop/config.js';
+---
+
+<Layout title="Cửa hàng">
+  <web-board sections={JSON.stringify([productConfig])}></web-board>
+  <script type="module" src="/src/webs/apex/web-board.js"></script>
+</Layout>
+```
+
+Ở **build time**, Astro render trang thành HTML tĩnh. Config được serialize thành JSON string và nhúng vào attribute của custom element.
+
+## Bước 3 — web-board khởi tạo và phân tích sections
+
+Khi browser parse HTML, `web-board` được upgrade (custom element lifecycle bắt đầu):
+
+```
+web-board.connectedCallback()
+  → parse JSON từ attribute `sections`
+  → với mỗi section, tạo một <web-boxs> instance
+  → set config + id lên từng <web-boxs>
+  → append vào light DOM (web-board không dùng Shadow DOM)
+```
+
+`web-board` không có Shadow DOM — nó render trực tiếp vào DOM thông thường để dễ dàng style và tích hợp.
+
+## Bước 4 — web-boxs nhận data và config
+
+Mỗi `<web-boxs>` instance:
+
+```
+web-boxs.connectedCallback()
+  → nhận config object (tiers, makes, groups)
+  → nếu có dataApi: gọi conductor.all({ url, cacheKey, cacheTtl })
+  → conductor kiểm tra IndexedDB cache
+    - Cache còn hạn → trả về data ngay lập tức
+    - Cache hết hạn/không có → fetch từ API, lưu cache
+  → set _data = data trả về
+  → trigger re-render
+```
+
+## Bước 5 — Render web-box cho mỗi item
+
+`web-boxs` tạo một `<web-box>` cho mỗi item trong `data[]`:
+
+```
+web-boxs.render()
+  → tạo CSS Grid dựa trên config.tiers
+  → với mỗi item trong data[]:
+    → tạo <web-box item={item} config={config}>
+    → áp dụng anime class nếu có config.anime
+```
+
+## Bước 6 — web-cell resolve giá trị
+
+`web-box` tạo `<web-cell>` cho mỗi entry trong `makes[]`:
+
+```js
+// Mỗi cell trong makes[] được render như sau:
+makes.forEach(cell => {
+  const value = resolveValue(cell.val, item);
+  // Nếu cell.val là key trong item → lấy item[cell.val]
+  // Nếu cell.val là string literal → dùng trực tiếp
+  // Nếu cell.val là function → gọi với item làm argument
+  renderCell(cell.opt, value, cell.sty);
+});
+```
+
+Ví dụ: `{ opt: 'text', val: 'name' }` → lấy `item.name` và render thành text.
+
+## Bước 7 — User interaction dispatch event
+
+Khi user tương tác (click, input, select):
+
+```js
+// Bên trong web-cell hoặc web-box
+this.dispatchEvent(new CustomEvent('cell-action', {
+  detail: { action: 'add-to-cart', item: this.item },
+  bubbles: true,
+  composed: true, // xuyên qua Shadow DOM
+}));
+```
+
+Event bubble lên qua nhiều lớp Shadow DOM cho đến khi được component cha lắng nghe.
+
+## Bước 8 — svc-* xử lý event và cập nhật store
+
+Micro service lắng nghe event và gọi conductor:
+
+```js
+// src/webs/shop/svc-cart.js
+connectedCallback() {
+  // QUAN TRỌNG: đăng ký listener trước khi await
+  this.addEventListener('cell-action', this._dhCartAction.bind(this));
+  this._dcInit(); // async init
+}
+
+async _dhCartAction(e) {
+  if (e.detail.action !== 'add-to-cart') return;
+  e.stopPropagation();
+
+  // Gọi service action
+  await this._dfAddItem(e.detail.item);
+}
+
+async _dfAddItem(item) {
+  // Cập nhật state qua conductor
+  const state = conductor.get();
+  conductor.set({
+    ...state,
+    sections: {
+      ...state.sections,
+      'cart': { ...state.sections['cart'], items: [...state.sections['cart'].items, item] }
+    }
+  });
+}
+```
+
+## Bước 9 — nanostores subscription trigger re-render
+
+Bất kỳ component nào subscribe vào conductor đều tự động re-render:
+
+```js
+// Trong connectedCallback của svc-*
+conductor.subscribe(state => {
+  this._data = state.sections[this.service];
+  // Lit tự động queue re-render khi _data thay đổi
+});
+```
+
+nanostores sử dụng **fine-grained reactivity** — chỉ component nào thực sự thay đổi dữ liệu mới re-render.
+
+## Ví dụ hoàn chỉnh
+
+Config tối giản và HTML tương ứng:
+
+```js
+// src/sections/cafe/config.js
+export const menuConfig = {
+  id: 'cafe-menu',
+  config: {
+    tiers: { base: 1, md: 2, lg: 3 },
+    makes: [
+      { opt: 'img',  val: 'photo' },
+      { opt: 'text', val: 'name',  stys: 'text-xl font-bold' },
+      { opt: 'text', val: 'desc',  stys: 'text-sm opacity-70' },
+      { opt: 'price', val: 'price' },
+    ],
+  },
+};
+```
+
+```html
+<!-- HTML output tương ứng (simplified) -->
+<web-boxs>
+  #shadow-root
+    <div class="grid grid-cols-3">
+      <web-box>
+        #shadow-root
+          <web-cell opt="img">   <img src="..."></web-cell>
+          <web-cell opt="text">  <p>Cà phê đen</p></web-cell>
+          <web-cell opt="text">  <p>Đậm đà, nguyên chất</p></web-cell>
+          <web-cell opt="price"> <span>35,000₫</span></web-cell>
+      </web-box>
+      ...
+    </div>
+</web-boxs>
+```
+
+## Tiếp theo
+
+- [Conductor](/docs/vi/conductor) — chi tiết retry, cache và `sift()`
+- [Web Boxs](/docs/vi/web-boxs) — toàn bộ options của config object
+- [Section Config](/docs/vi/section-config) — cách tổ chức config files

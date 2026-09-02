@@ -1,0 +1,148 @@
+:host {
+    display: inline-block;
+    --core-blur: var(--haze-blur, 12px);
+    --core-glass: var(--haze-glass, 20%);
+    --core-font: var(--font-sans, 'system-ui');
+}
+
+.rating {
+	font-family: var(--core-font);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.rating input {
+  appearance: none;
+  border: none;
+  outline: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rating :where(*) {
+  height: 1.5rem;
+  width: 1.5rem;
+  border-radius: 0;
+  opacity: 0.3;
+  background-color: var(--color-base-content, #ffffff);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rating :where(*):is(input) {
+  cursor: pointer;
+}
+
+.rating :where(*):is(input):disabled {
+  pointer-events: none;
+  cursor: default;
+}
+
+.rating .rating-hidden {
+  width: 0.5rem;
+  background: transparent;
+  opacity: 0;
+}
+
+.rating input[type="radio"]:checked {
+  background-image: none;
+}
+
+.rating * {
+  transition: all 0.2s ease;
+}
+
+.rating *:checked,
+.rating *[aria-checked="true"],
+.rating *[aria-current="true"],
+.rating *:has(~ *:checked, ~ *[aria-checked="true"], ~ *[aria-current="true"]) {
+  opacity: 1;
+}
+
+.rating *:hover:not(:disabled) {
+    transform: scale(1.15);
+    opacity: 0.8;
+}
+
+.rating *:focus-visible {
+  transform: scale(1.2);
+  outline: 2px solid var(--color-primary, #2ebd85);
+  outline-offset: 2px;
+}
+
+/* Color Tokens mapping */
+.rating .color-primary { --rating-color: var(--color-primary, #2ebd85); }
+.rating .color-secondary { --rating-color: var(--color-secondary, #f5465c); }
+.rating .color-accent { --rating-color: var(--color-accent, #a855f7); }
+.rating .color-info { --rating-color: var(--color-info, #00c7d4); }
+.rating .color-warning { --rating-color: var(--color-warning, #fbbf24); }
+.rating .color-success { --rating-color: var(--color-success, #2ebd85); }
+.rating .color-error { --rating-color: var(--color-error, #f5465c); }
+
+.rating :where(*:not(.rating-hidden)) {
+    background-color: var(--rating-color, var(--color-base-content, #ffffff));
+}
+
+/* Sizes */
+.rating-xs :where(*:not(.rating-hidden)) { height: 1rem; width: 1rem; }
+.rating-sm :where(*:not(.rating-hidden)) { height: 1.25rem; width: 1.25rem; }
+.rating-md :where(*:not(.rating-hidden)) { height: 1.5rem; width: 1.5rem; }
+.rating-lg :where(*:not(.rating-hidden)) { height: 1.75rem; width: 1.75rem; }
+.rating-xl :where(*:not(.rating-hidden)) { height: 2rem; width: 2rem; }
+
+/* Half stars support */
+.rating-half :where(*:not(.rating-hidden)) {
+  width: 0.75rem;
+}
+
+.rating-half.rating-xs *:not(.rating-hidden) { width: 0.5rem; }
+.rating-half.rating-sm *:not(.rating-hidden) { width: 0.625rem; }
+.rating-half.rating-md *:not(.rating-hidden) { width: 0.75rem; }
+.rating-half.rating-lg *:not(.rating-hidden) { width: 0.875rem; }
+.rating-half.rating-xl *:not(.rating-hidden) { width: 1rem; }
+
+
+/* Half-star position must not be overridden by spatial or size rules */
+.rating-half *:not(.rating-hidden).mask-half-1 {
+    mask-size: 200%;
+    mask-position: left;
+}
+.rating-half *:not(.rating-hidden).mask-half-2 {
+    mask-size: 200%;
+    mask-position: right;
+}
+
+@keyframes rating-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.rating input:checked {
+    animation: rating-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/**
+ * ----------------------------------------
+ * Glassmorphism - spatial
+ * ----------------------------------------
+ */
+.spatial.rating :where(*:not(.rating-hidden)) {
+    /* background-color: color-mix(in oklab, var(--color-base-300, #393939) var(--core-glass), transparent);
+    backdrop-filter: blur(var(--core-blur));
+    border: 1px solid #ffffff4d; */
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+}
+
+
+.spatial.rating *:checked,
+.spatial.rating *[aria-checked="true"],
+.spatial.rating *[aria-current="true"],
+.spatial.rating *:has(~ *:checked, ~ *[aria-checked="true"], ~ *[aria-current="true"]) {
+    background-color: var(--rating-color, var(--color-primary, #2ebd85));
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, transparent 100%);
+    box-shadow: 0 0 15px color-mix(in oklab, var(--rating-color, var(--color-primary, #2ebd85)) 40%, transparent);
+}

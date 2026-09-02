@@ -1,0 +1,27 @@
+---
+import Core from '@/layouts/Core.astro';
+import { variant, views, menuItems, policies, socials } from '@/modules/landing/ember.js';
+
+const currentView = views.find(v => v.href === '/landing/ember/') ?? views[0];
+const navItems    = views.map(({ text, href, iconMobile }) => ({ text, href, iconMobile }));
+
+const bg = { blur: true, gradient: true, tint: '#d4af37', total: 2, blobType: 'ellipse', blobMove: 'pulse', deg: 90 }
+---
+
+<Core
+	title="Ember — Luxury Gold Landing"
+	menu={{ type: 'top', position: 'prefix', menuItems: navItems }}
+	footer={{ columns: menuItems, policies, socials, bg }}
+	bg={variant.bg}
+	theme={variant.theme}
+	variant={variant}
+>
+	<script src='@/webs/apex/web-board.js'></script>
+	<div>
+		<web-board
+			unlock={import.meta.env.PUBLIC_EXP}
+			variant={JSON.stringify(variant)}
+			draggable
+		><script type="application/json" is:inline set:html={JSON.stringify(currentView.sections)}></script></web-board>
+	</div>
+</Core>

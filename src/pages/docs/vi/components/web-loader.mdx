@@ -1,0 +1,94 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-loader'
+description: 'Skeleton loader để hiển thị trạng thái đang tải'
+---
+
+# web-loader
+
+Skeleton loader với hiệu ứng shimmer, dùng làm placeholder trong khi dữ liệu chưa được tải xong. Giúp tránh layout shift và cải thiện cảm giác phản hồi của ứng dụng.
+
+## Khi nào dùng
+
+- Thay thế nội dung text, ảnh, hoặc card trong khi chờ API trả dữ liệu
+- Tạo khung skeleton khớp với bố cục thực tế của nội dung sẽ hiển thị
+- Kết hợp nhiều `web-loader` để mô phỏng cấu trúc phức tạp (card, danh sách)
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-loader.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `width` | string | `'100%'` | Chiều rộng của skeleton — nhận giá trị CSS (px, %, rem) |
+| `height` | string | `'1rem'` | Chiều cao của skeleton — nhận giá trị CSS |
+| `rounded` | string | `'sm'` | Độ bo góc: `none` \| `sm` \| `md` \| `lg` \| `full` |
+
+## Ví dụ cơ bản
+
+```html
+<!-- Skeleton cho text -->
+<web-loader width="80%" height="1.2rem"></web-loader>
+<web-loader width="60%" height="1rem"></web-loader>
+
+<!-- Skeleton cho ảnh -->
+<web-loader width="100%" height="200px" rounded="lg"></web-loader>
+```
+
+## Ví dụ nâng cao
+
+Skeleton card mô phỏng cấu trúc bài viết:
+
+```html
+<div style="display:flex; flex-direction:column; gap:12px; max-width:400px;">
+  <!-- Ảnh thumbnail -->
+  <web-loader width="100%" height="180px" rounded="lg"></web-loader>
+
+  <!-- Tiêu đề -->
+  <web-loader width="90%" height="1.5rem" rounded="sm"></web-loader>
+
+  <!-- Đoạn text -->
+  <web-loader width="100%" height="1rem" rounded="sm"></web-loader>
+  <web-loader width="100%" height="1rem" rounded="sm"></web-loader>
+  <web-loader width="70%" height="1rem" rounded="sm"></web-loader>
+
+  <!-- Tác giả và ngày -->
+  <div style="display:flex; gap:8px; align-items:center;">
+    <web-loader width="32px" height="32px" rounded="full"></web-loader>
+    <web-loader width="120px" height="0.875rem" rounded="sm"></web-loader>
+  </div>
+</div>
+```
+
+Danh sách skeleton cho bảng dữ liệu:
+
+```html
+<div style="display:flex; flex-direction:column; gap:8px;">
+  <web-loader width="100%" height="2.5rem" rounded="sm"></web-loader>
+  <web-loader width="100%" height="2.5rem" rounded="sm"></web-loader>
+  <web-loader width="100%" height="2.5rem" rounded="sm"></web-loader>
+  <web-loader width="100%" height="2.5rem" rounded="sm"></web-loader>
+  <web-loader width="100%" height="2.5rem" rounded="sm"></web-loader>
+</div>
+```
+
+Kiểm soát hiển thị theo trạng thái tải:
+
+```html
+<div id="skeleton">
+  <web-loader width="100%" height="200px" rounded="lg"></web-loader>
+</div>
+<div id="content" style="display:none;">
+  <img src="/loaded-image.jpg" alt="Đã tải xong" />
+</div>
+<script>
+  fetchData().then(() => {
+    document.getElementById('skeleton').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+  });
+</script>
+```

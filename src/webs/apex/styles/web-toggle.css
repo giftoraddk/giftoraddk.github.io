@@ -1,0 +1,81 @@
+:host {
+	display: inline-block;
+	--toggle-width: 44px;
+	--toggle-height: 24px;
+	--toggle-thumb: 18px;
+	--core-blur: var(--haze-blur, 12px);
+	--core-glass: var(--haze-glass, 20%);
+	--core-font: var(--font-sans, 'system-ui');
+}
+
+.web-toggle {
+	font-family: var(--core-font);
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	cursor: pointer;
+	user-select: none;
+	font-size: 14px;
+	color: var(--color-base-content, #ffffff);
+	transition: opacity 0.3s ease;
+}
+
+.web-toggle.disabled {
+	cursor: not-allowed;
+	opacity: 0.4;
+}
+
+.toggle-track {
+	position: relative;
+	width: var(--toggle-width);
+	height: var(--toggle-height);
+	background: var(--color-base-300, #393939);
+	border-radius: 999px;
+	transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+	border: 1px solid transparent;
+}
+
+.web-toggle.active .toggle-track {
+	background: var(--color-primary, #2ebd85);
+}
+
+.toggle-thumb {
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	width: var(--toggle-thumb);
+	height: var(--toggle-thumb);
+	background: #ffffff;
+	border-radius: 50%;
+	transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.web-toggle.active .toggle-thumb {
+	transform: translateX(calc(var(--toggle-width) - var(--toggle-thumb) - 6px));
+}
+
+.label {
+	font-weight: 500;
+}
+
+/**
+ * ----------------------------------------
+ * Glassmorphism - spatial
+ * ----------------------------------------
+ */
+.spatial .toggle-track {
+	box-sizing: border-box;
+	background: color-mix(in oklab, var(--color-base-300, #393939) var(--core-glass), transparent);
+	backdrop-filter: blur(calc(var(--core-blur) * 0.7));
+	border: 1px solid #ffffff4d;
+}
+
+.spatial.active .toggle-track {
+	background: color-mix(in oklab, var(--color-primary, #2ebd85) 60%, rgba(255, 255, 255, 0.1));
+}
+
+.spatial .toggle-thumb {
+	background: rgba(255, 255, 255, 0.9);
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}

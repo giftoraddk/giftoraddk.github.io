@@ -1,0 +1,122 @@
+---
+layout: '../../../layouts/LayoutDoc.astro'
+title: 'Bắt đầu nhanh'
+description: 'Cài đặt, chạy dev server, và tạo trang đầu tiên'
+---
+
+# Bắt đầu nhanh
+
+<div class="doc-intro">
+  <p>Từ clone repo đến trang chạy được trong chưa đầy 5 phút — hướng dẫn này bao gồm cài đặt, các lệnh cơ bản và cách tạo trang đầu tiên.</p>
+</div>
+
+## Yêu cầu hệ thống
+
+- **Node.js** 18 trở lên
+- **pnpm** (khuyến nghị) — cài bằng `npm install -g pnpm`
+- Editor hỗ trợ TypeScript và Astro (VSCode + Astro extension)
+
+## Cài đặt
+
+```bash
+# Clone dự án
+git clone <repo-url> my-site
+cd my-site
+
+# Cài dependencies
+pnpm install
+```
+
+## Các lệnh chính
+
+| Lệnh | Mô tả |
+|---|---|
+| `pnpm dev` | Khởi động dev server tại `http://localhost:5000` với hot reload |
+| `pnpm build` | Build production — xuất HTML tĩnh vào thư mục `dist/` |
+| `pnpm preview` | Preview build production trên local server |
+| `pnpm run webs` | Bundle các Lit Web Components (dùng `vite.webs.mjs`) |
+| `pnpm run mega` | Bundle với minification mạnh + obfuscation (dùng `vite.mega.mjs`) |
+
+Khi phát triển, chỉ cần `pnpm dev`. Lệnh `webs` và `mega` dùng khi bạn muốn đóng gói và phân phối Web Components độc lập.
+
+## Cấu trúc thư mục
+
+```
+src/
+├── pages/          # Trang Astro (.astro, .mdx) — mỗi file là một route
+├── layouts/        # Layout components (LayoutDoc.astro, Layout.astro, v.v.)
+├── components/     # Astro components tái sử dụng (Head, Nav, v.v.)
+├── webs/
+│   ├── apex/       # Web Components primitive: web-boxs, web-box, web-cell, web-board, ...
+│   └── <domain>/   # Domain micro-services: svc-*.js và tools/service.js
+├── sections/       # Config files cho từng domain section
+│   └── <domain>/   # baseConfig, data config cho một domain cụ thể
+├── services/       # conductor.js và các services dùng chung
+└── styles/         # CSS globals, theme variables, typography
+```
+
+**Path alias**: `@/` trỏ đến `src/`. Dùng `@/services/conductor.js` thay vì `../../services/conductor.js`.
+
+## Tạo trang đầu tiên
+
+Tạo file `src/pages/products.astro`:
+
+```astro
+---
+// src/pages/products.astro
+import Layout from '@/layouts/Layout.astro';
+
+// Import config của section
+import { productConfig } from '@/sections/shop/config.js';
+---
+
+<Layout title="Sản phẩm">
+  <!-- Web Component nhận config và data -->
+  <web-boxs
+    config={JSON.stringify(productConfig)}
+    dataApi="/api/products.json"
+    ui="modern"
+  ></web-boxs>
+
+  <!-- Load Web Component script -->
+  <script type="module" src="/src/webs/apex/web-boxs.js"></script>
+</Layout>
+```
+
+## Import Web Components
+
+Có hai cách load Web Components trong Astro:
+
+**Cách 1 — Script tag trong trang:**
+```astro
+<script type="module" src="/src/webs/apex/web-boxs.js"></script>
+```
+
+**Cách 2 — Import trong frontmatter (bundled):**
+```astro
+---
+import '@/webs/apex/web-boxs.js';
+---
+```
+
+Cách 2 sẽ bundle component vào output, phù hợp khi dùng `pnpm run webs`.
+
+## Alias path `@/`
+
+Toàn bộ dự án dùng alias `@/` thay cho đường dẫn tương đối:
+
+```js
+// Thay vì:
+import { all, get } from '../../services/conductor.js';
+
+// Dùng:
+import { all, get } from '@/services/conductor.js';
+```
+
+Alias được cấu hình sẵn trong `astro.config.mjs` và `tsconfig.json`.
+
+## Tiếp theo
+
+- Đọc [Kiến trúc hệ thống](/docs/vi/architecture) để hiểu cách các lớp kết nối
+- Xem [Web Boxs](/docs/vi/web-boxs) để tạo card grid đầu tiên
+- Tìm hiểu [Conductor](/docs/vi/conductor) để quản lý dữ liệu

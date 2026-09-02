@@ -1,0 +1,67 @@
+---
+layout: '../../../layouts/LayoutDoc.astro'
+title: 'Overview'
+description: 'Introduction to Astro Micro — stack, philosophy, and core systems'
+---
+
+# Overview
+
+<div class="doc-intro">
+  <p>Astro Micro is a static site framework combining Astro 6, Lit 3 Web Components, Tailwind CSS 4, and ApexUI — designed for speed, extensibility, and declarative configuration.</p>
+</div>
+
+## What is it?
+
+Astro Micro is a modern static site platform structured around the philosophy of **"declare first, logic later"**. Instead of writing raw HTML for every page, you describe layout and data through config objects — the system automatically renders them into UI.
+
+Core technology stack:
+
+- **Astro 6** — static site generation framework (`output: 'static'`), zero-JS by default, supports partial hydration
+- **Lit 3 Web Components** — self-contained components with Shadow DOM encapsulation, embeddable in any framework
+- **Tailwind CSS 4** — utility-first CSS with a new CSS-variable-based syntax
+- **ApexUI** — theme system driven by `data-theme="dark|light"` on the `<html>` element
+
+## Why use Astro Micro?
+
+**Speed**: Astro outputs fully static HTML — no JavaScript overhead at page load. Web Components hydrate only when needed.
+
+**Componentization**: Lit Web Components are standard DOM elements — framework-independent and reusable in any project, including plain HTML.
+
+**Consistent theming**: All colors flow through ApexUI CSS variables. Switching dark/light mode requires changing a single HTML attribute.
+
+**Declarative configuration**: A complex card grid is described by a single `baseConfig` object rather than hundreds of template lines.
+
+## Three Core Systems
+
+| System | Source | Role |
+|---|---|---|
+| **Conductor** | `src/services/conductor.js` | Shared nanostores atom + IndexedDB cache. All services share one store; each service owns one `section` in `state.sections[]` keyed by id. |
+| **Web Boxs** | `src/webs/apex/web-boxs.js` | Declarative card-grid renderer. Receives `data[]` + `config` object. Config files live in `src/sections/<domain>/`. |
+| **Micro Services** | `src/webs/<domain>/svc-*.js` | Self-contained Lit custom elements. Each reads/writes its own conductor section and dispatches events through Shadow DOM. |
+
+### Conductor — Data Hub
+
+Conductor is a single nanostores atom shared across the entire application. It handles fetching data from APIs, caching results to IndexedDB with a customizable TTL, and automatic retries on network errors.
+
+### Web Boxs — Grid Renderer
+
+`web-boxs` is the main render engine. You pass in a `data` array and a `config` object describing how to render each card — number of columns, cells inside, styles, animations. The component handles the rest.
+
+### Micro Services — Domain Logic
+
+`svc-*.js` files encapsulate all business logic for a feature: fetching data through conductor, listening for user events, updating the store, and triggering re-renders. Each micro service is fully self-contained.
+
+## Tech Stack
+
+| Library | Version | Purpose |
+|---|---|---|
+| Astro | 6.x | Static site generation, page routing |
+| Lit | 3.x | Web Components with reactive properties |
+| Tailwind CSS | 4.x | Utility CSS, CSS variables-based |
+| ApexUI | 5.x | Theme system (dark/light and custom themes) |
+| nanostores | latest | Lightweight reactive state management |
+| IndexedDB | Web API | Client-side cache with TTL |
+
+## Next Steps
+
+Continue to [Quick Start](/docs/en/quickstart) to install and run the project in minutes.

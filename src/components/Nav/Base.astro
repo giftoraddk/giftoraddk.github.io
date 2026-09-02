@@ -1,0 +1,62 @@
+---
+import NavTop from './Top.astro';
+import NavBottom from './Bottom.astro';
+import NavSide from './Side.astro';
+import NavMobile from './Mobile.astro';
+import Menu from './Action/Menu.astro';
+
+const { 
+  type = 'top', 
+  items = [], 
+  position = 'default', // default, prefix, suffix
+  menuClass = '-mx-3',
+  open = false,
+  isMenu = false, // true = menu dropdown, false = menu dialog
+  ...rest 
+} = Astro.props;
+---
+
+{/* Mobile: Show NavMobile on all screens if type === 'mobile', otherwise hide it on large screens */}
+<NavMobile items={items} isMenu={isMenu} {...rest} class={`${type === 'mobile' ? '' : 'lg:hidden'} ${rest.class || ''}`}>
+  <slot name="actions" slot="actions" />
+</NavMobile>
+
+{/* Desktop: Show NavTop, NavBottom or NavSide based on type, hidden on small screens */}
+{
+  type === 'top' && (
+    <NavTop {...rest} class={`hidden lg:block ${rest.class || ''}`}>
+      {position === 'default' ? (
+        <Menu open={open} horizontal items={items} class={menuClass} />
+      ) : (
+        <Menu open={open} slot={position} horizontal items={items} class={menuClass} />
+      )}
+      <slot name="prefix" slot="prefix" />
+      <slot name="suffix" slot="suffix" />
+    </NavTop>
+  )
+}
+{
+  type === 'bottom' && (
+    <NavBottom {...rest} class={`hidden lg:block ${rest.class || ''}`}>
+      {position === 'default' ? (
+        <Menu open={open} horizontal items={items} class={`${menuClass} menu-bottom`} />
+      ) : (
+        <Menu open={open} slot={position} horizontal items={items} class={`${menuClass} menu-bottom`} />
+      )}
+      <slot name="prefix" slot="prefix" />
+      <slot name="suffix" slot="suffix" />
+    </NavBottom>
+  )
+}
+{
+  type === 'side' && (
+    <NavSide {...rest} class={`hidden lg:flex ${rest.class || ''}`}>
+      {Astro.slots.has('menu')
+        ? <slot name="menu" />
+        : <Menu open={open} items={items} class={menuClass} />
+      }
+      <slot name="prefix" slot="prefix" />
+      <slot name="suffix" slot="suffix" />
+    </NavSide>
+  )
+}

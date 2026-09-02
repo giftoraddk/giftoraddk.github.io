@@ -1,0 +1,39 @@
+---
+import Core from '@/layouts/Core.astro';
+import PostTagBody from '@/components/Post/TagBody.astro';
+import { fetchCollection } from '@/services/firestore.server.ts';
+import { postSlug, tagSlugMap, pickLang } from '@/services/helper.js';
+import { site } from '@/services/constants/site.js';
+import { menuItems, policies, socials } from '@/modules/landing/home.js';
+
+// Trang danh mục bài viết theo tag — biến thể SSG (mặc định), song song với
+// src/pages/product/tag/[tag].astro. Nội dung thật nằm trong PostTagBody.astro (dùng chung với
+// biến thể ISR ở src/pages/post/tag/_render-modes/[tag].isr.astro).
+
+export async function getStaticPaths() {
+	const posts = await fetchCollection('posts');
+	const tagMap = tagSlugMap(posts);
+
+	return [...tagMap.entries()].map(([slug, { label, items }]) => ({
+		params: { tag: slug },
+		props: {
+			tag: label,
+			posts: items.map((p: any) => ({ ...p, meta: { ...(p.meta ?? {}), url: `/post/${postSlug(p)}/` } })),
+		},
+	}));
+}
+
+const { tag, posts } = Astro.props as { tag: string; posts: any[] };
+const tagSlug = Astro.params.tag as string;
+
+const pageTitle = `${pickLang({ en: 'Post', vi: 'Bài viết' })} ${tag}`;
+const pageDescription = pickLang({
+	en: `Explore posts in the "${tag}" category on ${site.subtitle}.`,
+	vi: `Khám phá các bài viết thuộc danh mục "${tag}" tại ${site.subtitle}.`,
+});
+const bg = { blur: true, gradient: true, tint: '#00c7d4', total: 3, blobType: 'circleOverlap', blobMove: 'swap', deg: 180 };
+---
+
+<Core title={pageTitle} description={pageDescription} footer={{ columns: menuItems, policies, socials, bg }}>
+	<PostTagBody tag={tag} tagSlug={tagSlug} posts={posts} />
+</Core>

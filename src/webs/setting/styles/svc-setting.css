@@ -1,0 +1,11 @@
+:host {
+    display: block;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+/* FAB + dialog phải nhận click dù :host tắt pointer-events cho lớp web-bg bên dưới */
+web-setting {
+    pointer-events: auto;
+}

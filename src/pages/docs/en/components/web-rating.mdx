@@ -1,0 +1,77 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-rating'
+description: 'Star rating display and interactive input with configurable max, size, and color'
+---
+
+# web-rating
+
+Displays a star rating. Can be read-only (display only) or interactive (user can click to set a value). Fires an event when the rating changes.
+
+## When to use
+
+- Display average product or review ratings
+- Collect user satisfaction ratings in feedback forms
+- Show a user's personal rating alongside a review
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-rating.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `value` | number | `0` | Current rating value (0 to `max`) |
+| `max` | number | `5` | Maximum number of stars |
+| `readonly` | boolean | `false` | Disable user interaction |
+| `size` | string | `'md'` | Star size: `xs` \| `sm` \| `md` \| `lg` \| `xl` |
+| `color` | string | `'warning'` | ApexUI color for filled stars |
+| `half` | boolean | `false` | Allow half-star increments |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+
+## Basic Example
+
+```html
+<!-- Read-only display rating -->
+<web-rating value="4" max="5" readonly></web-rating>
+
+<!-- Interactive rating input -->
+<web-rating value="0" max="5" id="user-rating"></web-rating>
+
+<script type="module" src="/src/webs/apex/web-rating.js"></script>
+```
+
+## Advanced Examples
+
+Product card with average rating display:
+
+```html
+<div style="display: flex; align-items: center; gap: 0.5rem;">
+  <web-rating value="4.5" max="5" readonly half color="warning" size="sm"></web-rating>
+  <span style="font-size: 0.875rem; color: var(--color-base-content);">4.5 (128 reviews)</span>
+</div>
+```
+
+Feedback form with event handler:
+
+```html
+<label>How would you rate your experience?</label>
+<web-rating value="0" max="5" size="lg" id="feedback-rating"></web-rating>
+<p id="rating-text" style="font-size: 0.875rem;"></p>
+
+<script>
+  const labels = ['', 'Poor', 'Fair', 'Good', 'Very good', 'Excellent'];
+  document.getElementById('feedback-rating').addEventListener('web-rating-change', e => {
+    document.getElementById('rating-text').textContent = labels[e.detail.value] ?? '';
+  });
+</script>
+```
+
+## Events
+
+| Event | When | Detail |
+|---|---|---|
+| `web-rating-change` | User clicks a star | `{ value: number, max: number }` |

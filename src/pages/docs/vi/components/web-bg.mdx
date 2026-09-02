@@ -1,0 +1,78 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-bg'
+description: 'Background động với các hiệu ứng gradient, pattern và animation'
+---
+
+# web-bg
+
+Component background trang trí với nhiều kiểu shape, gradient, pattern và animation. Thường dùng làm nền cho các section hoặc hero block.
+
+## Khi nào dùng
+
+- Tạo nền động cho hero section hoặc landing page
+- Thêm chiều sâu thị giác cho các card hoặc panel với glassmorphism (spatial)
+- Kết hợp pattern và gradient để làm nền đa dạng mà không cần ảnh
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-bg.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `type` | string | `'circle'` | Kiểu shape: `circle` \| `square` \| `blob` \| `circleOverlap` \| `mesh` \| `noise` \| `wave` |
+| `gradient` | boolean | `false` | Bật gradient overlay |
+| `tint` | string | `''` | `gradient=true` → màu seed cho các shape gradient. `gradient=false` → sơn trực tiếp làm màu nền đặc. **Phải là CSS variable**, ví dụ `var(--color-primary)` |
+| `total` | number | `3` | Số lượng shape được tạo |
+| `move` | string | `''` | Kiểu animation: `swap` \| `float` \| `pulse` |
+| `pattern` | string | `''` | Pattern nền, ví dụ `dot~24` hoặc `grid~32` |
+| `deg` | number | `180` | Góc gradient (độ) |
+| `fixed` | boolean | `false` | Cố định vị trí (position: fixed) |
+| `rounded` | boolean | `false` | Bo góc các shape |
+| `spatial` | boolean | `false` | Bật hiệu ứng glassmorphism (backdrop blur) |
+| `pics` | string | `''` | Ảnh nền dạng `'linkLight\|linkDark'`, chọn theo theme hiện tại — chỉ truyền 1 link (không có `\|`) thì dùng chung cho cả 2 theme; để trống thì không hiển thị ảnh |
+
+> **Lưu ý màu sắc:** Prop `tint` phải dùng CSS variable từ hệ thống (ví dụ `var(--color-primary)`). Không hardcode giá trị hex hay rgb.
+
+## Ví dụ cơ bản
+
+```html
+<web-bg type="circleOverlap" tint="var(--color-primary)" total="3" move="float" deg="180"></web-bg>
+<web-bg type="mesh" gradient pattern="dot~24" spatial></web-bg>
+```
+
+## Ví dụ nâng cao
+
+Background với animation pulse và pattern grid:
+
+```html
+<div style="position:relative; height:400px; overflow:hidden;">
+  <web-bg
+    type="blob"
+    tint="var(--color-secondary)"
+    total="4"
+    move="pulse"
+    gradient
+    pattern="grid~32"
+    rounded
+  ></web-bg>
+  <div style="position:relative; z-index:1;">Nội dung bên trên</div>
+</div>
+```
+
+Background cố định toàn trang với glassmorphism:
+
+```html
+<web-bg
+  type="wave"
+  tint="var(--color-accent)"
+  move="float"
+  fixed
+  spatial
+  deg="135"
+></web-bg>
+```

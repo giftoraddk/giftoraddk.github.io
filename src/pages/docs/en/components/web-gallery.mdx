@@ -1,0 +1,77 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-gallery'
+description: 'Image gallery with single or multiple images, lightbox, and float animation'
+---
+
+# web-gallery
+
+Displays one image or a pipe-separated list of images. Supports lazy loading, rounded corners, and an optional float animation. Clicking an image opens it in a lightbox.
+
+## When to use
+
+- Product detail images or portfolio thumbnails
+- Blog post feature images or inline illustrations
+- Decorative images with subtle animation in hero sections
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-gallery.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `src` | string | `''` | Single image URL, or multiple URLs separated by `\|` |
+| `alt` | string | `''` | Alt text for the image(s) |
+| `loading` | string | `'lazy'` | Native loading hint: `lazy` \| `eager` |
+| `rounded` | boolean | `false` | Apply border-radius to images |
+| `float` | boolean | `false` | Apply subtle floating animation to the image |
+| `lightbox` | boolean | `true` | Enable click-to-expand lightbox |
+| `cols` | number | `3` | Number of columns when displaying multiple images |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+
+## Basic Example
+
+```html
+<!-- Single image -->
+<web-gallery src="/images/hero.jpg" alt="Hero image" rounded></web-gallery>
+
+<!-- Multiple images -->
+<web-gallery
+  src="/images/photo1.jpg|/images/photo2.jpg|/images/photo3.jpg"
+  alt="Gallery"
+  cols="3"
+  rounded
+></web-gallery>
+
+<script type="module" src="/src/webs/apex/web-gallery.js"></script>
+```
+
+## Advanced Examples
+
+Floating hero image with eager load:
+
+```html
+<web-gallery
+  src="/images/product-hero.jpg"
+  alt="Product hero"
+  loading="eager"
+  float
+  rounded
+></web-gallery>
+```
+
+6-image portfolio grid without lightbox:
+
+```html
+<web-gallery
+  src="/img/work1.jpg|/img/work2.jpg|/img/work3.jpg|/img/work4.jpg|/img/work5.jpg|/img/work6.jpg"
+  alt="Portfolio"
+  cols="3"
+  rounded
+  lightbox="false"
+></web-gallery>
+```

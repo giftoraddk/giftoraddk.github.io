@@ -1,0 +1,53 @@
+---
+import Core from '@/layouts/Core.astro';
+import { variant, views, menuItems } from '@/modules/landing/channel.js';
+import { socials } from '@/modules/landing/home.js';
+
+const currentView = views.find(v => v.href === '/channel/home') ?? views[0];
+
+const bg = { blur: true, gradient: true, tint: "#2dd4bf", total: 3, blobType: "circleOverlap", blobMove: 'swap', deg: 180}
+---
+
+<Core
+	title="Kênh — Gian hàng bán hàng không cần máy chủ trung gian"
+	description="Tạo gian hàng bán hàng, trò chuyện công khai/riêng tư, gọi video trực tiếp — kết nối thẳng giữa bạn và khách hàng, không cần máy chủ trung gian, không giới hạn số khách."
+	menu={{ type: 'top', position: 'prefix', menuItems: menuItems }}
+	footer={{ columns: menuItems, socials, bg }}
+	bg={variant.bg}
+	theme={variant.theme}
+	variant={variant}
+>
+	<script src='@/webs/apex/web-board.js'></script>
+	<div>
+		<web-board
+			unlock={import.meta.env.PUBLIC_EXP}
+			variant={JSON.stringify(variant)}
+		><script type="application/json" is:inline set:html={JSON.stringify(currentView.sections)}></script></web-board>
+	</div>
+
+	<script>
+		// CTA của trang /channel/home — web-cell chỉ phát 'cell-action' kèm value = text
+		// của nút vừa bấm (xem web-cell.js _onClickedBound), nên khớp theo đúng label đã
+		// khai báo trong landing-channel.js để điều hướng/cuộn tới section tương ứng.
+		// Cuộn qua #main-wrap (vùng scroll thật, xem Core.astro — <html> có overflow-hidden)
+		// thay vì scrollIntoView() mặc định (nhắm nhầm window nên không cuộn được).
+		function scrollToSection(id) {
+			const el = document.getElementById(id);
+			if (!el) return;
+			const container = document.getElementById('main-wrap') ?? document.documentElement;
+			const top = el.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop;
+			container.scrollTo({ top, behavior: 'smooth' });
+		}
+
+		document.addEventListener('cell-action', (e) => {
+			const value = e.detail?.value;
+			if (value === 'Tạo gian hàng miễn phí') {
+				window.location.href = '/channel';
+			} else if (value === 'Xem quy trình hoạt động') {
+				scrollToSection('processModernStepTimeline');
+			} else if (value === 'Xem lại tính năng') {
+				scrollToSection('featuresSpatialCardWebApex');
+			}
+		});
+	</script>
+</Core>

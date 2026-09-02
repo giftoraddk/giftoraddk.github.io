@@ -1,0 +1,210 @@
+---
+layout: '../../../layouts/LayoutDoc.astro'
+title: 'Design Guide'
+description: 'Quy trình phân tích mockup và xây dựng baseConfig từ thiết kế'
+---
+
+# Design Guide
+
+<div class="doc-intro">
+  <p>Từ mockup đến config object trong 5 bước — quy trình có hệ thống để chuyển đổi bất kỳ thiết kế UI nào thành <code>baseConfig</code> hợp lệ.</p>
+</div>
+
+## Bước 1 — Phân tích layout
+
+Trước khi viết bất kỳ dòng config nào, hãy nhìn vào mockup và tự hỏi **3 câu hỏi**:
+
+**Câu hỏi 1: Có bao nhiêu cột?**
+Đếm số card/item nằm ngang ở desktop. Đây là giá trị `lg` trong `tiers`.
+
+**Câu hỏi 2: Các cột chiếm bao nhiêu phần trăm?**
+- Cột đều nhau → `tiers` với số nguyên (`{ lg: 3 }` = 3 cột đều)
+- Cột không đều → dùng `groupStyle` với `grid-template-columns`
+
+**Câu hỏi 3: Các row items có layout như nhau không?**
+- Tất cả giống nhau → một `makes` array duy nhất
+- Có item đặc biệt (featured) → cần `groups` để phân nhóm
+
+## Bước 2 — Chọn render mode
+
+| Mockup trông như thế nào | Render mode |
+|---|---|
+| Grid cards đồng đều | `box` (mặc định) |
+| Danh sách dọc mỗi row 1 item | `list` |
+| Grid nhiều chiều cao khác nhau | `masonry` |
+| Arrows trái/phải, dots bên dưới | `slider` |
+| Tabs bên trên, click đổi content | `tabs` |
+| Numbered steps theo thứ tự | `steps` |
+| Accordion expand/collapse | `expansion` |
+
+## Bước 3 — Xác định `tiers`
+
+`tiers` định nghĩa số cột ở mỗi breakpoint Tailwind:
+
+```js
+// Dạng Object (breakpoint keys)
+tiers: {
+  base: 1,   // mobile (default)
+  sm: 2,     // >= 640px
+  md: 2,     // >= 768px
+  lg: 3,     // >= 1024px
+  xl: 4,     // >= 1280px
+  '2xl': 4,  // >= 1536px
+}
+
+// Dạng Array (shorthand: [mobile, tablet, desktop])
+tiers: [1, 2, 3]
+// tương đương: { base: 1, md: 2, lg: 3 }
+```
+
+**Ví dụ thực tế:**
+
+| Loại trang | `tiers` phù hợp |
+|---|---|
+| Blog posts | `{ base: 1, md: 2, lg: 3 }` |
+| Product grid | `{ base: 1, sm: 2, lg: 3, xl: 4 }` |
+| Feature highlights | `{ base: 1, lg: 3 }` |
+| Hero cards | `{ base: 1, lg: 2 }` |
+| Team members | `{ base: 2, md: 3, lg: 4 }` |
+
+## Bước 4 — Xây dựng `makes`
+
+`makes` là mảng các cells trong mỗi card. Mỗi cell có 3 thuộc tính chính:
+
+```js
+makes: [
+  {
+    opt: 'img',           // loại cell — xem bảng bên dưới
+    val: 'thumbnail',     // key trong data OR giá trị tĩnh
+    stys: 'aspect-video',  // Tailwind classes hoặc CSS inline
+  },
+]
+```
+
+### Chọn `opt` phù hợp
+
+| `opt` | Khi nào dùng | Ví dụ `val` |
+|---|---|---|
+| `img` | Ảnh sản phẩm, avatar, thumbnail | `'image'`, `'photo'` |
+| `text` | Tiêu đề, mô tả, thông tin | `'name'`, `'description'` |
+| `badge` | Trạng thái, label, category | `'status'`, `'Mới'` |
+| `price` | Giá tiền (auto format) | `'price'`, `'salePrice'` |
+| `btn` | Nút hành động | `'Thêm vào giỏ'` (tĩnh) |
+| `rate` | Đánh giá sao | `'rating'` |
+| `tag` | Danh sách tags | `'tags'` (array) |
+| `action` | Nút kết nối conductor | `'add-to-cart'` |
+
+### Quy tắc `val`
+
+- **Key trong data**: `val: 'name'` → render `item.name`
+- **Giá trị tĩnh**: `val: 'Mua ngay'` → render text cố định
+- **Nested key**: `val: 'meta.author'` → render `item.meta.author`
+
+## Bước 5 — Quy tắc màu (bắt buộc)
+
+> **KHÔNG hardcode hex/rgb.** CHỈ dùng `var(--color-*)`.
+
+```js
+// SAI
+{ opt: 'text', val: 'price', stys: 'color: #ef4444; font-weight: bold;' }
+{ opt: 'btn',  val: 'Mua',  stys: 'background: #3b82f6;' }
+
+// ĐÚNG
+{ opt: 'text', val: 'price', stys: 'text-primary font-bold' }
+{ opt: 'btn',  val: 'Mua',  stys: 'btn-primary' }
+
+// ĐÚNG — khi cần inline CSS
+{ opt: 'text', val: 'price', stys: 'color: var(--color-primary); font-weight: 700;' }
+```
+
+## Ví dụ hoàn chỉnh: Product card
+
+Mockup: grid 4 cột (desktop), 2 cột (tablet), 1 cột (mobile). Mỗi card có: ảnh, badge sale, tên, mô tả ngắn, rating, giá, và nút mua.
+
+```js
+// src/sections/shop/product-card.config.js
+export const productCardConfig = {
+  // Bước 3: tiers từ mockup
+  tiers: { base: 1, sm: 2, lg: 3, xl: 4 },
+
+  // Bước 4: makes từ mockup
+  makes: [
+    // Ảnh sản phẩm — aspect ratio vuông
+    {
+      opt: 'img',
+      val: 'image',
+      stys: 'w-full aspect-square object-cover rounded-lg',
+    },
+    // Badge — chỉ hiện nếu có
+    {
+      opt: 'badge',
+      val: 'badge',
+      stys: 'badge-error text-xs font-semibold',
+    },
+    // Tên sản phẩm
+    {
+      opt: 'text',
+      val: 'name',
+      stys: 'font-semibold text-base leading-tight line-clamp-2 mt-2',
+    },
+    // Mô tả ngắn
+    {
+      opt: 'text',
+      val: 'description',
+      stys: 'text-sm line-clamp-2',
+    },
+    // Đánh giá
+    {
+      opt: 'rate',
+      val: 'rating',
+    },
+    // Giá
+    {
+      opt: 'price',
+      val: 'price',
+      stys: 'text-xl font-bold',
+    },
+    // Nút mua
+    {
+      opt: 'btn',
+      val: 'Thêm vào giỏ',
+      stys: 'btn-primary btn-sm w-full mt-3',
+    },
+  ],
+
+  // Groups — padding và gap cho cards
+  groups: {
+    gap: '1.25rem',
+    padding: '1rem',
+    radius: '0.75rem',
+    shadow: true,
+  },
+};
+```
+
+```astro
+---
+import { productCardConfig } from '@/sections/shop/product-card.config.js';
+---
+
+<web-boxs
+  dataApi="/api/products.json"
+  config={JSON.stringify(productCardConfig)}
+  ui="modern"
+  anime="fade-up"
+></web-boxs>
+```
+
+## Checklist trước khi submit config
+
+- [ ] Không có hex/rgb nào trong config
+- [ ] `tiers` bao gồm cả breakpoint mobile (`base`)
+- [ ] Mỗi cell có `opt` hợp lệ
+- [ ] `val` là key đúng trong data schema
+- [ ] `sty` chỉ dùng Tailwind classes hoặc `var(--color-*)`
+
+## Tiếp theo
+
+- [Section Config](/docs/vi/section-config) — tổ chức config files trong `src/sections/`
+- [Web Boxs](/docs/vi/web-boxs) — danh sách đầy đủ các `opt` values
+- [Theming](/docs/vi/theming) — CSS variables có sẵn

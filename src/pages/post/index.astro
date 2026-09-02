@@ -1,0 +1,244 @@
+---
+import Core from '@/layouts/Core.astro';
+import { config } from '@/sections/another/_cardPost.js';
+import { config as configNews } from '@/sections/another/_slideNews.js';
+import { fetchCollection } from '@/services/firestore.server.ts';
+import { postSlug } from '@/services/helper.js';
+import { menuItems, policies, socials } from '@/modules/landing/home.js';
+
+const pageTitle = 'Danh sách bài viết';
+const pageDescription = 'Khám phá các bài viết và khoảnh khắc mới nhất';
+
+// true  → mỗi lần search/filter gọi thẳng lên /api/posts.json (server xử lý lọc + sắp xếp)
+// false → filter client-side trên data đã embed sẵn trong HTML (default, SEO-friendly)
+const serverExecutor = true;
+
+// Fetch posts server-side — data embed vào HTML → SEO-friendly
+// meta.url được inject để _cardPost có thể tạo link /post/{slug} (từ khoá, xem postSlug)
+const posts = (await fetchCollection('posts')).map((p) => ({
+	...p,
+	meta: { ...(p.meta ?? {}), url: `/post/${postSlug(p)}/` },
+}));
+
+const topViewed = [...posts]
+	.sort((a, b) => parseInt(b?.meta?.views ?? '0', 10) - parseInt(a?.meta?.views ?? '0', 10))
+	.slice(0, 5);
+
+const sortOptions = [
+	{ label: 'Mới nhất', value: 'newest' },
+	{ label: 'Nhiều xem nhất', value: 'views' },
+	{ label: 'Nhiều like nhất', value: 'likes' },
+];
+
+const bg = { blur: true, gradient: true, tint: '#00c7d4', total: 3, blobType: 'circleOverlap', blobMove: 'swap', deg: 180 };
+const desStys = {
+	maxWidth: 'fit-content',
+  margin: '0 auto',
+  padding: '0 0.5rem',
+	borderRadius: '2rem',
+	border: '1px solid color-mix(in oklab, var(--color-base-content) 10%, transparent)',
+	background: 'color-mix(in oklab, var(--color-primary) 5%, transparent)',
+	fontSize: 'clamp(0.7rem, 0.9vw, 0.8rem)',
+  marginBottom: "0.5rem"
+};
+---
+
+<Core title={pageTitle} description={pageDescription} footer={{ columns: menuItems, policies, socials, bg }}>
+
+	<div class='mx-auto max-w-6xl px-4 py-8'>
+    <!-- Top 5 xem nhiều nhất -->
+    {topViewed.length > 0 && (
+      <div class="mb-8">  
+        <web-boxs data={JSON.stringify(topViewed)} config={JSON.stringify(configNews)} lang='vi' ui='modern'></web-boxs>
+      </div>
+    )}
+
+		<script src='@/webs/apex/web-letters.js'></script>
+		<web-letters content={pageDescription} prefix='✦' stys={JSON.stringify(desStys)}></web-letters>
+
+		<h1 class='text-4xl lg:text-5xl font-bold mb-6 text-center'>{pageTitle}</h1>
+
+		<!-- Search + sort bar -->
+		<div class='flex flex-col sm:flex-row gap-3 mb-6'>
+			<web-text id='post-search' placeholder='Tìm kiếm bài viết...' clearable ui='modern' style='flex:1'></web-text>
+			<div style='width:200px'>
+				<web-select id='post-sort' options={JSON.stringify(sortOptions)} lang='vi' ui='modern'></web-select>
+			</div>
+		</div>
+
+		<!-- Static list — crawlable không cần JS -->
+		<ul class='sr-only' aria-hidden='true'>
+			{
+				posts.map((p: any) => (
+					<li>
+						<h2>
+							<a href={p.meta.url}>{p.title}</a>
+						</h2>
+						{p.content && <p>{p.content.replace(/<[^>]*>/g, '').slice(0, 120)}</p>}
+						{p.meta?.location && <span>{p.meta.location}</span>}
+					</li>
+				))
+			}
+		</ul>
+
+		<!-- Masonry UI — data embed trong HTML (SEO-friendly) -->
+		<web-boxs id='post-boxs' data={JSON.stringify(posts)} config={JSON.stringify(config)} masonry lang='vi' ui='modern'></web-boxs>
+
+		<!-- Infinite scroll sentinel -->
+		<div id='scroll-sentinel' style='height:1px'></div>
+		<div id='scroll-loader' class='py-6 text-center text-sm opacity-40' style='display:none'>Đang tải thêm...</div>
+	</div>
+
+	<!-- Truyền data server-side xuống module script qua global -->
+	<script is:inline define:vars={{ posts, serverExecutor }}>
+		window.__postPage = { posts, serverExecutor };
+	</script>
+
+	<script>
+		// @ts-nocheck
+		import '@/webs/apex/web-boxs.js';
+		import '@/webs/apex/web-text.js';
+		import '@/webs/apex/web-select.js';
+		import { all as conductorAll, get as conductorGet } from '@/services/conductor.js';
+		import { postSlug } from '@/services/helper.js';
+
+		const { posts: allPosts, serverExecutor } = window.__postPage;
+
+		const boxs = document.getElementById('post-boxs');
+		const searchEl = document.getElementById('post-search');
+		const sortEl = document.getElementById('post-sort');
+
+		let currentSort = 'newest';
+		let currentSearch = '';
+		let busy = false;
+
+		// ── Helpers ─────────────────────────────────────────────────────────────
+
+		function getNum(p, field) {
+			return parseInt(p?.meta?.[field] ?? '0', 10) || 0;
+		}
+
+		function applySort(arr) {
+			const list = [...arr];
+			if (currentSort === 'views') {
+				list.sort((a, b) => getNum(b, 'views') - getNum(a, 'views'));
+			} else if (currentSort === 'likes') {
+				list.sort((a, b) => getNum(b, 'likes') - getNum(a, 'likes'));
+			} else {
+				list.sort((a, b) => {
+					const ta = new Date(a.created_at ?? a.createdAt ?? 0).getTime();
+					const tb = new Date(b.created_at ?? b.createdAt ?? 0).getTime();
+					return tb - ta;
+				});
+			}
+			return list;
+		}
+
+		// ── Firebase executor (serverExecutor = true) ───────────────────────────
+		// Routed through conductor — state check skips re-fetch on every keystroke,
+		// IndexedDB cache survives across page loads.
+		// data.js auto-filter deleted_at; ta filter thêm status + inject meta.url.
+
+		async function getFirebaseData() {
+			await conductorAll('posts', { dataTable: 'posts' });
+			const raw = conductorGet('posts')?.data ?? [];
+			return raw
+				.filter((p) => p.status === 'active')
+				.map((p) => ({
+					...p,
+					meta: { ...(p.meta ?? {}), url: `/post/${postSlug(p)}/` },
+				}));
+		}
+
+		// ── Pagination ──────────────────────────────────────────────────────────
+
+		const PAGE_SIZE = 12;
+		let _sorted = [];
+		let _page = 0;
+		const sentinel = document.getElementById('scroll-sentinel');
+		const loader = document.getElementById('scroll-loader');
+
+		function renderPage() {
+			const start = _page * PAGE_SIZE;
+			const slice = _sorted.slice(0, start + PAGE_SIZE);
+			boxs.data = slice;
+			boxs.search = currentSearch;
+			_page++;
+			const done = _page * PAGE_SIZE >= _sorted.length;
+			sentinel.style.display = done ? 'none' : 'block';
+			loader.style.display = 'none';
+		}
+
+		function resetPagination(sorted) {
+			_sorted = sorted;
+			_page = 0;
+			renderPage();
+		}
+
+		// ── IntersectionObserver ─────────────────────────────────────────────────
+
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (!entries[0].isIntersecting) return;
+				if (_page * PAGE_SIZE >= _sorted.length) return;
+				loader.style.display = 'block';
+				setTimeout(renderPage, 150);
+			},
+			{ rootMargin: '200px' }
+		);
+		observer.observe(sentinel);
+
+		// ── Update web-boxs ─────────────────────────────────────────────────────
+
+		async function update() {
+			if (busy) return;
+			busy = true;
+
+			let source;
+			if (serverExecutor) {
+				boxs.loader = 1;
+				try {
+					source = await getFirebaseData();
+				} catch {
+					source = allPosts;
+				} finally {
+					boxs.loader = 0;
+				}
+			} else {
+				source = allPosts;
+			}
+
+			resetPagination(applySort(source));
+			busy = false;
+		}
+
+		// ── Event listeners ─────────────────────────────────────────────────────
+
+		let debounce;
+		searchEl.addEventListener('input', (e) => {
+			if (!(e instanceof CustomEvent)) return;
+			clearTimeout(debounce);
+			debounce = setTimeout(() => {
+				currentSearch = e.detail?.value ?? '';
+				update();
+			}, 200);
+		});
+
+		searchEl.addEventListener('clear', () => {
+			currentSearch = '';
+			update();
+		});
+
+		sortEl.addEventListener('change', (e) => {
+			currentSort = e.detail?.value ?? 'newest';
+			update();
+		});
+
+		// ── Init ────────────────────────────────────────────────────────────────
+
+		Promise.all([customElements.whenDefined('web-boxs'), customElements.whenDefined('web-select')]).then(() => {
+			sortEl.value = 'newest';
+			update();
+		});
+	</script>
+</Core>

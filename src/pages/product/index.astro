@@ -1,0 +1,252 @@
+---
+import Core from '@/layouts/Core.astro';
+import { config } from '@/sections/another/_cardProductSeo.js';
+import { fetchCollection } from '@/services/firestore.server.ts';
+import { toPrice, productSlug } from '@/services/helper.js';
+import { menuItems, policies, socials } from '@/modules/landing/home.js';
+
+// Trang catalog CRAWLABLE cho products — song song với /shop (cart UI 100% client-side, xem
+// docs/geo-platform-plan.md §B0). Cùng khung với src/pages/post/index.astro: fetch build-time,
+// bake data thật vào HTML (SEO/GEO), rồi client script "làm giàu" bằng search/sort/infinite-scroll.
+// KHÔNG có add-to-cart ở đây — trang này chỉ để crawl/đọc, mua hàng vẫn qua /shop.
+
+const pageTitle = 'Danh sách sản phẩm';
+const pageDescription = 'Khám phá toàn bộ sản phẩm';
+
+// true → search/sort gọi lại Firestore qua conductor (dữ liệu luôn mới nhất khi tương tác)
+// false → chỉ lọc trên data đã bake sẵn trong HTML (mặc định, SEO-friendly, xem post/index.astro)
+const serverExecutor = true;
+
+// meta.url được inject để _cardProductSeo.js tạo link /product/{slug} (từ khoá, xem productSlug)
+const products = (await fetchCollection('products')).map((p) => ({
+	...p,
+	meta: { ...(p.meta ?? {}), url: `/product/${productSlug(p)}/`, ctaLabel: 'Xem chi tiết' },
+}));
+
+const sortOptions = [
+	{ label: 'Mới nhất', value: 'newest' },
+	{ label: 'Giá tăng dần', value: 'price_asc' },
+	{ label: 'Giá giảm dần', value: 'price_desc' },
+	{ label: 'Đánh giá cao nhất', value: 'rating' },
+];
+
+const bg = { blur: true, gradient: true, tint: '#2ebd85', total: 3, blobType: 'circleOverlap', blobMove: 'swap', deg: 180 };
+const desStys = {
+	maxWidth: 'fit-content',
+	margin: '0 auto',
+	padding: '0 0.5rem',
+	borderRadius: '2rem',
+	border: '1px solid color-mix(in oklab, var(--color-base-content) 10%, transparent)',
+	background: 'color-mix(in oklab, var(--color-primary) 5%, transparent)',
+	fontSize: 'clamp(0.7rem, 0.9vw, 0.8rem)',
+	marginBottom: '0.5rem',
+};
+---
+
+<Core title={pageTitle} description={pageDescription} footer={{ columns: menuItems, policies, socials, bg }}>
+
+	<div class='mx-auto max-w-6xl px-4 py-8'>
+		<script src='@/webs/apex/web-letters.js'></script>
+		<div class='mb-8 text-center'>
+      <web-letters content={pageDescription} prefix='✦  ' stys={JSON.stringify(desStys)}></web-letters>
+    </div>
+
+		<h1 class='text-4xl lg:text-5xl font-bold mb-6 text-center'>{pageTitle}</h1>
+
+		<!-- Search + sort bar -->
+		<div class='flex flex-col sm:flex-row gap-3 mb-6'>
+			<web-text id='product-search' placeholder='Tìm kiếm sản phẩm...' clearable ui='modern' style='flex:1'></web-text>
+			<div style='width:200px'>
+				<web-select id='product-sort' options={JSON.stringify(sortOptions)} lang='vi' ui='modern'></web-select>
+			</div>
+		</div>
+
+		<!-- Static list — crawlable không cần JS -->
+		<ul class='sr-only' aria-hidden='true'>
+			{
+				products.map((p: any) => (
+					<li>
+						<h2>
+							<a href={p.meta.url}>{p.title}</a>
+						</h2>
+						{p.description && <p>{p.description}</p>}
+						{p.pricing && <span>{toPrice(p.pricing)}</span>}
+					</li>
+				))
+			}
+		</ul>
+
+		<!-- Masonry UI — data embed trong HTML (SEO-friendly) -->
+		<web-boxs id='product-boxs' data={JSON.stringify(products)} config={JSON.stringify(config)} masonry lang='vi' ui='modern'></web-boxs>
+
+		<!-- Infinite scroll sentinel -->
+		<div id='scroll-sentinel' style='height:1px'></div>
+		<div id='scroll-loader' class='py-6 text-center text-sm opacity-40' style='display:none'>Đang tải thêm...</div>
+
+		<div class='mt-14 pt-8 border-t border-base-content/10 flex flex-col items-center gap-4'>
+			<a href='/gift/shop' class='group inline-flex items-center gap-3 px-7 py-3 rounded-2xl font-semibold
+				border border-primary bg-base-content/5
+				hover:bg-primary/10 hover:border-primary/30 hover:text-primary
+				transition-all duration-200 backdrop-blur-sm'>
+				Đặt mua trên cửa hàng
+			</a>
+		</div>
+	</div>
+
+	<!-- Truyền data server-side xuống module script qua global -->
+	<script is:inline define:vars={{ products, serverExecutor }}>
+		window.__productPage = { products, serverExecutor };
+	</script>
+
+	<script>
+		// @ts-nocheck
+		import '@/webs/apex/web-boxs.js';
+		import '@/webs/apex/web-text.js';
+		import '@/webs/apex/web-select.js';
+		import { all as conductorAll, get as conductorGet } from '@/services/conductor.js';
+		import { productSlug } from '@/services/helper.js';
+
+		const { products: allProducts, serverExecutor } = window.__productPage;
+
+		const boxs = document.getElementById('product-boxs');
+		const searchEl = document.getElementById('product-search');
+		const sortEl = document.getElementById('product-sort');
+
+		let currentSort = 'newest';
+		let currentSearch = '';
+		let busy = false;
+
+		// ── Helpers ─────────────────────────────────────────────────────────────
+
+		function getPrice(p) {
+			return Number((p?.pricing || '').split('~')[0]) || 0;
+		}
+
+		function getScore(p) {
+			return Number((p?.score || '0~0').split('~')[0]) || 0;
+		}
+
+		function applySort(arr) {
+			const list = [...arr];
+			if (currentSort === 'price_asc') {
+				list.sort((a, b) => getPrice(a) - getPrice(b));
+			} else if (currentSort === 'price_desc') {
+				list.sort((a, b) => getPrice(b) - getPrice(a));
+			} else if (currentSort === 'rating') {
+				list.sort((a, b) => getScore(b) - getScore(a));
+			} else {
+				list.sort((a, b) => {
+					const ta = new Date(a.created_at ?? a.createdAt ?? 0).getTime();
+					const tb = new Date(b.created_at ?? b.createdAt ?? 0).getTime();
+					return tb - ta;
+				});
+			}
+			return list;
+		}
+
+		// ── Firebase executor (serverExecutor = true) ───────────────────────────
+		// Routed through conductor — cùng section 'products' mà /shop dùng, nên đã sẵn IndexedDB
+		// cache/TTL (docs/SERVICES.rst) — không tạo section riêng cho trang này.
+		async function getFirebaseData() {
+			await conductorAll('products', { dataTable: 'products' });
+			const raw = conductorGet('products')?.data ?? [];
+			return raw
+				.filter((p) => p.status === 'active')
+				.map((p) => ({
+					...p,
+					meta: { ...(p.meta ?? {}), url: `/product/${productSlug(p)}/`, ctaLabel: 'Xem chi tiết' },
+				}));
+		}
+
+		// ── Pagination ──────────────────────────────────────────────────────────
+
+		const PAGE_SIZE = 12;
+		let _sorted = [];
+		let _page = 0;
+		const sentinel = document.getElementById('scroll-sentinel');
+		const loader = document.getElementById('scroll-loader');
+
+		function renderPage() {
+			const start = _page * PAGE_SIZE;
+			const slice = _sorted.slice(0, start + PAGE_SIZE);
+			boxs.data = slice;
+			boxs.search = currentSearch;
+			_page++;
+			const done = _page * PAGE_SIZE >= _sorted.length;
+			sentinel.style.display = done ? 'none' : 'block';
+			loader.style.display = 'none';
+		}
+
+		function resetPagination(sorted) {
+			_sorted = sorted;
+			_page = 0;
+			renderPage();
+		}
+
+		// ── IntersectionObserver ─────────────────────────────────────────────────
+
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (!entries[0].isIntersecting) return;
+				if (_page * PAGE_SIZE >= _sorted.length) return;
+				loader.style.display = 'block';
+				setTimeout(renderPage, 150);
+			},
+			{ rootMargin: '200px' }
+		);
+		observer.observe(sentinel);
+
+		// ── Update web-boxs ─────────────────────────────────────────────────────
+
+		async function update() {
+			if (busy) return;
+			busy = true;
+
+			let source;
+			if (serverExecutor) {
+				boxs.loader = 1;
+				try {
+					source = await getFirebaseData();
+				} catch {
+					source = allProducts;
+				} finally {
+					boxs.loader = 0;
+				}
+			} else {
+				source = allProducts;
+			}
+
+			resetPagination(applySort(source));
+			busy = false;
+		}
+
+		// ── Event listeners ─────────────────────────────────────────────────────
+
+		let debounce;
+		searchEl.addEventListener('input', (e) => {
+			if (!(e instanceof CustomEvent)) return;
+			clearTimeout(debounce);
+			debounce = setTimeout(() => {
+				currentSearch = e.detail?.value ?? '';
+				update();
+			}, 200);
+		});
+
+		searchEl.addEventListener('clear', () => {
+			currentSearch = '';
+			update();
+		});
+
+		sortEl.addEventListener('change', (e) => {
+			currentSort = e.detail?.value ?? 'newest';
+			update();
+		});
+
+		// ── Init ────────────────────────────────────────────────────────────────
+
+		Promise.all([customElements.whenDefined('web-boxs'), customElements.whenDefined('web-select')]).then(() => {
+			sortEl.value = 'newest';
+			update();
+		});
+	</script>
+</Core>

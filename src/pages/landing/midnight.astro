@@ -1,0 +1,27 @@
+---
+import Core from '@/layouts/Core.astro';
+import { variant, views, menuItems, policies, socials } from '@/modules/landing/midnight.js';
+
+const currentView = views.find(v => v.href === '/landing/midnight/') ?? views[0];
+const navItems    = views.map(({ text, href, iconMobile }) => ({ text, href, iconMobile }));
+
+const bg = { blur: false, gradient: true, tint: '#ff2e63', total: 4, blobType: 'circleOverlap', blobMove: 'pulse', deg: 200 }
+---
+
+<Core
+	title="Midnight — Dark Neon Tech Landing"
+	menu={{ type: 'top', position: 'prefix', menuItems: navItems }}
+	footer={{ columns: menuItems, policies, socials, bg }}
+	bg={variant.bg}
+	theme={variant.theme}
+	variant={variant}
+>
+	<script src='@/webs/apex/web-board.js'></script>
+	<div>
+		<web-board
+			unlock={import.meta.env.PUBLIC_EXP}
+			variant={JSON.stringify(variant)}
+			draggable
+		><script type="application/json" is:inline set:html={JSON.stringify(currentView.sections)}></script></web-board>
+	</div>
+</Core>

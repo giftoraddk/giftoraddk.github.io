@@ -1,0 +1,275 @@
+/** Colors
+  --color-base-100 = '#141414'
+  --color-base-200 = 'increase dark(white)/light(black) 12% of base-100'
+  --color-base-300 = 'increase dark(white)/light(black) 18% of base-100'
+  --color-base-content = '#f3f4f6'
+  --color-primary = '#2ebd85'
+  --color-secondary = '#f5465c'
+  --color-accent = '#a855f7'
+  --color-info = '#00c7d4'
+  --color-warning = '#fbbf24'
+*/
+:host {
+	display: inline-block;
+	width: 100%;
+	position: relative;
+	font-family: inherit;
+	--core-height: var(--height-selector, 2.25rem);
+	--core-radius: var(--radius-selector, 0.5rem);
+	--core-blur: var(--haze-blur, 12px);
+	--core-glass: var(--haze-glass, 20%);
+	--core-font: var(--font-sans, 'system-ui');
+}
+
+.web-select {
+	position: relative;
+	width: 100%;
+	user-select: none;
+}
+
+.select-trigger {
+	font-family: var(--core-font);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	box-sizing: border-box;
+	height: var(--core-height);
+	padding: 0 16px;
+	background: var(--color-base-100, #0d0d0d);
+	border: 1px solid var(--color-base-300, #393939);
+	border-radius: var(--core-radius);
+	cursor: pointer;
+	color: var(--color-base-content, #ffffff);
+	font-size: 14px;
+	font-weight: 500;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.select-trigger:hover {
+	border-color: var(--color-primary, #2ebd85);
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.select-trigger.open {
+	border-color: var(--color-primary, #2ebd85);
+	box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary, #2ebd85) 15%, transparent);
+}
+
+.select-trigger.disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+
+/* slot="trigger" thay hẳn trigger mặc định (vd <web-button> icon) — nội dung slot tự lo giao
+   diện của nó (màu/border/hover riêng), .select-trigger chỉ còn nhiệm vụ bắt click mở/đóng
+   dropdown, không nên thêm box/màu/padding của riêng nó đè lên nữa. */
+.select-trigger.custom-trigger {
+	display: inline-flex;
+	width: auto;
+	height: auto;
+	padding: 0;
+	background: none;
+	border: none;
+	border-radius: 0;
+	box-shadow: none;
+}
+.select-trigger.custom-trigger:hover,
+.select-trigger.custom-trigger.open {
+	border: none;
+	box-shadow: none;
+}
+
+.selected-value {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.placeholder {
+	color: color-mix(in oklab, var(--color-base-content, #ffffff) 60%, transparent);
+}
+
+.chevron {
+	width: 18px;
+	height: 18px;
+	margin-left: 10px;
+	transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	opacity: 0.7;
+}
+
+.open .chevron {
+	transform: rotate(180deg);
+}
+
+.dropdown-menu {
+	font-family: var(--core-font);
+	box-sizing: border-box;
+	position: fixed;
+	/* Reset UA popover defaults (inset:0, margin:auto, padding, border) — top/left/width
+	   are computed and applied inline by _updateDropdownPosition(). */
+	inset: auto;
+	margin: 0;
+	padding: 0;
+	background: var(--color-base-100, #0d0d0d);
+	border: 1px solid var(--color-base-300, #393939);
+	border-radius: var(--core-radius);
+	box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 5px 15px rgba(0, 0, 0, 0.2);
+	z-index: 99;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+
+	/* Animation Properties */
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	transform: scale(0.92) translateY(10px);
+	transition:
+			opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+			transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+			visibility 0.4s;
+	will-change: transform, opacity;
+}
+
+.dropdown-menu.show {
+	visibility: visible;
+	pointer-events: auto;
+	opacity: 1;
+	transform: scale(1) translateY(0);
+}
+
+/* Popover elements start from display:none, so the entry transition above has no "from" frame
+   to interpolate from — @starting-style supplies one. Unsupported browsers just skip the intro
+   animation (still opens correctly via .show). */
+@starting-style {
+	.dropdown-menu.show {
+		opacity: 0;
+		transform: scale(0.92) translateY(10px);
+	}
+}
+
+.search-container {
+	padding: 10px;
+	border-bottom: 1px solid color-mix(in oklab, var(--color-base-300, #393939) var(--core-glass), transparent);
+}
+
+.search-input {
+	box-sizing: border-box;
+	width: 100%;
+	height: 32px;
+	background: color-mix(in oklab, var(--color-base-300, #393939) var(--core-glass), transparent);
+	border: 1px solid color-mix(in oklab, var(--color-base-300, #393939) var(--core-glass), transparent);
+	border-radius: 8px;
+	padding: 0 10px;
+	color: var(--color-base-content, #ffffff);
+	font-size: 13px;
+	outline: none;
+	transition: all 0.2s ease;
+}
+.search-input::placeholder {
+	color: var(--color-base-content, #ffffff);
+}
+
+.search-input:focus {
+	border-color: var(--color-primary, #2ebd85);
+	box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-primary, #2ebd85) 10%, transparent);
+}
+
+.options-list {
+	max-height: 280px;
+	overflow-y: auto;
+	padding: 6px 0;
+}
+
+.option-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 16px;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--color-base-content, #ffffff);
+	transition: all 0.2s ease;
+}
+
+.option-item:hover {
+	background: rgba(255, 255, 255, 0.05);
+	color: var(--color-primary, #2ebd85);
+}
+
+.option-item.selected {
+	background: color-mix(in oklab, var(--color-primary, #2ebd85) 15%, transparent);
+	color: var(--color-primary, #2ebd85);
+	font-weight: 600;
+}
+
+.checkmark {
+	width: 18px;
+	height: 18px;
+	color: var(--color-primary, #2ebd85);
+	visibility: hidden;
+}
+
+.option-item.selected .checkmark {
+	visibility: visible;
+}
+
+.no-results {
+	padding: 16px;
+	text-align: center;
+	color: color-mix(in oklab, var(--color-base-content, #ffffff) 60%, transparent);
+	font-size: 13px;
+	font-style: italic;
+}
+
+/* Scrollbar styling */
+.options-list::-webkit-scrollbar {
+	width: 6px;
+}
+
+.options-list::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.options-list::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.1);
+	border-radius: 3px;
+}
+
+.options-list::-webkit-scrollbar-thumb:hover {
+	background: rgba(255, 255, 255, 0.2);
+}
+
+/**
+ * ----------------------------------------
+ * Glassmorphism - spatial
+ * ----------------------------------------
+ */
+.spatial .select-trigger {
+	background: color-mix(in oklab, var(--color-base-300, #393939) var(--core-glass), transparent);
+	backdrop-filter: blur(var(--core-blur));
+	border: 1px solid #ffffff4d;
+}
+
+.spatial .select-trigger:hover {
+	background: rgba(255, 255, 255, 0.06);
+	border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Ghi đè box/kính spatial ở trên cho biến thể slot="trigger" — cùng lý do
+   .select-trigger.custom-trigger phía trên, chỉ khác nơi đặt (phải đứng sau + đặc hiệu hơn
+   ".spatial .select-trigger" để thắng). */
+.spatial .select-trigger.custom-trigger,
+.spatial .select-trigger.custom-trigger:hover {
+	background: none;
+	backdrop-filter: none;
+	border: none;
+}
+
+.spatial.dropdown-menu {
+	background: color-mix(in oklab, var(--color-base-100, #0d0d0d) 90%, transparent);
+  border: 1px solid #ffffff4d;
+}

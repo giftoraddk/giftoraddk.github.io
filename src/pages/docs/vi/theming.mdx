@@ -1,0 +1,169 @@
+---
+layout: '../../../layouts/LayoutDoc.astro'
+title: 'Theming'
+description: 'Hệ thống màu sắc CSS variables, dark/light mode và cách customize'
+---
+
+# Theming
+
+<div class="doc-intro">
+  <p>Toàn bộ hệ thống màu sắc đi qua CSS variables của ApexUI — dark/light mode, custom color props và quy tắc nghiêm ngặt về việc không hardcode màu.</p>
+</div>
+
+## ApexUI Theme System
+
+Astro Micro dùng ApexUI để quản lý theme qua thuộc tính `data-theme` trên thẻ `<html>`:
+
+```html
+<!-- Light mode -->
+<html data-theme="light">
+
+<!-- Dark mode -->
+<html data-theme="dark">
+
+<!-- Custom theme -->
+<html data-theme="cupcake">
+```
+
+Khi `data-theme` thay đổi, **tất cả CSS variables tự động cập nhật** — không cần viết lại bất kỳ style nào.
+
+## CSS Variables cốt lõi
+
+Các biến này được ApexUI định nghĩa và luôn có sẵn trong mọi theme:
+
+| Biến | Mô tả |
+|---|---|
+| `--color-primary` | Màu chủ đạo (nút, link, highlight) |
+| `--color-secondary` | Màu phụ |
+| `--color-accent` | Màu nhấn |
+| `--color-base-100` | Background chính (thường là trắng/tối) |
+| `--color-base-200` | Background phụ (hover states, cards) |
+| `--color-base-300` | Border color |
+| `--color-base-content` | Màu text chính |
+| `--color-info` | Màu thông báo (xanh lam) |
+| `--color-success` | Màu thành công (xanh lá) |
+| `--color-warning` | Màu cảnh báo (vàng) |
+| `--color-error` | Màu lỗi (đỏ) |
+
+## Prop `mainColors`
+
+Các Web Components nhận prop `mainColors` để override màu cụ thể cho component đó. Định dạng là 5 giá trị phân cách bởi dấu `|`:
+
+```html
+<web-boxs
+  mainColors="var(--color-primary)|var(--color-secondary)|var(--color-accent)|var(--color-info)|var(--color-success)"
+></web-boxs>
+```
+
+Bên trong component, các màu này được map vào:
+- `--color-primary` (màu 1)
+- `--color-primary-2` (màu 2)
+- `--color-primary-3` (màu 3)
+- `--color-primary-4` (màu 4)
+- `--color-primary-5` (màu 5)
+
+> **Quy tắc nghiêm ngặt**: Chỉ dùng `var(--color-*)` trong `mainColors` — không bao giờ truyền hex hoặc rgb trực tiếp.
+
+## Prop `textColor`
+
+```html
+<web-boxs
+  textColor="var(--color-base-content)"
+></web-boxs>
+```
+
+Prop này áp dụng CSS variable làm text color cho toàn bộ component, cho phép tùy chỉnh màu chữ của từng section riêng biệt. Nền trang trí dùng field `bg` (build bằng `getStyleOpts`, render qua `<web-bg>`) thay vì override màu nền phẳng.
+
+## Spatial UI — Glassmorphism
+
+Khi `ui="spatial"`, component thêm hiệu ứng glassmorphism qua `backdrop-filter`:
+
+```css
+/* Được áp dụng khi ui="spatial" */
+.spatial-layer {
+  backdrop-filter: blur(var(--core-blur));
+  background: color-mix(in oklab, var(--color-base-100) 60%, transparent);
+  border: 1px solid color-mix(in oklab, var(--color-base-300) 40%, transparent);
+}
+```
+
+```html
+<web-boxs ui="spatial" ...></web-boxs>
+```
+
+Biến `--core-blur` được định nghĩa trong `src/styles/themes/default.css` và có thể override theo theme.
+
+## Quy tắc màu nghiêm ngặt
+
+> **KHÔNG BAO GIỜ hardcode hex hoặc rgb** trong bất kỳ config, style prop, hay `makes` cell nào.
+
+```js
+// SAI — hardcode màu
+{ opt: 'btn', val: 'Mua ngay', stys: 'background: #3b82f6; color: #ffffff;' }
+
+// ĐÚNG — dùng CSS variables
+{ opt: 'btn', val: 'Mua ngay', stys: 'btn-primary' }
+
+// ĐÚNG — dùng var() nếu cần inline
+{ opt: 'text', val: 'name', stys: 'color: var(--color-primary); font-weight: 700;' }
+```
+
+Lý do: hardcode màu phá vỡ dark/light mode toggle và các custom themes.
+
+## Dark Mode Toggle
+
+Dark mode được lưu vào cookie `dark` để áp dụng **trước first paint**, tránh hiện tượng flash (FOUC):
+
+```js
+// Script được inject vào <head> — chạy trước khi render
+(function() {
+  const m = document.cookie.match(/(?:^|; )dark=([^;]*)/);
+  const t = m ? decodeURIComponent(m[1]) : null;
+  if (t) document.documentElement.setAttribute('data-theme', t);
+})();
+```
+
+Để toggle dark/light mode từ UI:
+
+```js
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  // Lưu vào cookie (expires 1 năm)
+  document.cookie = `dark=${next}; path=/; max-age=31536000; SameSite=Lax`;
+}
+```
+
+Trong Astro page transitions, theme được giữ nguyên giữa các trang:
+
+```js
+// LayoutDoc.astro — giữ theme qua navigation
+document.addEventListener('astro:before-swap', function(e) {
+  const theme = document.documentElement.getAttribute('data-theme');
+  if (theme) e.newDocument.documentElement.setAttribute('data-theme', theme);
+});
+```
+
+## Custom Theme
+
+Bạn có thể tạo custom ApexUI theme trong `src/styles/themes/`:
+
+```css
+/* src/styles/themes/brand.css */
+[data-theme="brand"] {
+  --color-primary: oklch(65% 0.22 260);
+  --color-secondary: oklch(75% 0.18 200);
+  --color-accent: oklch(80% 0.20 120);
+  --color-base-100: oklch(15% 0.02 260);
+  --color-base-200: oklch(20% 0.02 260);
+  --color-base-300: oklch(25% 0.02 260);
+  --color-base-content: oklch(95% 0.01 260);
+}
+```
+
+## Tiếp theo
+
+- [Hoạt ảnh](/docs/vi/animations) — anime classes và hiệu ứng chuyển động
+- [Design Guide](/docs/vi/design-guide) — quy tắc màu trong config
+- [Web Boxs](/docs/vi/web-boxs) — props `mainColors`, `textColor`

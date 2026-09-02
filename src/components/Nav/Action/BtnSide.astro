@@ -1,0 +1,62 @@
+---
+// BtnSide component for toggling sidebar
+---
+
+<button id='sidebar-toggle' class='btn btn-circle btn-ghost'>
+	<svg class='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+		<path
+			stroke-linecap='round'
+			stroke-linejoin='round'
+			stroke-width='2'
+			d='M4 6h16M4 12h16M4 18h16'>
+		</path>
+	</svg>
+</button>
+
+<script>
+	import { toggleSidebar, uiStore } from '@/stores/astroApp.ts';
+
+	const initBtnSide = () => {
+		const btn = document.getElementById('sidebar-toggle');
+		const sidebar = document.getElementById('sidebar');
+
+		if (!btn || !sidebar || btn.hasAttribute('data-initialized')) return;
+		btn.setAttribute('data-initialized', 'true');
+
+		// Sync UI with store state
+		const syncUI = (isOpen: boolean) => {
+			if (isOpen) {
+				sidebar.style.width = '240px';
+				sidebar.style.opacity = '1';
+				sidebar.style.visibility = 'visible';
+				sidebar.style.overflow = 'auto';
+			} else {
+				sidebar.style.width = '0px';
+				sidebar.style.opacity = '0';
+				sidebar.style.visibility = 'hidden';
+				sidebar.style.overflow = 'hidden';
+			}
+			btn.setAttribute('aria-expanded', String(isOpen));
+		};
+
+		// Subscribe to store changes
+		uiStore.subscribe((state) => syncUI(state.uiSidebar));
+
+		// Click handler to toggle sidebar
+		btn.addEventListener('click', (e) => {
+			e.preventDefault();
+			toggleSidebar();
+		});
+
+		// Initial sync
+		syncUI(uiStore.get().uiSidebar);
+	};
+
+	// Initialize on page load and navigation
+	document.addEventListener('astro:page-load', initBtnSide);
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initBtnSide);
+	} else {
+		initBtnSide();
+	}
+</script>

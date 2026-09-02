@@ -1,0 +1,104 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-text'
+description: 'Input text và Textarea cho nhập liệu văn bản'
+---
+
+# web-text
+
+Trang này bao gồm hai component nhập liệu văn bản: `web-text` cho nhập một dòng và `web-textarea` cho nhập nhiều dòng. Cả hai đều hỗ trợ nhãn, placeholder, thông báo lỗi và nhiều kiểu dữ liệu.
+
+## Khi nào dùng
+
+- Thu thập thông tin người dùng trong form: tên, email, mật khẩu, địa chỉ, v.v.
+- Nhập liệu có xác thực với thông báo lỗi nội tuyến
+- Ô nhập văn bản dài như mô tả, nhận xét hoặc ghi chú (dùng `web-textarea`)
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-text.js"></script>
+<script type="module" src="/src/webs/apex/web-textarea.js"></script>
+```
+
+## Props — web-text
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `label` | string | `''` | Nhãn hiển thị phía trên ô nhập |
+| `placeholder` | string | `''` | Text gợi ý khi ô nhập trống |
+| `value` | string | `''` | Giá trị hiện tại của ô nhập |
+| `type` | string | `'text'` | Kiểu input: `text` \| `email` \| `password` \| `number` \| `search` |
+| `disabled` | boolean | `false` | Vô hiệu hóa, không thể nhập |
+| `required` | boolean | `false` | Đánh dấu trường bắt buộc |
+| `error` | string | `''` | Thông báo lỗi hiển thị bên dưới ô nhập |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Props — web-textarea
+
+Bao gồm tất cả props của `web-text`, cộng thêm:
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `rows` | number | `3` | Số hàng hiển thị mặc định của textarea |
+
+## Ví dụ cơ bản
+
+```html
+<!-- Text input -->
+<web-text label="Email" type="email" placeholder="example@email.com" required></web-text>
+
+<!-- Password -->
+<web-text label="Mật khẩu" type="password" error="Mật khẩu tối thiểu 8 ký tự"></web-text>
+
+<!-- Textarea -->
+<web-textarea label="Mô tả" placeholder="Nhập mô tả..." rows="4"></web-textarea>
+```
+
+## Ví dụ nâng cao
+
+Form đăng ký đầy đủ:
+
+```html
+<form id="register-form">
+  <web-text id="name" label="Họ và tên" placeholder="Nguyễn Văn A" required></web-text>
+  <web-text id="email" label="Email" type="email" placeholder="email@example.com" required></web-text>
+  <web-text id="phone" label="Số điện thoại" type="number" placeholder="0901 234 567"></web-text>
+  <web-text id="password" label="Mật khẩu" type="password" required></web-text>
+  <web-textarea id="address" label="Địa chỉ" rows="3" placeholder="Số nhà, đường, phường, quận, thành phố..."></web-textarea>
+</form>
+```
+
+Xác thực động với thông báo lỗi:
+
+```html
+<web-text id="email-input" label="Email" type="email" placeholder="your@email.com"></web-text>
+
+<script>
+  const emailInput = document.getElementById('email-input');
+
+  emailInput.addEventListener('web-input-change', (e) => {
+    const val = e.detail.value;
+    const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+    emailInput.setAttribute('error', isValid ? '' : 'Địa chỉ email không hợp lệ');
+  });
+</script>
+```
+
+Ô tìm kiếm với giao diện spatial:
+
+```html
+<web-text type="search" placeholder="Tìm kiếm sản phẩm..." ui="spatial"></web-text>
+```
+
+## Sự kiện
+
+| Sự kiện | Khi nào | Chi tiết |
+|---------|---------|---------|
+| `web-input-change` | Người dùng nhập hoặc thay đổi nội dung | `{ value: string }` — giá trị hiện tại của ô nhập |
+
+```js
+document.querySelector('web-text').addEventListener('web-input-change', (e) => {
+  console.log('Giá trị mới:', e.detail.value);
+});
+```

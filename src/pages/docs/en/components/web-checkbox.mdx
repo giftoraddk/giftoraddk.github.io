@@ -1,0 +1,106 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-checkbox'
+description: 'Checkbox, radio group, and toggle form controls in one component family'
+---
+
+# web-checkbox
+
+A form control component covering three related patterns: standard checkbox, radio group (`web-radio`), and toggle switch (`web-toggle`). All share consistent theming and event conventions.
+
+## When to use
+
+- **Checkbox** — allow users to select one or more independent options
+- **Radio** (`web-radio`) — allow users to pick exactly one option from a group
+- **Toggle** (`web-toggle`) — represent a single boolean setting with an on/off switch
+
+## Loading
+
+```html
+<!-- Checkbox -->
+<script type="module" src="/src/webs/apex/web-checkbox.js"></script>
+
+<!-- Radio (standalone) -->
+<script type="module" src="/src/webs/apex/web-radio.js"></script>
+
+<!-- Toggle (standalone) -->
+<script type="module" src="/src/webs/apex/web-toggle.js"></script>
+```
+
+## web-checkbox Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `label` | string | `''` | Label text displayed next to the checkbox |
+| `checked` | boolean | `false` | Checked state |
+| `disabled` | boolean | `false` | Disable interaction |
+| `color` | string | `'primary'` | ApexUI color for the checked state |
+| `size` | string | `'md'` | Size: `xs` \| `sm` \| `md` \| `lg` |
+| `value` | string | `''` | Value submitted in a form |
+| `name` | string | `''` | Input name attribute |
+
+## web-radio Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `name` | string | `''` | Radio group name (same for all options in a group) |
+| `value` | string | `''` | This option's value |
+| `label` | string | `''` | Label text |
+| `checked` | boolean | `false` | Initially checked |
+| `disabled` | boolean | `false` | Disable this option |
+| `color` | string | `'primary'` | ApexUI color for the selected state |
+
+## web-toggle Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `label` | string | `''` | Label text |
+| `checked` | boolean | `false` | Toggle on/off state |
+| `disabled` | boolean | `false` | Disable interaction |
+| `color` | string | `'primary'` | ApexUI color when toggled on |
+| `size` | string | `'md'` | Size: `xs` \| `sm` \| `md` \| `lg` |
+
+## Basic Example
+
+```html
+<!-- Checkbox -->
+<web-checkbox label="Accept terms and conditions" name="terms"></web-checkbox>
+
+<!-- Radio group -->
+<web-radio name="plan" value="free"    label="Free"    checked></web-radio>
+<web-radio name="plan" value="pro"     label="Pro"></web-radio>
+<web-radio name="plan" value="enterprise" label="Enterprise"></web-radio>
+
+<!-- Toggle -->
+<web-toggle label="Enable notifications" checked></web-toggle>
+```
+
+## Advanced Examples
+
+Checkbox group with individual colors:
+
+```html
+<web-checkbox label="Receive email updates" color="primary" checked></web-checkbox>
+<web-checkbox label="Receive SMS updates"   color="secondary"></web-checkbox>
+<web-checkbox label="Share usage data"      color="accent" disabled></web-checkbox>
+```
+
+Toggle with change handler:
+
+```html
+<web-toggle label="Dark mode" id="dark-toggle"></web-toggle>
+
+<script>
+  document.getElementById('dark-toggle').addEventListener('web-toggle-change', e => {
+    document.documentElement.dataset.theme = e.detail.checked ? 'dark' : 'light';
+  });
+</script>
+```
+
+## Events
+
+| Event | Component | Detail |
+|---|---|---|
+| `web-checkbox-change` | web-checkbox | `{ checked: boolean, value: string }` |
+| `web-radio-change` | web-radio | `{ value: string, name: string }` |
+| `web-toggle-change` | web-toggle | `{ checked: boolean }` |

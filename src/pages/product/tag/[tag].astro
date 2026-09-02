@@ -1,0 +1,42 @@
+---
+import Core from '@/layouts/Core.astro';
+import ProductTagBody from '@/components/Product/TagBody.astro';
+import { fetchCollection } from '@/services/firestore.server.ts';
+import { productSlug, tagSlugMap, pickLang } from '@/services/helper.js';
+import { site } from '@/services/constants/site.js';
+import { menuItems, policies, socials } from '@/modules/landing/home.js';
+
+// Trang danh mục sản phẩm theo tag — biến thể SSG (mặc định). Nội dung thật nằm trong
+// ProductTagBody.astro (dùng chung với biến thể ISR ở
+// src/pages/product/tag/_render-modes/[tag].isr.astro, xem astro.config.mjs renderModeIntegration).
+// Tag thật có thể chứa dấu cách/gạch chéo/hoa-thường (vd "Valentine - 14/2") nên KHÔNG dùng thẳng
+// làm URL segment — dùng tagSlugMap() (services/helper.js) để slugify, y hệt cách
+// sitemap.xml.ts/llms.txt.ts tính URL này (tránh lệch nhau).
+
+export async function getStaticPaths() {
+	const products = await fetchCollection('products');
+	const tagMap = tagSlugMap(products);
+
+	return [...tagMap.entries()].map(([slug, { label, items }]) => ({
+		params: { tag: slug },
+		props: {
+			tag: label,
+			products: items.map((p: any) => ({ ...p, meta: { ...(p.meta ?? {}), url: `/product/${productSlug(p)}/`, ctaLabel: 'Xem chi tiết' } })),
+		},
+	}));
+}
+
+const { tag, products } = Astro.props as { tag: string; products: any[] };
+const tagSlug = Astro.params.tag as string;
+
+const pageTitle = `${pickLang({ en: 'Product', vi: 'Sản phẩm' })} ${tag}`;
+const pageDescription = pickLang({
+	en: `Explore products in the "${tag}" category at ${site.subtitle}.`,
+	vi: `Khám phá các sản phẩm thuộc danh mục "${tag}" tại ${site.subtitle}.`,
+});
+const bg = { blur: true, gradient: true, tint: '#2ebd85', total: 3, blobType: 'circleOverlap', blobMove: 'swap', deg: 180 };
+---
+
+<Core title={pageTitle} description={pageDescription} footer={{ columns: menuItems, policies, socials, bg }}>
+	<ProductTagBody tag={tag} tagSlug={tagSlug} products={products} />
+</Core>

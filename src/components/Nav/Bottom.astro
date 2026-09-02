@@ -1,0 +1,57 @@
+---
+import ActionBtnTheme from "@/components/Nav/Action/BtnTheme.astro";
+import { Image } from "astro:assets";
+
+const {
+	root = "",
+	logo = "/logo.png",
+	logoText,
+	sticky = 'sticky bottom-0', // 'sticky bottom-0' || ''
+	class: className = "",
+} = Astro.props;
+---
+
+<div
+	class={`${sticky} z-50 w-full border-t border-black/10 dark:border-white/10 text-base-content ${className}`}
+>
+	<nav class="backdrop-blur bg-base-glass">
+		<div
+			class="mx-auto max-w-6xl px-4 flex items-center justify-center min-h-16 text-sm"
+		>
+			<div class="w-full flex items-center justify-between gap-3">
+				<!-- prefix -->
+				<div class="flex items-center gap-4 min-w-40">
+					<a href={"/"} class="flex items-center gap-2">
+						<Image
+							class="fliping-circle"
+							src={logo}
+							width={48}
+							height={48}
+							format="png"
+							alt="logo"
+						/>
+						{
+							logoText && (
+								<span class="hidden md:block text-2xl font-semibold">
+									{logoText}
+								</span>
+							)
+						}
+					</a>
+					<slot name="prefix" />
+				</div>
+
+				<!-- center -->
+				<div class="hidden md:flex flex-1 justify-center">
+					<slot />
+				</div>
+
+				<!-- suffix -->
+				<div class="flex items-center gap-3 min-w-40 justify-end">
+					<slot name="suffix" />
+					<ActionBtnTheme />
+				</div>
+			</div>
+		</div>
+	</nav>
+</div>

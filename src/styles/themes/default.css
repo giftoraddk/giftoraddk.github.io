@@ -1,0 +1,49 @@
+@import '../fonts/business.css';
+@import 'tailwindcss';
+@import '../colors.css';
+
+/* Default light theme */
+@theme {
+	--color-base-100: #ffffff;
+	--color-base-200: color-mix(in oklab, var(--color-base-100), black 4%);
+	--color-base-300: color-mix(in oklab, var(--color-base-100), black 8%);
+	--color-base-content: #161616;
+	--color-primary: #2ebd85;
+	--color-secondary: #f5465c;
+	--color-accent: #a855f7;
+	--color-info: #00c7d4;
+	--color-warning: #ffba1f;
+	--color-success: #45da7f;
+	--color-error: #f96083;
+	--color-primary-content: var(--color-primary);
+	--color-secondary-content: var(--color-secondary);
+	--color-accent-content: var(--color-accent);
+	--color-info-content: var(--color-info);
+	--color-warning-content: var(--color-warning);
+	--color-success-content: var(--color-success);
+	--color-error-content: var(--color-error);
+
+	--haze-blur: 12px;
+	--haze-glass: 20%;
+  --height-selector: 2.25rem;
+	/* Border radius utilities */
+	--radius-selector: 0.25rem;
+	--radius-box: 0.75rem;
+
+	--font-sans: "Reddit Sans", system-ui, sans-serif;
+	--font-display: "Merienda", serif;
+}
+
+[data-theme='dark'] {
+	--color-base-100: #0d0d0d;
+	--color-base-200: color-mix(in oklab, var(--color-base-100), white 4%);
+	--color-base-300: color-mix(in oklab, var(--color-base-100), white 8%);
+	--color-base-content: #f1f2f4;
+	--color-primary: #2ebd85;
+	--color-secondary: #f5465c;
+	--color-accent: #a855f7;
+	--color-info: #00c7d4;
+	--color-warning: #ffba1f;
+	--color-success: #45da7f;
+	--color-error: #f96083;
+}

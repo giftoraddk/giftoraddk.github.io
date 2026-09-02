@@ -1,0 +1,138 @@
+---
+import LayoutUI from '@/layouts/LayoutUI.astro';
+const pageTitle = 'Modern UI';
+const pageDescription = 'Phân loại theo config modern';
+import '@/styles/global.css';
+import '@/styles/masonry.css';
+
+import * as boxs from '@/sections/modern';
+
+const sliderSimple = { autoplay: 5000, loop: true, slides: 4, spacing: 0, nav: true, dots: true };
+const sliderCenter = { autoplay: 6000, loop: true, slides: 2.5, origin: 'center', spacing: 0, nav: true, dots: true };
+const sliderNavOnly = { loop: true, slides: 2, spacing: 0, nav: true, dots: false };
+const sliderDotsOnly = { loop: true, slides: 2, spacing: 0, nav: false, dots: true };
+const productCardData = [
+	...boxs.productCard.data,
+	...boxs.productCard.data,
+	...boxs.productCard.data,
+	...boxs.productCard.data,
+	...boxs.productCard.data,
+	...boxs.productCard.data,
+];
+---
+
+<LayoutUI title={pageTitle} description={pageDescription}>
+	<script src='@/webs/apex/web-boxs.js'></script>
+	<script src='@/webs/apex/web-slider.js'></script>
+	<script src='@/webs/apex/web-text.js'></script>
+	<div class='p-6'>
+		<h1 class='text-3xl font-bold mb-8 text-center'>{pageTitle}</h1>
+	</div>
+	<div class='container mx-auto px-6 space-y-8'>
+		<section>
+			<h2 class='text-2xl font-bold border-l-4 border-primary pl-4 mb-2'>Slider Simple Product Card (4 slides, autoplay 5s, loop, nav, dots)</h2>
+			<web-boxs
+				class='content-boxs'
+				col='12'
+				data={JSON.stringify(productCardData)}
+				config={JSON.stringify({ ...boxs.productCard.config, slider: sliderSimple })}></web-boxs>
+		</section>
+
+		<section>
+			<h2 class='text-2xl font-bold border-l-4 border-primary pl-4 mb-2'>Slider Fade Animation (2.5 slides, autoplay 5s, loop, nav, dots)</h2>
+			<web-boxs
+				class='content-boxs'
+				col='12'
+				data={JSON.stringify(productCardData)}
+				config={JSON.stringify({ ...boxs.productCard.config, slider: sliderCenter })}></web-boxs>
+		</section>
+
+		<div class='flex gap-4'>
+			<section class='flex-1'>
+				<h2 class='text-2xl font-bold border-l-4 border-primary pl-4 mb-2'>Slider Nav Only Product Card (2 slides, loop, nav)</h2>
+				<web-boxs
+					class='content-boxs'
+					col='12'
+					data={JSON.stringify(productCardData)}
+					config={JSON.stringify({ ...boxs.productCard.config, slider: sliderNavOnly })}></web-boxs>
+			</section>
+
+			<section class='flex-1'>
+				<h2 class='text-2xl font-bold border-l-4 border-primary pl-4 mb-2'>Slider Dots Only Product Card (2 slides, loop, dots)</h2>
+				<web-boxs
+					class='content-boxs'
+					col='12'
+					data={JSON.stringify(productCardData)}
+					config={JSON.stringify({ ...boxs.productCard.config, slider: sliderDotsOnly })}></web-boxs>
+			</section>
+		</div>
+
+		<!-- Fade Animation Slider -->
+		<section class='space-y-4'>
+			<h2 class='text-2xl font-bold border-l-4 border-primary pl-4 mb-2'>Fade Animation</h2>
+			<web-slider effect='fade' loop autoplay='3000' nav dots>
+				<div class='h-64 rounded-xl overflow-hidden relative'>
+					<img src='https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2070' class='w-full h-full object-cover' />
+					<div class='absolute inset-0 bg-black/40 flex items-center justify-center'>
+						<h4 class='text-white text-3xl font-bold'>Nature 1</h4>
+					</div>
+				</div>
+				<div class='h-64 rounded-xl overflow-hidden relative'>
+					<img src='https://images.unsplash.com/photo-1470770841072-f978cf4d019e?q=80&w=2070' class='w-full h-full object-cover' />
+					<div class='absolute inset-0 bg-black/40 flex items-center justify-center'>
+						<h4 class='text-white text-3xl font-bold'>Nature 2</h4>
+					</div>
+				</div>
+				<div class='h-64 rounded-xl overflow-hidden relative'>
+					<img src='https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2070' class='w-full h-full object-cover' />
+					<div class='absolute inset-0 bg-black/40 flex items-center justify-center'>
+						<h4 class='text-white text-3xl font-bold'>Nature 3</h4>
+					</div>
+				</div>
+			</web-slider>
+		</section>
+
+		<!-- Lazy Loading Slider -->
+		<section class='space-y-4'>
+			<h2 class='text-2xl font-bold border-l-4 border-primary pl-4 mb-2'>Lazy Loading</h2>
+			<p class='text-sm opacity-60'>Check network tab: images load only when approaching the view.</p>
+			<web-slider class='hidden' lazy nav dots spacing='20'>
+				{
+					Array.from({ length: 10 }).map((_, i) => (
+						<div class='h-48 bg-base-300 rounded-xl overflow-hidden flex items-center justify-center relative'>
+							<img data-src={`https://picsum.photos/seed/${i + 50}/800/600`} class='w-full h-full object-cover' />
+							<span class='absolute top-2 left-2 bg-black/50 px-2 py-1 rounded text-xs text-white'>Image {i + 1}</span>
+						</div>
+					))
+				}
+			</web-slider>
+		</section>
+
+		<!-- Vertical Slider -->
+		<section class='space-y-4'>
+			<h2 class='text-2xl font-bold border-l-4 border-primary pl-4 mb-2'>Vertical Slider</h2>
+			<div class='h-[300px] relative'>
+				<web-slider class='hidden' vertical loop dots spacing='20'>
+					<div class='h-64 rounded-xl overflow-hidden relative'>
+						<img src='https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2070' class='w-full h-full object-cover' />
+						<div class='absolute inset-0 bg-black/40 flex items-center justify-center'>
+							<h4 class='text-white text-3xl font-bold'>Nature 1</h4>
+						</div>
+					</div>
+					<div class='h-64 rounded-xl overflow-hidden relative'>
+						<img src='https://images.unsplash.com/photo-1470770841072-f978cf4d019e?q=80&w=2070' class='w-full h-full object-cover' />
+						<div class='absolute inset-0 bg-black/40 flex items-center justify-center'>
+							<h4 class='text-white text-3xl font-bold'>Nature 2</h4>
+						</div>
+					</div>
+					<div class='h-64 rounded-xl overflow-hidden relative'>
+						<img src='https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2070' class='w-full h-full object-cover' />
+						<div class='absolute inset-0 bg-black/40 flex items-center justify-center'>
+							<h4 class='text-white text-3xl font-bold'>Nature 3</h4>
+						</div>
+					</div>
+				</web-slider>
+			</div>
+		</section>
+	</div>
+</LayoutUI>

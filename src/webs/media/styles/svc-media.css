@@ -1,0 +1,242 @@
+/* src/webs/media/styles/svc-media.css */
+
+:host {
+	display: inline-block;
+	position: relative;
+	--core-font: var(--font-sans, system-ui);
+}
+
+/* ── Loading placeholder (blob not resolved yet) ─────────────────────────── */
+.sm-loading {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--sm-size, 220px);
+	height: calc(var(--sm-size, 220px) * 0.7);
+	max-width: 100%;
+	border-radius: var(--sm-rounded, 0.5rem);
+	background: var(--color-base-200, rgba(255, 255, 255, 0.08));
+	color: var(--color-base-content, #f3f4f6);
+	opacity: 0.6;
+	font-size: 0.8rem;
+	text-align: center;
+	padding: 0.5rem;
+}
+
+/* ── Single item — inline, click opens the same fullscreen dialog ───────── */
+.sm-single {
+	display: block;
+	cursor: zoom-in;
+	overflow: hidden;
+	position: relative;
+	border-radius: var(--sm-rounded, 0.5rem);
+	max-width: var(--sm-size, 220px);
+	line-height: 0;
+}
+
+.sm-single img,
+.sm-single video {
+	display: block;
+	width: 100%;
+	height: auto;
+	max-height: var(--sm-size, 220px);
+	object-fit: cover;
+}
+
+/* ── Stack — 2+ items, up to 3 overlapped thumbnails ─────────────────────── */
+.sm-stack {
+	position: relative;
+	display: block;
+	cursor: zoom-in;
+	width: var(--sm-size, 220px);
+	height: var(--sm-size, 220px);
+	max-width: 100%;
+}
+
+.sm-stack-item {
+	position: absolute;
+	inset: 0;
+	border-radius: var(--sm-rounded, 0.5rem);
+	overflow: hidden;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.sm-stack-item img,
+.sm-stack-item video {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.sm-stack-item:nth-child(2) {
+	transform: translate(0.4rem, 0.4rem) scale(0.96);
+	z-index: -1;
+	filter: brightness(0.85);
+}
+
+.sm-stack-item:nth-child(3) {
+	transform: translate(0.8rem, 0.8rem) scale(0.92);
+	z-index: -2;
+	filter: brightness(0.7);
+}
+
+.sm-stack-more {
+	position: absolute;
+	inset: 0;
+	z-index: 5;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--sm-rounded, 0.5rem);
+	background: rgba(0, 0, 0, 0.45);
+	color: #ffffff;
+	font-weight: 600;
+	font-size: 1.1rem;
+}
+
+/* ── Video "play" badge — overlaid on any thumbnail whose kind is video ─── */
+.sm-play-badge {
+	position: absolute;
+	inset: 0;
+	z-index: 4;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	pointer-events: none;
+	background: rgba(0, 0, 0, 0.18);
+}
+
+.sm-play-badge svg {
+	width: 2.25rem;
+	height: 2.25rem;
+	fill: rgba(255, 255, 255, 0.92);
+	filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
+}
+
+/* ── Fullscreen dialog viewer ─────────────────────────────────────────────── */
+dialog.sm-dialog {
+	display: none;
+	position: fixed;
+	inset: 0;
+	margin: 0;
+	padding: 0;
+	width: 100vw;
+	max-width: 100vw;
+	height: 100vh;
+	max-height: 100vh;
+	border: none;
+	background: rgba(0, 0, 0, 0.88);
+}
+
+dialog.sm-dialog[open] {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	animation: sm-fade-in 0.2s ease;
+}
+
+dialog.sm-dialog::backdrop {
+	display: none;
+}
+
+@keyframes sm-fade-in {
+	from { opacity: 0; }
+	to   { opacity: 1; }
+}
+
+.sm-dialog-inner {
+	position: relative;
+	width: 92vw;
+	max-width: 960px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.sm-stage {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.sm-stage img,
+.sm-stage video {
+	max-width: 100%;
+	max-height: 100%;
+	object-fit: contain;
+	border-radius: 0.25rem;
+}
+
+.sm-close,
+.sm-prev,
+.sm-next {
+	position: absolute;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	border: 1.5px solid rgba(255, 255, 255, 0.35);
+	background: rgba(255, 255, 255, 0.08);
+	color: #ffffff;
+	cursor: pointer;
+	padding: 0;
+	transition: background 0.2s ease, border-color 0.2s ease;
+	z-index: 10;
+}
+
+.sm-close:hover,
+.sm-prev:hover,
+.sm-next:hover {
+	background: rgba(255, 255, 255, 0.2);
+	border-color: rgba(255, 255, 255, 0.6);
+}
+
+.sm-close {
+	top: -45px;
+	right: 0;
+	width: 36px;
+	height: 36px;
+}
+
+.sm-prev,
+.sm-next {
+	top: 50%;
+	width: 45px;
+	height: 45px;
+	transform: translateY(-50%);
+}
+
+.sm-prev { left: -56px; }
+.sm-next { right: -56px; }
+
+@media (max-width: 720px) {
+	.sm-prev { left: 0.5rem; }
+	.sm-next { right: 0.5rem; }
+}
+
+.sm-dots {
+	position: absolute;
+	bottom: -32px;
+	left: 50%;
+	transform: translateX(-50%);
+	display: flex;
+	gap: 0.4rem;
+	z-index: 10;
+}
+
+.sm-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.4);
+	cursor: pointer;
+	padding: 0;
+	border: none;
+}
+
+.sm-dot.active {
+	background: #ffffff;
+}

@@ -1,0 +1,23 @@
+---
+import Core from '@/layouts/Core.astro';
+import { variant } from '@/modules/talent-page.js';
+---
+
+<Core title="Ví Xu" theme={variant.theme} variant={variant}>
+	<script>
+		import '@/webs/talent/svc-wallet.js';
+		import { auth } from '@/webs/auth/tools/service.js';
+
+		async function applyCurrentUser() {
+			const el = document.getElementById('wallet') as any;
+			if (!el) return;
+			const user = await auth.get();
+			el.userId = user?.id ?? '';
+		}
+		document.addEventListener('astro:page-load', applyCurrentUser);
+	</script>
+	<div class='p-4 lg:p-6 max-w-xl mx-auto'>
+		<svc-wallet id="wallet" ui={variant.ui} theme={variant.theme}
+			mainColors={variant.mainColors} textColor={variant.textColor}></svc-wallet>
+	</div>
+</Core>

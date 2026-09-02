@@ -1,0 +1,21 @@
+---
+import '../styles/themes/gold.css';
+import Head from "@/components/Head/Base.astro";
+const { title = 'Apex app', description = '', noindex = false } = Astro.props;
+---
+
+<!doctype html>
+<html lang='en'>
+	<head>
+		<Head
+			title={title}
+			description={description}
+			noindex={noindex}
+		/>
+	</head>
+	<body>
+		<main id='main'>
+			<slot />
+		</main>
+	</body>
+</html>

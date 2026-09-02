@@ -1,0 +1,248 @@
+{
+  "id": "uniqueId",
+  "seo": {
+    "title": "trang bds",
+    "description": "san giao dich bds hcm",
+    "ckey": [
+      "bds online",
+      "bds hcm"
+    ]
+  },
+  "layout": "navTop",
+  "heads": [
+    {
+      "grid": "gridClass",
+      "rows": [
+        {
+          "id": "header-logo",
+          "bit": "Logo",
+          "prop": {
+            "mode": "logo"
+          },
+          "favor": {
+            "class": [
+              "header-logo"
+            ],
+            "style": {}
+          },
+          "info": {
+            "data": {
+              "logoUrl": "/logo.png",
+              "title": "Demo App",
+              "altText": "Demo Logo"
+            }
+          }
+        },
+        {
+          "id": "header-nav",
+          "bit": "Nav",
+          "prop": {
+            "mode": "nav"
+          },
+          "favor": {
+            "class": [
+              "header-nav"
+            ],
+            "style": {}
+          },
+          "info": {
+            "data": {
+              "items": [
+                {
+                  "label": "Home",
+                  "href": "/"
+                },
+                {
+                  "label": "About",
+                  "href": "/about"
+                },
+                {
+                  "label": "Contact",
+                  "href": "/contact"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "header-tool",
+          "bit": "Tool",
+          "prop": {
+            "mode": "tool"
+          },
+          "favor": {
+            "class": [
+              "header-tool"
+            ],
+            "style": {}
+          },
+          "info": {
+            "data": {
+              "tools": [
+                {
+                  "name": "Search",
+                  "icon": "🔍"
+                },
+                {
+                  "name": "Settings",
+                  "icon": "⚙️"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "foots": [
+    {
+      "grid": "gridClass",
+      "rows": [
+        {
+          "id": "footer-summary",
+          "bit": "Summary",
+          "prop": {
+            "mode": "summary"
+          },
+          "favor": {
+            "class": [
+              "footer-summary"
+            ],
+            "style": {}
+          },
+          "info": {
+            "data": {
+              "title": "Footer Summary",
+              "content": "This is a summary of the page content"
+            },
+            "vow": "AsyncSummary",
+            "status": null
+          }
+        }
+      ]
+    }
+  ],
+  "bodys": [
+    {
+      "grid": "gridClass",
+      "rows": [
+        {
+          "id": "main-title",
+          "bit": "H1",
+          "prop": {
+            "name": "Welcome to Dynamic Layout",
+            "exent": "main",
+            "readonly": true
+          },
+          "favor": {
+            "class": [
+              "main-title"
+            ],
+            "style": {}
+          },
+          "info": {
+            "data": {
+              "content": "Welcome to Dynamic Layout System"
+            }
+          }
+        },
+        {
+          "id": "main-content",
+          "bit": "P",
+          "prop": {
+            "name": "Content",
+            "exent": "main",
+            "readonly": false
+          },
+          "favor": {
+            "class": [
+              "main-content"
+            ],
+            "style": {}
+          },
+          "info": {
+            "data": {
+              "content": "This is a paragraph demonstrating the dynamic layout system with Svelte components. You can edit this content."
+            },
+            "vow": "asyncCountries",
+            "status": null
+          }
+        },
+        {
+          "id": "main-list",
+          "bit": "Ul",
+          "prop": {
+            "name": "Feature List",
+            "exent": "main",
+            "readonly": true
+          },
+          "favor": {
+            "class": [
+              "main-list"
+            ],
+            "style": {}
+          },
+          "info": {
+            "data": {
+              "items": [
+                "Dynamic Component Loading",
+                "Lazy Loading Support",
+                "Info Structure Management",
+                "Readonly/Edit Modes"
+              ]
+            }
+          }
+        },
+        {
+          "id": "main-code",
+          "bit": "Code",
+          "prop": {
+            "name": "Example Code",
+            "exent": "main",
+            "readonly": false
+          },
+          "favor": {
+            "class": [
+              "main-code"
+            ],
+            "style": {}
+          },
+          "info": {
+            "data": {
+              "content": "console.log('Hello World');"
+            }
+          }
+        },
+        {
+          "id": "main-tool",
+          "bit": "Tool",
+          "prop": {
+            "mode": "tool"
+          },
+          "favor": {
+            "class": [
+              "main-tool"
+            ],
+            "style": {}
+          },
+          "info": {
+            "data": {
+              "tools": [
+                {
+                  "name": "Edit",
+                  "icon": "✏️"
+                },
+                {
+                  "name": "Delete",
+                  "icon": "🗑️"
+                }
+              ]
+            },
+            "vow": "asyncCountries",
+            "status": "error"
+          }
+        }
+      ]
+    }
+  ]
+}

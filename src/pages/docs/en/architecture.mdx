@@ -1,0 +1,150 @@
+---
+layout: '../../../layouts/LayoutDoc.astro'
+title: 'Architecture'
+description: 'Layer diagram, Micro Service pattern, and how systems connect'
+---
+
+# Architecture
+
+<div class="doc-intro">
+  <p>Astro Micro is organized into three cooperating layers: Astro pages for static structure, Web Components for interactive UI, and Conductor for shared state and data.</p>
+</div>
+
+## Layer Diagram
+
+```
+┌─────────────────────────────────────────────────┐
+│  Astro Pages  (src/pages/)                      │
+│  Static HTML shell, routing, SSG                │
+│  Imports section configs, mounts Web Components │
+└────────────────────┬────────────────────────────┘
+                     │ passes config + data props
+┌────────────────────▼────────────────────────────┐
+│  Web Board / Web Boxs  (src/webs/apex/)         │
+│  Declarative card-grid renderer                 │
+│  web-board → web-boxs → web-box → web-cell      │
+└────────────────────┬────────────────────────────┘
+                     │ reads/writes via conductor
+┌────────────────────▼────────────────────────────┐
+│  Conductor  (src/services/conductor.js)         │
+│  Shared nanostores atom + IndexedDB cache       │
+│  Handles fetch, retry, TTL, sift filtering      │
+└─────────────────────────────────────────────────┘
+                     ▲
+                     │ domain logic
+┌────────────────────┴────────────────────────────┐
+│  Micro Services  (src/webs/<domain>/svc-*.js)   │
+│  Self-contained Lit elements per feature        │
+│  Own conductor section, dispatch events up      │
+└─────────────────────────────────────────────────┘
+```
+
+## Three Core Systems
+
+### Conductor
+
+A single nanostores atom shared by the entire application. Each service owns one `section` in `state.sections[]`, keyed by its id. Conductor handles:
+
+- Fetching data from a URL with `all(opts)`
+- Caching responses in IndexedDB with a configurable TTL
+- Automatic retries with exponential backoff (3 attempts: 500 ms / 1000 ms / 2000 ms)
+- Filtering results with `sift()` before updating the store
+
+### Web Boxs
+
+`web-boxs` is the declarative card-grid engine. You provide a `data[]` array and a `config` object — the component renders a responsive grid of cards based on the config tiers (column breakpoints), makes (cell definitions), and styles.
+
+Config files live in `src/sections/<domain>/` and are imported directly into Astro pages.
+
+### Micro Services
+
+Files matching `src/webs/<domain>/svc-*.js` are domain micro-services. Each is a self-contained Lit custom element that:
+
+- Reads from its own conductor section
+- Handles user interaction via event listeners
+- Writes updates back to the conductor store
+- Dispatches custom DOM events through Shadow DOM boundaries
+
+## Component Naming
+
+| Pattern | Location | Role |
+|---|---|---|
+| `apex/web-*` | `src/webs/apex/` | Reusable primitive components (web-boxs, web-box, web-cell, web-board, web-slider, web-gallery, web-button, …) |
+| `<domain>/svc-*` | `src/webs/<domain>/` | Domain micro-services with their own `tools/service.js` re-export hub |
+
+## Standard Lit Properties
+
+Every `svc-*` component declares a consistent property set:
+
+```js
+static properties = {
+  ui: { type: String },
+  theme: { type: String },
+  mainColors: { type: String },
+  bg: { type: Object },
+  textColor: { type: String },
+  value: {},
+  actived: {},
+  service: { type: String },
+  _data: { state: true },
+  _actived: { state: true },
+}
+```
+
+## Method Naming Conventions
+
+| Prefix | Role |
+|---|---|
+| `_dc*` | Data Core — `connectedCallback` init and setup |
+| `_dh*` | Data Head — handle user input and DOM events |
+| `_df*` | Data Footer — call service actions |
+| `_com*` | Computed getters (no side effects) |
+| `_rb*` | Render Body — major layout blocks |
+| `_rf*` | Render Fragment — single item renderers |
+
+## CSS Styles
+
+Components load scoped CSS using the inline import pattern:
+
+```js
+import styles from './styles/component.css?inline';
+import { unsafeCSS } from 'lit';
+
+static styles = [unsafeCSS(styles)];
+```
+
+## Event Rules
+
+All custom events must use `bubbles: true` and `composed: true` to cross Shadow DOM boundaries:
+
+```js
+this.dispatchEvent(new CustomEvent('web-item-select', {
+  detail: { id: item.id },
+  bubbles: true,
+  composed: true,
+}));
+```
+
+## Service.js Rule
+
+In any `service.js` file, event listeners **must be registered synchronously** before any `await`. If a listener is registered after an `await`, it may miss events that fired during the async operation.
+
+```js
+// Correct — listener registered synchronously
+export function init(store) {
+  window.addEventListener('web-item-select', handleSelect);  // sync
+  await conductor.all({ url: '/api/items.json' });           // async after
+}
+
+// Wrong — listener may miss early events
+export async function init(store) {
+  await conductor.all({ url: '/api/items.json' });
+  window.addEventListener('web-item-select', handleSelect);  // too late
+}
+```
+
+## Next Steps
+
+- [Data Flow](/docs/en/dataflow) — step-by-step from config file to rendered UI
+- [Conductor](/docs/en/conductor) — detailed API reference
+- [Web Boxs](/docs/en/web-boxs) — configuring the card-grid renderer

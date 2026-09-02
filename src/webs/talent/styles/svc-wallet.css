@@ -1,0 +1,14 @@
+:host { display: block; width: 100%; box-sizing: border-box; color: var(--color-base-content); }
+
+.wallet { display: flex; flex-direction: column; gap: 1rem; max-width: 28rem; }
+.wallet-balance { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 1rem; background: color-mix(in oklab, var(--color-primary) 8%, transparent); }
+.wallet-balance strong { font-size: 1.35rem; flex: 1; }
+
+.wallet-history { display: flex; flex-direction: column; gap: 0.4rem; }
+.wallet-row { display: grid; grid-template-columns: auto 1fr auto; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid color-mix(in oklab, var(--color-base-content) 8%, transparent); font-size: 0.85rem; }
+.wallet-row-type { font-weight: 600; }
+.wallet-row-reason { opacity: 0.65; }
+.wallet-row-amount.is-positive { color: var(--color-success, green); }
+.wallet-row-amount.is-negative { color: var(--color-error, red); }
+
+.wallet-request-form { display: flex; flex-direction: column; gap: 0.6rem; }

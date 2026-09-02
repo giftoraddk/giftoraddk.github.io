@@ -1,0 +1,90 @@
+:host {
+    display: inline-block;
+    --avatar-size: 45px;
+    --avatar-radius: 50%;
+    --core-blur: var(--haze-blur, 12px);
+    --core-glass: var(--haze-glass, 20%);
+    --core-font: var(--font-sans, 'system-ui');
+}
+
+.web-avatar {
+	font-family: var(--core-font);
+    position: relative;
+    width: var(--avatar-size);
+    height: var(--avatar-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-base-200, #232323);
+    color: var(--color-base-content, #ffffff);
+    font-weight: 700;
+    user-select: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: visible;
+}
+
+.web-avatar.circle {
+    border-radius: 50%;
+}
+
+.web-avatar.circle img {
+    border-radius: 50%;
+}
+
+.web-avatar.square {
+    border-radius: 12px;
+}
+
+.web-avatar.square img {
+    border-radius: 12px;
+}
+
+img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.initials {
+    font-size: calc(var(--avatar-size) * 0.35);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.9;
+}
+
+.status-dot {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: calc(var(--avatar-size) * 0.25);
+    height: calc(var(--avatar-size) * 0.25);
+    border-radius: 50%;
+    background: #9ca3af;
+    border: 2px solid var(--color-base-100, #0d0d0d);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 2;
+}
+
+.status-dot.online { background: var(--color-success, #45da7f); }
+.status-dot.away { background: var(--color-warning, #fbbf24); }
+.status-dot.busy { background: var(--color-error, #f5465c); }
+
+/**
+ * ----------------------------------------
+ * Glassmorphism - spatial
+ * ----------------------------------------
+ */
+.spatial.web-avatar {
+    background: color-mix(in oklab, var(--color-base-300, #393939) var(--core-glass), transparent);
+    backdrop-filter: blur(calc(var(--core-blur) * 0.7));
+    border: 1px solid #ffffff4d;
+}
+
+.spatial.web-avatar:hover {
+    transform: scale(1.05);
+    background: #ffffff4d;
+}
+
+.spatial .status-dot {
+    border-color: rgba(255, 255, 255, 0.2);
+}

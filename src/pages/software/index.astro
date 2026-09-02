@@ -1,0 +1,27 @@
+---
+import Core from '@/layouts/Core.astro';
+import { variant, views, bar, menuItems, footerMenuItems, policies, socials, contact } from '@/modules/landing/goldenkey-software.js';
+
+const currentView = views.find(v => v.href === '/') ?? views[0];
+
+const bg = { blur: true, gradient: true, tint: '#ffbb24', total: 3, blobType: "circleOverlap", blobMove: 'pulse', deg: 235, distance: 98}
+---
+
+<Core
+	title="Golden Key Software — Custom Software, Built Fast and Built Right"
+	description="Golden Key Software — a strong engineering team mastering modern technology, building custom software for your business quickly and effortlessly."
+	menu={{ type: 'top', position: 'prefix', menuItems: menuItems }}
+	footer={{ columns: footerMenuItems, policies, socials, contact, bg }}
+	bg={variant.bg}
+	theme={variant.theme}
+	variant={variant}
+  bar={bar}
+>
+	<script src='@/webs/apex/web-board.js'></script>
+	<div>
+		<web-board
+			unlock={import.meta.env.PUBLIC_EXP}
+			variant={JSON.stringify(variant)}
+		><script type="application/json" is:inline set:html={JSON.stringify(currentView.sections)}></script></web-board>
+	</div>
+</Core>

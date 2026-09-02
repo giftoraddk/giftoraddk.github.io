@@ -1,0 +1,867 @@
+---
+import LayoutUI from "@/layouts/LayoutUI.astro";
+
+const pageTitle = "All Core Component";
+const pageDescription = "LIT Custom Elements (Web Components)";
+---
+
+<LayoutUI title={pageTitle} description={pageDescription} extendClass="bg-wrap">
+    <script src="@/webs/apex/web-alert.js"></script>
+    <script src="@/webs/apex/web-avatar.js"></script>
+    <script src="@/webs/apex/web-button.js"></script>
+    <script src="@/webs/apex/web-checkbox.js"></script>
+    <script src="@/webs/apex/web-expansion.js"></script>
+    <script src="@/webs/apex/web-dialog.js"></script>
+    <script src="@/webs/apex/web-progress.js"></script>
+    <script src="@/webs/apex/web-radio.js"></script>
+    <script src="@/webs/apex/web-rating.js"></script>
+    <script src="@/webs/apex/web-select.js"></script>
+    <script src="@/webs/apex/web-table.js"></script>
+    <script src="@/webs/apex/web-steps.js"></script>
+    <script src="@/webs/apex/web-tabs.js"></script>
+    <script src="@/webs/apex/web-toggle.js"></script>
+    <script src="@/webs/apex/web-tooltip.js"></script>
+    <script src="@/webs/apex/web-breadcrumb.js"></script>
+    <script src="@/webs/apex/web-currency.js"></script>
+    <script src="@/webs/apex/web-datetime.js"></script>
+    <script src="@/webs/apex/web-dropdown.js"></script>
+    <script src="@/webs/apex/web-fab.js"></script>
+    <script src="@/webs/apex/web-files.js"></script>
+    <script src="@/webs/apex/web-pagination.js"></script>
+    <script src="@/webs/apex/web-photor.js"></script>
+    <script src="@/webs/apex/web-popover.js"></script>
+    <script src="@/webs/apex/web-split.js"></script>
+    <script src="@/webs/apex/web-text.js"></script>
+    <script src="@/webs/apex/web-textarea.js"></script>
+    <script src="@/webs/apex/web-toast.js"></script>
+    <script src="@/webs/graph/svc-graph.js"></script>
+    <script src="@/webs/graph/svc-pie.js"></script>
+
+    <script src="@/webs/underlay/svc-underlay.js"></script>
+    <svc-underlay tint="#2ebd85" blobType="ellipse" total="1" deg="0" blur gradient></svc-underlay>
+
+    <!-- <script src="@/webs/apex/web-gradient.js"></script>
+    <web-gradient type="rotate45" limit="5"></web-gradient> -->
+
+    <div class="p-6">
+        <h1 class="text-3xl font-bold mb-8 text-center hidden">{pageTitle}</h1>
+
+        <div
+            class="gap-8 grid md:grid-cols-2 xl:grid-cols-3 place-items-stretch"
+        >
+            <!-- Web Alert -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-alert
+                </div>
+                <div class="flex flex-col gap-4">
+                    <web-alert ui="spatial" theme="default" type="info">
+                        This is an info alert
+                    </web-alert>
+                    <web-alert ui="spatial" theme="default" type="success">
+                        This is a success alert
+                    </web-alert>
+                    <web-alert ui="spatial" theme="default" type="warning">
+                        This is a warning alert
+                    </web-alert>
+                    <web-alert ui="spatial" theme="default" type="error">
+                        This is an error alert
+                    </web-alert>
+
+                </div>
+            </figure>
+
+            <!-- Web Avatar -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-avatar
+                </div>
+                <div class="flex flex-wrap place-content-center gap-4">
+                    <web-avatar
+                        ui="spatial"
+                        src="https://i.pravatar.cc/150?img=1"
+                        size="32px"
+                        shape="square"></web-avatar>
+                    <web-avatar
+                        ui="spatial"
+                        src="https://i.pravatar.cc/150?img=2"
+                        size="48px"
+                        shape="circle"
+                        status="online"></web-avatar>
+                    <web-avatar
+                        ui="spatial"
+                        src="https://i.pravatar.cc/150?img=3"
+                        size="64px"
+                        shape="square"
+                        status="away"></web-avatar>
+                    <web-avatar
+                        ui="spatial"
+                        src="https://i.pravatar.cc/150?img=4"
+                        size="80px"
+                        shape="circle"
+                        status="busy"></web-avatar>
+                    <web-avatar
+                        ui="spatial"
+                        src="https://i.pravatar.cc/150?img=5"
+                        size="96px"
+                        shape="square"></web-avatar>
+
+                </div>
+            </figure>
+
+            <!-- Web Badge -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-button (mode="badge")
+                </div>
+                <div class="flex flex-wrap place-content-center gap-2">
+                    <web-button ui="spatial" mode="badge">Default</web-button>
+                    <web-button ui="spatial" mode="badge" color="primary">Primary</web-button>
+                    <web-button ui="spatial" mode="badge" color="secondary">Secondary</web-button>
+                    <web-button ui="spatial" mode="badge" color="accent">Accent</web-button>
+                    <web-button ui="spatial" mode="badge" color="warning">Warning</web-button>
+                    <web-button ui="spatial" mode="badge" color="info">Info</web-button>
+                    <web-button ui="spatial" mode="badge" type="outline" color="primary">Outline</web-button>
+                </div>
+
+            </figure>
+
+            <!-- Web Button -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-button
+                </div>
+                <div class="flex flex-wrap place-content-center gap-2">
+                    <web-button ui="spatial">Default</web-button>
+                    <web-button ui="spatial" color="primary">Primary</web-button>
+                    <web-button ui="spatial" color="secondary">Secondary</web-button>
+                    <web-button ui="spatial" color="accent">Accent</web-button>
+                    <web-button ui="spatial" loading color="warning">Loading</web-button>
+                    <web-button ui="spatial" type="outline" disabled>Disabled</web-button>
+                    <web-button ui="spatial" type="soft" color="secondary">Soft</web-button>
+                </div>
+
+            </figure>
+
+            <!-- Web Checkbox & Radio -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-checkbox & web-radio
+                </div>
+                <div class="flex flex-col gap-4 items-center">
+                    <div class="flex gap-4">
+                        <web-checkbox ui="spatial" label="Checkbox 1"></web-checkbox>
+                        <web-checkbox ui="spatial" label="Checkbox 2" checked color="primary"
+                        ></web-checkbox>
+                        <web-checkbox ui="spatial" label="Disabled" disabled></web-checkbox>
+                    </div>
+                    <div class="flex gap-4">
+                        <web-radio ui="spatial" name="rdDemo" label="Radio 1"></web-radio>
+                        <web-radio ui="spatial"
+                            name="rdDemo"
+                            label="Radio 2"
+                            checked
+                            color="secondary"></web-radio>
+                        <web-radio ui="spatial" name="rdDemo2" label="Disabled" disabled
+                        ></web-radio>
+                    </div>
+                </div>
+
+            </figure>
+
+            <!-- Web Toggle -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-toggle
+                </div>
+                <div class="flex flex-wrap place-content-center gap-4">
+                    <web-toggle ui="spatial" value="true"></web-toggle>
+                    <web-toggle ui="spatial" value="true" color="primary"></web-toggle>
+                    <web-toggle ui="spatial" value="false" color="secondary"></web-toggle>
+                    <web-toggle ui="spatial" disabled></web-toggle>
+                </div>
+
+            </figure>
+
+            <!-- Web Rating -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-rating
+                </div>
+                <div class="flex flex-col items-center gap-4">
+                    <web-rating ui="spatial" value="3"></web-rating>
+                    <web-rating ui="spatial" value="4" color="warning"></web-rating>
+                    <web-rating ui="spatial" value="5" color="accent" size="lg"></web-rating>
+                </div>
+
+            </figure>
+
+            <!-- Web Progress -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-progress
+                </div>
+                <div class="flex flex-col gap-4 w-full">
+                    <web-progress ui="spatial" value="20" max="100"></web-progress>
+                    <web-progress ui="spatial" value="50" max="100" color="primary"
+                    ></web-progress>
+                    <web-progress ui="spatial" value="80" max="100" color="secondary"
+                    ></web-progress>
+                    <web-progress ui="spatial" value="100" max="100" color="success"
+                    ></web-progress>
+                </div>
+
+            </figure>
+
+            <!-- Web Tooltip -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-tooltip
+                </div>
+                <div class="flex flex-wrap place-content-center gap-4 py-8">
+                    <web-tooltip ui="spatial" placement="top">
+                        <web-button ui="spatial">Hover Me (Top)</web-button>
+                        <span slot="content">Tooltip Top</span>
+                    </web-tooltip>
+                    <web-tooltip ui="spatial" placement="bottom" color="primary">
+                        <web-button ui="spatial" color="primary"
+                            >Hover Me (Bottom)</web-button
+                        >
+                        <span slot="content">Tooltip Bottom</span>
+                    </web-tooltip>
+                </div>
+
+            </figure>
+            
+            <!-- Web Dialog -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-dialog
+                </div>
+                <div class="flex flex-wrap place-content-center gap-4 py-8">
+                    <web-button ui="spatial" onclick="document.getElementById('demo-dialog').open = true" color="primary">Open Dialog</web-button>
+                    <web-dialog ui="spatial" id="demo-dialog" title="Example Dialog">
+                        <div class="p-4">
+                            <p>This is a custom dialog content.</p>
+                            <p class="mt-2 text-sm opacity-70">You can put any HTML here.</p>
+                        </div>
+                        <div slot="footer" class="flex justify-end gap-2">
+                            <web-button ui="spatial" onclick="document.getElementById('demo-dialog').open = false" color="error">Cancel</web-button>
+                            <web-button ui="spatial" onclick="document.getElementById('demo-dialog').open = false" color="primary">Confirm</web-button>
+                        </div>
+                    </web-dialog>
+                </div>
+
+            </figure>
+
+            <!-- Web Select -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-select
+                </div>
+                <div class="flex flex-col items-center gap-4 w-full">
+                    <web-select
+                        ui="spatial"
+                        options='[{"label": "Option 1", "value": "1"}, {"label": "Option 2", "value": "2"}]'
+                        placeholder="Select an option"></web-select>
+                    <web-select
+                        ui="spatial"
+                        options='[{"label": "Primary", "value": "1"}, {"label": "Secondary", "value": "2"}]'
+                        color="primary"
+                        value="1"></web-select>
+                </div>
+
+            </figure>
+
+            <!-- Web Expansion -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-expansion
+                </div>
+                <div class="flex flex-col w-full">
+                    <web-expansion
+                        ui="spatial"
+                        panels='[{"id":"p1","label":"Expansion Item 1"},{"id":"p2","label":"Expansion Item 2"},{"id":"p3","label":"Expansion Item 3"}]'
+                        active="p1"
+                    >
+                        <div slot="p1" class="p-4 text-sm">Content for first expansion item. It can hold any HTML element inside.</div>
+                        <div slot="p2" class="p-4 text-sm">Content for second expansion item.</div>
+                        <div slot="p3" class="p-4 text-sm">Content for third expansion item.</div>
+                    </web-expansion>
+                </div>
+
+            </figure>
+
+            <!-- Web Steps -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10 md:col-span-2 xl:col-span-3"
+            >
+                <div class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden">
+                    web-steps
+                </div>
+                <div class="w-full flex flex-col gap-8">
+                    <div>
+                        <p class="text-[10px] uppercase opacity-50 mb-4">With icons — active: step 3</p>
+                        <web-steps
+                            ui="spatial"
+                            active="details"
+                            steps='[
+                                {"id":"select",  "label":"Select Item",   "icon":"ri:cursor-line"},
+                                {"id":"cart",    "label":"Add To Cart",   "icon":"ri:shopping-cart-line"},
+                                {"id":"details", "label":"Fill Details",  "icon":"ri:file-list-line"},
+                                {"id":"payment", "label":"Make Payment",  "icon":"ri:lock-line"},
+                                {"id":"done",    "label":"Download",      "icon":"ri:file-download-line"}
+                            ]'
+                        >
+                            <div slot="select"  class="p-4 text-sm">Select item content</div>
+                            <div slot="cart"    class="p-4 text-sm">Cart content</div>
+                            <div slot="details" class="p-4 text-sm">Fill details content</div>
+                            <div slot="payment" class="p-4 text-sm">Payment content</div>
+                            <div slot="done"    class="p-4 text-sm">Download content</div>
+                        </web-steps>
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase opacity-50 mb-4">Without icons — active: step 2</p>
+                        <web-steps
+                            ui="spatial"
+                            isVertical
+                            active="s2"
+                            steps='[
+                                {"id":"s1","label":"Order placed"},
+                                {"id":"s2","label":"Processing"},
+                                {"id":"s3","label":"Shipped"},
+                                {"id":"s4","label":"Delivered"}
+                            ]'
+                        >
+                            <div slot="s1" class="p-4 text-sm">Order placed</div>
+                            <div slot="s2" class="p-4 text-sm">Processing your order…</div>
+                            <div slot="s3" class="p-4 text-sm">Shipped</div>
+                            <div slot="s4" class="p-4 text-sm">Delivered</div>
+                        </web-steps>
+                    </div>
+                </div>
+            </figure>
+
+            <!-- Web Tabs -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10 md:col-span-2 xl:col-span-3"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-tabs
+                </div>
+                <div class="w-full">
+                    <web-tabs
+                        ui="spatial"
+                        tabs='[{"label": "Tab 1", "id": "t1"}, {"label": "Tab 2", "id": "t2"}, {"label": "Tab 3", "id": "t3"}]'
+                        active="t1"
+                    >
+                        <div slot="t1" class="p-4">Content for Tab 1</div>
+                        <div slot="t2" class="p-4">Content for Tab 2</div>
+                        <div slot="t3" class="p-4">Content for Tab 3</div>
+                    </web-tabs>
+                </div>
+
+            </figure>
+
+            <!-- Web Table -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10 md:col-span-2 xl:col-span-3"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-table
+                </div>
+                <div class="h-[300px] w-full">
+                    <web-table
+                        ui="spatial"
+                        mainColors="#2ebd85|#f5465c|#a855f7|#00c7d4|#fbbf24"
+                        columns='[{"label": "Time", "field": "time", "width": "100px"},{"label": "Price", "field": "price", "align": "right", "width": "1fr", "color": "#2ebd85", "bold": true},{"label": "Volume", "field": "volume", "align": "right", "width": "1fr"}]'
+                        data='[{"time": "14:20:00", "price": "1200", "volume": "5000"},{"time": "14:20:01", "price": "1201", "volume": "1000"},{"time": "14:20:05", "price": "1205", "volume": "2500"}]'
+                    ></web-table>
+                </div>
+
+            </figure>
+            <!-- Web Breadcrumb -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10 md:col-span-2 xl:col-span-3"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-breadcrumb
+                </div>
+                <div class="w-full flex place-content-center">
+                    <web-breadcrumb
+                        ui="spatial"
+                        items='[{"label": "Home", "href": "/"}, {"label": "Components", "href": "/components"}, {"label": "Breadcrumb"}]'
+                    ></web-breadcrumb>
+                </div>
+
+            </figure>
+
+            <!-- Web Currency -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-currency
+                </div>
+                <div class="flex flex-col gap-4 w-full">
+                    <web-currency ui="spatial" value="1000" prefix="$"></web-currency>
+                    <web-currency
+                        ui="spatial"
+                        value="2500"
+                        suffix="EUR"
+                        format="true"
+                        precision="2"></web-currency>
+                </div>
+
+            </figure>
+
+            <!-- Web Datetime -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-datetime
+                </div>
+                <div class="flex flex-col gap-4 w-full">
+                    <web-datetime ui="spatial" placeholder="Select Date" type="default"
+                    ></web-datetime>
+                    <web-datetime ui="spatial" type="datetime" placeholder="Select Date & Time"></web-datetime>
+                </div>
+
+            </figure>
+
+            <!-- Web Dropdown -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg flex items-center justify-center border border-white/10 z-10"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-dropdown
+                </div>
+                <div class="w-full flex place-content-center py-8">
+                    <web-dropdown
+                        ui="spatial"
+                        label="Menu"
+                        icon="lucide:menu"
+                        items='[{"label": "Profile", "icon":"lucide:user"}, {"label": "Settings", "icon":"lucide:settings"}]'
+                    ></web-dropdown>
+                </div>
+
+            </figure>
+
+            <!-- Web Fab -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10 overflow-hidden h-40"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden z-10"
+                >
+                    web-fab
+                </div>
+                <div class="w-full h-full relative">
+                    <web-fab ui="spatial" position="absolute"></web-fab>
+                </div>
+
+            </figure>
+
+            <!-- Web Files -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-files
+                </div>
+                <div class="w-full max-w-sm mx-auto">
+                    <web-files ui="spatial" multiple="true"></web-files>
+                </div>
+
+            </figure>
+
+            <!-- Web Pagination -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10 md:col-span-2 xl:col-span-3"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-pagination
+                </div>
+                <div class="w-full flex place-content-center">
+                    <web-pagination ui="spatial" total="100" current="1" pageSize="10"
+                    ></web-pagination>
+                </div>
+
+            </figure>
+
+            <!-- Web Photor -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10 md:col-span-2"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-photor
+                </div>
+                <div class="flex flex-col gap-6 w-full">
+                    <div>
+                        <p class="text-[10px] uppercase opacity-50 mb-3">Single (with crop)</p>
+                        <web-photor ui="spatial" id="uploader-single"></web-photor>
+                    </div>
+                    <div class="border-t border-white/10 pt-6">
+                        <p class="text-[10px] uppercase opacity-50 mb-3">Multiple (with crop)</p>
+                        <web-photor ui="spatial" id="uploader-multi" multiple></web-photor>
+                    </div>
+                </div>
+            </figure>
+
+            <!-- Web Popover -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10 z-10"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-popover
+                </div>
+                <div class="flex place-content-center py-12">
+                    <web-popover ui="spatial">
+                        <web-button ui="spatial" slot="trigger">Open Popover</web-button>
+                        <div
+                            class="p-4 text-sm whitespace-nowrap"
+                        >
+                            This is the popover content
+                        </div>
+                    </web-popover>
+                </div>
+
+            </figure>
+
+            <!-- Web Split -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10 md:col-span-2 xl:col-span-3 z-0"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-split
+                </div>
+                <div
+                    class="h-[200px] w-full rounded-lg overflow-hidden relative"
+                >
+                    <web-split
+                        ui="spatial"
+                        direction="horizontal"
+                        size="0.5"
+                        showExpanded="true"
+                    >
+
+                        <div
+                            slot="primary"
+                            class="w-full h-full p-4 flex items-center justify-center"
+                        >
+                            Left Pane
+                        </div>
+                        <div
+                            slot="secondary"
+                            class="w-full h-full p-4 flex items-center justify-center"
+                        >
+                            Right Pane
+                        </div>
+                    </web-split>
+                </div>
+            </figure>
+
+            <!-- Web Text & Textarea -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10 md:col-span-2"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-text & textarea
+                </div>
+                <div class="flex flex-col gap-4 w-full max-w-md mx-auto">
+                    <web-text
+                        ui="spatial"
+                        placeholder="Enter username"
+                        prefix="@"
+                        clearable="true"></web-text>
+                    <web-text ui="spatial" type="password" placeholder="Enter password"
+                    ></web-text>
+                    <web-textarea ui="spatial" placeholder="Enter message" rows="3"
+                    ></web-textarea>
+                    
+                    <div class="border-t border-white/10 pt-4 mt-2">
+                        <p class="text-[10px] uppercase opacity-50 mb-2">Web Input (with slots)</p>
+                        <web-text ui="spatial" label="Username" placeholder="Input with slot prefix">
+                            <span slot="prefix" class="opacity-50">😆</span>
+                        </web-text>
+                    </div>
+                </div>
+
+            </figure>
+
+            <!-- Web Toast -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    web-toast
+                </div>
+                <div class="flex flex-col items-center gap-4">
+                    <web-button
+                        ui="spatial"
+                        onclick="window.webToast({message: 'Success Notification!', type: 'success'})"
+                        type="outline"
+                        color="success">Show Success Toast</web-button>
+                    <web-button
+                        ui="spatial"
+                        onclick="window.webToast({message: 'Error Notification!', type: 'error'})"
+                        type="dash"
+                        color="error">Show Error Toast</web-button>
+                </div>
+                <web-toast ui="spatial"></web-toast>
+
+            </figure>
+            
+            <!-- Svc Graph -->
+            <figure
+                class="relative group hover:bg-gray-500/5 px-4 py-6 rounded-lg place-content-center border border-white/10 md:col-span-2 xl:col-span-3"
+            >
+                <div
+                    class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
+                >
+                    svc-graph / svc-pie (ECharts)
+                </div>
+                <div class="w-full flex flex-col gap-8">
+                    <!-- Group 1: Revenue/Profit/Expenses by month — same dataset across chart shapes -->
+                    <div>
+                        <p class="text-[10px] uppercase opacity-50 mb-4">svc-graph — mixed bar/line/area: Revenue / Profit / Expenses by month</p>
+                        <svc-graph
+                            ui="spatial"
+                            main-colors="#008FFB|#00E396|#FEB019|#FF4560|#775DD0"
+                            title="Revenue / Profit / Expenses by Month"
+                            height="400px"
+                            table="true"
+                            table-width="340px"
+                            option='{"dataset":{"source":[["Month","Revenue","Profit","Expenses"],["Jan",44,55,30],["Feb",55,69,25],["Mar",31,45,36],["Apr",47,61,30],["May",31,43,45],["Jun",43,54,35],["Jul",26,37,64],["Aug",41,52,52],["Sep",31,44,59],["Oct",47,61,36],["Nov",33,43,39]]},"xAxis":{"type":"category"},"yAxis":{},"tooltip":{"trigger":"axis"},"series":[{"type":"bar","name":"Revenue"},{"type":"line","name":"Profit","smooth":true,"areaStyle":{}},{"type":"line","name":"Expenses","smooth":true}]}'
+                        ></svc-graph>
+                    </div>
+                    <div class="border-t border-white/10 pt-8">
+                        <p class="text-[10px] uppercase opacity-50 mb-4">svc-graph — bar (grouped): Revenue vs Profit vs Expenses</p>
+                        <svc-graph
+                            ui="spatial"
+                            main-colors="#008FFB|#00E396|#FEB019|#FF4560|#775DD0"
+                            title="Revenue vs Profit vs Expenses"
+                            height="320px"
+                            table="false"
+                            option='{"dataset":{"source":[["Month","Revenue","Profit","Expenses"],["Jan",44,55,30],["Feb",55,69,25],["Mar",31,45,36],["Apr",47,61,30],["May",31,43,45],["Jun",43,54,35],["Jul",26,37,64],["Aug",41,52,52],["Sep",31,44,59],["Oct",47,61,36],["Nov",33,43,39]]},"xAxis":{"type":"category"},"yAxis":{},"tooltip":{"trigger":"axis"},"series":[{"type":"bar","name":"Revenue"},{"type":"bar","name":"Profit"},{"type":"bar","name":"Expenses"}]}'
+                        ></svc-graph>
+                    </div>
+                    <div class="border-t border-white/10 pt-8">
+                        <p class="text-[10px] uppercase opacity-50 mb-4">svc-graph — line (smooth): Revenue / Profit / Expenses trend</p>
+                        <svc-graph
+                            ui="spatial"
+                            main-colors="#008FFB|#00E396|#FEB019|#FF4560|#775DD0"
+                            title="Revenue / Profit / Expenses Trend"
+                            height="320px"
+                            table="false"
+                            option='{"dataset":{"source":[["Month","Revenue","Profit","Expenses"],["Jan",44,55,30],["Feb",55,69,25],["Mar",31,45,36],["Apr",47,61,30],["May",31,43,45],["Jun",43,54,35],["Jul",26,37,64],["Aug",41,52,52],["Sep",31,44,59],["Oct",47,61,36],["Nov",33,43,39]]},"xAxis":{"type":"category"},"yAxis":{},"tooltip":{"trigger":"axis"},"series":[{"type":"line","name":"Revenue","smooth":true},{"type":"line","name":"Profit","smooth":true},{"type":"line","name":"Expenses","smooth":true}]}'
+                        ></svc-graph>
+                    </div>
+                    <div class="border-t border-white/10 pt-8">
+                        <p class="text-[10px] uppercase opacity-50 mb-4">svc-graph — bar stacked: total Revenue + Profit + Expenses</p>
+                        <svc-graph
+                            ui="spatial"
+                            main-colors="#008FFB|#00E396|#FEB019|#FF4560|#775DD0"
+                            title="Revenue + Profit + Expenses (Stacked)"
+                            height="320px"
+                            table="true"
+                            table-width="340px"
+                            option='{"dataset":{"source":[["Month","Revenue","Profit","Expenses"],["Jan",44,55,30],["Feb",55,69,25],["Mar",31,45,36],["Apr",47,61,30],["May",31,43,45],["Jun",43,54,35],["Jul",26,37,64],["Aug",41,52,52],["Sep",31,44,59],["Oct",47,61,36],["Nov",33,43,39]]},"xAxis":{"type":"category"},"yAxis":{},"tooltip":{"trigger":"axis"},"series":[{"type":"bar","name":"Revenue","stack":"total"},{"type":"bar","name":"Profit","stack":"total"},{"type":"bar","name":"Expenses","stack":"total"}]}'
+                        ></svc-graph>
+                    </div>
+
+                    <!-- Group 2: Area — visits by marketing channel -->
+                    <div class="border-t border-white/10 pt-8">
+                        <p class="text-[10px] uppercase opacity-50 mb-4">svc-graph — stacked smooth area (gradient): visits by marketing channel, data label at each point</p>
+                        <svc-graph
+                            ui="spatial"
+                            main-colors="#2dd4bf|#818cf8|#f472b6|#fbbf24"
+                            title="Weekly Marketing Channel Visits"
+                            height="480px"
+                            table="true"
+                            table-width="320px"
+                            option='{"tooltip":{"trigger":"axis"},"dataset":{"source":[["Day","Organic Search","Referral","Social Media","Paid Ads"],["Mon",150,120,220,260],["Tue",230,180,350,300],["Wed",180,60,130,210],["Thu",270,150,210,250],["Fri",130,60,160,200],["Sat",330,250,230,320],["Sun",200,120,180,220]]},"xAxis":{"type":"category"},"yAxis":{"type":"value"},"series":[{"name":"Organic Search","type":"line","stack":"total","smooth":true,"symbol":"circle","label":{"show":true},"areaStyle":{"opacity":1,"color":{"type":"linear","x":0,"y":0,"x2":0,"y2":1,"colorStops":[{"offset":0,"color":"#2dd4bf"},{"offset":1,"color":"#0ea5e9"}]}}},{"name":"Referral","type":"line","stack":"total","smooth":true,"symbol":"circle","label":{"show":true},"areaStyle":{"opacity":1,"color":{"type":"linear","x":0,"y":0,"x2":0,"y2":1,"colorStops":[{"offset":0,"color":"#818cf8"},{"offset":1,"color":"#7c3aed"}]}}},{"name":"Social Media","type":"line","stack":"total","smooth":true,"symbol":"circle","label":{"show":true},"areaStyle":{"opacity":1,"color":{"type":"linear","x":0,"y":0,"x2":0,"y2":1,"colorStops":[{"offset":0,"color":"#f472b6"},{"offset":1,"color":"#c026d3"}]}}},{"name":"Paid Ads","type":"line","stack":"total","smooth":true,"symbol":"circle","label":{"show":true},"areaStyle":{"opacity":1,"color":{"type":"linear","x":0,"y":0,"x2":0,"y2":1,"colorStops":[{"offset":0,"color":"#fbbf24"},{"offset":1,"color":"#f97316"}]}}}]}'
+                        ></svc-graph>
+                    </div>
+
+                    <!-- Group 3: Bar grouped (no stack) — sales by region -->
+                    <div class="border-t border-white/10 pt-8">
+                        <p class="text-[10px] uppercase opacity-50 mb-4">svc-graph — horizontal grouped bar (no stack): Sales by Region</p>
+                        <svc-graph
+                            ui="spatial"
+                            main-colors="#5b6ee1|#a3cf3c|#3f3f5c|#f7a35c|#2fbfe0"
+                            title="Sales by Region (Horizontal)"
+                            height="600px"
+                            table="true"
+                            table-width="280px"
+                            option='{"tooltip":{"trigger":"axis","axisPointer":{"type":"shadow"}},"dataset":{"source":[["Year","North","Central","South"],["2020",320,220,150],["2021",332,182,232],["2022",301,191,201],["2023",334,234,154],["2024",390,290,190]]},"xAxis":{"type":"value"},"yAxis":{"type":"category"},"series":[{"name":"North","type":"bar","label":{"show":true,"position":"insideLeft","formatter":"{a}"}},{"name":"Central","type":"bar","label":{"show":true,"position":"insideLeft","formatter":"{a}"}},{"name":"South","type":"bar","label":{"show":true,"position":"insideLeft","formatter":"{a}"}}]}'
+                        ></svc-graph>
+                    </div>
+                    <div class="border-t border-white/10 pt-8">
+                        <p class="text-[10px] uppercase opacity-50 mb-4">svc-graph — vertical grouped bar (no stack), label flush bottom: Sales by Region</p>
+                        <svc-graph
+                            ui="spatial"
+                            main-colors="#5b6ee1|#a3cf3c|#3f3f5c|#f7a35c|#2fbfe0"
+                            title="Sales by Region (Vertical)"
+                            height="500px"
+                            table="true"
+                            table-width="280px"
+                            option='{"tooltip":{"trigger":"axis","axisPointer":{"type":"shadow"}},"dataset":{"source":[["Year","North","Central","South","West"],["2020",320,220,150,98],["2021",332,182,232,77],["2022",301,191,201,101],["2023",334,234,154,99],["2024",390,290,190,40]]},"xAxis":{"type":"category"},"yAxis":{"type":"value"},"series":[{"name":"North","type":"bar","label":{"show":true,"position":"insideBottom","rotate":90,"align":"left","verticalAlign":"center","formatter":"{a}"}},{"name":"Central","type":"bar","label":{"show":true,"position":"insideBottom","rotate":90,"align":"left","verticalAlign":"center","formatter":"{a}"}},{"name":"South","type":"bar","label":{"show":true,"position":"insideBottom","rotate":90,"align":"left","verticalAlign":"center","formatter":"{a}"}},{"name":"West","type":"bar","label":{"show":true,"position":"insideBottom","rotate":90,"align":"left","verticalAlign":"center","formatter":"{a}"}}]}'
+                        ></svc-graph>
+                    </div>
+
+                    <!-- Group 4: Bar stacked multi-series / negative values -->
+                    <div class="border-t border-white/10 pt-8">
+                        <p class="text-[10px] uppercase opacity-50 mb-4">svc-graph — horizontal stack (5 series): Revenue by Marketing Channel</p>
+                        <svc-graph
+                            ui="spatial"
+                            main-colors="#5b6ee1|#a3cf3c|#3f3f5c|#f7a35c|#2fbfe0"
+                            title="Weekly Revenue by Marketing Channel"
+                            height="400px"
+                            table="true"
+                            table-width="320px"
+                            option='{"tooltip":{"trigger":"axis","axisPointer":{"type":"shadow"}},"dataset":{"source":[["Day","Direct","Mail Ad","Affiliate Ad","Video Ad","Search Engine"],["Mon",320,120,220,150,820],["Tue",302,132,182,212,832],["Wed",301,101,191,201,901],["Thu",334,134,234,154,934],["Fri",390,90,290,190,1290],["Sat",330,230,330,330,1330],["Sun",320,210,310,410,1320]]},"xAxis":{"type":"value"},"yAxis":{"type":"category"},"series":[{"name":"Direct","type":"bar","stack":"total","label":{"show":true},"emphasis":{"focus":"series"}},{"name":"Mail Ad","type":"bar","stack":"total","label":{"show":true},"emphasis":{"focus":"series"}},{"name":"Affiliate Ad","type":"bar","stack":"total","label":{"show":true},"emphasis":{"focus":"series"}},{"name":"Video Ad","type":"bar","stack":"total","label":{"show":true},"emphasis":{"focus":"series"}},{"name":"Search Engine","type":"bar","stack":"total","label":{"show":true},"emphasis":{"focus":"series"}}]}'
+                        ></svc-graph>
+                    </div>
+                    <div class="border-t border-white/10 pt-8">
+                        <p class="text-[10px] uppercase opacity-50 mb-4">svc-graph — bar with negative values: Weekly Profit / Income / Expenses</p>
+                        <svc-graph
+                            ui="spatial"
+                            main-colors="#5b6ee1|#a3cf3c|#3f3f5c|#f7a35c|#2fbfe0"
+                            title="Weekly Profit / Income / Expenses"
+                            height="500px"
+                            table="true"
+                            table-width="320px"
+                            option='{"tooltip":{"trigger":"axis","axisPointer":{"type":"shadow"}},"dataset":{"source":[["Day","Profit","Income","Expenses"],["Mon",200,320,-120],["Tue",170,302,-132],["Wed",240,341,-101],["Thu",244,374,-134],["Fri",200,390,-190],["Sat",220,450,-230],["Sun",210,420,-210]]},"xAxis":[{"type":"value"}],"yAxis":[{"type":"category","axisTick":{"show":false}}],"series":[{"name":"Profit","type":"bar","label":{"show":true,"position":"inside"},"emphasis":{"focus":"series"}},{"name":"Income","type":"bar","stack":"Total","label":{"show":true},"emphasis":{"focus":"series"}},{"name":"Expenses","type":"bar","stack":"Total","label":{"show":true,"position":"left"},"emphasis":{"focus":"series"}}]}'
+                        ></svc-graph>
+                    </div>
+
+                    <!-- Group 5: Pie family — revenue by sales channel -->
+                    <div class="border-t border-white/10 pt-8">
+                        <p class="text-[10px] uppercase opacity-50 mb-4">svc-pie — pie: Revenue by Sales Channel</p>
+                        <svc-pie
+                            ui="spatial"
+                            main-colors="#008FFB|#00E396|#FEB019|#FF4560|#775DD0"
+                            title="Revenue by Sales Channel"
+                            height="320px"
+                            table="true"
+                            table-width="240px"
+                            option='{"dataset":{"source":[["Sales Channel","Revenue"],["Online",442],["Retail Store",629],["Distributor",475]]},"tooltip":{"trigger":"item"},"series":[{"type":"pie","radius":"60%"}]}'
+                        ></svc-pie>
+                    </div>
+                    <div class="border-t border-white/10 pt-8">
+                        <p class="text-[10px] uppercase opacity-50 mb-4">svc-pie — doughnut (padAngle + rounded corners): Revenue by Sales Channel</p>
+                        <svc-pie
+                            ui="spatial"
+                            main-colors="#008FFB|#00E396|#FEB019|#FF4560|#775DD0"
+                            title="Revenue by Sales Channel"
+                            height="320px"
+                            table="false"
+                            option='{"dataset":{"source":[["Sales Channel","Revenue"],["Online",442],["Retail Store",629],["Distributor",475]]},"tooltip":{"trigger":"item"},"series":[{"type":"pie","radius":["40%","70%"],"padAngle":5,"itemStyle":{"borderRadius":10}}]}'
+                        ></svc-pie>
+                    </div>
+                    <div class="border-t border-white/10 pt-8">
+                        <p class="text-[10px] uppercase opacity-50 mb-4">svc-pie — rose/nightingale (rounded corners, 8 slices)</p>
+                        <svc-pie
+                            ui="spatial"
+                            main-colors="#008FFB|#00E396|#FEB019|#FF4560|#775DD0"
+                            title="Rounded Rose Chart"
+                            height="420px"
+                            table="false"
+                            option='{"dataset":{"source":[["Category","Value"],["rose 1",40],["rose 2",38],["rose 3",32],["rose 4",30],["rose 5",28],["rose 6",26],["rose 7",22],["rose 8",18]]},"tooltip":{"trigger":"item"},"series":[{"type":"pie","radius":["20%","70%"],"roseType":"radius","itemStyle":{"borderRadius":8}}]}'
+                        ></svc-pie>
+                    </div>
+
+                    <!-- Group 6: Polar (bar in polar coordinates) — reuses the Revenue/Profit/Expenses dataset -->
+                    <div class="border-t border-white/10 pt-8">
+                        <p class="text-[10px] uppercase opacity-50 mb-4">svc-pie — polar (bar in polar coordinates): Revenue / Profit / Expenses by month</p>
+                        <svc-pie
+                            ui="spatial"
+                            main-colors="#008FFB|#00E396|#FEB019|#FF4560|#775DD0"
+                            title="Revenue / Profit / Expenses (Polar)"
+                            height="400px"
+                            table="true"
+                            table-width="360px"
+                            option='{"dataset":{"source":[["Month","Revenue","Profit","Expenses"],["Jan",44,55,30],["Feb",55,69,25],["Mar",31,45,36],["Apr",47,61,30],["May",31,43,45],["Jun",43,54,35],["Jul",26,37,64],["Aug",41,52,52],["Sep",31,44,59],["Oct",47,61,36],["Nov",33,43,39]]},"angleAxis":{},"radiusAxis":{"type":"category","data":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov"]},"polar":{},"tooltip":{},"series":[{"type":"bar","name":"Revenue","coordinateSystem":"polar","data":[44,55,31,47,31,43,26,41,31,47,33]},{"type":"bar","name":"Profit","coordinateSystem":"polar","data":[55,69,45,61,43,54,37,52,44,61,43]},{"type":"bar","name":"Expenses","coordinateSystem":"polar","data":[30,25,36,30,45,35,64,52,59,36,39]}]}'
+                        ></svc-pie>
+                    </div>
+                </div>
+            </figure>
+        </div>
+    </div>
+</LayoutUI>

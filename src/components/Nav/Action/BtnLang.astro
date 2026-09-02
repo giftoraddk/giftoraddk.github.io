@@ -1,0 +1,62 @@
+---
+// BtnLang component for toggling site language (vi|en) — mirrors BtnTheme.astro's
+// cookie-persisted toggle pattern. Purely a UI preference switch for now: the codebase
+// has no i18n content pipeline yet, so this only flips `<html lang>` + a cookie.
+---
+
+<div class="lang-toggle flex items-center gap-0.5 rounded-full bg-white/15 p-0.5 text-[11px] font-semibold uppercase leading-none">
+	<button type="button" data-lang="vi" class="lang-btn rounded-full px-2.5 py-1.5 transition-colors" aria-label="Tiếng Việt">VI</button>
+	<button type="button" data-lang="en" class="lang-btn rounded-full px-2.5 py-1.5 transition-colors" aria-label="English">EN</button>
+</div>
+
+<style>
+	.lang-btn[aria-pressed='true'] {
+		background-color: white;
+		color: var(--color-primary);
+	}
+	.lang-btn:not([aria-pressed='true']) {
+		color: rgba(255, 255, 255, 0.75);
+	}
+</style>
+
+<script>
+	import { ClientCookies, COOKIE_CONFIG } from '@/services/storeCookie.js';
+	import { site } from '@/services/constants/site.js';
+
+	const initBtnLang = () => {
+		const toggles = document.querySelectorAll<HTMLElement>('.lang-toggle');
+		if (!toggles.length) return;
+
+		// Không cookie → giữ đúng site.defaultLang mà Core.astro/CoreShop.astro đã SSR sẵn vào
+		// <html lang>, KHÔNG hardcode 'vi' ở đây (từng khiến JS ghi đè ngược default SSR).
+		const lang = ClientCookies.get(COOKIE_CONFIG.LANGUAGE) ?? site.defaultLang;
+
+		const syncUI = (l: string) => {
+			document.documentElement.setAttribute('lang', l);
+			ClientCookies.set(COOKIE_CONFIG.LANGUAGE, l);
+			toggles.forEach((wrap) => {
+				wrap.querySelectorAll<HTMLButtonElement>('.lang-btn').forEach((btn) => {
+					btn.setAttribute('aria-pressed', String(btn.dataset.lang === l));
+				});
+			});
+		};
+
+		syncUI(lang);
+
+		toggles.forEach((wrap) => {
+			if (wrap.hasAttribute('data-initialized')) return;
+			wrap.setAttribute('data-initialized', 'true');
+
+			wrap.querySelectorAll<HTMLButtonElement>('.lang-btn').forEach((btn) => {
+				btn.addEventListener('click', () => syncUI(btn.dataset.lang || site.defaultLang));
+			});
+		});
+	};
+
+	document.addEventListener('astro:page-load', initBtnLang);
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initBtnLang);
+	} else {
+		initBtnLang();
+	}
+</script>

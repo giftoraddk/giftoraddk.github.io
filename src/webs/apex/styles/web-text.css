@@ -1,0 +1,123 @@
+:host {
+  display: block;
+  width: 100%;
+  --core-height: var(--height-selector, 2.25rem);
+  --core-radius: var(--radius-selector, 0.5rem);
+  --core-blur: var(--haze-blur, 12px);
+  --core-glass: var(--haze-glass, 20%);
+  --core-font: var(--font-sans, 'system-ui');
+}
+
+.web-text {
+	font-family: var(--core-font);
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 100%;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+  height: var(--core-height);
+  background-color: var(--color-base-100, #0d0d0d);
+  border: 1px solid var(--color-base-300, #393939);
+  border-radius: var(--core-radius);
+}
+
+.web-text:hover {
+  border-color: var(--color-primary, #2ebd85);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.web-text:focus-within {
+  border-color: var(--color-primary, #2ebd85);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary, #2ebd85) 15%, transparent);
+}
+
+.text-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0 16px;
+  height: 100%;
+  font-weight: 500;
+  color: var(--color-base-content, #ffffff);
+  font-size: 14px;
+}
+.text-input:disabled {
+  cursor: not-allowed;
+}
+
+.text-input::placeholder {
+  color: color-mix(in oklab, var(--color-base-content, #ffffff) 60%, transparent);
+}
+
+.prefix-text,
+.suffix-text {
+  pointer-events: none;
+  user-select: none;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: color-mix(in oklab, var(--color-base-content, #ffffff) 50%, transparent);
+}
+
+.prefix-text {
+  padding-left: 16px;
+}
+
+.suffix-text {
+  padding-right: 16px;
+}
+
+.clear-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border-radius: 50%;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  margin-right: 4px;
+  color: var(--color-base-content, #ffffff);
+  opacity: 0.5;
+  transition: all 0.2s ease;
+}
+
+.clear-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
+}
+
+.clear-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/**
+ * ----------------------------------------
+ * Glassmorphism - spatial
+ * ----------------------------------------
+ */
+.spatial.web-text {
+    background: color-mix(in oklab, var(--color-base-300, #393939) var(--core-glass), transparent);
+    backdrop-filter: blur(var(--core-blur));
+    border: 1px solid #ffffff4d;
+}
+
+
+.spatial.web-text:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.spatial.web-text:focus-within {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--color-primary, #2ebd85);
+}

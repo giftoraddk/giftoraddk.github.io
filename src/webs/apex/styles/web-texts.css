@@ -1,0 +1,68 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.web-texts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.wt-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+web-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.wt-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s, transform 0.15s;
+  border: 1px dashed color-mix(in oklab, var(--color-error, #f5465c) 50%, transparent);
+  background: transparent;
+  outline: none;
+}
+
+.wt-btn:disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.wt-btn svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
+
+.wt-del {
+  color: var(--color-error);
+}
+
+.wt-del:hover {
+  background: color-mix(in oklab, var(--color-error, #f5465c) 15%, transparent);
+}
+
+.wt-add {
+  color: var(--color-primary, #2ebd85);
+  border-color: color-mix(in oklab, var(--color-primary, #2ebd85) 50%, transparent);
+}
+
+.wt-add:hover {
+  background: color-mix(in oklab, var(--color-primary, #2ebd85) 15%, transparent);
+  border-color: var(--color-primary, #2ebd85);
+}

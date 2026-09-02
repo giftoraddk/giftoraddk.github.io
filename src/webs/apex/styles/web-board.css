@@ -1,0 +1,126 @@
+/* ── web-board: drag/drop dashboard board ───────────────────────────────────── */
+
+.wb-board {
+	opacity: 0;
+	transform: translateY(10px);
+	transition: opacity 0.45s ease, transform 0.45s ease;
+	gap: 0 0.5rem !important;
+}
+
+.wb-board.is-ready {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+.wb-item {
+	position: relative;
+	transition: opacity 0.2s ease, box-shadow 0.2s ease;
+}
+
+.wb-item.is-dragging {
+	opacity: 0.35;
+	pointer-events: none;
+}
+
+/* Block child events during drag so dragleave only fires on true item boundary exit */
+.wb-board .wb-item {
+	user-select: text;
+}
+
+.wb-item.wb-over::before {
+	content: '';
+	position: absolute;
+	inset: -3px;
+	border-radius: 0.75rem;
+	border: 2px dashed var(--color-primary, #2ebd85);
+	pointer-events: none;
+	z-index: 10;
+}
+
+/* ── Handle group ──────────────────────────────────────────────────────────────
+   `handles="absolute"` (default): overlays the item's top-right corner.
+   `handles="static"`: sits in normal flow, right-aligned, always visible —
+   pushes the item's own content down instead of floating over it. */
+.wb-handles {
+	display: flex;
+	gap: 0.3rem;
+}
+
+.wb-handles-absolute {
+	position: absolute;
+	top: 0.3rem;
+	right: 0.3rem;
+	z-index: 20;
+}
+
+.wb-handles-static {
+	position: static;
+	justify-content: flex-end;
+  margin: 0.5rem 0 2px;
+}
+
+.wb-drag-handle,
+.wb-resize-handle,
+.wb-config-handle,
+.wb-remove-handle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: grab;
+  font-size: 1.4rem;
+  width: 2rem;
+  height: 2rem;
+  color: var(--color-base-content, #f3f4f6);
+  padding: 0.5rem;
+  border-radius: 2rem;
+	background: rgba(255, 255, 255, 0.12);
+	-webkit-user-select: none;
+	user-select: none;
+	touch-action: none;
+	line-height: 1;
+}
+
+.wb-resize-handle {
+	cursor: col-resize;
+}
+
+.wb-config-handle,
+.wb-remove-handle {
+	cursor: pointer;
+}
+
+.wb-remove-handle:hover {
+	background: color-mix(in oklab, var(--color-error, #f5465c) 25%, transparent);
+	color: var(--color-error, #f5465c);
+}
+
+.wb-drag-handle:active  { cursor: grabbing; }
+
+.wb-board.is-resizing {
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+/* ── Empty section state (configurable flow) ─────────────────────────────────── */
+.wb-empty {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 200px;
+	border: 2px dashed var(--color-base-300, rgba(255, 255, 255, 0.2));
+	border-radius: 0.75rem;
+	color: var(--color-base-content, #f3f4f6);
+	opacity: 0.6;
+	font-size: 0.9rem;
+	text-align: center;
+	padding: 1rem;
+}
+
+.wb-empty.is-clickable {
+	cursor: pointer;
+}
+
+.wb-empty.is-clickable:hover {
+	opacity: 0.85;
+	border-color: var(--color-primary, #2ebd85);
+}

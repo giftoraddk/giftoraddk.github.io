@@ -1,0 +1,54 @@
+:host {
+    display: inline-block;
+    --core-radius: var(--radius-selector, 0.5rem);
+    --core-font: var(--font-sans, 'system-ui');
+}
+
+.audio-wrap {
+    font-family: var(--core-font);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.5rem;
+    border-radius: calc(var(--core-radius) * 2);
+    background-color: color-mix(in oklab, var(--color-base-content, #ffffff) 6%, transparent);
+}
+
+.audio-wave {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 24px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.audio-wave-empty {
+    flex: 1;
+    min-width: 0;
+    height: 24px;
+}
+
+.audio-bar {
+    flex: 1;
+    min-width: 2px;
+    border-radius: 2px;
+    background-color: color-mix(in oklab, var(--color-base-content, #ffffff) 25%, transparent);
+}
+
+.audio-bar.played {
+    background-color: var(--color-primary, #2ebd85);
+}
+
+.audio-duration {
+    font-size: 0.7rem;
+    color: color-mix(in oklab, var(--color-base-content, #ffffff) 60%, transparent);
+    min-width: 2.2em;
+    text-align: right;
+}
+
+audio {
+    display: none;
+}

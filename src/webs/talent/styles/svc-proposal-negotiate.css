@@ -1,0 +1,11 @@
+:host { display: block; width: 100%; box-sizing: border-box; color: var(--color-base-content); }
+
+.negotiate { display: flex; flex-direction: column; gap: 1rem; }
+.negotiate-history { display: flex; flex-direction: column; gap: 0.6rem; max-height: 16rem; overflow-y: auto; }
+.negotiate-entry { padding: 0.6rem 0.75rem; border-radius: 0.75rem; background: color-mix(in oklab, var(--color-base-content) 5%, transparent); }
+.negotiate-entry-head { display: flex; justify-content: space-between; font-size: 0.8rem; opacity: 0.75; }
+.negotiate-entry-terms { font-size: 0.9rem; font-weight: 600; margin-top: 0.15rem; }
+.negotiate-entry p { margin: 0.25rem 0 0; opacity: 0.85; }
+
+.negotiate-form { display: flex; flex-direction: column; gap: 0.5rem; max-width: 22rem; }
+.negotiate-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }

@@ -1,0 +1,199 @@
+/* src/webs/media/styles/svc-player-embed.css */
+:host {
+  display: block;
+  width: 100%;
+  --core-height: var(--height-selector, 2.25rem);
+  --core-radius: var(--radius-selector, 0.5rem);
+  --core-blur:   var(--haze-blur, 12px);
+  --core-glass:  var(--haze-glass, 20%);
+  --core-font: var(--font-sans, 'system-ui');
+}
+
+/* ── Input wrapper ── */
+.svc-player-input {
+  font-family: var(--core-font);
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 100%;
+  height: var(--core-height);
+  background-color: var(--color-base-100, #0d0d0d);
+  border: 1px solid var(--color-base-300, #393939);
+  border-radius: var(--core-radius);
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+}
+
+.svc-player-input:hover {
+  border-color: var(--color-primary, #2ebd85);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.svc-player-input:focus-within {
+  border-color: var(--color-primary, #2ebd85);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary, #2ebd85) 15%, transparent);
+}
+
+.svc-player-input.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.text-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0 12px;
+  height: 100%;
+  font-weight: 500;
+  color: var(--color-base-content, #ffffff);
+  font-size: 13px;
+}
+
+.text-input::placeholder {
+  color: color-mix(in oklab, var(--color-base-content, #ffffff) 45%, transparent);
+}
+
+/* ── Clear button ── */
+.clear-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  color: var(--color-base-content, #ffffff);
+  opacity: 0.4;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  padding: 0;
+  margin-right: 4px;
+}
+
+.clear-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.clear-btn svg {
+  width: 13px;
+  height: 13px;
+  stroke-width: 2.5;
+}
+
+/* ── Preview button ── */
+.preview-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--core-height) - 2px);
+  height: calc(var(--core-height) - 2px);
+  background: var(--color-primary, #2ebd85);
+  border: none;
+  border-radius: calc(var(--core-radius) - 1px);
+  cursor: pointer;
+  color: #fff;
+  flex-shrink: 0;
+  padding: 0;
+  transition: filter 0.2s ease;
+}
+
+.preview-btn:hover { filter: brightness(1.12); }
+
+.preview-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* ── Preview popup ── */
+.preview-modal {
+  position: relative;
+  width: min(900px, 94vw);
+  border-radius: 12px;
+  overflow: hidden;
+  animation: card-in 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.preview-modal-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.55) !important;
+  border-radius: 50% !important;
+}
+
+.preview-modal-player {
+  display: block;
+  width: 100%;
+}
+
+.modal-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  padding: 0;
+}
+
+.modal-close:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.modal-close svg {
+  width: 16px;
+  height: 16px;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
+  animation: backdrop-in 0.18s ease;
+}
+
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: scale(0.93) translateY(10px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+
+/* ── Spatial ── */
+.spatial.svc-player-input {
+  background: color-mix(in oklab, var(--color-base-300, #393939) var(--core-glass), transparent);
+  backdrop-filter: blur(var(--core-blur));
+  border: 1px solid #ffffff4d;
+}
+
+.spatial.svc-player-input:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.spatial.svc-player-input:focus-within {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--color-primary, #2ebd85);
+}

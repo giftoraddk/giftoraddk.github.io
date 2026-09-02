@@ -1,0 +1,76 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-expansion'
+description: 'Accordion — mở rộng/thu gọn nội dung theo từng mục'
+---
+
+# web-expansion
+
+Accordion hiển thị danh sách các mục có thể mở rộng hoặc thu gọn. Mặc định chỉ cho phép mở một mục cùng lúc; bật `multiple` để mở nhiều mục đồng thời.
+
+## Khi nào dùng
+
+- Trang FAQ (câu hỏi thường gặp) để tiết kiệm không gian
+- Mục lục tài liệu có thể thu gọn từng phần
+- Form nhiều bước hoặc thông tin phân nhóm cần ẩn bớt để giảm tải nhận thức
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-expansion.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `items` | array JSON | `[]` | Mảng các mục: `[{ "title": "Tiêu đề", "content": "Nội dung" }]` |
+| `multiple` | boolean | `false` | Cho phép mở nhiều mục cùng lúc |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Ví dụ cơ bản
+
+```html
+<web-expansion items='[
+  {"title":"Câu hỏi 1","content":"Nội dung trả lời câu hỏi 1"},
+  {"title":"Câu hỏi 2","content":"Nội dung trả lời câu hỏi 2"}
+]'></web-expansion>
+```
+
+## Ví dụ nâng cao
+
+FAQ với nhiều câu hỏi, cho phép mở nhiều mục:
+
+```html
+<web-expansion multiple ui="spatial" items='[
+  {
+    "title": "Làm thế nào để bắt đầu?",
+    "content": "Truy cập trang đăng ký, điền thông tin và xác nhận email để kích hoạt tài khoản."
+  },
+  {
+    "title": "Có thể hủy đăng ký bất kỳ lúc nào không?",
+    "content": "Có, bạn có thể hủy đăng ký bất cứ lúc nào từ trang cài đặt tài khoản mà không mất phí phát sinh thêm."
+  },
+  {
+    "title": "Các phương thức thanh toán được chấp nhận?",
+    "content": "Chúng tôi chấp nhận thẻ Visa, Mastercard, chuyển khoản ngân hàng và ví điện tử MoMo, ZaloPay."
+  },
+  {
+    "title": "Dữ liệu của tôi có được bảo mật không?",
+    "content": "Toàn bộ dữ liệu được mã hóa bằng TLS 1.3 và lưu trữ tại trung tâm dữ liệu đạt chuẩn ISO 27001."
+  }
+]'></web-expansion>
+```
+
+Tải items từ JavaScript:
+
+```html
+<web-expansion id="faq" multiple></web-expansion>
+<script>
+  const items = [
+    { title: 'Mục 1', content: 'Nội dung mục 1' },
+    { title: 'Mục 2', content: 'Nội dung mục 2' },
+  ];
+  document.getElementById('faq').setAttribute('items', JSON.stringify(items));
+</script>
+```

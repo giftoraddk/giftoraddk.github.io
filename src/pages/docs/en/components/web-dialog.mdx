@@ -1,0 +1,113 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-dialog'
+description: 'Modal dialog overlay with title, slotted content, and open/close control'
+---
+
+# web-dialog
+
+A modal dialog that overlays the page. Supports a title, slotted body content, configurable max width, and programmatic open/close.
+
+## When to use
+
+- Confirm destructive actions (delete, cancel order)
+- Show a form that should block interaction with the rest of the page
+- Display an image, video, or detail panel in an overlay
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-dialog.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `open` | boolean | `false` | Whether the dialog is visible |
+| `title` | string | `''` | Dialog header title |
+| `maxWidth` | string | `'1200px'` | Maximum width of the dialog panel |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+| `persistent` | boolean | `false` | Force-action mode: hides the X button, disables click-outside-to-close, and renders built-in Cancel / Confirm buttons in the footer |
+| `lang` | string | `'vi'` | Language for built-in labels: `vi` \| `en` |
+| `txt` | object | — | Override built-in labels. Shape: `{ vi: { cancel, confirm }, en: { cancel, confirm } }` |
+
+## Basic Example
+
+```html
+<web-dialog id="confirm-dialog" title="Confirm Delete" open>
+  <p>Are you sure you want to delete this item? This action cannot be undone.</p>
+  <div slot="footer">
+    <web-button type="ghost"     id="cancel-btn">Cancel</web-button>
+    <web-button type="fill" color="error" id="confirm-btn">Delete</web-button>
+  </div>
+</web-dialog>
+
+<script type="module" src="/src/webs/apex/web-dialog.js"></script>
+<script type="module" src="/src/webs/apex/web-button.js"></script>
+```
+
+## Advanced Examples
+
+Open dialog from a button:
+
+```html
+<web-button type="fill" id="open-btn">Open Settings</web-button>
+
+<web-dialog id="settings-dialog" title="Settings" max-width="40rem">
+  <p>Dialog content goes here.</p>
+</web-dialog>
+
+<script>
+  document.getElementById('open-btn').addEventListener('click', () => {
+    document.getElementById('settings-dialog').setAttribute('open', '');
+  });
+
+  document.getElementById('settings-dialog').addEventListener('web-dialog-close', () => {
+    document.getElementById('settings-dialog').removeAttribute('open');
+  });
+</script>
+```
+
+Wide dialog with spatial UI:
+
+```html
+<web-dialog title="Product Preview" max-width="60rem" ui="spatial" open>
+  <web-gallery src="/img/product.jpg" alt="Product" rounded></web-gallery>
+</web-dialog>
+```
+
+## Persistent dialog
+
+When `persistent` is set, the dialog cannot be dismissed by clicking outside or via the X button. The user must explicitly choose an action:
+
+```html
+<web-dialog id="del-dialog" persistent title="Confirm Delete" lang="en">
+  <p>This action cannot be undone. Are you sure?</p>
+</web-dialog>
+
+<script>
+  const dialog = document.getElementById('del-dialog');
+  dialog.open = true;
+
+  dialog.addEventListener('confirm', () => doDelete());
+  dialog.addEventListener('cancel',  () => console.log('cancelled'));
+</script>
+```
+
+Custom labels via `txt`:
+
+```js
+dialog.txt = {
+  vi: { cancel: 'Không, giữ lại', confirm: 'Có, xoá ngay' },
+  en: { cancel: 'Keep it',        confirm: 'Yes, delete'  },
+}
+```
+
+## Events
+
+| Event | When | Detail |
+|---|---|---|
+| `close` | User clicks X or backdrop (non-persistent) | — |
+| `confirm` | User clicks Confirm button (persistent mode) | — |
+| `cancel` | User clicks Cancel button (persistent mode) | — |

@@ -1,0 +1,71 @@
+---
+// Nội dung trang danh mục bài viết theo tag — tách khỏi getStaticPaths/data-fetch để dùng chung
+// giữa biến thể SSG (src/pages/post/tag/[tag].astro) và ISR
+// (src/pages/post/tag/_render-modes/[tag].isr.astro).
+import { config as cardConfig } from '@/sections/another/_cardPost.js';
+import { site } from '@/services/constants/site.js';
+import { pickLang } from '@/services/helper.js';
+import I18nText from '@/components/I18nText.astro';
+
+interface Props {
+	tag: string;
+	tagSlug: string;
+	posts: any[];
+}
+
+const { tag, tagSlug, posts } = Astro.props;
+
+const pageUrl = `${site.domain.replace(/\/$/, '')}/post/tag/${tagSlug}/`;
+
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'BreadcrumbList',
+	itemListElement: [
+		{ '@type': 'ListItem', position: 1, name: pickLang({ en: 'Home', vi: 'Trang chủ' }), item: site.domain },
+		{ '@type': 'ListItem', position: 2, name: pickLang({ en: 'Posts', vi: 'Bài viết' }), item: `${site.domain}/post/` },
+		{ '@type': 'ListItem', position: 3, name: tag, item: pageUrl },
+	],
+};
+---
+
+<script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />
+
+<div class="mx-auto max-w-6xl px-4 py-8">
+
+	<!-- Breadcrumb -->
+	<nav aria-label="breadcrumb" class="mb-6 text-sm opacity-60">
+		<a href="/" class="hover:text-primary"><I18nText text={{ en: 'Home', vi: 'Trang chủ' }} /></a>
+		<span> / </span>
+		<a href="/post/" class="hover:text-primary"><I18nText text={{ en: 'Posts', vi: 'Bài viết' }} /></a>
+		<span> / </span>
+		<span>{tag}</span>
+	</nav>
+
+	<h1 class="text-3xl lg:text-4xl font-bold mb-6 text-center"><I18nText text={{ en: 'Post', vi: 'Bài viết' }} /> {tag}</h1>
+
+	<!-- SEO list — crawlable không cần JS -->
+	<ul class="sr-only" aria-hidden="true">
+		{posts.map((p: any) => (
+			<li><a href={p.meta.url}>{p.title}</a></li>
+		))}
+	</ul>
+
+	{posts.length > 0 ? (
+		<web-boxs data={JSON.stringify(posts)} config={JSON.stringify(cardConfig)} masonry lang={site.defaultLang} ui="modern"></web-boxs>
+	) : (
+		<p class="text-center opacity-60"><I18nText text={{ vi: 'Chưa có bài viết nào.', en: 'No posts yet.' }} /></p>
+	)}
+
+	<div class="mt-14 pt-8 border-t border-base-content/10 flex flex-col items-center gap-4">
+		<a href="/post/" class="group inline-flex items-center gap-3 px-7 py-3 rounded-2xl font-semibold
+			border border-base-content/10 bg-base-content/5
+			hover:bg-primary/10 hover:border-primary/30 hover:text-primary
+			transition-all duration-200 backdrop-blur-sm">
+			<I18nText text={{ vi: 'Xem tất cả bài viết', en: 'View all posts' }} />
+		</a>
+	</div>
+</div>
+
+<script>
+	import '@/webs/apex/web-boxs.js';
+</script>

@@ -1,0 +1,147 @@
+/** Colors
+  --color-base-100 = '#141414'
+  --color-base-200 = 'increase dark(white)/light(black) 12% of base-100'
+  --color-base-300 = 'increase dark(white)/light(black) 18% of base-100'
+  --color-base-content = '#f3f4f6'
+  --color-primary = '#2ebd85'
+  --color-secondary = '#f5465c'
+  --color-accent = '#a855f7'
+  --color-info = '#00c7d4'
+  --color-warning = '#fbbf24'
+*/
+
+:host {
+    display: inline-block;
+    --core-radius: var(--radius-selector, 0.25rem);
+    --core-blur: var(--haze-blur, 12px);
+    --core-glass: var(--haze-glass, 20%);
+    --core-font: var(--font-sans, 'system-ui');
+}
+
+
+.tooltip-container {
+	font-family: var(--core-font);
+    /* position: fixed + Popover API (top layer) — thoát khỏi overflow:hidden/auto và
+       containing-block do ancestor transform/filter/backdrop-filter tạo ra, bất kể lồng sâu
+       bao nhiêu. top/left do _updatePosition() tính và set inline. */
+    position: fixed;
+    /* Reset UA popover defaults (inset:0, margin:auto, padding, border) — top/left do
+       _updatePosition() tính và set inline; màu/viền hiển thị thật nằm ở .tooltip-content. */
+    inset: auto;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    z-index: 100;
+    visibility: hidden;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    width: max-content;
+    max-width: 280px;
+}
+
+.tooltip-container.show {
+    visibility: visible;
+    opacity: 1;
+}
+
+.tooltip-content {
+    background-color: #000000;
+    color: #ffffff;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: var(--core-radius);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    line-height: 1.4;
+    text-align: center;
+}
+
+
+/* Placements — top/left do JS (_updatePosition) tính theo getBoundingClientRect() của
+   :host, chỉ còn transform ở đây làm hiệu ứng slide-in nhẹ theo hướng placement. */
+.tooltip-container.top {
+    transform: translateY(-10px);
+}
+
+.tooltip-container.top.show {
+    transform: translateY(-6px);
+}
+
+.tooltip-container.bottom {
+    transform: translateY(10px);
+}
+
+.tooltip-container.bottom.show {
+    transform: translateY(6px);
+}
+
+.tooltip-container.left {
+    transform: translateX(-10px);
+}
+
+.tooltip-container.left.show {
+    transform: translateX(-6px);
+}
+
+.tooltip-container.right {
+    transform: translateX(10px);
+}
+
+.tooltip-container.right.show {
+    transform: translateX(6px);
+}
+
+/* Arrow */
+.tooltip-container::after {
+    content: '';
+    position: absolute;
+    border: 5px solid transparent;
+}
+
+.tooltip-container.top::after {
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-top-color: #000000;
+}
+
+.tooltip-container.bottom::after {
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-bottom-color: #000000;
+}
+
+.tooltip-container.left::after {
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    border-left-color: #000000;
+}
+
+.tooltip-container.right::after {
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    border-right-color: #000000;
+}
+
+
+/**
+ * ----------------------------------------
+ * Glassmorphism - spatial
+ * ----------------------------------------
+ */
+
+.spatial.tooltip-content {
+    color: var(--color-base-content, #ffffff);
+    background: color-mix(in oklab, var(--color-base-100, #0d0d0d) 90%, transparent);
+    border: 1px solid #ffffff4d;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+.tooltip-container.spatial::after {
+    content: none;
+}

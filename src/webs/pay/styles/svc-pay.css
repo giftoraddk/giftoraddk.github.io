@@ -1,0 +1,84 @@
+:host {
+    display: block;
+    --core-font: var(--font-sans, 'system-ui');
+    font-family: var(--core-font);
+    color: var(--color-base-content);
+}
+
+.pay-root { display: flex; flex-direction: column; gap: 0; }
+
+/* ── isCart mode: <svc-cart> nội bộ, dialog order-flow tự quản (_selfOpen) ───────────────────── */
+
+.pay-cart-wrap { display: contents; }
+
+/* ── Major steps — horizontal head kept sticky; only the (empty) head sticks, so the vertical
+   sub-stepper below scrolls freely underneath it. ─────────────────────────────────────────── */
+
+.major-steps {
+    /* position: sticky; */
+    top: 0;
+    z-index: 5;
+    padding: 1rem 1rem 0.5rem;
+    background: color-mix(in oklab, var(--color-base-100) 20%, transparent);
+	  border-bottom: 1px solid color-mix(in oklab, var(--color-base-content, #000) 12%, transparent);
+}
+
+.major-body { padding: 1rem 1.25rem 2rem; }
+
+.major-desc { font-size: 0.85rem; opacity: 0.7; margin: 0 0 1rem; }
+
+.sub-steps { max-width: 860px; }
+
+/* ── Panels renderer trực tiếp trong <svc-pay> — panel LIVE của 3 major đã tách sang
+   svc-pay-order.js/-processing.js/-delivery.js (CSS riêng mỗi file, xem docs/PAY.rst
+   §3.1/§3.12) — ở đây chỉ còn panel tóm tắt/xem lại (_rbOrderReadonlySummary,
+   _rbPastMajorSummary) + refund block dùng chung 2 major (_rbRefundBlock). ─────────────────── */
+
+.order-panel, .cancel-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.done-note { font-size: 0.85rem; opacity: 0.7; font-style: italic; }
+
+.cancel-block {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--color-base-300);
+}
+
+.hint { font-size: 0.8rem; opacity: 0.6; margin: 0; }
+
+.handled-by { font-size: 0.8rem; opacity: 0.65; margin: 0; }
+
+/* ── Buyer/seller (panel xem lại major "Đặt hàng" đã qua) ────────────────────────────────────── */
+
+.party-row { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; }
+.party-block { display: flex; flex-direction: column; gap: 0.15rem; }
+.party-label { font-size: 0.75rem; opacity: 0.6; }
+.party-value { font-size: 0.9rem; font-weight: 600; }
+
+/* ── Order items summary (dùng chung với svc-pay-order.js's panel 'placing' LIVE qua
+   tools/render.js's orderItemsBlock() — CSS vẫn cần khai báo riêng, Shadow DOM không share). ──── */
+
+.order-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.75rem 0.9rem;
+    border-radius: 0.75rem;
+    border: 1px solid color-mix(in oklab, var(--color-base-content, #000) 12%, transparent);
+    background: color-mix(in oklab, var(--color-base-100) 20%, transparent);
+}
+.order-items-empty { font-size: 0.85rem; opacity: 0.5; font-style: italic; margin: 0; }
+.order-item-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; }
+.order-item-name { opacity: 0.8; }
+.order-item-price { font-weight: 600; }
+.order-item-total {
+    margin-top: 0.3rem;
+    padding-top: 0.4rem;
+    border-top: 1px dashed var(--color-base-300);
+    font-weight: 700;
+    color: var(--color-primary);
+}

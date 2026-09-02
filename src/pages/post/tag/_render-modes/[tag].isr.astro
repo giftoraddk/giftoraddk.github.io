@@ -1,0 +1,46 @@
+---
+export const prerender = false;
+
+import Core from '@/layouts/Core.astro';
+import PostTagBody from '@/components/Post/TagBody.astro';
+import { fetchCollection } from '@/services/firestore.server.ts';
+import { postSlug, tagSlugMap, pickLang } from '@/services/helper.js';
+import { site } from '@/services/constants/site.js';
+import { menuItems, policies, socials } from '@/modules/landing/home.js';
+import I18nText from '@/components/I18nText.astro';
+
+// Biến thể ISR của src/pages/post/tag/[tag].astro — xem
+// src/pages/product/tag/_render-modes/[tag].isr.astro để biết cơ chế swap
+// (renderModeIntegration, astro.config.mjs).
+
+const tagSlug = Astro.params.tag as string;
+const posts = await fetchCollection('posts');
+const entry = tagSlugMap(posts).get(tagSlug);
+
+if (!entry) Astro.response.status = 404;
+
+const tag = entry?.label ?? '';
+const taggedPosts = (entry?.items ?? []).map((p: any) => ({
+	...p,
+	meta: { ...(p.meta ?? {}), url: `/post/${postSlug(p)}/` },
+}));
+
+const pageTitle = entry
+	? `${pickLang({ en: 'Post', vi: 'Bài viết' })} ${tag}`
+	: pickLang({ en: 'Not found', vi: 'Không tìm thấy' });
+const pageDescription = entry ? pickLang({
+	en: `Explore posts in the "${tag}" category on ${site.subtitle}.`,
+	vi: `Khám phá các bài viết thuộc danh mục "${tag}" tại ${site.subtitle}.`,
+}) : '';
+const bg = { blur: true, gradient: true, tint: '#00c7d4', total: 3, blobType: 'circleOverlap', blobMove: 'swap', deg: 180 };
+---
+
+<Core title={pageTitle} description={pageDescription} footer={{ columns: menuItems, policies, socials, bg }}>
+	{entry ? (
+		<PostTagBody tag={tag} tagSlug={tagSlug} posts={taggedPosts} />
+	) : (
+		<div class="mx-auto max-w-6xl px-4 py-24 text-center opacity-60">
+			<I18nText text={{ en: 'Category not found.', vi: 'Không tìm thấy danh mục này.' }} />
+		</div>
+	)}
+</Core>

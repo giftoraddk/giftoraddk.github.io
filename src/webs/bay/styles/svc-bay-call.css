@@ -1,0 +1,114 @@
+/* src/webs/bay/styles/svc-bay-call.css */
+
+dialog.byc-dialog {
+    display: none;
+    position: fixed;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    border: none;
+    background: rgba(0, 0, 0, 0.9);
+}
+
+dialog.byc-dialog[open] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+dialog.byc-dialog::backdrop {
+    display: none;
+}
+
+.byc-ringing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    color: #ffffff;
+}
+
+.byc-ringing-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.byc-ringing-sub {
+    opacity: 0.7;
+    font-size: 0.9rem;
+}
+
+.byc-ringing-actions {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.byc-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+    color: #ffffff;
+}
+
+.byc-btn.accept  { background: var(--color-success, #2ebd85); }
+.byc-btn.decline,
+.byc-btn.hangup  { background: var(--color-error, #f5465c); }
+.byc-btn.mute,
+.byc-btn.camera  { background: rgba(255, 255, 255, 0.15); }
+.byc-btn.mute.active,
+.byc-btn.camera.active { background: rgba(255, 255, 255, 0.4); }
+
+.byc-stage {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.byc-remote {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #000;
+}
+
+.byc-local {
+    position: absolute;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 160px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: #000;
+}
+
+.byc-controls {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 1rem;
+}
+
+.byc-waiting {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    opacity: 0.7;
+    font-size: 0.9rem;
+}

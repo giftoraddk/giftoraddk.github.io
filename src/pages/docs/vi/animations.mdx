@@ -1,0 +1,208 @@
+---
+layout: '../../../layouts/LayoutDoc.astro'
+title: 'Hoạt ảnh'
+description: 'Anime classes, text motion effects và background animations'
+---
+
+# Hoạt ảnh
+
+<div class="doc-intro">
+  <p>Astro Micro tích hợp sẵn hệ thống animation nhiều lớp — từ card entrance effects, text letter-by-letter reveal, đến background patterns động.</p>
+</div>
+
+## Card Anime Classes
+
+Mỗi `web-box` có thể có animation khi xuất hiện trên viewport. Anime class được set trong config:
+
+```js
+const config = {
+  tiers: { base: 1, lg: 3 },
+  makes: [...],
+  anime: 'fade-up', // class animation cho card
+};
+```
+
+Hoặc trong section config:
+
+```js
+export const sectionConfig = {
+  id: 'products',
+  anime: 'fade-up',
+  config: { tiers: {...}, makes: [...] },
+};
+```
+
+### Danh sách anime classes
+
+| Class | Hiệu ứng |
+|---|---|
+| `fade-up` | Fade vào từ dưới lên |
+| `fade-down` | Fade vào từ trên xuống |
+| `fade-left` | Fade vào từ phải sang trái |
+| `fade-right` | Fade vào từ trái sang phải |
+| `zoom-in` | Phóng to từ nhỏ đến bình thường |
+| `zoom-out` | Thu nhỏ từ lớn về bình thường |
+| `flip-x` | Lật theo trục X |
+| `flip-y` | Lật theo trục Y |
+
+Các card trong cùng một `web-boxs` animate theo thứ tự **stagger** (mỗi card delay thêm một khoảng nhỏ), tạo hiệu ứng cascade tự nhiên.
+
+```js
+// Trong web-boxs, cards animate stagger
+const staggerDelay = 80; // ms giữa mỗi card
+items.forEach((item, index) => {
+  card.style.animationDelay = `${index * staggerDelay}ms`;
+  card.classList.add(animeClass);
+});
+```
+
+## Text Motion Effects
+
+`web-letters` component tạo hiệu ứng text animation tinh tế:
+
+### Letter-by-letter reveal
+
+```html
+<web-letters
+  text="Chào mừng đến với cửa hàng"
+  mode="letters"
+  delay="30"
+  anime="fade-up"
+></web-letters>
+```
+
+### Word-by-word reveal
+
+```html
+<web-letters
+  text="Khám phá bộ sưu tập mới"
+  mode="words"
+  delay="100"
+  anime="fade-right"
+></web-letters>
+```
+
+### Trong config makes
+
+Có thể dùng `web-letters` bên trong makes cell của một card:
+
+```js
+{
+  opt: 'text',
+  val: 'title',
+  stys: 'text-3xl font-bold',
+  component: 'web-letters', // render val qua web-letters
+  componentProps: { mode: 'words', delay: 80 },
+}
+```
+
+## Background Animations
+
+`web-bg` component tạo background động phía sau content:
+
+```html
+<web-bg
+  type="blob"
+  move="float"
+  pattern="none"
+></web-bg>
+```
+
+### Prop `type` — Hình dạng
+
+| Giá trị | Mô tả |
+|---|---|
+| `circle` | Các hình tròn gradient |
+| `square` | Các hình vuông/chữ nhật |
+| `blob` | Blob shapes hữu cơ, mềm mại |
+| `mesh` | Gradient mesh phức tạp |
+
+### Prop `move` — Chuyển động
+
+| Giá trị | Mô tả |
+|---|---|
+| `swap` | Đổi vị trí nhau |
+| `float` | Nổi lên xuống nhẹ nhàng |
+| `pulse` | Phồng thu theo nhịp |
+| `none` | Không chuyển động |
+
+### Prop `pattern` — Pattern overlay
+
+| Giá trị | Mô tả |
+|---|---|
+| `dot` | Chấm tròn đều đặn |
+| `grid` | Lưới vuông |
+| `cross` | Dấu cộng/plus |
+| `none` | Không có pattern |
+
+### Ví dụ kết hợp
+
+```html
+<!-- Background cho hero section -->
+<div class="relative">
+  <web-bg type="blob" move="float" pattern="dot"></web-bg>
+  <div class="relative z-10">
+    <h1>Nội dung chính</h1>
+  </div>
+</div>
+```
+
+## Animation Queue — Conductor
+
+Conductor quản lý **animation queue** để các item animate theo thứ tự, không bị chồng lên nhau:
+
+```js
+// Các sections animate theo thứ tự xuất hiện trong viewport
+// web-board tự động đăng ký mỗi section vào animation queue
+// IntersectionObserver trigger animation khi section vào viewport
+```
+
+Khi nhiều `web-boxs` đều có `anime` class, chúng animate lần lượt khi người dùng scroll, thay vì tất cả animate cùng lúc.
+
+## Astro Page Transitions
+
+Astro ViewTransitions được cấu hình trong `LayoutDoc.astro` với `fade` transition:
+
+```astro
+---
+import { ClientRouter, fade } from 'astro:transitions';
+---
+
+<html>
+  <head>
+    <ClientRouter />
+  </head>
+  <body transition:animate={fade({ duration: "0.3s" })}>
+    <!-- content -->
+  </body>
+</html>
+```
+
+Kết quả: chuyển trang có hiệu ứng fade nhẹ 300ms thay vì blink đột ngột.
+
+### Custom transition cho element
+
+```astro
+<!-- Slide từ phải vào cho main content -->
+<main transition:animate="slide">
+  <slot />
+</main>
+
+<!-- Giữ nguyên sidebar (không animate) -->
+<aside transition:persist>
+  <nav>...</nav>
+</aside>
+```
+
+## Performance tips
+
+- Dùng `anime` chỉ khi section **below the fold** — content trên fold nên hiển thị ngay
+- Tránh dùng `flip-x`/`flip-y` cho nhiều items cùng lúc — tốn GPU
+- `web-bg` dùng `will-change: transform` tự động — không cần thêm
+- Stagger delay tối đa nên dưới 500ms để không làm user chờ quá lâu
+
+## Tiếp theo
+
+- [Theming](/docs/vi/theming) — màu sắc background cho `web-bg`
+- [Design Guide](/docs/vi/design-guide) — khi nào nên dùng animation
+- [Web Boxs](/docs/vi/web-boxs) — `anime` prop trong config

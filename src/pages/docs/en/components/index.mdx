@@ -1,0 +1,128 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'Components'
+description: 'Overview of all web components in apex/ and common usage patterns'
+---
+
+# Components
+
+<div class="doc-intro">
+  <p>All primitive UI building blocks in Astro Micro are Lit 3 Web Components living in <code>src/webs/apex/</code>. They use Shadow DOM for style encapsulation and are usable in any HTML page or framework.</p>
+</div>
+
+## How Web Components Work Here
+
+- Built with **Lit 3** — reactive properties, efficient updates, Shadow DOM by default
+- **Exception**: `web-board` uses light DOM for global style access
+- Each component is a single `.js` file — no build step needed to use them
+- Load via `<script type="module">` or import in your Astro frontmatter
+
+## Loading a Component
+
+**Script tag (recommended for most cases):**
+```html
+<script type="module" src="/src/webs/apex/web-button.js"></script>
+```
+
+**Frontmatter import (bundles into page output):**
+```astro
+---
+import '@/webs/apex/web-button.js';
+---
+```
+
+## Common Props
+
+These props are available on most `web-*` components:
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` (glassmorphism) |
+| `theme` | string | `''` | ApexUI theme override for this component |
+| `mainColors` | string | `''` | Pipe-separated 5 color names: `primary\|base-100\|base-200\|base-300\|base-content` |
+| `textColor` | string | `''` | Text color — must be a CSS variable reference |
+
+## Events
+
+All custom events use `bubbles: true` and `composed: true` to cross Shadow DOM boundaries. Listen at the document level or any ancestor element:
+
+```js
+document.addEventListener('web-item-select', e => {
+  console.log(e.detail);
+});
+```
+
+## Component Categories
+
+### Layout & Structure
+
+| Component | Description |
+|---|---|
+| [web-board](/docs/en/components/web-board) | Multi-section page layout manager (light DOM) |
+| [web-bg](/docs/en/components/web-bg) | Animated decorative background shapes |
+| [web-dialog](/docs/en/components/web-dialog) | Modal dialog overlay |
+| [web-expansion](/docs/en/components/web-expansion) | Accordion with collapsible panels |
+| [web-tabs](/docs/en/components/web-tabs) | Tab switcher |
+| [web-steps](/docs/en/components/web-steps) | Step/progress indicator |
+
+### Navigation
+
+| Component | Description |
+|---|---|
+| [web-breadcrumb](/docs/en/components/web-breadcrumb) | Breadcrumb navigation trail |
+| [web-pagination](/docs/en/components/web-pagination) | Page number navigation |
+| [web-fab](/docs/en/components/web-fab) | Floating action button |
+
+### Data Display
+
+| Component | Description |
+|---|---|
+| [web-table](/docs/en/components/web-table) | Sortable data table |
+| [web-gallery](/docs/en/components/web-gallery) | Image gallery with lightbox |
+| [web-slider](/docs/en/components/web-slider) | Carousel / slide show |
+| [web-avatar](/docs/en/components/web-avatar) | User avatar with status |
+| [web-progress](/docs/en/components/web-progress) | Progress bar or circle |
+| [web-rating](/docs/en/components/web-rating) | Star rating display and input |
+| [web-pre](/docs/en/components/web-pre) | Code block with syntax highlighting |
+
+### Form Controls
+
+| Component | Description |
+|---|---|
+| [web-button](/docs/en/components/web-button) | Button with multiple styles and states |
+| [web-text](/docs/en/components/web-text) | Text input and textarea |
+| [web-select](/docs/en/components/web-select) | Select dropdown with search |
+| [web-checkbox](/docs/en/components/web-checkbox) | Checkbox, radio group, and toggle |
+| [web-radio](/docs/en/components/web-radio) | Radio button |
+| [web-toggle](/docs/en/components/web-toggle) | Toggle switch |
+| [web-dropdown](/docs/en/components/web-dropdown) | Dropdown menu |
+
+### Feedback & Overlays
+
+| Component | Description |
+|---|---|
+| [web-alert](/docs/en/components/web-alert) | Inline alert notification |
+| [web-toast](/docs/en/components/web-toast) | Auto-dismiss toast notifications |
+| [web-loader](/docs/en/components/web-loader) | Skeleton loading placeholder |
+| [web-tooltip](/docs/en/components/web-tooltip) | Hover tooltip |
+| [web-popover](/docs/en/components/web-popover) | Click/hover popover panel |
+
+## Quick Example
+
+A minimal page using three components:
+
+```astro
+---
+// src/pages/example.astro
+---
+
+<web-alert type="info" title="Notice">This is a demo page.</web-alert>
+
+<web-button type="fill" color="primary">Get Started</web-button>
+
+<web-loader width="100%" height="200px" rounded></web-loader>
+
+<script type="module" src="/src/webs/apex/web-alert.js"></script>
+<script type="module" src="/src/webs/apex/web-button.js"></script>
+<script type="module" src="/src/webs/apex/web-loader.js"></script>
+```

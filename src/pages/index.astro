@@ -1,0 +1,39 @@
+---
+import Core from '@/layouts/Core.astro';
+import { site } from '@/services/constants/site.js';
+
+// Trang gốc '/' — phục vụ SEO/GEO (title/description/OG/canonical thật cho domain root, không
+// để rỗng) VÀ redirect sang trang chính, đích cấu hình qua `site.homeRedirect`
+// (src/services/constants/site.js) — đổi giá trị đó (vd '/shop', '/gift') để đổi đích, không
+// cần sửa file này. '' = tắt redirect, trang hiển thị bình thường.
+//
+// Vì sao không dùng `redirects` trong astro.config.mjs: cách đó thay hẳn '/' bằng 1 stub HTML
+// tự sinh, không cho viết title/description riêng cho domain root — mất giá trị SEO của URL
+// quan trọng nhất site. Cách ở đây giữ '/' là 1 trang thật (Base.astro vẫn render đầy đủ
+// title/description/OG, canonical trỏ đúng sang đích redirect) + <meta http-equiv="refresh">
+// để chuyển hướng trình duyệt — hoạt động trên output:'static', không cần Astro.redirect()/
+// adapter (xem docs/geo-platform-plan.md §B1 — cùng nguyên tắc "không thêm hạ tầng mới"). Nhiều
+// AI/search crawler chỉ đọc HTML 1 lần, không chạy JS/theo refresh, nên vẫn cần nội dung + link
+// nội bộ thật ở dưới, không chỉ mỗi thẻ redirect.
+const target = site.homeRedirect;
+
+// site.title (site.js) đã là câu SEO/GEO soạn sẵn riêng cho domain root (giàu từ khóa, không lặp
+// site.subtitle vì Head/Base.astro tự nối "• {site.subtitle}" vào <title>) — dùng thẳng làm
+// default, sửa copy SEO chỉ cần đổi ở site.js, không cần đụng file này.
+const pageTitle = site.title;
+const pageDescription = site.description || site.subtitle;
+---
+
+<Core title={pageTitle} description={pageDescription} redirectTo={target}>
+	<div class="min-h-[60vh] flex flex-col items-center justify-center text-center px-6 py-16 gap-6">
+		<h1 class="text-3xl md:text-5xl font-bold">{pageTitle}</h1>
+		{pageDescription && <p class="max-w-xl opacity-70">{pageDescription}</p>}
+		{target && (
+			<a href={target}
+				class="inline-flex items-center justify-center px-7 py-3 rounded-2xl font-semibold
+					border border-primary text-primary-content hover:opacity-90 transition-opacity">
+				Go to home
+			</a>
+		)}
+	</div>
+</Core>

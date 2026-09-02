@@ -1,0 +1,86 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-checkbox'
+description: 'Checkbox, Radio và Toggle cho lựa chọn boolean và nhiều lựa chọn'
+---
+
+# web-checkbox · web-radio · web-toggle
+
+Ba component form liên quan cho các kiểu lựa chọn khác nhau: checkbox cho lựa chọn độc lập, radio cho lựa chọn trong nhóm, toggle cho bật/tắt trực quan.
+
+## Khi nào dùng
+
+- **web-checkbox** — lựa chọn độc lập có/không (đồng ý điều khoản, bật tính năng)
+- **web-radio** — chọn một trong nhiều tùy chọn cùng nhóm (giới tính, kích thước, phương thức thanh toán)
+- **web-toggle** — bật/tắt cài đặt với phản hồi thị giác rõ ràng hơn checkbox thông thường
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-checkbox.js"></script>
+```
+
+## Props
+
+### web-checkbox
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `label` | string | `''` | Văn bản nhãn hiển thị bên cạnh checkbox |
+| `checked` | boolean | `false` | Trạng thái được chọn |
+| `disabled` | boolean | `false` | Vô hiệu hóa tương tác |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+### web-radio
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `name` | string | `''` | Tên nhóm radio — các radio cùng `name` thuộc một nhóm |
+| `value` | string | `''` | Giá trị của radio button này |
+| `label` | string | `''` | Văn bản nhãn hiển thị |
+| `checked` | boolean | `false` | Trạng thái được chọn mặc định |
+| `disabled` | boolean | `false` | Vô hiệu hóa tương tác |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+### web-toggle
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `label` | string | `''` | Văn bản nhãn hiển thị bên cạnh toggle |
+| `checked` | boolean | `false` | Trạng thái bật/tắt |
+| `disabled` | boolean | `false` | Vô hiệu hóa tương tác |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Ví dụ cơ bản
+
+```html
+<!-- Checkbox -->
+<web-checkbox label="Tôi đồng ý với điều khoản" checked></web-checkbox>
+
+<!-- Radio group -->
+<web-radio name="size" value="s" label="Nhỏ"></web-radio>
+<web-radio name="size" value="m" label="Vừa" checked></web-radio>
+<web-radio name="size" value="l" label="Lớn"></web-radio>
+
+<!-- Toggle -->
+<web-toggle label="Bật thông báo" checked></web-toggle>
+```
+
+## Ví dụ nâng cao
+
+Form cài đặt kết hợp cả ba loại:
+
+```html
+<div style="display:flex; flex-direction:column; gap:12px;">
+  <web-toggle label="Chế độ tối" ui="spatial"></web-toggle>
+  <web-toggle label="Nhận email marketing" disabled></web-toggle>
+
+  <web-checkbox label="Lưu thông tin đăng nhập"></web-checkbox>
+  <web-checkbox label="Hiển thị tên đầy đủ" checked></web-checkbox>
+
+  <p>Ngôn ngữ:</p>
+  <web-radio name="lang" value="vi" label="Tiếng Việt" checked></web-radio>
+  <web-radio name="lang" value="en" label="English"></web-radio>
+  <web-radio name="lang" value="ja" label="日本語"></web-radio>
+</div>
+```

@@ -1,0 +1,80 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-fab'
+description: 'Floating Action Button fixed to a corner of the viewport'
+---
+
+# web-fab
+
+A Floating Action Button (FAB) fixed to a viewport corner. Used for the primary or most common action on a page — scroll-to-top, compose, add item.
+
+## When to use
+
+- The single most important action on a page that should always be accessible
+- Scroll-to-top shortcut on long pages
+- "New item" or "Compose" action in list-heavy views
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-fab.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `icon` | string | `'+'` | Icon content (text, emoji, or SVG string) |
+| `position` | string | `'bottom-right'` | Corner: `bottom-right` \| `bottom-left` \| `top-right` \| `top-left` |
+| `color` | string | `'primary'` | ApexUI color name |
+| `size` | string | `'md'` | Size: `sm` \| `md` \| `lg` |
+| `label` | string | `''` | Accessible label (aria-label); shown as tooltip on hover if non-empty |
+| `disabled` | boolean | `false` | Disable the button |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+
+## Basic Example
+
+```html
+<!-- Scroll to top -->
+<web-fab icon="↑" position="bottom-right" label="Scroll to top"></web-fab>
+
+<script type="module" src="/src/webs/apex/web-fab.js"></script>
+
+<script>
+  document.querySelector('web-fab').addEventListener('web-fab-click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+</script>
+```
+
+## Advanced Examples
+
+Add item FAB in bottom-left with large size:
+
+```html
+<web-fab
+  icon="+"
+  position="bottom-left"
+  color="success"
+  size="lg"
+  label="Add new product"
+></web-fab>
+```
+
+Spatial FAB with custom SVG icon:
+
+```html
+<web-fab
+  position="bottom-right"
+  color="primary"
+  ui="spatial"
+  label="New message"
+  icon='<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
+></web-fab>
+```
+
+## Events
+
+| Event | When | Detail |
+|---|---|---|
+| `web-fab-click` | FAB is clicked | None |

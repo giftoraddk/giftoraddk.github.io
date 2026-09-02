@@ -1,0 +1,19 @@
+---
+// Hiển thị 1 field có thể là string thường HOẶC object đa ngôn ngữ { en, vi } — render CẢ HAI
+// bản, CSS ([lang] attribute selector, xem popular.css) ẩn/hiện đúng bản theo <html lang> hiện
+// tại. Đây là component TĨNH (Astro, build-time) nên không thể tự chọn 1 bản duy nhất lúc SSR —
+// phải render cả hai để BtnLang.astro's client-side toggle (đổi <html lang>, không reload) có
+// tác dụng ngay. String thường (không đa ngôn ngữ) render thẳng, không bọc span thừa.
+// English là bản CHUẨN (bắt buộc) — vi tuỳ chọn, fallback về en nếu thiếu bản dịch (xem
+// site.defaultLang, constants/site.js — cùng quy ước với pickLang(), services/helper.js).
+export interface Props {
+	text: string | { en: string; vi?: string }
+}
+
+const { text } = Astro.props
+const isLocalized = text != null && typeof text === 'object'
+---
+
+{isLocalized ? (
+	<><span class="i18n-vi">{text.vi ?? text.en}</span><span class="i18n-en">{text.en}</span></>
+) : text}

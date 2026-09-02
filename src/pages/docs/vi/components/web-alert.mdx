@@ -1,0 +1,75 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-alert'
+description: 'Hiển thị thông báo với các loại: thông tin, cảnh báo, lỗi, thành công'
+---
+
+# web-alert
+
+Hiển thị thanh thông báo theo ngữ cảnh (thông tin, cảnh báo, lỗi, thành công). Hỗ trợ tiêu đề, nội dung slot và nút đóng tùy chọn.
+
+## Khi nào dùng
+
+- Thông báo kết quả thao tác (lưu thành công, xóa thất bại, v.v.)
+- Cảnh báo người dùng trước khi thực hiện hành động không thể hoàn tác
+- Hiển thị thông tin hệ thống hoặc hướng dẫn bổ sung trong trang
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-alert.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `type` | string | `'info'` | Loại thông báo: `primary` \| `info` \| `warning` \| `error` \| `success` |
+| `title` | string | `''` | Tiêu đề hiển thị phía trên nội dung |
+| `closable` | boolean | `false` | Hiển thị nút đóng ở góc phải |
+| `visible` | boolean | `true` | Trạng thái hiển thị của thông báo |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Ví dụ cơ bản
+
+```html
+<web-alert type="info" title="Lưu ý">Nội dung thông báo ở đây</web-alert>
+<web-alert type="warning" title="Cảnh báo" closable>Hành động này không thể hoàn tác</web-alert>
+<web-alert type="success">Lưu thành công!</web-alert>
+```
+
+## Ví dụ nâng cao
+
+Thông báo lỗi với nút đóng và giao diện spatial:
+
+```html
+<web-alert type="error" title="Đã xảy ra lỗi" closable ui="spatial">
+  Không thể kết nối đến máy chủ. Vui lòng thử lại sau.
+</web-alert>
+```
+
+Kiểm soát hiển thị theo trạng thái:
+
+```html
+<web-alert type="success" title="Hoàn thành" visible id="alert-done">
+  Dữ liệu đã được xuất thành công.
+</web-alert>
+<script>
+  // Ẩn sau 3 giây
+  setTimeout(() => {
+    document.getElementById('alert-done').setAttribute('visible', 'false');
+  }, 3000);
+</script>
+```
+
+## Sự kiện
+
+| Sự kiện | Khi nào | Chi tiết |
+|---------|---------|---------|
+| `web-alert-close` | Người dùng nhấn nút đóng | Không có payload thêm |
+
+```js
+document.querySelector('web-alert').addEventListener('web-alert-close', () => {
+  console.log('Thông báo đã được đóng');
+});
+```

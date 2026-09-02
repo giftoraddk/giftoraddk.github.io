@@ -1,0 +1,115 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-dialog'
+description: 'Modal dialog với overlay và nội dung tùy chỉnh qua slot'
+---
+
+# web-dialog
+
+Modal dialog hiển thị nội dung trong lớp phủ phía trên trang. Nội dung được truyền qua slot mặc định, cho phép tùy biến hoàn toàn phần body dialog.
+
+## Khi nào dùng
+
+- Xác nhận hành động quan trọng (xóa, thanh toán, đặt lại dữ liệu)
+- Form nhập liệu nhanh mà không cần chuyển trang
+- Hiển thị thông tin chi tiết hoặc preview mà không rời khỏi ngữ cảnh hiện tại
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-dialog.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `open` | boolean | `false` | Trạng thái mở/đóng của dialog |
+| `title` | string | `''` | Tiêu đề hiển thị ở header dialog |
+| `maxWidth` | string | `'1200px'` | Chiều rộng tối đa của dialog |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+| `persistent` | boolean | `false` | Chế độ bắt buộc chọn action: ẩn nút X, tắt click-outside, hiện 2 nút Cancel / Confirm ở footer |
+| `lang` | string | `'vi'` | Ngôn ngữ nhãn mặc định: `vi` \| `en` |
+| `txt` | object | — | Ghi đè nhãn mặc định. Dạng: `{ vi: { cancel, confirm }, en: { cancel, confirm } }` |
+
+## Ví dụ cơ bản
+
+```html
+<web-button id="open-btn" type="fill">Mở Dialog</web-button>
+
+<web-dialog id="my-dialog" title="Xác nhận xóa" maxWidth="400px">
+  <p>Bạn có chắc muốn xóa mục này không?</p>
+  <web-button type="outline" color="error">Xóa</web-button>
+  <web-button type="ghost">Hủy</web-button>
+</web-dialog>
+
+<script>
+  document.getElementById('open-btn').addEventListener('click', () => {
+    document.getElementById('my-dialog').setAttribute('open', '');
+  });
+</script>
+```
+
+## Ví dụ nâng cao
+
+Dialog form nhập liệu:
+
+```html
+<web-dialog id="edit-dialog" title="Chỉnh sửa thông tin" maxWidth="600px" ui="spatial">
+  <div style="display:flex; flex-direction:column; gap:16px;">
+    <input type="text" placeholder="Họ và tên" class="input" />
+    <input type="email" placeholder="Email" class="input" />
+    <div style="display:flex; gap:8px; justify-content:flex-end;">
+      <web-button type="ghost" id="cancel-btn">Hủy</web-button>
+      <web-button type="fill" color="primary">Lưu thay đổi</web-button>
+    </div>
+  </div>
+</web-dialog>
+
+<script>
+  const dialog = document.getElementById('edit-dialog');
+
+  document.getElementById('cancel-btn').addEventListener('click', () => {
+    dialog.removeAttribute('open');
+  });
+
+  dialog.addEventListener('web-dialog-close', () => {
+    console.log('Dialog đã đóng');
+  });
+</script>
+```
+
+## Dialog persistent
+
+Khi có prop `persistent`, người dùng **không thể** đóng dialog bằng cách click ra ngoài hay nhấn nút X — phải chọn một trong hai action:
+
+```html
+<web-dialog id="del-dialog" persistent title="Xác nhận xoá" lang="vi">
+  <p>Hành động này không thể hoàn tác. Bạn có chắc không?</p>
+</web-dialog>
+
+<script>
+  const dialog = document.getElementById('del-dialog');
+  dialog.open = true;
+
+  dialog.addEventListener('confirm', () => doDelete());
+  dialog.addEventListener('cancel',  () => console.log('đã huỷ'));
+</script>
+```
+
+Tuỳ chỉnh nhãn nút qua `txt`:
+
+```js
+dialog.txt = {
+  vi: { cancel: 'Không, giữ lại', confirm: 'Có, xoá ngay' },
+  en: { cancel: 'Keep it',        confirm: 'Yes, delete'  },
+}
+```
+
+## Sự kiện
+
+| Sự kiện | Khi nào | Chi tiết |
+|---------|---------|---------|
+| `close` | Người dùng nhấn X hoặc click ngoài (chế độ thường) | — |
+| `confirm` | Người dùng nhấn nút Xác nhận (chế độ persistent) | — |
+| `cancel` | Người dùng nhấn nút Huỷ (chế độ persistent) | — |

@@ -1,0 +1,275 @@
+---
+// Toàn bộ nội dung trang chi tiết sản phẩm — TÁCH RIÊNG khỏi getStaticPaths/data-fetch để dùng
+// chung giữa 2 biến thể render (xem docs khi cần: SSG bake lúc build vs ISR fetch mỗi request):
+//   - src/pages/product/[slug].astro (SSG, mặc định)
+//   - src/pages/product/_render-modes/[slug].isr.astro (ISR, PUBLIC_RENDER=isr, xem astro.config.mjs)
+// Props { product, allProducts } là dữ liệu thô đã fetch xong — component này thuần tính toán +
+// render, không quan tâm data đến từ getStaticPaths hay fetch per-request.
+import { config as cardConfig } from '@/sections/another/_cardProductSeo.js';
+import { config as faqConfig } from '@/sections/another/_faqProduct.js';
+import { toPrice, productSlug, pickLang } from '@/services/helper.js';
+import { site } from '@/services/constants/site.js';
+import I18nText from '@/components/I18nText.astro';
+
+interface Props {
+	product: any;
+	allProducts: any[];
+}
+
+const { product, allProducts } = Astro.props;
+
+const meta = typeof product.meta === 'string' ? JSON.parse(product.meta || '{}') : (product.meta ?? {});
+const pics = (product.pics || '').split('|').filter(Boolean);
+const tags = (product.tags || '').split('|').filter(Boolean);
+
+const [scoreAvg, scoreCount] = String(product.score || '0~0').split('~').map(Number);
+const price = toPrice(product.pricing);
+const [, , unit] = String(product.pricing || '').split('~');
+const stock = meta.stock ?? product.quantity;
+const inStock = stock == null || Number(stock) !== 0;
+const sku = meta.sku || product.id;
+const vatRate = parseFloat(product.vat || '0');
+
+const description = product.description || String(product.content || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().slice(0, 160) || '';
+const pageTitle = product.title || 'Sản phẩm';
+
+const slug = productSlug(product);
+const canonicalPath = `/product/${slug}/`;
+
+// ── FAQ nhúng (tuỳ chọn) ─────────────────────────────────────────────────────
+// meta.faq = [{ q, a }] — chỉ render khi người bán tự nhập, không bịa câu hỏi mặc định.
+const faqItems = Array.isArray(meta.faq) ? meta.faq.filter((f: any) => f?.q && f?.a) : [];
+
+// ── Caption chia sẻ (TikTok/mạng xã hội) ─────────────────────────────────────
+// TikTok không crawl backlink website như Google — nó index caption/chữ trong video. Cách duy
+// nhất 1 site tĩnh giúp được là chuẩn bị sẵn caption từ khoá để người đăng video copy thẳng.
+const shareCaption = [pageTitle, tags.map((t: string) => `#${t}`).join(' '), description].filter(Boolean).join('\n');
+
+// ── Sản phẩm liên quan ───────────────────────────────────────────────────────
+// Cùng thuật toán related-by-tag-overlap của post/[slug].astro — lọc sản phẩm chia sẻ ít nhất
+// 1 tag, sắp theo số tag trùng giảm dần, lấy tối đa 6.
+const relatedProducts = allProducts
+	.filter((p: any) => p.id !== product.id)
+	.reduce<Array<{ overlap: number; data: any }>>((acc, p) => {
+		const pTags = (p.tags || '').split('|').filter(Boolean);
+		const overlap = pTags.filter((t: string) => tags.includes(t)).length;
+		if (overlap > 0) {
+			const pMeta = typeof p.meta === 'string' ? JSON.parse(p.meta || '{}') : (p.meta ?? {});
+			acc.push({ overlap, data: { ...p, meta: { ...pMeta, url: `/product/${productSlug(p)}/`, ctaLabel: 'Xem chi tiết' } } });
+		}
+		return acc;
+	}, [])
+	.sort((a, b) => b.overlap - a.overlap)
+	.slice(0, 6)
+	.map((item) => item.data);
+
+// JSON-LD (GEO/SEO) — @graph gộp Product + Article + BreadcrumbList (+ FAQPage nếu có) trong
+// CÙNG 1 script, giúp AI Search/Google hiểu vừa đây là 1 sản phẩm (giá/tồn kho/đánh giá) vừa là
+// 1 bài viết dài (tác giả/ngày đăng) mà không phải tự suy từ HTML. Đặt trong <body> vì Core.astro
+// không có slot chèn vào <head> (cùng lý do post/[slug].astro làm).
+const [rawPrice] = String(product.pricing || '').split('~');
+const pageUrl = `${site.domain.replace(/\/$/, '')}${canonicalPath}`;
+
+const productLd = {
+	'@type': 'Product',
+	name: product.title,
+	description,
+	sku,
+	...(pics.length > 0 && { image: pics }),
+	...(tags.length > 0 && { category: tags.join(', ') }),
+	offers: {
+		'@type': 'Offer',
+		...(rawPrice && { price: rawPrice, priceCurrency: 'VND' }),
+		availability: inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+		url: pageUrl,
+	},
+	...(scoreCount > 0 && {
+		aggregateRating: { '@type': 'AggregateRating', ratingValue: scoreAvg, reviewCount: scoreCount },
+	}),
+};
+
+// created_at/updated_at là cột thật của bảng records (docs/SCHEMA.rst) — không bịa ngày nếu
+// record không có. author dùng site.subtitle (tên thương hiệu thuần, xem constants/site.js).
+const articleLd = {
+	'@type': 'Article',
+	headline: product.title,
+	description,
+	...(pics.length > 0 && { image: pics }),
+	...(product.created_at && { datePublished: product.created_at }),
+	...(product.updated_at && { dateModified: product.updated_at }),
+	author: { '@type': 'Organization', name: site.subtitle },
+};
+
+const breadcrumbLd = {
+	'@type': 'BreadcrumbList',
+	itemListElement: [
+		{ '@type': 'ListItem', position: 1, name: pickLang({ en: 'Home', vi: 'Trang chủ' }), item: site.domain },
+		{ '@type': 'ListItem', position: 2, name: pickLang({ en: 'Products', vi: 'Sản phẩm' }), item: `${site.domain}/product/` },
+		{ '@type': 'ListItem', position: 3, name: product.title, item: pageUrl },
+	],
+};
+
+const faqLd = faqItems.length > 0 ? {
+	'@type': 'FAQPage',
+	mainEntity: faqItems.map((f: any) => ({
+		'@type': 'Question', name: f.q,
+		acceptedAnswer: { '@type': 'Answer', text: f.a },
+	})),
+} : null;
+
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@graph': [productLd, articleLd, breadcrumbLd, ...(faqLd ? [faqLd] : [])],
+};
+---
+
+<script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />
+
+<article class="mx-auto max-w-6xl px-4 py-8">
+
+	<!-- Breadcrumb -->
+	<nav aria-label="breadcrumb" class="mb-6 text-sm opacity-60">
+		<a href="/" class="hover:text-primary"><I18nText text={{ vi: 'Trang chủ', en: 'Home' }} /></a>
+		<span> / </span>
+		<a href="/product/" class="hover:text-primary"><I18nText text={{ vi: 'Sản phẩm', en: 'Products' }} /></a>
+		<span> / </span>
+		<span>{product.title}</span>
+	</nav>
+
+	<div class="grid gap-8 md:grid-cols-2">
+		{pics.length > 0 && (
+			<web-gallery src={product.pics} alt={product.title} rounded="1rem" ui="modern" zoom></web-gallery>
+		)}
+
+		<div>
+			<!-- Tags -->
+			{tags.length > 0 && (
+				<div class="flex flex-wrap gap-2 mb-5">
+					{tags.map((tag: string) => (
+						<span class="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full
+							bg-primary/10 text-primary border border-primary/20 tracking-wide">
+							<span class="opacity-50">#</span>{tag}
+						</span>
+					))}
+				</div>
+			)}
+
+			<h1 class="text-3xl font-bold leading-tight mb-4">{product.title}</h1>
+
+			{scoreCount > 0 && (
+				<p class="text-sm opacity-60 mb-2">⭐ {scoreAvg.toFixed(1)} ({scoreCount} <I18nText text={{ vi: 'đánh giá', en: 'reviews' }} />)</p>
+			)}
+
+			{price && (
+				<p class="text-2xl font-extrabold text-primary mb-2">
+					{price}{unit && <span class="text-base font-normal opacity-60"> / {unit}</span>}
+				</p>
+			)}
+
+			<p class="text-sm mb-4">
+				{inStock
+					? <span class="text-success"><I18nText text={{ vi: 'Còn hàng', en: 'In stock' }} /></span>
+					: <span class="text-error"><I18nText text={{ vi: 'Liên hệ', en: 'Contact us' }} /></span>}
+				{vatRate > 0 && <span class="opacity-50"> · <I18nText text={{ vi: 'Đã gồm VAT', en: 'VAT included' }} /> {(vatRate * 100).toFixed(0)}%</span>}
+			</p>
+
+			{product.description && <p class="opacity-90 mb-6">{product.description}</p>}
+
+			<div class="flex flex-wrap gap-3 mb-2">
+				<a href="/gift/shop"
+					class="inline-flex items-center justify-center px-7 py-3 rounded-2xl font-semibold
+						bg-base-100/30 border border-primary text-primary-content hover:opacity-90 transition-opacity">
+					<I18nText text={{ vi: 'Đặt mua trên cửa hàng', en: 'Buy on our store' }} />
+				</a>
+
+				{tags.length > 0 && (
+					<button
+						type="button"
+						id="copy-caption-btn"
+						data-caption={shareCaption}
+						class="inline-flex items-center justify-center px-5 py-3 rounded-2xl font-semibold text-sm
+							border border-base-content/15 hover:bg-base-content/5 transition-colors"
+					>
+						<I18nText text={{ vi: 'Copy caption TikTok', en: 'Copy TikTok caption' }} />
+					</button>
+				)}
+			</div>
+
+			<p class="text-xs opacity-40 mt-4">SKU: {sku}</p>
+		</div>
+	</div>
+
+	<!-- Content -->
+	{product.content && (
+		<div class="Editor ProseMirror !px-0 mt-10" set:html={product.content} />
+	)}
+
+	<!-- FAQ -->
+	{faqItems.length > 0 && (
+		<div class="mt-12 pt-8 border-t border-base-200">
+			<h2 class="text-xl font-semibold mb-6"><I18nText text={{ vi: 'Câu hỏi thường gặp', en: 'Frequently asked questions' }} /></h2>
+			<web-boxs
+				data={JSON.stringify(faqItems)}
+				config={JSON.stringify(faqConfig)}
+				lang={site.defaultLang}
+				ui="modern"
+			></web-boxs>
+		</div>
+	)}
+
+	<!-- Sản phẩm liên quan -->
+	{relatedProducts.length > 0 && (
+		<div class="mt-12 pt-8 border-t border-base-200">
+			<h2 class="text-xl font-semibold mb-6"><I18nText text={{ vi: 'Sản phẩm liên quan', en: 'Related products' }} /></h2>
+
+			<!-- SEO list — crawlable -->
+			<ul class="sr-only" aria-hidden="true">
+				{relatedProducts.map((p: any) => (
+					<li><a href={p.meta.url}>{p.title}</a></li>
+				))}
+			</ul>
+
+			<web-boxs
+				data={JSON.stringify(relatedProducts)}
+				config={JSON.stringify(cardConfig)}
+				masonry
+				lang={site.defaultLang}
+				ui="modern"
+			></web-boxs>
+		</div>
+	)}
+
+	<!-- Bottom nav -->
+	<div class="mt-14 pt-8 border-t border-base-content/10 flex flex-col items-center gap-4">
+		<p class="text-sm opacity-40 tracking-widest uppercase"><I18nText text={{ vi: 'Khám phá thêm', en: 'Explore more' }} /></p>
+		<a href="/" class="group inline-flex items-center gap-3 px-7 py-3 rounded-2xl font-semibold
+			border border-base-content/10 bg-base-content/5
+			hover:bg-primary/10 hover:border-primary/30 hover:text-primary
+			transition-all duration-200 backdrop-blur-sm">
+			<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"
+				class="transition-transform duration-200 group-hover:-translate-x-1">
+				<path d="M19 12H5M12 5l-7 7 7 7"/>
+			</svg>
+			<I18nText text={{ vi: 'Về trang chủ', en: 'Back to home' }} />
+		</a>
+	</div>
+
+</article>
+
+<script>
+	import '@/webs/apex/web-boxs.js';
+	import '@/webs/apex/web-gallery.js';
+
+	document.getElementById('copy-caption-btn')?.addEventListener('click', async (e) => {
+		const btn = e.currentTarget as HTMLButtonElement;
+		const caption = btn.dataset.caption || '';
+		try {
+			await navigator.clipboard.writeText(caption);
+			const original = btn.textContent;
+			btn.textContent = document.documentElement.lang === 'vi' ? 'Đã copy!' : 'Copied!';
+			setTimeout(() => { btn.textContent = original; }, 1500);
+		} catch {
+			// Clipboard API không khả dụng (vd http không secure context) — bỏ qua im lặng.
+		}
+	});
+</script>

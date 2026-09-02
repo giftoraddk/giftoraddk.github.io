@@ -1,0 +1,28 @@
+---
+import CoreShop from '@/layouts/CoreShop.astro';
+import { variant, views, menuItems, footerMenuItems, policies, socials, shop, bar, contact } from '@/modules/shop/gift';
+
+const currentView = views.find(v => v.href === '/') ?? views[0];
+
+const bg = { blur: true }
+---
+
+<CoreShop
+	title="Quà Tặng Đẹp và Ý Nghĩa Cho Mọi Dịp"
+  description="Giftora DDK cung cấp quà tặng đẹp, ý nghĩa cho sinh nhật, kỷ niệm, lễ Tết, người yêu, gia đình, bạn bè và đồng nghiệp. Khám phá ngay những món quà tinh tế, phù hợp với từng dịp."
+	menu={{ type: 'top', position: 'prefix', menuItems: menuItems }}
+	footer={{ columns: footerMenuItems, policies, socials, contact, bg }}
+	bg={variant.bg}
+	theme={variant.theme}
+	variant={variant}
+  shop={shop}
+  bar={bar}
+>
+	<script src='@/webs/apex/web-board.js'></script>
+	<div>
+		<web-board
+			unlock={import.meta.env.PUBLIC_EXP}
+			variant={JSON.stringify(variant)}
+		><script type="application/json" is:inline set:html={JSON.stringify(currentView.sections)}></script></web-board>
+	</div>
+</CoreShop>

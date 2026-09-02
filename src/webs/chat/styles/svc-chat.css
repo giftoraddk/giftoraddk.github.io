@@ -1,0 +1,107 @@
+/* src/webs/chat/styles/svc-chat.css */
+:host {
+    display: flex; flex-direction: column;
+    width: 360px; position: sticky; top: 0;
+    height: 100vh; /* fallback for browsers without dvh support */
+    height: 100dvh; /* real visible viewport height — parent .chn-chat overrides this on desktop, kept as safe default */
+    padding: 1rem; box-sizing: border-box; overflow: hidden;
+    color: var(--color-base-content);
+}
+:host(.icon-mode) { width: 0; height: 0; padding: 0; overflow: visible; position: static; }
+
+/* Màn hình rất rộng (>98rem) — tăng width panel gấp đôi */
+@media (min-width: 98rem) {
+    :host(:not(.icon-mode)) { width: 600px; }
+}
+
+.chc-panel {
+    position: fixed; top: 0; right: 0; bottom: 0; left: auto; margin: 0; padding: 0;
+    width: min(420px, calc(100vw - 96px)); max-width: none; max-height: none;
+    height: 100vh; /* fallback for browsers without dvh support */
+    height: 100dvh; /* keeps the composer inside the visible area on mobile — 100vh renders behind the browser's dynamic toolbar and pushes it off-screen */
+    border: none; box-sizing: border-box; box-shadow: -8px 0 24px color-mix(in oklab, var(--color-base-content) 15%, transparent);
+    background: var(--color-base-100); color: var(--color-base-content);
+}
+/* Trong suốt — không được dim/che phần danh sách kênh (rail) đang neo bên trái */
+.chc-panel::backdrop { background: transparent; }
+
+.chc-mobile-head { display: flex; align-items: center; justify-content: space-between; padding: .25rem .5rem; flex: 0 0 auto; }
+.chc-mobile-title { font-weight: 600; }
+
+.chc-wrap { display: flex; flex-direction: column; height: 100%; }
+.chc-empty { opacity: .6; font-size: .875rem; text-align: center; margin: auto; }
+.chc-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: .5rem; padding: .5rem; }
+.chc-message { display: flex; gap: .5rem; max-width: 80%; }
+.chc-message.mine { margin-left: auto; flex-direction: row-reverse; }
+.chc-bubble { background: color-mix(in oklab, var(--color-base-300) 70%, transparent); border-radius: .75rem; padding: .5rem .75rem; }
+.chc-author { font-size: .75rem; opacity: .7; display: block; margin-bottom: .1rem; }
+.chc-content { margin: 0; font-size: .875rem; white-space: pre-wrap; word-break: break-word; }
+.chc-composer { display: flex; gap: .5rem; padding: .25rem .5rem; }
+.chc-online { font-size: .75rem; padding: .25rem .5rem; background: linear-gradient(to left, color-mix(in oklab, var(--color-primary) 50%, transparent), transparent); display: flex; gap: .5rem; justify-content: space-between;  }
+
+/* Peer online (presence) nhưng mesh chưa link được — xem svc-chat.js connectingCount/
+   svc-bay.js._comConnectingCount. Màu warning để phân biệt với chữ "n đang online" thường. */
+.chc-counter, .chc-connecting { display: flex; align-items: center; gap: .25rem; }
+.chc-connecting { color: var(--color-warning, #fbbf24); margin-left: .4rem; }
+.chc-connecting-spin { animation: chc-spin 1s linear infinite; }
+@keyframes chc-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* Tab Nhóm + các tab nhắn riêng đang mở — mỗi tab 1 web-button tròn nhỏ, xem svc-chat.js._rbTabs */
+.chc-tabs { display: flex; align-items: center; gap: .4rem; padding: .25rem .5rem; overflow-x: auto; flex: 0 0 auto; }
+.chc-tab-wrap { position: relative; display: inline-flex; cursor: pointer; border-radius: 50%; }
+.chc-tab-wrap.active { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+.chc-tab-badge, .chc-tab-close {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    box-sizing: border-box;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: var(--color-primary, #ffbb24);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* Nút đóng tab riêng — góc trên-phải, luôn đỏ (--color-error) để phân biệt rõ với badge unread */
+.chc-tab-close {
+    top: auto;
+    bottom: -4px;
+    right: -4px;
+    background: var(--color-error, #f5465c);
+}
+
+/* Menu "Nhắn tin riêng" mở từ avatar trong 1 tin nhắn nhóm — cùng ngôn ngữ absolute picker
+   như .chc-avatar-menu bên dưới (list nhỏ, che ngay dưới avatar). */
+.chc-avatar-wrap { position: relative; flex-shrink: 0; }
+.chc-avatar-wrap.clickable { cursor: pointer; }
+
+.chc-avatar-menu {
+    position: absolute; top: calc(100% + .25rem); left: 0; z-index: 20;
+    display: flex; flex-direction: column; min-width: 140px;
+    background: var(--color-base-100); border: 1px solid var(--color-base-300);
+    border-radius: .5rem; box-shadow: 0 4px 12px color-mix(in oklab, var(--color-base-content) 20%, transparent);
+    overflow: hidden; padding: .25rem;
+}
+
+.chc-avatar-menu-item {
+    padding: .5rem .75rem; font-size: .8rem; cursor: pointer; white-space: nowrap;
+    color: var(--color-base-content); border-radius: .375rem;
+}
+.chc-avatar-menu-item:hover { background: var(--color-base-200); }
+
+/* Nhóm 3 nút tròn (emoji/đính kèm/gọi) — vùng div riêng biệt (không phải popover nổi),
+   nằm ngay trên hàng composer, hiện/ẩn theo _showActions (bấm nút "Thêm"). */
+.chc-action-row {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.3rem;
+}
+

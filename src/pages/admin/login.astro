@@ -1,0 +1,15 @@
+---
+import LayoutEmpty from '@/layouts/Empty.astro';
+import { views } from '@/modules/shop-page.js';
+
+const navItems = views.map(({ text, href, iconMobile }) => ({ text, href, iconMobile }));
+---
+
+<LayoutEmpty
+	title="Admin — Đăng nhập"
+	menu={{ type: 'mobile', menuItems: navItems }}
+	noindex
+>
+	<script src='@/webs/auth/svc-login.js'></script>
+	<svc-login pathLink="/admin/"></svc-login>
+</LayoutEmpty>

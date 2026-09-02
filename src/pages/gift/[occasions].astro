@@ -1,0 +1,110 @@
+---
+import CoreShop from '@/layouts/CoreShop.astro';
+import { variant, views, menuItems, footerMenuItems, policies, socials, shop, bar, contact } from '@/modules/shop/gift';
+import { occasions } from '@/services/constants/tags.js';
+import { normText } from '@/services/helper.js';
+
+// Chỉ build sẵn 5 dịp đầu tiên trong danh mục occasions (xem tags.js) — mỗi dịp 1 trang static,
+// lọc cứng sản phẩm theo 3 dạng tag coi như tương đương: key ('birthday'), nhãn tiếng Việt có dấu
+// ('Sinh nhật') và không dấu ('sinh nhat') — dữ liệu sản phẩm có thể lưu tag ở bất kỳ dạng nào.
+// getStaticPaths() được compiler tách ra scope riêng, chỉ giữ lại import — không đọc được const
+// khai báo bên ngoài — nên phải tính OCCASION_KEYS ngay trong hàm này.
+export function getStaticPaths() {
+	const OCCASION_KEYS = Object.keys(occasions.vi).slice(0, 5);
+	return OCCASION_KEYS.map((key) => ({ params: { occasions: key } }));
+}
+
+const { occasions: occasionKey } = Astro.params;
+const labelVi = occasions.vi[occasionKey];
+const labelEn = occasions.en[occasionKey];
+
+// SEO/GEO copy riêng cho từng dịp (thay vì 1 title/description chung cho mọi occasion) — giúp
+// mỗi trang trả lời đúng intent tìm kiếm/AI Search theo dịp cụ thể thay vì nội dung trùng lặp
+// giữa các trang /gift/[occasions]. Chỉ cần cover đúng 5 khóa build sẵn ở getStaticPaths ở trên;
+// occasion nào ngoài danh sách (nếu sau này mở rộng slice) rơi vào fallback build từ labelVi.
+const OCCASION_SEO: Record<string, { title: string; description: string }> = {
+	'corporate': {
+		title: 'Quà Tặng Doanh Nghiệp Cao Cấp – Tinh Tế & Chuyên Nghiệp',
+		description: 'Quà tặng doanh nghiệp sang trọng, tinh tế cho đối tác, khách hàng và nhân viên. Giftora DDK cung cấp set quà công ty đa dạng mẫu mã, in logo theo yêu cầu, giao số lượng lớn toàn quốc.',
+	},
+	'birthday': {
+		title: 'Quà Sinh Nhật Ý Nghĩa – Gợi Ý Quà Tặng Độc Đáo',
+		description: 'Tổng hợp quà sinh nhật ý nghĩa, độc đáo cho người thân, bạn bè và người yêu. Giftora DDK gợi ý những món quà tinh tế, phù hợp mọi độ tuổi và ngân sách, giao nhanh toàn quốc.',
+	},
+	'christmas': {
+		title: 'Quà Giáng Sinh - Noel Ấm Áp & Ý Nghĩa',
+		description: 'Khám phá bộ sưu tập quà Giáng Sinh - Noel ấm áp, ý nghĩa dành tặng gia đình, bạn bè và người thương. Giftora DDK mang đến những món quà tinh tế, sẵn sàng trao gửi yêu thương mùa lễ hội.',
+	},
+	'new-year': {
+		title: 'Quà Tết Dương Lịch – Khởi Đầu Năm Mới Trọn Vẹn',
+		description: 'Chọn quà Tết Dương lịch ý nghĩa để gửi lời chúc năm mới đến người thân, đối tác và bạn bè. Giftora DDK cung cấp quà tặng sang trọng, đóng gói tinh tế, giao hàng nhanh trước thềm năm mới.',
+	},
+	'lunar-new-year': {
+		title: 'Quà Tết Nguyên Đán – Sang Trọng, Đậm Đà Bản Sắc',
+		description: 'Gợi ý quà Tết Nguyên Đán sang trọng, ý nghĩa để biếu tặng ông bà, cha mẹ, đối tác dịp Tết cổ truyền. Giftora DDK có đa dạng set quà Tết cao cấp, giao hàng tận nơi kịp đón năm mới.',
+	},
+};
+const seo = OCCASION_SEO[occasionKey] ?? {
+	title: `Quà Tặng ${labelVi} Ý Nghĩa & Tinh Tế`,
+	description: `Gợi ý quà tặng ${labelVi} ý nghĩa, sang trọng tại Giftora DDK — đa dạng mẫu mã, đóng gói tinh tế, giao hàng nhanh toàn quốc. Chọn ngay món quà phù hợp nhất cho dịp ${labelVi}.`,
+};
+// Dữ liệu tags từ API có thể lưu dịp ở bất kỳ dạng nào trong số này — key (dạng dash mới, vd
+// "corporate-gift"), key dạng underscore cũ (tương thích ngược data tag từ trước khi đổi sang
+// dash), nhãn tiếng Việt có dấu, không dấu có khoảng trắng/underscore/dash, không dấu liền không
+// khoảng trắng, hoặc nhãn tiếng Anh.
+const normVi = normText(labelVi);
+const tagVariants = [...new Set([
+	occasionKey,
+	occasionKey.replace(/-/g, '_'),
+	occasionKey.replace(/-/g, ' '),
+	labelVi,
+	normVi,
+	normVi.replace(/\s+/g, ''),
+	normVi.replace(/\s+/g, '_'),
+	normVi.replace(/\s+/g, '-'),
+	labelEn,
+].filter(Boolean))];
+
+const currentView = views.find(v => v.href === '/') ?? views[0];
+
+// Chỉ hard-filter đúng section sản phẩm (dataTable: 'products'); section hero đầu tiên
+// (showcaseModernSlideNeat) ghi thêm tên dịp vào trước title có sẵn — vd "Sinh nhật • Giftora DDK".
+// title là field đa ngôn ngữ (xem web-cell.js's _resolveLocale) nên phải build đủ { vi, en },
+// không chỉ 1 string — nếu không trang sẽ luôn hiện tiếng Việt kể cả khi đổi ngôn ngữ sang en.
+const sections = currentView.sections.map((sec: any) => {
+	if (sec.dataTable === 'products') {
+		return { ...sec, filterState: { ...(sec.filterState || {}), active: tagVariants } };
+	}
+	if (sec.id === 'showcaseModernSlideNeat' && sec.data?.[0]) {
+		const baseTitle = sec.data[0].title;
+		const baseVi = typeof baseTitle === 'object' ? (baseTitle.vi ?? Object.values(baseTitle)[0]) : baseTitle;
+		const baseEn = typeof baseTitle === 'object' ? (baseTitle.en ?? baseVi) : baseTitle;
+		const title = { vi: `${labelVi} • ${baseVi}`, en: `${labelEn} • ${baseEn}` };
+		return { ...sec, data: [{ ...sec.data[0], title }, ...sec.data.slice(1)] };
+	}
+	return sec;
+});
+
+const bg = { blur: true }
+---
+
+<CoreShop
+	title={seo.title}
+  description={seo.description}
+  image="/images/common/gift-light.webp"
+	menu={{ type: 'top', position: 'prefix', menuItems: menuItems }}
+	footer={{ columns: footerMenuItems, policies, socials, contact, bg }}
+	bg={variant.bg}
+	theme={variant.theme}
+	variant={variant}
+  shop={shop}
+  bar={bar}
+>
+	<script src='@/webs/apex/web-board.js'></script>
+	<div>
+		<web-board
+			unlock={import.meta.env.PUBLIC_EXP}
+			variant={JSON.stringify(variant)}
+		><script type="application/json" is:inline set:html={JSON.stringify(sections)}></script></web-board>
+	</div>
+</CoreShop>

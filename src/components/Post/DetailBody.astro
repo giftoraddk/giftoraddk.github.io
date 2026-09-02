@@ -1,0 +1,202 @@
+---
+// Toàn bộ nội dung trang chi tiết bài viết — tách khỏi getStaticPaths/data-fetch để dùng chung
+// giữa biến thể SSG (src/pages/post/[slug].astro) và ISR
+// (src/pages/post/_render-modes/[slug].isr.astro, xem astro.config.mjs renderModeIntegration).
+import "@/webs/media/styles/prose-mirror.css";
+import { config as cardConfig } from '@/sections/another/_cardPost.js';
+import { postSlug, pickLang } from '@/services/helper.js';
+import { site } from '@/services/constants/site.js';
+import I18nText from '@/components/I18nText.astro';
+
+interface Props {
+	post: any;
+	allPosts: any[];
+}
+
+const { post, allPosts } = Astro.props;
+
+const meta      = typeof post.meta === 'string' ? JSON.parse(post.meta || '{}') : (post.meta ?? {});
+const pics      = (post.pics  || '').split('|').filter(Boolean);
+const tags      = (post.tags  || '').split('|').filter(Boolean);
+const heroImg   = pics[0] || '';
+const extraPics = pics.slice(1);
+
+const [scoreAvg, scoreCount] = String(post.score || '0~0').split('~').map(Number);
+const views = Number(meta.views || 0);
+const likes = Number(meta.likes || 0);
+
+const plainText   = (post.content || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+const description = post.description || plainText.slice(0, 160) || '';
+const pageUrl      = `${site.domain.replace(/\/$/, '')}/post/${postSlug(post)}/`;
+
+// ── Bài viết liên quan ───────────────────────────────────────────────────────
+// Lọc các post chia sẻ ít nhất 1 tag với bài hiện tại,
+// sắp xếp theo số tag trùng giảm dần, lấy tối đa 6.
+const relatedPosts = allPosts
+	.filter((p: any) => p.id !== post.id)
+	.reduce<Array<{ overlap: number; data: any }>>((acc, p) => {
+		const pTags   = (p.tags || '').split('|').filter(Boolean);
+		const overlap = pTags.filter((t: string) => tags.includes(t)).length;
+		if (overlap > 0) {
+			const pMeta = typeof p.meta === 'string' ? JSON.parse(p.meta || '{}') : (p.meta ?? {});
+			acc.push({ overlap, data: { ...p, meta: { ...pMeta, url: `/post/${postSlug(p)}/` } } });
+		}
+		return acc;
+	}, [])
+	.sort((a, b) => b.overlap - a.overlap)
+	.slice(0, 6)
+	.map((item) => item.data);
+
+// JSON-LD (GEO/SEO) — @graph gộp BlogPosting + BreadcrumbList trong CÙNG 1 script, cùng cách
+// src/pages/product/[slug].astro làm. Đặt trong <body> (Google/schema.org đều hỗ trợ, không
+// bắt buộc phải nằm trong <head>) vì Core.astro không có slot chèn vào <head>.
+const blogPostingLd = {
+	'@type': 'BlogPosting',
+	headline: post.title,
+	description,
+	...(heroImg && { image: [heroImg] }),
+	...(post.created_at && { datePublished: post.created_at }),
+	...(post.updated_at && { dateModified: post.updated_at }),
+	author: { '@type': 'Organization', name: site.subtitle },
+};
+
+const breadcrumbLd = {
+	'@type': 'BreadcrumbList',
+	itemListElement: [
+		{ '@type': 'ListItem', position: 1, name: pickLang({ en: 'Home', vi: 'Trang chủ' }), item: site.domain },
+		{ '@type': 'ListItem', position: 2, name: pickLang({ en: 'Posts', vi: 'Bài viết' }), item: `${site.domain}/post/` },
+		{ '@type': 'ListItem', position: 3, name: post.title, item: pageUrl },
+	],
+};
+
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@graph': [blogPostingLd, breadcrumbLd],
+};
+---
+
+<script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />
+
+<!-- Hero image -->
+{heroImg && (
+	<div class="overflow-hidden aspect-[5/2] mb-8 lg:-mt-16 relative">
+		<img src={heroImg} alt={post.title} class="w-full h-full object-cover" loading="eager" />
+		<div class="absolute inset-0" style="background-image: linear-gradient(to top, var(--color-base-100) 0%, transparent 20%, transparent 100%);"></div>
+	</div>
+)}
+
+<article class="mx-auto max-w-6xl px-4 py-8">
+
+	<!-- Breadcrumb -->
+	<nav aria-label="breadcrumb" class="mb-6 text-sm opacity-60">
+		<a href="/" class="hover:text-primary"><I18nText text={{ en: 'Home', vi: 'Trang chủ' }} /></a>
+		<span> / </span>
+		<a href="/post/" class="hover:text-primary"><I18nText text={{ en: 'Posts', vi: 'Bài viết' }} /></a>
+		<span> / </span>
+		<span>{post.title}</span>
+	</nav>
+
+	<!-- Tags -->
+	{tags.length > 0 && (
+		<div class="flex flex-wrap gap-2 mb-5">
+			{tags.map((tag: string) => (
+				<span class="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full
+					bg-primary/10 text-primary border border-primary/20
+					tracking-wide">
+					<span class="opacity-50">#</span>{tag}
+				</span>
+			))}
+		</div>
+	)}
+
+	<!-- Title -->
+	<h1 class="text-3xl font-bold leading-tight mb-4">{post.title}</h1>
+
+	<!-- Meta row -->
+	<div class="flex flex-wrap items-center gap-4 text-sm opacity-60 mb-8 pb-6 border-b border-base-200">
+		{meta.location && (
+			<span class="flex items-center gap-1">
+				<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+					<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+					<circle cx="12" cy="9" r="2.5"/>
+				</svg>
+				{meta.location}
+			</span>
+		)}
+		{scoreCount > 0 && (
+			<span class="flex items-center gap-1">
+				<svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+					<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+				</svg>
+				{scoreAvg.toFixed(1)} ({scoreCount} <I18nText text={{ en: 'reviews', vi: 'đánh giá' }} />)
+			</span>
+		)}
+		<svc-engage postId={post.id} initialViews={views} initialLikes={likes} lang={site.defaultLang}></svc-engage>
+		<svc-share title={post.title} lang={site.defaultLang}></svc-share>
+		{meta.reading_time && <span>{meta.reading_time} <I18nText text={{ en: 'min read', vi: 'phút đọc' }} /></span>}
+	</div>
+
+	<!-- Content -->
+	{post.content && (
+		<div class="Editor ProseMirror !px-0" set:html={post.content} />
+	)}
+
+	<!-- Extra gallery -->
+	{extraPics.length > 0 && (
+		<div class="mt-10">
+			<h2 class="text-lg font-semibold mb-4 opacity-70"><I18nText text={{ en: 'Other photos', vi: 'Ảnh khác' }} /></h2>
+			<div class="grid grid-cols-2 gap-3">
+				{extraPics.map((src: string) => (
+					<div class="rounded-xl overflow-hidden aspect-square">
+						<img src={src} alt={post.title} class="w-full h-full object-cover" loading="lazy" />
+					</div>
+				))}
+			</div>
+		</div>
+	)}
+
+	<!-- Bài viết liên quan -->
+	{relatedPosts.length > 0 && (
+		<div class="mt-12 pt-8 border-t border-base-200">
+			<h2 class="text-xl font-semibold mb-6"><I18nText text={{ en: 'Related posts', vi: 'Bài viết liên quan' }} /></h2>
+
+			<!-- SEO list — crawlable -->
+			<ul class="sr-only" aria-hidden="true">
+				{relatedPosts.map((p: any) => (
+					<li><a href={p.meta.url}>{p.title}</a></li>
+				))}
+			</ul>
+
+			<web-boxs
+				data={JSON.stringify(relatedPosts)}
+				config={JSON.stringify(cardConfig)}
+				masonry
+				lang={site.defaultLang}
+				ui="modern"
+			></web-boxs>
+		</div>
+	)}
+
+	<!-- Bottom nav -->
+	<div class="mt-14 pt-8 border-t border-base-content/10 flex flex-col items-center gap-4">
+		<p class="text-sm opacity-40 tracking-widest uppercase"><I18nText text={{ en: 'Explore more', vi: 'Khám phá thêm' }} /></p>
+		<a href="/post/" class="group inline-flex items-center gap-3 px-7 py-3 rounded-2xl font-semibold
+			border border-base-content/10 bg-base-content/5
+			hover:bg-primary/10 hover:border-primary/30 hover:text-primary
+			transition-all duration-200 backdrop-blur-sm">
+			<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"
+				class="transition-transform duration-200 group-hover:-translate-x-1">
+				<path d="M19 12H5M12 5l-7 7 7 7"/>
+			</svg>
+			<I18nText text={{ en: 'All posts', vi: 'Tất cả bài viết' }} />
+		</a>
+	</div>
+
+</article>
+
+<script>
+	import '@/webs/apex/web-boxs.js';
+	import '@/webs/socials/svc-engage.js';
+	import '@/webs/socials/svc-share.js';
+	import '@/webs/media/svc-player.js';
+</script>

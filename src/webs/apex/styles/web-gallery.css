@@ -1,0 +1,147 @@
+:host {
+	z-index: 0;
+	position: relative;
+	display: inline;
+	cursor: pointer;
+	--core-font: var(--font-sans, system-ui);
+}
+
+/* ── Single image (mirrors web-image) ─────────────────────────── */
+.gallery-single {
+	position: relative;
+	overflow: hidden;
+}
+
+.gallery-single img {
+	width: 100%;
+	height: auto;
+	display: block;
+}
+
+.image-hover-zoom {
+	transform: scale(1);
+	transition: transform 0.3s ease-in-out;
+}
+
+.image-hover-zoom:hover {
+	transform: scale(1.1);
+}
+
+/* Blur background — single image mode */
+.gallery-single.blur {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	position: relative;
+	overflow: hidden;
+	background: #000;
+}
+
+.gallery-single.blur .gsb-bg {
+	position: absolute;
+	inset: 0;
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+	filter: blur(40px);
+	transform: scale(1.1);
+	pointer-events: none;
+}
+
+.gallery-single.blur img {
+    z-index: 1;
+	  position: relative;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    margin: 0 auto auto;
+}
+
+/* ── Stack (slider container) ──────────────────────────────────── */
+.gallery-stack {
+	position: relative;
+	width: 100%;
+	cursor: pointer;
+	user-select: none;
+	aspect-ratio: 4/3;
+	overflow: hidden;
+}
+
+.gallery-stack web-slider {
+	width: 100%;
+	height: 100%;
+}
+
+/* ── Dialog / Popup ────────────────────────────────────────────── */
+dialog.gallery-dialog {
+	display: none;
+	position: fixed;
+	inset: 0;
+	margin: 0;
+	padding: 0;
+	width: 100vw;
+	max-width: 100vw;
+	height: 100vh;
+	max-height: 100vh;
+	border: none;
+	background: rgba(0, 0, 0, 0.88);
+}
+
+dialog.gallery-dialog[open] {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	animation: gallery-fade-in 0.22s ease;
+}
+
+/* Suppress native backdrop — dialog itself acts as the overlay */
+dialog.gallery-dialog::backdrop {
+	display: none;
+}
+
+@keyframes gallery-fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+.popup-inner {
+	position: relative;
+	width: 90vw;
+	max-width: 960px;
+	display: flex;
+	flex-direction: column;
+}
+
+.popup-close {
+	position: absolute;
+	top: -44px;
+	right: 0;
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	border: 1.5px solid rgba(255, 255, 255, 0.35);
+	background: rgba(255, 255, 255, 0.08);
+	color: #ffffff;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	padding: 0;
+	transition: background 0.2s ease, border-color 0.2s ease;
+	z-index: 10;
+}
+
+.popup-close:hover {
+	background: rgba(255, 255, 255, 0.2);
+	border-color: rgba(255, 255, 255, 0.6);
+}
+
+web-slider {
+	width: 100%;
+	height: 100%;
+}

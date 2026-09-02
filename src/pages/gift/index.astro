@@ -1,0 +1,28 @@
+---
+import Core from '@/layouts/Core.astro';
+import { variant, views, bar, menuItems, footerMenuItems, policies, socials, contact } from '@/modules/landing/gift';
+
+const currentView = views.find(v => v.href === '/') ?? views[0];
+
+const bg = { blur: true }
+---
+
+<Core
+	title="Quà Tặng Ý Nghĩa, Đẹp và Tinh Tế"
+  description="Khám phá quà tặng ý nghĩa, tinh tế và phù hợp cho mọi dịp tại Giftora DDK. Đa dạng quà tặng cho người yêu, gia đình, bạn bè, đồng nghiệp và doanh nghiệp, giúp bạn dễ dàng chọn món quà đặc biệt."
+  image="/images/common/gift-dark.webp"
+	menu={{ type: 'top', position: 'prefix', menuItems: menuItems }}
+	footer={{ columns: footerMenuItems, policies, socials, contact, bg }}
+	bg={variant.bg}
+	theme={variant.theme}
+	variant={variant}
+  bar={bar}
+>
+	<script src='@/webs/apex/web-board.js'></script>
+	<div>
+		<web-board
+			unlock={import.meta.env.PUBLIC_EXP}
+			variant={JSON.stringify(variant)}
+		><script type="application/json" is:inline set:html={JSON.stringify(currentView.sections)}></script></web-board>
+	</div>
+</Core>

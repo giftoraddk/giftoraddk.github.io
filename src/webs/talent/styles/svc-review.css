@@ -1,0 +1,5 @@
+:host { display: block; width: 100%; box-sizing: border-box; color: var(--color-base-content); }
+
+.review { display: flex; flex-direction: column; gap: 0.75rem; max-width: 24rem; }
+.review-dimension { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.review-dimension span { font-size: 0.9rem; opacity: 0.8; }

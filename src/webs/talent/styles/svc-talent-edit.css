@@ -1,0 +1,23 @@
+:host {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    --core-font: var(--font-sans, 'system-ui');
+    font-family: var(--core-font);
+    color: var(--color-base-content);
+}
+
+.talent-edit { display: flex; flex-direction: column; gap: 0.75rem; width: 100%; max-width: 40rem; }
+.talent-edit-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.talent-edit-title { font-size: 1.25rem; font-weight: 700; margin: 0; }
+.talent-edit-section {
+    font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+    opacity: 0.6; margin: 0.75rem 0 -0.15rem; padding-top: 0.5rem;
+    border-top: 1px solid color-mix(in oklab, var(--color-base-content) 10%, transparent);
+}
+.talent-edit-section:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+.talent-edit-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 0.75rem; }
+.talent-edit-field { display: flex; flex-direction: column; gap: 0.3rem; }
+.talent-edit-field > label { font-size: 0.78rem; font-weight: 600; opacity: 0.7; }
+.talent-edit-avatar { align-self: flex-start; }
+.talent-edit-actions { display: flex; gap: 0.75rem; margin-top: 0.5rem; }

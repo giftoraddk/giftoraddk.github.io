@@ -1,0 +1,104 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-toast'
+description: 'Auto-dismiss toast notification container driven by custom events'
+---
+
+# web-toast
+
+A toast notification container that listens for `web-toast-show` events dispatched anywhere in the page. Toasts appear, persist for a configurable duration, then auto-dismiss. Multiple toasts stack.
+
+## When to use
+
+- Non-blocking success, error, or info messages after async operations
+- Background job status updates (file saved, export completed)
+- Transient feedback that should not interrupt the user's workflow
+
+## Loading
+
+```html
+<!-- Place once in your layout -->
+<script type="module" src="/src/webs/apex/web-toast.js"></script>
+```
+
+## Props
+
+These props configure the toast container:
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `timeout` | number | `4000` | Default auto-dismiss delay in ms (can be overridden per toast) |
+| `placement` | string | `'bottom-center'` | Where toasts appear: `top-left` \| `top-center` \| `top-right` \| `bottom-left` \| `bottom-center` \| `bottom-right` |
+| `max` | number | `5` | Maximum number of toasts visible simultaneously |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+
+## Showing a Toast
+
+Dispatch a `web-toast-show` event from anywhere in the page:
+
+```js
+window.dispatchEvent(new CustomEvent('web-toast-show', {
+  detail: {
+    type: 'success',          // 'info' | 'success' | 'warning' | 'error'
+    title: 'Saved',           // optional title
+    message: 'Changes saved successfully.',
+    timeout: 3000,            // optional — overrides container default
+  },
+  bubbles: true,
+  composed: true,
+}));
+```
+
+## Basic Example
+
+```html
+<!-- Toast container in the layout -->
+<web-toast placement="bottom-right" timeout="4000"></web-toast>
+
+<!-- Trigger a toast from a button -->
+<web-button type="fill" id="save-btn">Save</web-button>
+
+<script type="module" src="/src/webs/apex/web-toast.js"></script>
+<script type="module" src="/src/webs/apex/web-button.js"></script>
+
+<script>
+  document.getElementById('save-btn').addEventListener('click', async () => {
+    await saveData();
+    window.dispatchEvent(new CustomEvent('web-toast-show', {
+      detail: { type: 'success', message: 'Settings saved.' },
+      bubbles: true,
+    }));
+  });
+</script>
+```
+
+## Advanced Examples
+
+Error toast after a failed request:
+
+```js
+try {
+  await submitOrder();
+  window.dispatchEvent(new CustomEvent('web-toast-show', {
+    detail: { type: 'success', title: 'Order placed', message: 'You will receive a confirmation email.' },
+    bubbles: true,
+  }));
+} catch (err) {
+  window.dispatchEvent(new CustomEvent('web-toast-show', {
+    detail: { type: 'error', title: 'Order failed', message: err.message, timeout: 8000 },
+    bubbles: true,
+  }));
+}
+```
+
+Top-center placement for form validations:
+
+```html
+<web-toast placement="top-center" timeout="3000" ui="spatial"></web-toast>
+```
+
+## Events Consumed
+
+| Event | Listened on | Payload |
+|---|---|---|
+| `web-toast-show` | `window` | `{ type, title?, message, timeout? }` |

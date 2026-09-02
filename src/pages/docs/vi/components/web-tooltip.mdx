@@ -1,0 +1,86 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-tooltip'
+description: 'Tooltip hiển thị text gợi ý khi hover vào element'
+---
+
+# web-tooltip
+
+Hiển thị nhãn text gợi ý (tooltip) khi người dùng hover hoặc click vào element con. Hỗ trợ định vị theo 4 hướng và độ trễ hiển thị tùy chỉnh.
+
+## Khi nào dùng
+
+- Giải thích ý nghĩa của icon-only button hoặc ký hiệu không tự rõ nghĩa
+- Cung cấp phím tắt hoặc thông tin bổ sung ngắn gọn không chiếm không gian
+- Hướng dẫn nhanh (quick hint) cho các trường trong form
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-tooltip.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `content` | string | `''` | Nội dung text hiển thị trong tooltip |
+| `placement` | string | `'top'` | Vị trí hiển thị: `top` \| `bottom` \| `left` \| `right` |
+| `trigger` | string | `'hover'` | Cách kích hoạt: `hover` \| `click` |
+| `delay` | number | `200` | Độ trễ (ms) trước khi tooltip xuất hiện khi hover |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Ví dụ cơ bản
+
+```html
+<web-tooltip content="Xóa mục này" placement="top">
+  <web-button type="ghost" color="error">🗑</web-button>
+</web-tooltip>
+
+<web-tooltip content="Sao chép đường dẫn" placement="bottom" trigger="click">
+  <web-button type="outline">Sao chép link</web-button>
+</web-tooltip>
+```
+
+## Ví dụ nâng cao
+
+Toolbar icon-only với tooltip giải thích:
+
+```html
+<div style="display: flex; gap: 8px;">
+  <web-tooltip content="In trang (Ctrl+P)" placement="bottom">
+    <web-button type="ghost">🖨️</web-button>
+  </web-tooltip>
+  <web-tooltip content="Tải xuống PDF" placement="bottom">
+    <web-button type="ghost">⬇️</web-button>
+  </web-tooltip>
+  <web-tooltip content="Chia sẻ" placement="bottom">
+    <web-button type="ghost">🔗</web-button>
+  </web-tooltip>
+  <web-tooltip content="Xem toàn màn hình" placement="bottom">
+    <web-button type="ghost">⛶</web-button>
+  </web-tooltip>
+</div>
+```
+
+Tooltip với độ trễ dài và giao diện spatial:
+
+```html
+<web-tooltip
+  content="Tính năng này yêu cầu gói Pro trở lên"
+  placement="right"
+  delay="500"
+  ui="spatial">
+  <span style="opacity: 0.5; cursor: not-allowed;">
+    <web-button type="primary" disabled>Xuất dữ liệu</web-button>
+  </span>
+</web-tooltip>
+```
+
+Tooltip kích hoạt bằng click cho thông tin nhạy cảm:
+
+```html
+<web-tooltip content="Mã xác thực: 2FA-8821" placement="top" trigger="click" delay="0">
+  <web-button type="outline" size="sm">Hiện mã</web-button>
+</web-tooltip>
+```

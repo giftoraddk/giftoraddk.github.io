@@ -1,0 +1,79 @@
+:host {
+    display: block;
+    width: 100%;
+    --core-blur: var(--haze-blur, 12px);
+    --core-glass: var(--haze-glass, 20%);
+    --core-font: var(--font-sans, 'system-ui');
+}
+
+.web-progress {
+	font-family: var(--core-font);
+    width: 100%;
+    height: 8px;
+    background: var(--color-base-300, #393939);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--color-primary, #2ebd85);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+/* Color Tokens mapping */
+.web-progress.primary { --progress-color: var(--color-primary, #2ebd85); }
+.web-progress.info { --progress-color: var(--color-info, #00c7d4); }
+.web-progress.warning { --progress-color: var(--color-warning, #fbbf24); }
+.web-progress.error { --progress-color: var(--color-secondary, #f5465c); }
+.web-progress.success { --progress-color: var(--color-primary, #2ebd85); }
+
+.web-progress .progress-bar {
+    background: var(--progress-color, var(--color-primary, #2ebd85));
+}
+
+.web-progress.striped .progress-bar {
+    background-image: linear-gradient(45deg,
+            rgba(255, 255, 255, 0.15) 25%,
+            transparent 25%,
+            transparent 50%,
+            rgba(255, 255, 255, 0.15) 50%,
+            rgba(255, 255, 255, 0.15) 75%,
+            transparent 75%,
+            transparent);
+    background-size: 1rem 1rem;
+}
+
+.web-progress.animate .progress-bar {
+    animation: progress-bar-stripes 1s linear infinite;
+}
+
+
+@keyframes progress-bar-stripes {
+    from {
+        background-position: 1rem 0;
+    }
+
+    to {
+        background-position: 0 0;
+    }
+}
+
+/**
+ * ----------------------------------------
+ * Glassmorphism - spatial
+ * ----------------------------------------
+ */
+.spatial.web-progress {
+    background: color-mix(in oklab, var(--color-base-300, #393939) var(--core-glass), transparent);
+    backdrop-filter: blur(var(--core-blur));
+    border: 1px solid #ffffff4d;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.progress-bar.glass-bar {
+    background: color-mix(in oklab, var(--progress-color) 60%, rgba(255, 255, 255, 0.1));
+    backdrop-filter: blur(calc(var(--core-blur) * 0.3));
+    /* box-shadow: 0 0 15px color-mix(in oklab, var(--progress-color) 30%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.1); */
+}

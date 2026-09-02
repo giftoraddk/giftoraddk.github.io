@@ -1,0 +1,103 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-slider'
+description: 'Carousel/slider với autoplay, navigation và nhiều chế độ hiển thị'
+---
+
+# web-slider
+
+Carousel hiển thị danh sách hình ảnh hoặc nội dung với autoplay tự động, mũi tên điều hướng và chấm chỉ vị trí. Hỗ trợ hiển thị nhiều slide cùng lúc và hiệu ứng chuyển trang.
+
+## Khi nào dùng
+
+- Banner quảng cáo hoặc giới thiệu sản phẩm trên trang chủ
+- Gallery hình ảnh cho trang chi tiết sản phẩm
+- Hiển thị danh sách thẻ (card) dạng marquee tự động cuộn
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-slider.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `images` | array JSON | `[]` | Danh sách slide: `[{"src":"...","alt":"...","title":"..."}]` |
+| `autoplay` | number | `0` | Thời gian tự chuyển slide (ms). `0` = tắt autoplay |
+| `loop` | boolean | `true` | Quay vòng từ slide cuối về slide đầu |
+| `mode` | string | `'slide'` | Hiệu ứng chuyển: `slide` \| `fade` |
+| `vertical` | boolean | `false` | Chuyển slide theo chiều dọc |
+| `slides` | number | `1` | Số slides hiển thị cùng lúc |
+| `spacing` | number | `16` | Khoảng cách (px) giữa các slides khi `slides > 1` |
+| `nav` | boolean | `true` | Hiển thị nút mũi tên Trước/Tiếp |
+| `dots` | boolean | `true` | Hiển thị chấm chỉ vị trí slide hiện tại |
+| `lazy` | boolean | `true` | Tải hình ảnh theo kiểu lazy loading |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Ví dụ cơ bản
+
+```html
+<web-slider
+  images='[{"src":"/img/1.jpg","alt":"Slide 1"},{"src":"/img/2.jpg","alt":"Slide 2"}]'
+  autoplay="5000"
+  loop
+  nav
+  dots
+  slides="1">
+</web-slider>
+
+<!-- 3 slides cùng lúc, dùng như marquee -->
+<web-slider images='[...]' slides="3" spacing="16" autoplay="3000"></web-slider>
+```
+
+## Ví dụ nâng cao
+
+Banner trang chủ với hiệu ứng fade và tiêu đề:
+
+```html
+<web-slider
+  images='[
+    {"src":"/banner/summer.jpg","alt":"Bộ sưu tập hè","title":"Bộ sưu tập Hè 2025"},
+    {"src":"/banner/sale.jpg","alt":"Khuyến mãi lớn","title":"Giảm đến 50%"},
+    {"src":"/banner/new.jpg","alt":"Hàng mới về","title":"Hàng mới về mỗi tuần"}
+  ]'
+  autoplay="6000"
+  mode="fade"
+  loop
+  nav
+  dots>
+</web-slider>
+```
+
+Slider đối tác hiển thị 4 logo cùng lúc, tự cuộn:
+
+```html
+<web-slider
+  images='[
+    {"src":"/logos/partner1.svg","alt":"Đối tác 1"},
+    {"src":"/logos/partner2.svg","alt":"Đối tác 2"},
+    {"src":"/logos/partner3.svg","alt":"Đối tác 3"},
+    {"src":"/logos/partner4.svg","alt":"Đối tác 4"},
+    {"src":"/logos/partner5.svg","alt":"Đối tác 5"}
+  ]'
+  slides="4"
+  spacing="24"
+  autoplay="2500"
+  loop
+  nav="false"
+  dots="false">
+</web-slider>
+```
+
+Slider dọc cho sidebar:
+
+```html
+<web-slider
+  images='[{"src":"/thumb/1.jpg","alt":"Ảnh 1"},{"src":"/thumb/2.jpg","alt":"Ảnh 2"}]'
+  vertical
+  autoplay="4000"
+  nav="false">
+</web-slider>
+```

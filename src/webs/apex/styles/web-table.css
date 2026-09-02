@@ -1,0 +1,427 @@
+:host {
+	display: block;
+	position: relative;
+	width: 100%;
+	height: 100%;
+	--core-blur: var(--haze-blur, 12px);
+	--core-glass: var(--haze-glass, 20%);
+	--core-font: var(--font-sans, 'system-ui');
+}
+
+.web-table {
+	font-family: var(--core-font);
+	height: 100%;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	color: var(--color-base-content, #ffffff);
+	background-color: var(--color-base-100, #0d0d0d);
+	box-sizing: border-box;
+}
+
+
+/* Grid Table Styles */
+.grid-table {
+	width: 100%;
+	font-size: 14px;
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+}
+
+.grid-head {
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	background-color: var(--color-base-200, #232323);
+}
+
+.grid-row {
+	position: relative;
+	display: grid;
+	align-items: center;
+	overflow: hidden;
+	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	border-bottom: 1px solid var(--color-base-300, #393939);
+}
+
+.grid-row:hover:not(.header) {
+	background-color: color-mix(in oklab, var(--color-primary, #2ebd85) 5%, transparent);
+}
+
+.grid-row.header {
+	font-size: 12px;
+	text-transform: uppercase;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+}
+
+.grid-cell {
+	position: relative;
+	z-index: 1;
+	padding: 0 1rem;
+  max-width: 100%;
+}
+
+.grid-cell > .grid-cell-body {
+	overflow: hidden;
+	white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.grid-cell > slot {
+	display: block;
+}
+
+.grid-body {}
+
+/* Custom Scrollbar */
+.grid-table::-webkit-scrollbar {
+	width: 6px;
+}
+
+.grid-table::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.grid-table::-webkit-scrollbar-thumb {
+	background: var(--color-base-300, #393939);
+	border-radius: 10px;
+}
+
+.grid-table::-webkit-scrollbar-thumb:hover {
+	background: var(--color-primary, #2ebd85);
+}
+
+/**
+ * ----------------------------------------
+ * Glassmorphism - spatial
+ * ----------------------------------------
+ */
+.spatial.web-table {
+	background-color: color-mix(in oklab, var(--color-base-300, #393939) var(--core-glass), transparent);
+	backdrop-filter: blur(calc(var(--core-blur) * 1.5));
+	border: 1px solid #ffffff4d;
+	border-radius: 1rem;
+}
+
+.spatial .grid-head {
+	background: #ffffff33;
+}
+
+.spatial .grid-row {
+	border-bottom: 1px solid #ffffff4d;
+}
+
+.spatial .grid-table::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.1);
+}
+
+.spatial .grid-table::-webkit-scrollbar-thumb:hover {
+	background: rgba(255, 255, 255, 0.2);
+}
+
+.spatial .wt-edit-row {
+	background: rgba(255, 255, 255, 0.06);
+	backdrop-filter: blur(var(--core-blur, 12px));
+	border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.spatial .wt-input {
+	background: rgba(255, 255, 255, 0.08);
+	border-color: rgba(255, 255, 255, 0.15);
+	color: inherit;
+}
+
+.spatial .wt-input:focus {
+	border-color: var(--color-primary, #2ebd85);
+	background: rgba(255, 255, 255, 0.12);
+	outline: none;
+}
+
+.spatial .wt-btn-cancel {
+	background: rgba(255, 255, 255, 0.1);
+	border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* ── Ctrl column ──────────────────────────────────────────────────── */
+.wt-ctrl-head { padding: 0 8px; }
+.wt-ctrl-cell {
+	padding: 2px 4px;
+	display: flex; flex-direction: row;
+	align-items: center; justify-content: center;
+	gap: 4px;
+	overflow: visible;
+	-webkit-line-clamp: unset;
+	-webkit-box-orient: unset;
+}
+.wt-act-row { display: flex; flex-direction: column; gap: 4px; }
+
+.wt-btn-act {
+	width: 22px; height: 22px; padding: 0;
+	border: none; border-radius: 5px; cursor: pointer;
+	display: flex; align-items: center; justify-content: center;
+	background: transparent; color: var(--color-base-content, #fff);
+	opacity: 0.45; transition: opacity .15s, background .15s;
+	font-size: 14px;
+}
+.wt-btn-act:hover { opacity: 1; background: color-mix(in oklab, var(--color-primary) 15%, transparent); }
+.wt-btn-act.active { opacity: 1; background: var(--color-primary); color: #fff; }
+.wt-act-del:hover  { background: color-mix(in oklab, #ef4444 18%, transparent) !important; }
+.wt-act-del.active { background: #ef4444 !important; }
+
+/* Sort buttons */
+.wt-sort-col { display: flex; gap: 2px; }
+.wt-sort-row { display: flex; flex-direction: column; gap: 4px; }
+.wt-btn-sort {
+	width: 22px; height: 22px; padding: 0;
+	border: none; border-radius: 5px; cursor: pointer;
+	background: transparent; color: var(--color-base-content, #fff);
+	opacity: 0.3; font-size: 14px;
+	display: flex; align-items: center; justify-content: center;
+	transition: opacity .15s, background .15s;
+}
+.wt-btn-sort:hover { opacity: 1; background: color-mix(in oklab, var(--color-primary) 18%, transparent); }
+
+/* ── Row group ────────────────────────────────────────────────────── */
+.wt-row-group { display: flex; flex-direction: column; }
+.grid-row.is-open { background: color-mix(in oklab, var(--color-primary) 8%, transparent); }
+
+/* ── Delete confirm ───────────────────────────────────────────────── */
+.wt-del-confirm {
+	display: flex; align-items: center; gap: 10px;
+	padding: 0.5rem 1rem; font-size: 0.85rem;
+	background: color-mix(in oklab, #ef4444 10%, var(--color-base-200, #232323));
+	border-bottom: 1px solid color-mix(in oklab, #ef4444 25%, transparent);
+}
+.wt-btn-yes {
+	padding: 4px 14px; border-radius: 6px; border: none; cursor: pointer;
+	background: #ef4444; color: #fff; font-size: 0.8rem; font-weight: 600;
+}
+.wt-btn-no {
+	padding: 4px 12px; border-radius: 6px; border: none; cursor: pointer;
+	background: var(--color-base-300, #393939); color: var(--color-base-content, #fff); font-size: 0.8rem;
+}
+
+/* ── Edit form ────────────────────────────────────────────────────── */
+.wt-edit-row {
+	position: relative;
+	padding: 1rem;
+	background: color-mix(in oklab, var(--color-primary) 5%, var(--color-base-200, #1a1a2e));
+	border-bottom: 2px solid var(--color-primary, #2ebd85);
+}
+.wt-edit-inner { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* ── AI-fill loading overlay (svc-assist đang chờ AI, xem prop aiLoading) ── */
+.wt-ai-loading {
+	position: absolute;
+	inset: 0;
+	z-index: 10;
+	display: flex; align-items: center; justify-content: center; gap: 8px;
+	background: color-mix(in oklab, var(--color-base-200, #1a1a2e) 80%, transparent);
+	backdrop-filter: blur(4px);
+	color: var(--color-base-content, #fff);
+	font-size: 0.85rem;
+	border-radius: inherit;
+}
+@keyframes wt-spin { to { transform: rotate(360deg); } }
+.wt-spin { display: inline-block; font-size: 18px; animation: wt-spin 0.8s linear infinite; }
+
+.wt-field {
+	display: flex; flex-direction: column; gap: 4px;
+	min-width: 160px; flex: 0 1 auto;
+}
+.wt-field.full { flex: 0 0 100%; }
+
+.wt-field-label {
+	font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em;
+	text-transform: uppercase; opacity: 0.6;
+}
+
+.wt-input {
+	height: 32px; padding: 0 10px;
+	border-radius: 6px; border: 1px solid var(--color-base-300, #393939);
+	background: var(--color-base-200, #1a1a2e); color: var(--color-base-content, #fff);
+	font-size: 0.875rem; width: 100%; box-sizing: border-box;
+}
+
+/* ── Repeater field (type: 'repeater') ───────────────────────────────── */
+.wt-repeater { display: flex; flex-direction: column; gap: 6px; }
+.wt-repeater-row { display: flex; gap: 6px; align-items: center; }
+.wt-repeater-row .wt-input { flex: 1; }
+.wt-btn-repeater-del {
+	flex-shrink: 0; width: 32px; height: 32px; padding: 0;
+	border-radius: 6px; border: none; cursor: pointer;
+	background: var(--color-base-300, #393939); color: var(--color-base-content, #fff);
+	display: flex; align-items: center; justify-content: center; opacity: 0.75;
+}
+.wt-btn-repeater-del:hover { opacity: 1; background: color-mix(in oklab, var(--color-secondary, #f5465c) 25%, var(--color-base-300, #393939)); }
+.wt-btn-repeater-add {
+	align-self: flex-start;
+	display: flex; align-items: center; gap: 5px;
+	padding: 6px 12px; border-radius: 6px; cursor: pointer;
+	background: transparent;
+	border: 1px dashed color-mix(in oklab, var(--color-primary, #2ebd85) 40%, transparent);
+	color: var(--color-primary, #2ebd85);
+	font-size: 0.8rem;
+}
+.wt-btn-repeater-add:hover { background: color-mix(in oklab, var(--color-primary, #2ebd85) 10%, transparent); }
+
+.wt-edit-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+
+.wt-btn-save {
+	display: flex; align-items: center; gap: 6px;
+	padding: 7px 18px; border-radius: 8px; border: none; cursor: pointer;
+	background: var(--color-primary, #2ebd85); color: #fff;
+	font-size: 0.875rem; font-weight: 600;
+}
+.wt-btn-cancel {
+	padding: 7px 14px; border-radius: 8px; border: none; cursor: pointer;
+	background: var(--color-base-300, #393939); color: var(--color-base-content, #fff); font-size: 0.875rem;
+}
+.wt-btn-history {
+	display: flex; align-items: center; gap: 5px;
+	margin-left: auto;
+	padding: 7px 14px; border-radius: 8px; cursor: pointer;
+	background: transparent;
+	border: 1px solid color-mix(in oklab, var(--color-primary, #2ebd85) 40%, transparent);
+	color: var(--color-primary, #2ebd85);
+	font-size: 0.8rem; font-family: var(--font-sans, system-ui);
+	transition: background .15s;
+}
+.wt-btn-history:hover {
+	background: color-mix(in oklab, var(--color-primary, #2ebd85) 10%, transparent);
+}
+
+/* ── Empty state ──────────────────────────────────────────────────── */
+.wt-empty { text-align: center; padding: 3rem 1rem; opacity: 0.45; font-size: 0.9rem; }
+
+/* ── Pagination ───────────────────────────────────────────────────── */
+.wt-pagination {
+	padding: 1rem;
+	display: flex;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+/* ── Column head: label + sort + search/filter controls ───────────── */
+.wt-head-cell {
+	display: flex !important;
+	flex-direction: column;
+  align-self: flex-start;
+	justify-content: center;
+	gap: 5px;
+	padding: 0.5rem 1rem !important;
+	overflow: visible !important;
+	-webkit-line-clamp: unset !important;
+	line-clamp: unset !important;
+	-webkit-box-orient: unset !important;
+}
+
+.wt-head-label {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 4px;
+	min-height: 1rem;
+}
+
+.wt-head-sort {
+	display: flex;
+	gap: 1px;
+	flex-shrink: 0;
+}
+
+.wt-btn-sort-col {
+	width: 18px; height: 18px; padding: 0;
+	border: none; border-radius: 3px; cursor: pointer;
+	background: transparent; color: var(--color-base-content, #fff);
+	opacity: 0.3; font-size: 13px;
+	display: flex; align-items: center; justify-content: center;
+	transition: opacity .15s, background .15s;
+}
+.wt-btn-sort-col:hover { opacity: 0.9; background: color-mix(in oklab, var(--color-primary, #2ebd85) 18%, transparent); }
+.wt-btn-sort-col.active {
+	opacity: 1;
+	color: var(--color-primary, #2ebd85);
+	background: color-mix(in oklab, var(--color-primary, #2ebd85) 14%, transparent);
+}
+
+/* web-texts and web-select are shadow DOM components — they manage their own styling via the height prop */
+
+/* ── Editor cell — icon button ───────────────────────────────────── */
+.wt-cell-editor {
+	display: flex !important;
+	align-items: center;
+	justify-content: center;
+	-webkit-line-clamp: unset !important;
+	line-clamp: unset !important;
+	-webkit-box-orient: unset !important;
+	overflow: visible;
+}
+.wt-btn-preview {
+	width: 26px; height: 26px; padding: 0;
+	border: none; border-radius: 6px; cursor: pointer;
+	background: transparent; color: var(--color-base-content, #fff);
+	opacity: 0.45; font-size: 15px;
+	display: flex; align-items: center; justify-content: center;
+	transition: opacity .15s, background .15s;
+}
+.wt-btn-preview:hover { opacity: 1; background: color-mix(in oklab, var(--color-primary) 15%, transparent); }
+
+/* ── Editor preview overlay — absolute on :host, no fixed/stacking issues ── */
+.wt-preview-backdrop {
+	position: absolute;
+	inset: 0;
+	z-index: 50;
+	background: rgba(0, 0, 0, 0.45);
+	display: flex;
+	align-items: flex-start;
+	justify-content: flex-end;
+	padding: 12px;
+	border-radius: inherit;
+}
+.wt-preview-panel {
+	position: relative;
+	background: var(--color-base-200, #232323);
+	color: var(--color-base-content, #fff);
+	border: 1px solid var(--color-base-300, #393939);
+	border-radius: 12px;
+	width: min(560px, 100%);
+	max-height: calc(100% - 8px);
+	display: flex;
+	flex-direction: column;
+	box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+	overflow: hidden;
+}
+.wt-preview-close {
+	position: absolute;
+	top: 8px; right: 8px;
+	width: 26px; height: 26px; padding: 0;
+	border: none; border-radius: 6px; cursor: pointer;
+	background: var(--color-base-300, #393939);
+	color: var(--color-base-content, #fff);
+	font-size: 1rem;
+	display: flex; align-items: center; justify-content: center;
+	opacity: 0.7; transition: opacity .15s;
+	z-index: 1;
+}
+.wt-preview-close:hover { opacity: 1; }
+
+/* ── Locked / no-permission state ────────────────────────────────── */
+.wt-btn-act:disabled,
+.wt-btn-sort:disabled,
+.wt-btn-sort-col:disabled,
+.wt-btn-save:disabled {
+	opacity: 0.2;
+	cursor: not-allowed;
+	pointer-events: all;
+}
+.wt-btn-act.wt-locked,
+.wt-btn-save.wt-locked,
+.wt-sort-col.wt-locked .wt-btn-sort {
+	background: transparent !important;
+	color: var(--color-base-content, #fff) !important;
+}

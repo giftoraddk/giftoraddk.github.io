@@ -1,0 +1,6 @@
+/* --font-sans */
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,400;0,600;1,400&display=swap');
+/* --font-display */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,700;1,400&display=swap');
+/* other using font .font-display */
+html {font-family: var(--font-sans)}

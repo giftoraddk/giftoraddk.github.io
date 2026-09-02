@@ -1,0 +1,246 @@
+---
+layout: '../../../layouts/LayoutDoc.astro'
+title: 'Web Boxs'
+description: 'Hệ thống card-grid declarative — cách cấu hình và sử dụng web-boxs'
+---
+
+# Web Boxs
+
+<div class="doc-intro">
+  <p><code>web-boxs</code> là engine render card grid chính của hệ thống — nhận dữ liệu và config object, tự động tạo layout responsive với nhiều render mode.</p>
+</div>
+
+## Web Boxs là gì?
+
+`web-boxs` là một Lit Web Component đóng vai trò **declarative card-grid renderer**. Thay vì viết HTML thủ công cho từng card, bạn mô tả cấu trúc qua `config` object và truyền dữ liệu qua `data` array — component tự xử lý phần còn lại.
+
+**Đặc điểm:**
+- Nhận `data[]` + `config` object → tự động render grid
+- Hỗ trợ nhiều nguồn dữ liệu: prop trực tiếp, URL API, store key
+- Responsive layout qua `tiers` config
+- Nhiều render mode: box, list, masonry, slider, tabs, steps, expansion
+- Hỗ trợ animation qua `anime` class
+
+## Props
+
+| Prop | Kiểu | Mô tả |
+|---|---|---|
+| `data` | `Array` | Mảng data objects truyền trực tiếp |
+| `dataApi` | `String` | URL endpoint để fetch dữ liệu (dùng Conductor) |
+| `dataStore` | `String` | Key trong conductor store để lấy dữ liệu |
+| `config` | `Object\|String` | Config object hoặc JSON string |
+| `col` | `Number` | Số cột cố định (override tiers) |
+| `list` | `Boolean` | Bật list mode (1 cột, layout ngang) |
+| `masonry` | `Boolean` | Bật masonry layout |
+| `responsive` | `Boolean` | Bật responsive breakpoints từ tiers |
+| `ui` | `String` | UI variant: `modern` hoặc `spatial` |
+| `theme` | `String` | ApexUI theme name |
+| `mainColors` | `String` | 5 màu phân cách bởi `\|`: `color1\|color2\|...\|color5` |
+| `textColor` | `String` | Text color CSS variable |
+
+## Cấu trúc baseConfig
+
+`config` object có ba phần chính:
+
+```js
+const baseConfig = {
+  // tiers — số cột ở mỗi breakpoint
+  tiers: {
+    base: 1,   // mặc định (mobile)
+    sm: 2,     // >= 640px
+    md: 2,     // >= 768px
+    lg: 3,     // >= 1024px
+    xl: 4,     // >= 1280px
+  },
+
+  // makes — mảng cells trong mỗi card
+  makes: [
+    {
+      opt: 'img',           // loại cell
+      val: 'thumbnail',     // key trong data object
+      stys: 'aspect-video',  // class hoặc inline style
+    },
+    {
+      opt: 'text',
+      val: 'title',
+      stys: 'font-bold text-lg',
+    },
+    {
+      opt: 'price',
+      val: 'price',
+    },
+    {
+      opt: 'btn',
+      val: 'Xem chi tiết',  // giá trị tĩnh (không phải key)
+      stys: 'btn-outline',
+    },
+  ],
+
+  // groups — tùy chọn layout tổng thể
+  groups: {
+    gap: '1rem',
+    padding: '1.5rem',
+    radius: '0.75rem',
+    shadow: true,
+  },
+};
+```
+
+### Các giá trị `opt` cho makes
+
+| `opt` | Mô tả |
+|---|---|
+| `img` | Hình ảnh, hỗ trợ lazy loading |
+| `text` | Text/paragraph |
+| `badge` | Badge/tag nhỏ |
+| `price` | Giá tiền với định dạng tự động |
+| `btn` | Button với event dispatch |
+| `rate` | Rating stars |
+| `tag` | Tag list |
+| `action` | Action button kết nối conductor |
+
+## Render Modes
+
+### Box mode (mặc định)
+
+Mỗi item là một card box trong CSS grid:
+
+```html
+<web-boxs
+  data-api="/api/products.json"
+  config='{"tiers":{"base":1,"lg":3},"makes":[...]}'
+></web-boxs>
+```
+
+### List mode
+
+Layout ngang, phù hợp cho danh sách:
+
+```html
+<web-boxs list config='...' data-api="/api/posts.json"></web-boxs>
+```
+
+### Masonry mode
+
+Grid không đều chiều cao, như Pinterest:
+
+```html
+<web-boxs masonry config='...' data-api="/api/gallery.json"></web-boxs>
+```
+
+### Slider mode
+
+Carousel tự động từ config:
+
+```js
+const sliderConfig = {
+  mode: 'slider',
+  tiers: { base: 1, md: 2 },
+  makes: [...],
+  sliderOpts: {
+    autoplay: true,
+    interval: 3000,
+    dots: true,
+    arrows: true,
+  },
+};
+```
+
+### Tabs và Steps mode
+
+Nhóm items theo category:
+
+```js
+const tabsConfig = {
+  mode: 'tabs',
+  groupBy: 'category', // field trong data để nhóm
+  makes: [...],
+};
+```
+
+## Ví dụ: Product card config
+
+```js
+// src/sections/shop/products.config.js
+export const productCardConfig = {
+  tiers: { base: 1, sm: 2, lg: 3, xl: 4 },
+
+  makes: [
+    // Ảnh sản phẩm
+    {
+      opt: 'img',
+      val: 'image',
+      stys: 'w-full aspect-square object-cover rounded-t-lg',
+    },
+    // Badge trạng thái
+    {
+      opt: 'badge',
+      val: 'status',
+      stys: 'badge-success text-xs',
+    },
+    // Tên sản phẩm
+    {
+      opt: 'text',
+      val: 'name',
+      stys: 'font-semibold text-base line-clamp-2',
+    },
+    // Mô tả ngắn
+    {
+      opt: 'text',
+      val: 'description',
+      stys: 'text-sm opacity-60 line-clamp-3',
+    },
+    // Đánh giá
+    {
+      opt: 'rate',
+      val: 'rating',
+    },
+    // Giá
+    {
+      opt: 'price',
+      val: 'price',
+      stys: 'text-primary font-bold text-xl',
+    },
+    // Nút hành động
+    {
+      opt: 'btn',
+      val: 'Thêm vào giỏ',
+      stys: 'btn-primary w-full mt-2',
+    },
+  ],
+
+  groups: {
+    gap: '1.5rem',
+    padding: '1rem',
+  },
+};
+```
+
+```astro
+---
+import { productCardConfig } from '@/sections/shop/products.config.js';
+---
+
+<web-boxs
+  dataApi="/api/products.json"
+  config={JSON.stringify(productCardConfig)}
+  ui="modern"
+  mainColors="var(--color-primary)|var(--color-secondary)|var(--color-accent)|var(--color-info)|var(--color-success)"
+  anime="fade-up"
+></web-boxs>
+```
+
+## web-boxs vs web-board
+
+| Tình huống | Dùng gì |
+|---|---|
+| Một grid đơn lẻ | `web-boxs` trực tiếp |
+| Nhiều sections trên một trang | `web-board` (quản lý nhiều `web-boxs`) |
+| Cần drag-drop reorder sections | `web-board` với `draggable` |
+| Nhúng vào component khác | `web-boxs` trực tiếp |
+
+## Tiếp theo
+
+- [Web Board](/docs/vi/web-board) — quản lý nhiều sections
+- [Design Guide](/docs/vi/design-guide) — từ mockup đến config
+- [Theming](/docs/vi/theming) — màu sắc và CSS variables

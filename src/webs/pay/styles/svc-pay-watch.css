@@ -1,0 +1,60 @@
+:host {
+    display: block;
+    --core-font: var(--font-sans, 'system-ui');
+    font-family: var(--core-font);
+    color: var(--color-base-content);
+    max-width: 990px;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem;
+}
+
+.lookup-root { display: flex; flex-direction: column; gap: 1.25rem; }
+
+.lookup-title { font-size: 1.4rem; font-weight: 700; margin: 0; text-align: center; }
+
+/* Hàng dọc (mobile) mặc định — hoá đơn giấy trên, panel thao tác dưới, xem svc-pay-watch.js.
+   Từ 56rem (~896px) trở lên đủ chỗ cho cả 2 cạnh nhau: hoá đơn giữ khổ giấy cố định (380px, xem
+   .paper-sheet ở svc-pay-watch-paper.css), panel thao tác giãn hết phần còn lại. */
+.lookup-result {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.25rem;
+}
+@media (min-width: 56rem) {
+    .lookup-result {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+    .lookup-result > svc-pay-watch-paper {
+        flex: 0 0 380px;
+    }
+    .lookup-result > svc-pay {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+}
+
+.lookup-form { display: flex; gap: 0.6rem; max-width: 480px; margin: 0 auto; width: 100%; }
+.lookup-form input {
+    flex: 1;
+    padding: 0.6rem 0.9rem;
+    border-radius: 0.6rem;
+    border: 1px solid var(--color-base-300);
+    background: var(--color-base-100);
+    color: var(--color-base-content);
+    font-size: 0.95rem;
+    font-family: inherit;
+}
+.lookup-form input:focus { outline: none; border-color: var(--color-primary); }
+
+.lookup-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    opacity: 0.6;
+    text-align: center;
+    margin-top: 2rem;
+}

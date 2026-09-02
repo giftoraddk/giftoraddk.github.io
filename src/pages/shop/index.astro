@@ -1,0 +1,22 @@
+---
+import Shop from '@/layouts/Shop.astro';
+import { variant, views } from '@/modules/shop-page.js';
+
+const currentView = views.find(v => v.href === '/shop/') ?? views[0];
+const navItems    = views.map(({ text, href, iconMobile }) => ({ text, href, iconMobile }));
+---
+
+<Shop
+	title="Shop — Sản phẩm"
+	menu={{ type: 'mobile', menuItems: navItems }}
+>
+	<script src='@/webs/apex/web-board.js'></script>
+	<div class='p-4 lg:p-6 max-w-6xl mx-auto'>
+		<web-board
+			unlock={import.meta.env.PUBLIC_EXP}
+			theme={variant.theme}
+			variant={JSON.stringify(variant)}
+      draggable
+		><script type="application/json" is:inline set:html={JSON.stringify(currentView.sections)}></script></web-board>
+	</div>
+</Shop>

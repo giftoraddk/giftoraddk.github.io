@@ -1,0 +1,120 @@
+:host {
+	display: block;
+	width: 100%;
+	--core-height: var(--height-selector, 2.25rem);
+	--core-radius: var(--radius-selector, 0.5rem);
+	--core-blur: var(--haze-blur, 12px);
+	--core-glass: var(--haze-glass, 20%);
+	--core-font: var(--font-sans, 'system-ui');
+}
+
+.web-location {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	width: 100%;
+}
+
+/* ── Mode toggle ─────────────────────────────────────────────────── */
+
+.mode-tabs {
+	display: inline-flex;
+	align-items: center;
+	gap: 0;
+	background: color-mix(in oklab, var(--color-base-200, #232323) 60%, transparent);
+	border-radius: var(--core-radius);
+	padding: 3px;
+	border: 1px solid color-mix(in oklab, var(--color-base-300, #393939) 50%, transparent);
+	width: fit-content;
+}
+
+.mode-tab {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 0 14px;
+	height: 28px;
+	background: transparent;
+	border: none;
+	border-radius: calc(var(--core-radius) - 2px);
+	font-family: var(--core-font);
+	font-size: 12px;
+	font-weight: 600;
+	color: color-mix(in oklab, var(--color-base-content, #ffffff) 50%, transparent);
+	cursor: pointer;
+	transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+	user-select: none;
+}
+
+.mode-tab svg {
+	width: 13px;
+	height: 13px;
+	flex-shrink: 0;
+}
+
+.mode-tab:hover {
+	color: color-mix(in oklab, var(--color-base-content, #ffffff) 80%, transparent);
+}
+
+.mode-tab.active {
+	background: var(--color-base-100, #0d0d0d);
+	color: var(--color-primary, #2ebd85);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+/* ── Mode panels (always in DOM to preserve state) ──────────────── */
+
+.mode-panel { display: none; }
+.mode-panel.active { display: block; }
+
+/* ── Basic mode fields ───────────────────────────────────────────── */
+
+.basic-fields {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.field-label {
+	font-family: var(--core-font);
+	font-size: 12px;
+	font-weight: 600;
+	color: color-mix(in oklab, var(--color-base-content, #ffffff) 60%, transparent);
+	letter-spacing: 0.03em;
+	margin-bottom: 4px;
+}
+
+.field-full {
+	display: flex;
+	flex-direction: column;
+}
+
+.field-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 10px;
+}
+
+.field-row > div {
+	display: flex;
+	flex-direction: column;
+}
+
+@media (max-width: 480px) {
+	.field-row {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* ── Spatial variants ────────────────────────────────────────────── */
+
+.spatial .mode-tabs {
+	background: color-mix(in oklab, var(--color-base-300, #393939) var(--core-glass), transparent);
+	backdrop-filter: blur(var(--core-blur));
+	border-color: #ffffff22;
+}
+
+.spatial .mode-tab.active {
+	background: color-mix(in oklab, var(--color-base-300, #393939) 25%, transparent);
+	backdrop-filter: blur(var(--core-blur));
+}

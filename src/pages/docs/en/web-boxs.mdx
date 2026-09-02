@@ -1,0 +1,142 @@
+---
+layout: '../../../layouts/LayoutDoc.astro'
+title: 'Web Boxs'
+description: 'Declarative card-grid system — how to configure and use web-boxs'
+---
+
+# Web Boxs
+
+<div class="doc-intro">
+  <p><code>web-boxs</code> is the primary card-grid renderer. You supply a data array and a config object; the component renders a fully responsive grid of cards with cells, styles, and animations.</p>
+</div>
+
+## What web-boxs Does
+
+`web-boxs` takes a flat array of data objects and a declarative `config` that describes:
+
+- **Tiers** — how many columns to show at each breakpoint
+- **Makes** — which fields to render in each card cell, and how
+- **Groups** — how to visually group cards within the grid
+- **Styles** — per-cell and per-group CSS overrides (CSS variables only)
+
+The component manages its own internal layout state and re-renders whenever `data` or `config` changes.
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `data` | string (JSON) | `'[]'` | Serialized array of data objects |
+| `dataApi` | string | `''` | URL to fetch data from via Conductor |
+| `dataStore` | string | `''` | Conductor store section id to read from |
+| `config` | string (JSON) | `'{}'` | Serialized `baseConfig` object |
+| `col` | number | `1` | Default number of columns (overridden by tiers) |
+| `list` | boolean | `false` | Force single-column list layout |
+| `masonry` | boolean | `false` | Enable masonry (variable row height) layout |
+| `responsive` | boolean | `true` | Enable tier-based responsive column switching |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+| `theme` | string | `''` | ApexUI theme override |
+| `mainColors` | string | `''` | Pipe-separated 5 colors: `primary\|base-100\|base-200\|base-300\|base-content` |
+
+## baseConfig Structure
+
+```js
+const baseConfig = {
+  // Responsive column breakpoints
+  tiers: [
+    { cols: 1, minWidth: 0 },
+    { cols: 2, minWidth: 640 },
+    { cols: 3, minWidth: 1024 },
+  ],
+
+  // Cell definitions — each card renders these cells in order
+  makes: [
+    { opt: 'image', val: 'thumbnail', stys: { aspectRatio: '4/3' } },
+    { opt: 'text',  val: 'name',      stys: { fontWeight: '600' } },
+    { opt: 'text',  val: 'category',  stys: { color: 'var(--color-primary)' } },
+    { opt: 'price', val: 'price' },
+  ],
+
+  // Optional card-level style
+  groupStyle: {
+    borderRadius: 'var(--radius-box)',
+    background: 'var(--color-base-100)',
+  },
+};
+```
+
+### tiers
+
+Each tier object: `{ cols: number, minWidth: number }`. Tiers are evaluated from largest to smallest `minWidth`; the first matching tier is used.
+
+### makes
+
+Each make object: `{ opt: string, val: string, sty?: object }`.
+
+- `opt` — cell type: `image`, `text`, `price`, `badge`, `button`, `rating`, `slot`
+- `val` — key in the data item to read the value from
+- `sty` — inline style object; **only CSS variables allowed**, no hardcoded hex/rgb
+
+### groups
+
+Optional array of group configs for multi-section layouts:
+
+```js
+groups: [
+  { id: 'featured', label: 'Featured', filter: item => item.featured },
+  { id: 'rest',     label: 'All',      filter: item => !item.featured },
+],
+```
+
+## Render Modes
+
+| Mode | Config | Use case |
+|---|---|---|
+| Default grid | `tiers[]` with multiple cols | Standard responsive card grid |
+| Single column | `list: true` | Feed or list layout |
+| Masonry | `masonry: true` | Variable-height photo cards |
+| Grouped | `groups[]` defined | Multiple labeled sections |
+
+## Minimal Product Card Example
+
+```astro
+---
+const config = {
+  tiers: [
+    { cols: 1, minWidth: 0 },
+    { cols: 2, minWidth: 640 },
+    { cols: 4, minWidth: 1024 },
+  ],
+  makes: [
+    { opt: 'image', val: 'image' },
+    { opt: 'text',  val: 'name' },
+    { opt: 'price', val: 'price' },
+  ],
+};
+---
+
+<web-boxs
+  config={JSON.stringify(config)}
+  dataApi="/api/products.json"
+  cacheKey="products"
+  cacheTtl="300"
+  ui="modern"
+></web-boxs>
+
+<script type="module" src="/src/webs/apex/web-boxs.js"></script>
+```
+
+## web-boxs vs web-board
+
+| | web-boxs | web-board |
+|---|---|---|
+| Manages | One data section | Multiple sections |
+| DOM mode | Shadow DOM | Light DOM |
+| Config source | Single `baseConfig` | Array of section configs |
+| Draggable sections | No | Yes (optional) |
+| Use when | Single focused grid | Dashboard with multiple panels |
+
+## Next Steps
+
+- [Web Board](/docs/en/web-board) — managing multiple web-boxs instances
+- [Design Guide](/docs/en/design-guide) — how to build baseConfig from mockups
+- [Section Config](/docs/en/section-config) — organizing config files

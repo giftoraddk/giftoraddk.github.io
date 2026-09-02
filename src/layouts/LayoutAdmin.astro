@@ -1,0 +1,97 @@
+---
+import "../styles/themes/popular.css";
+import { ClientRouter, slide } from "astro:transitions";
+import Head from "@/components/Head/Base.astro";
+import NavBase from "@/components/Nav/Base.astro";
+const {
+	title,
+	description,
+	image,
+	articleDate,
+	menu = { type: "side" },
+	extendClass = "",
+} = Astro.props;
+const root = "/admin";
+
+const allMenuItems = [
+	{ text: "Users",     textIcon: "U",  href: root + "/",          require: "users"    },
+	{ text: "Products",  textIcon: "PR", href: root + "/products",  require: "products" },
+	{ text: "Orders",    textIcon: "OR", href: root + "/orders",    require: "orders"   },
+	{ text: "Inventory", textIcon: "IN", href: root + "/inventory", require: "inventory" },
+	{ text: "Staff",     textIcon: "ST", href: root + "/staff",     require: "staff"     },
+	{ text: "Posts",     textIcon: "PO", href: root + "/posts",     require: "posts"    },
+];
+const menusJson  = JSON.stringify(allMenuItems);
+const tablesJson = JSON.stringify(allMenuItems.map(m => m.require).filter(Boolean));
+// Mobile nav uses static items (no role filtering needed — server has no auth context)
+const menuItems = allMenuItems;
+
+const wrapClass = [
+	"bg-base-100",
+	menu.type === "side" ? "flex-1 flex flex-row overflow-y-hidden bg-wrap" : "",
+	extendClass,
+]
+	.filter(Boolean)
+	.join(" ");
+const mainClass = [
+	menu.type === "side" ? "relative flex-1 overflow-x-hidden overflow-y-auto" : "",
+]
+	.filter(Boolean)
+	.join(" ");
+
+const bg = { blur: true, gradient: true, tint: "#34ace0", total: 4, blobType: "circleOverlap", deg: 9, distance: 85 }
+---
+
+<html lang="en" class="scroll-smooth scrollbar-hide" data-theme="light">
+	<head>
+		<ClientRouter />
+		<Head
+			title={title}
+			description={description}
+			ogImage={image}
+			articleDate={articleDate}
+			noindex
+		/>
+		<meta name="page-admin-only" content="">
+		<script is:inline>document.documentElement.style.visibility='hidden'</script>
+	</head>
+
+	<body transition:animate={slide({ duration: "0.5s" })}>
+		<div class="min-h-screen h-screen flex flex-col text-base-content">
+
+      <script src="@/webs/underlay/svc-underlay.js"></script>
+      <svc-underlay id="main-bg" class="-mt-1" transition:persist="main-bg" {...bg}></svc-underlay>
+
+			<div id="main-wrap" class={wrapClass}>
+				<NavBase
+					type={menu.type}
+					logoText=""
+					items={menuItems}
+					menuClass="py-8 -mx-3"
+				>
+					<svc-logged-nav slot="menu" menus={menusJson}></svc-logged-nav>
+				</NavBase>
+				<main id="main" class={mainClass}>
+					<slot />
+				</main>
+			</div>
+		</div>
+		<script src="@/webs/auth/svc-logged-nav.js"></script>
+		<script src="@/webs/auth/svc-logged.js"></script>
+		<svc-logged id="svc-logged" transition:persist="svc-logged" pathLink="/admin/" menus={menusJson}></svc-logged>
+		<script src="@/webs/auth/svc-roles.js"></script>
+		<svc-roles id="svc-roles" transition:persist="svc-roles" tables={tablesJson}></svc-roles>
+	</body>
+	<style>
+		[data-theme="light"] .bg-wrap{
+			background-image: url('/images/common/bg-light.webp');
+			background-size: cover;
+			background-position: center;
+		}
+		[data-theme="dark"] .bg-wrap{
+			background-image: url('/images/common/bg-dark.webp');
+			background-size: cover;
+			background-position: center;
+		}
+	</style>
+</html>

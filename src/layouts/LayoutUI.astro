@@ -1,0 +1,83 @@
+---
+import "../styles/themes/default.css";
+import { ClientRouter, slide } from "astro:transitions";
+import Head from "@/components/Head/Base.astro";
+import NavBase from "@/components/Nav/Base.astro";
+const {
+	title,
+	description,
+	image,
+	articleDate,
+	menu = { type: "side" },
+	extendClass = "",
+} = Astro.props;
+const root = "/";
+
+const menuItems = [
+	{
+		text: "All components",
+		textIcon: "A",
+		// childs
+		items: [
+			{ text: "Modern style", href: root + "ui" },
+			{ text: "Spatial style", href: root + "ui/spatial" },
+		],
+	},
+	{ text: "Sandbox", textIcon: "SB", href: root + "ui/sandbox" },
+	{ text: "Slider", textIcon: "SL", href: root + "ui/slider" },
+	{ text: "Modern Style", textIcon: "MU", href: root + "ui/modern-style" },
+	{ text: "Spatial Style", textIcon: "SU", href: root + "ui/spatial-style" },
+];
+const wrapClass = [
+	"bg-base-100",
+	menu.type === "side" ? "flex-1 flex flex-row overflow-y-hidden" : "",
+	extendClass,
+]
+	.filter(Boolean)
+	.join(" ");
+const mainClass = [
+	menu.type === "side" ? "flex-1 overflow-x-hidden overflow-y-auto" : "",
+]
+	.filter(Boolean)
+	.join(" ");
+---
+
+<html lang="en" class="scroll-smooth scrollbar-hide" data-theme="light">
+	<head>
+		<ClientRouter />
+		<Head
+			title={title}
+			description={description}
+			ogImage={image}
+			articleDate={articleDate}
+		/>
+	</head>
+
+	<body transition:animate={slide({ duration: "0.5s" })}>
+		<div class="min-h-screen h-screen flex flex-col text-base-content">
+			<div id="main-wrap" class={wrapClass}>
+				<NavBase 
+					type={menu.type} 
+					logoText="" 
+					items={menuItems} 
+					menuClass="py-8 -mx-3"
+				/>
+				<main id="main" class={mainClass}>
+					<slot />
+				</main>
+			</div>
+		</div>
+	</body>
+	<style>
+		[data-theme="light"] .bg-wrap{
+			background-image: url('/images/common/bg-light.webp');
+			background-size: cover;
+			background-position: center;
+		}
+		[data-theme="dark"] .bg-wrap{
+			background-image: url('/images/common/bg-dark.webp');
+			background-size: cover;
+			background-position: center;
+		}
+	</style>
+</html>

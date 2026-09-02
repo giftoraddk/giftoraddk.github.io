@@ -1,0 +1,37 @@
+:host {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    --core-font: var(--font-sans, 'system-ui');
+    font-family: var(--core-font);
+    color: var(--color-base-content);
+}
+
+.talent-profile { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.talent-profile-hero { display: flex; gap: 1.25rem; align-items: flex-start; flex-wrap: wrap; }
+.talent-profile-hero-info { display: flex; flex-direction: column; gap: 0.4rem; flex: 1; min-width: 16rem; }
+.talent-profile-name { font-size: 1.5rem; font-weight: 800; margin: 0; }
+.talent-profile-category { margin: 0; opacity: 0.7; font-size: 0.9rem; }
+.talent-profile-rating { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; opacity: 0.85; }
+.talent-profile-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.talent-profile-meta-row { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; font-size: 0.85rem; opacity: 0.85; }
+.talent-profile-rate { font-weight: 700; color: var(--color-primary); }
+.talent-profile-score { font-size: 0.85rem; font-weight: 600; }
+
+.talent-profile-panel { display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem 0; }
+.talent-profile-bio { white-space: pre-line; line-height: 1.6; opacity: 0.9; }
+.talent-profile-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+.talent-profile-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr)); gap: 1rem; }
+.talent-profile-stats > div { display: flex; flex-direction: column; gap: 0.15rem; }
+.talent-profile-stats span { font-size: 0.75rem; opacity: 0.65; }
+.talent-profile-stats strong { font-size: 1.25rem; }
+
+.talent-profile-reviews { gap: 1rem; }
+.talent-profile-review { border-bottom: 1px solid color-mix(in oklab, var(--color-base-content) 10%, transparent); padding-bottom: 0.75rem; }
+.talent-profile-review p { margin: 0.35rem 0 0; opacity: 0.85; }
+
+.talent-profile-hire { gap: 1rem; }
+.talent-profile-contact { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; font-size: 0.9rem; }
+.talent-profile-hire-form { display: flex; flex-direction: column; gap: 0.6rem; max-width: 24rem; }

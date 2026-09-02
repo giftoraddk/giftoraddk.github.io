@@ -1,0 +1,47 @@
+---
+export const prerender = false;
+
+import Core from '@/layouts/Core.astro';
+import ProductDetailBody from '@/components/Product/DetailBody.astro';
+import { fetchCollection, fetchDoc } from '@/services/firestore.server.ts';
+import { pickLang } from '@/services/helper.js';
+import { menuItems, policies, socials } from '@/modules/landing/home.js';
+import I18nText from '@/components/I18nText.astro';
+
+// Biến thể ISR của src/pages/product/[slug].astro — KHÔNG được Astro route trực tiếp (nằm dưới
+// thư mục _render-modes/, Astro bỏ qua mọi path segment bắt đầu bằng `_`). Chỉ được
+// renderModeIntegration (astro.config.mjs) copy đè lên product/[slug].astro lúc
+// `PUBLIC_RENDER=isr pnpm build`, để Vercel adapter's `isr` option biến route này thành
+// on-demand + cache-theo-thời-gian thay vì bake toàn bộ catalog lúc build.
+//
+// slug = `${slugify(title)}-${id}` (xem productSlug(), services/helper.js) — id (ULID) không có
+// dấu `-` nên luôn lấy đúng bằng phần sau dấu `-` CUỐI CÙNG.
+const slugParam = Astro.params.slug as string;
+const id = slugParam.split('-').pop() || '';
+
+const product = await fetchDoc('products', id);
+
+// allProducts chỉ cần cho phần "sản phẩm liên quan" (so tag) — cùng cách SSG làm, chỉ khác là
+// fetch mỗi request thay vì mỗi lần build; đây chính là chi phí mà ISR cache hấp thụ.
+const allProducts = product ? await fetchCollection('products') : [];
+
+if (!product) Astro.response.status = 404;
+
+const pics = product ? (product.pics || '').split('|').filter(Boolean) : [];
+const heroImg = pics[0] || '';
+const description = product
+	? (product.description || String(product.content || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().slice(0, 160) || '')
+	: '';
+const pageTitle = product?.title || pickLang({ en: 'Product', vi: 'Sản phẩm' });
+const bg = { blur: true, gradient: true, tint: '#2ebd85', total: 3, blobType: 'circleOverlap', blobMove: 'swap', deg: 180 };
+---
+
+<Core title={pageTitle} description={description} image={heroImg} footer={{ columns: menuItems, policies, socials, bg }}>
+	{product ? (
+		<ProductDetailBody product={product} allProducts={allProducts} />
+	) : (
+		<div class="mx-auto max-w-6xl px-4 py-24 text-center opacity-60">
+			<I18nText text={{ en: 'Product not found.', vi: 'Không tìm thấy sản phẩm.' }} />
+		</div>
+	)}
+</Core>

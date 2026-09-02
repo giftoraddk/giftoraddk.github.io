@@ -1,0 +1,132 @@
+:host {
+    display: block;
+    width: 100%;
+    --core-blur: var(--haze-blur, 12px);
+    --core-glass: var(--haze-glass, 20%);
+    --core-font: var(--font-sans, 'system-ui');
+}
+
+.web-files {
+	font-family: var(--core-font);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.drop-zone {
+    border: 2px dashed var(--color-base-300, #393939);
+    border-radius: 12px;
+    padding: 32px 24px;
+    text-align: center;
+    background: var(--color-base-100, #0d0d0d);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--color-base-content, #ffffff);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.drop-zone:hover,
+.drop-zone.dragging {
+    border-color: var(--color-primary, #2ebd85);
+    background: var(--color-base-200, #232323);
+    transform: scale(1.01);
+}
+
+.drop-zone svg {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 12px;
+    opacity: 0.6;
+    transition: transform 0.3s ease;
+}
+
+.drop-zone:hover svg {
+    transform: translateY(-4px);
+    color: var(--color-primary, #2ebd85);
+}
+
+.file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: var(--color-base-200, #232323);
+    border: 1px solid var(--color-base-300, #393939);
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.file-item:hover {
+    border-color: var(--color-primary, #2ebd85);
+    background: var(--color-base-300, #393939);
+}
+
+.file-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.file-name {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--color-base-content, #ffffff);
+}
+
+.file-size {
+    font-size: 11px;
+    opacity: 0.6;
+    margin-top: 2px;
+}
+
+.remove-btn {
+    padding: 6px;
+    cursor: pointer;
+    opacity: 0.5;
+    border-radius: 50%;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.remove-btn:hover {
+    opacity: 1;
+    color: var(--color-secondary, #f5465c);
+    background: rgba(245, 70, 92, 0.1);
+}
+
+/**
+ * ----------------------------------------
+ * Glassmorphism - spatial
+ * ----------------------------------------
+ */
+.spatial.web-files .drop-zone {
+    background: color-mix(in oklab, var(--color-base-300, #393939) var(--core-glass), transparent);
+    backdrop-filter: blur(var(--core-blur));
+    border: 2px dashed #ffffff4d;
+}
+
+.spatial.web-files .drop-zone.dragging {
+    background: color-mix(in oklab, var(--color-base-300, #393939) 15%, transparent);
+    border-color: var(--color-primary, #2ebd85);
+}
+
+.spatial.web-files .file-item {
+    background: color-mix(in oklab, var(--color-base-300, #393939) var(--core-glass), transparent);
+    backdrop-filter: blur(var(--core-blur));
+    border: 1px solid #ffffff4d;
+}

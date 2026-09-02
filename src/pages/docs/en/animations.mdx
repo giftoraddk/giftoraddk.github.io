@@ -1,0 +1,189 @@
+---
+layout: '../../../layouts/LayoutDoc.astro'
+title: 'Animations'
+description: 'Anime classes, text motion effects, and background animations'
+---
+
+# Animations
+
+<div class="doc-intro">
+  <p>Astro Micro provides a layered animation system: card entrance effects via CSS classes, text motion through <code>web-letters</code>, background animations via <code>web-bg</code>, and staggered queues for coordinated reveals.</p>
+</div>
+
+## Card Anime Classes
+
+Apply entrance animations to `web-boxs` or individual `web-box` elements using the `anime` config key in a section config:
+
+```js
+// src/sections/shop/config.js
+export const productConfig = {
+  anime: 'fade-up',
+  // ...
+};
+```
+
+Available classes:
+
+| Class | Effect |
+|---|---|
+| `fade-up` | Fade in while sliding up |
+| `fade-down` | Fade in while sliding down |
+| `fade-left` | Fade in from the left |
+| `fade-right` | Fade in from the right |
+| `zoom-in` | Scale up from 80% while fading in |
+| `zoom-out` | Scale down from 120% while fading in |
+| `flip-x` | 3D flip on the X axis |
+| `flip-y` | 3D flip on the Y axis |
+
+These classes are driven by an Intersection Observer — the animation triggers when the element enters the viewport, not on page load.
+
+## animeQueue — Staggered Reveals
+
+For coordinated entrance of multiple cards, use the `animeQueue` config to stagger each card's delay:
+
+```js
+const config = {
+  anime: 'fade-up',
+  animeQueue: {
+    delay: 80,       // ms between each card
+    max: 8,          // stop staggering after this many items
+  },
+  // ...
+};
+```
+
+Cards beyond `max` all use the `max * delay` value, preventing very long delays on large datasets.
+
+## web-letters — Text Motion Effects
+
+`web-letters` wraps text and animates each character or word individually:
+
+```html
+<web-letters
+  text="Welcome to Astro Micro"
+  mode="chars"
+  effect="slide-up"
+  delay="30"
+></web-letters>
+
+<script type="module" src="/src/webs/apex/web-letters.js"></script>
+```
+
+### web-letters Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `text` | string | `''` | The text to animate |
+| `mode` | string | `'chars'` | Split by `chars` or `words` |
+| `effect` | string | `'fade'` | Animation effect: `fade`, `slide-up`, `slide-down`, `blur` |
+| `delay` | number | `50` | Stagger delay in ms between each unit |
+| `duration` | number | `400` | Duration of each unit's animation in ms |
+| `trigger` | string | `'viewport'` | `viewport` (Intersection Observer) or `immediate` |
+
+## web-bg — Background Animations
+
+`web-bg` renders animated decorative backgrounds behind a section:
+
+```html
+<div style="position: relative;">
+  <web-bg
+    type="circle"
+    total="6"
+    move="float"
+    tint="primary"
+  ></web-bg>
+  <!-- Content goes here -->
+</div>
+
+<script type="module" src="/src/webs/apex/web-bg.js"></script>
+```
+
+### web-bg Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `type` | string | `'circle'` | Shape: `circle` \| `square` \| `blob` \| `circleOverlap` |
+| `total` | number | `4` | Number of background shapes to render |
+| `tint` | string | `'primary'` | Color tint using a CSS variable name (e.g. `primary`, `secondary`) |
+| `move` | string | `'float'` | Motion style: `swap` \| `float` \| `pulse` |
+| `pattern` | string | `''` | Optional overlay pattern: `dots` \| `grid` \| `lines` |
+| `opacity` | number | `0.15` | Shape opacity (0–1) |
+| `blur` | number | `80` | Blur radius in px applied to shapes |
+
+### Move Types
+
+| Value | Effect |
+|---|---|
+| `float` | Shapes drift slowly in random directions |
+| `swap` | Shapes move between fixed positions |
+| `pulse` | Shapes scale in and out rhythmically |
+
+## Astro Page Transitions
+
+Astro Micro uses Astro's built-in View Transitions for smooth page navigation:
+
+```astro
+---
+import { ClientRouter, fade } from 'astro:transitions';
+---
+
+<head>
+  <ClientRouter />
+</head>
+
+<main transition:animate={fade({ duration: '0.3s' })}>
+  <!-- Page content -->
+</main>
+```
+
+For slide transitions between doc pages:
+
+```astro
+<article transition:animate="slide">
+  <slot />
+</article>
+```
+
+## Combining Effects
+
+A full section with background animation, staggered card entrance, and text motion:
+
+```astro
+---
+const config = {
+  anime: 'fade-up',
+  animeQueue: { delay: 60, max: 6 },
+  makes: [
+    { opt: 'image', val: 'image' },
+    { opt: 'text',  val: 'name' },
+  ],
+  tiers: [{ cols: 1, minWidth: 0 }, { cols: 3, minWidth: 1024 }],
+};
+---
+
+<section style="position: relative; padding: 4rem 0;">
+  <web-bg type="blob" total="5" move="float" tint="primary"></web-bg>
+
+  <web-letters
+    text="Our Products"
+    mode="words"
+    effect="slide-up"
+    delay="80"
+  ></web-letters>
+
+  <web-boxs
+    config={JSON.stringify(config)}
+    dataApi="/api/products.json"
+  ></web-boxs>
+</section>
+
+<script type="module" src="/src/webs/apex/web-bg.js"></script>
+<script type="module" src="/src/webs/apex/web-letters.js"></script>
+<script type="module" src="/src/webs/apex/web-boxs.js"></script>
+```
+
+## Next Steps
+
+- [Theming](/docs/en/theming) — CSS variables and the spatial UI variant
+- [Design Guide](/docs/en/design-guide) — applying anime classes in baseConfig
+- [web-bg component](/docs/en/components/web-bg) — full background component reference

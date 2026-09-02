@@ -1,0 +1,81 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-button'
+description: 'Versatile button component with fill, outline, ghost, and badge modes'
+---
+
+# web-button
+
+A flexible button element supporting multiple visual styles, colors, sizes, loading and disabled states, and an optional badge rendering mode.
+
+## When to use
+
+- Primary actions (submit, save, buy)
+- Secondary or tertiary actions with lower visual weight (`ghost`, `outline`)
+- Status badges that need consistent button styling (`mode="badge"`)
+- Buttons with async operations that need a loading spinner
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-button.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `type` | string | `'fill'` | Visual style: `fill` \| `outline` \| `ghost` \| `dash` \| `soft` |
+| `color` | string | `'primary'` | ApexUI color name: `primary`, `secondary`, `accent`, `error`, `warning`, `success`, `info`, `neutral` |
+| `rounded` | boolean | `false` | Use fully rounded (pill) shape |
+| `height` | string | `'md'` | Size: `xs` \| `sm` \| `md` \| `lg` \| `xl` |
+| `loading` | boolean | `false` | Show loading spinner and disable interactions |
+| `disabled` | boolean | `false` | Disable the button |
+| `prefix` | string | `''` | Icon or text prepended inside the button |
+| `suffix` | string | `''` | Icon or text appended inside the button |
+| `mode` | string | `'button'` | Render as `button` or `badge` |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+
+## Basic Example
+
+```html
+<web-button type="fill" color="primary">Save Changes</web-button>
+<web-button type="outline" color="secondary">Cancel</web-button>
+<web-button type="ghost">Learn More</web-button>
+<web-button type="soft" color="error">Delete</web-button>
+```
+
+## Advanced Examples
+
+Button with loading state:
+
+```html
+<web-button type="fill" color="primary" loading id="submit-btn">
+  Submitting...
+</web-button>
+
+<script>
+  document.getElementById('submit-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('submit-btn');
+    btn.setAttribute('loading', '');
+    await saveData();
+    btn.removeAttribute('loading');
+  });
+</script>
+```
+
+Pill button with prefix icon and badge mode:
+
+```html
+<!-- Pill action button -->
+<web-button type="fill" color="success" rounded prefix="✓">Confirmed</web-button>
+
+<!-- Badge mode — renders as a styled span -->
+<web-button mode="badge" color="warning" type="soft">Beta</web-button>
+```
+
+## Events
+
+| Event | When | Detail |
+|---|---|---|
+| `web-button-click` | Button is clicked (not disabled, not loading) | None |

@@ -1,0 +1,228 @@
+---
+layout: '../../../layouts/LayoutDoc.astro'
+title: 'Cấu hình Section'
+description: 'Cách tạo và tổ chức section config files trong src/sections/'
+---
+
+# Cấu hình Section
+
+<div class="doc-intro">
+  <p>Section config files là trung tâm khai báo của hệ thống — mỗi file mô tả đầy đủ một section: từ nguồn dữ liệu, cách render, đến cache và animation.</p>
+</div>
+
+## Vị trí config files
+
+Tất cả section configs nằm trong `src/sections/<domain>/`:
+
+```
+src/sections/
+├── cafe/
+│   ├── index.js          # Re-export toàn bộ configs của domain
+│   ├── menu.config.js    # Config cho menu section
+│   └── gallery.config.js # Config cho gallery section
+├── shop/
+│   ├── index.js
+│   ├── products.config.js
+│   ├── featured.config.js
+│   └── cart.config.js
+└── blog/
+    ├── index.js
+    ├── posts.config.js
+    └── hero.config.js
+```
+
+## Export pattern
+
+Mỗi config file export một hoặc nhiều `baseConfig` objects:
+
+```js
+// src/sections/cafe/menu.config.js
+
+export const menuConfig = {
+  // Định danh — phải unique toàn app
+  id: 'cafe-menu',
+
+  // Tiêu đề hiển thị (tùy chọn)
+  title: 'Thực đơn',
+
+  // Nguồn dữ liệu
+  dataApi: '/api/products/menu.json',
+
+  // Cache settings
+  cacheKey: 'cafe-menu-v2',
+  cacheTtl: 120000, // 2 phút
+
+  // Config render
+  config: {
+    tiers: { base: 1, sm: 2, lg: 3 },
+    makes: [
+      { opt: 'img',   val: 'photo',       stys: 'aspect-square object-cover rounded-lg' },
+      { opt: 'text',  val: 'name',        stys: 'font-bold text-lg mt-2' },
+      { opt: 'text',  val: 'description', stys: 'text-sm opacity-70 line-clamp-2' },
+      { opt: 'price', val: 'price',       stys: 'text-primary font-semibold' },
+      { opt: 'badge', val: 'category',    stys: 'badge-secondary text-xs' },
+    ],
+    groups: {
+      gap: '1.5rem',
+      padding: '1rem',
+      radius: '0.75rem',
+    },
+  },
+
+  // Animation khi card vào viewport
+  anime: 'fade-up',
+};
+```
+
+## Các keys của `baseConfig`
+
+| Key | Kiểu | Bắt buộc | Mô tả |
+|---|---|---|---|
+| `id` | `String` | Có | Key duy nhất trong conductor store |
+| `title` | `String` | Không | Tiêu đề section |
+| `dataApi` | `String` | Có* | URL endpoint fetch dữ liệu |
+| `data` | `Array` | Có* | Data tĩnh trực tiếp |
+| `dataStore` | `String` | Có* | Lấy từ conductor store key |
+| `cacheKey` | `String` | Không | Key IndexedDB cache |
+| `cacheTtl` | `Number` | Không | TTL cache (ms), mặc định 300000 |
+| `config` | `Object` | Có | Render config (tiers, makes, groups) |
+| `anime` | `String` | Không | Animation class cho cards |
+
+*Phải có ít nhất một trong ba: `dataApi`, `data`, hoặc `dataStore`.
+
+## Ví dụ hoàn chỉnh: Cafe product section
+
+```js
+// src/sections/cafe/products.config.js
+
+export const cafeProductConfig = {
+  id: 'cafe-products',
+  title: 'Đồ uống nổi bật',
+  dataApi: '/api/products/drinks.json',
+  cacheKey: 'cafe-drinks-v1',
+  cacheTtl: 300000, // 5 phút
+
+  config: {
+    tiers: { base: 1, sm: 2, lg: 4 },
+
+    makes: [
+      // Ảnh đồ uống
+      {
+        opt: 'img',
+        val: 'image',
+        stys: 'w-full aspect-square object-cover rounded-xl',
+      },
+      // Tên đồ uống
+      {
+        opt: 'text',
+        val: 'name',
+        stys: 'font-bold text-base mt-3',
+      },
+      // Thành phần
+      {
+        opt: 'text',
+        val: 'ingredients',
+        stys: 'text-xs opacity-60 line-clamp-2',
+      },
+      // Badge hot/new
+      {
+        opt: 'badge',
+        val: 'label',
+        stys: 'badge-warning font-semibold',
+      },
+      // Giá
+      {
+        opt: 'price',
+        val: 'price',
+        stys: 'font-bold text-lg',
+      },
+      // Nút gọi món
+      {
+        opt: 'btn',
+        val: 'Gọi ngay',
+        stys: 'btn-primary btn-sm w-full mt-2',
+      },
+    ],
+
+    groups: {
+      gap: '1rem',
+      padding: '0.875rem',
+      radius: '1rem',
+      shadow: true,
+    },
+  },
+
+  anime: 'zoom-in',
+};
+```
+
+## Import vào trang
+
+### Import một section
+
+```astro
+---
+// src/pages/cafe.astro
+import Layout from '@/layouts/Layout.astro';
+import { cafeProductConfig } from '@/sections/cafe/products.config.js';
+---
+
+<Layout title="Thực đơn Cafe">
+  <web-boxs
+    config={JSON.stringify(cafeProductConfig.config)}
+    dataApi={cafeProductConfig.dataApi}
+    ui="modern"
+  ></web-boxs>
+</Layout>
+```
+
+### Import toàn bộ domain
+
+```js
+// src/sections/cafe/index.js — re-export hub
+export { cafeProductConfig } from './products.config.js';
+export { cafeMenuConfig } from './menu.config.js';
+export { cafeGalleryConfig } from './gallery.config.js';
+```
+
+```astro
+---
+// src/pages/cafe.astro
+import * as cafeSections from '@/sections/cafe/index.js';
+
+const sections = [
+  cafeSections.cafeProductConfig,
+  cafeSections.cafeMenuConfig,
+  cafeSections.cafeGalleryConfig,
+];
+---
+
+<web-board sections={JSON.stringify(sections)}></web-board>
+```
+
+## Grouping — nhiều sections trong một domain
+
+Khi một trang cần nhiều sections, tổ chức chúng theo domain và dùng `web-board`:
+
+```js
+// src/sections/homepage.js
+import { cafeProductConfig } from './cafe/products.config.js';
+import { blogPostsConfig } from './blog/posts.config.js';
+import { teamConfig } from './about/team.config.js';
+
+export const homepageSections = [
+  cafeProductConfig,
+  blogPostsConfig,
+  teamConfig,
+];
+```
+
+## Live-reload trong dev mode
+
+Config files được import tĩnh bởi Astro — khi bạn thay đổi config trong dev mode (`pnpm dev`), Astro tự động **hot-reload** trang mà không cần refresh thủ công. Điều này giúp bạn điều chỉnh layout, màu sắc, và thứ tự cells theo thời gian thực.
+
+## Tiếp theo
+
+- [Design Guide](/docs/vi/design-guide) — quy trình xây dựng config từ mockup
+- [Web Board](/docs/vi/web-board) — dùng sections với web-board
+- [Conductor](/docs/vi/conductor) — `cacheKey` và `cacheTtl` hoạt động như thế nào

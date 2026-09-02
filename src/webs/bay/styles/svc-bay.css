@@ -1,0 +1,102 @@
+/* src/webs/bay/styles/svc-bay.css */
+svc-bay {
+	display: block;
+	height: 100vh; /* fallback for browsers without dvh support */
+	height: 100dvh; /* real visible viewport height — excludes the mobile browser's address/tool bar */
+  background: var(--color-base-100);
+}
+.bay-wrap {
+  position: relative;
+	display: flex;
+	height: 100%;
+	box-sizing: border-box;
+	overflow: hidden; /* khoá wrap theo viewport height, con bên trong tự cuộn riêng */
+}
+.bay-list {
+	flex: 0 0 auto;
+	height: 100%;
+	box-sizing: border-box;
+  padding: 0.5rem 0 0.5rem 0.5rem;
+}
+.bay-active-wrap {
+	position: relative; /* neo cho .bay-sync-overlay phủ đúng vùng main+chat, không lấn sang .bay-list */
+	display: flex;
+	flex: 1 1 auto;
+	min-width: 0;
+	height: 100%;
+}
+.bay-main {
+	flex: 1 1 auto;
+	min-width: 0;
+	height: 100%;
+	padding: 0 1rem;
+	overflow-x: hidden;
+	overflow-y: auto;
+	color: var(--color-base-content);
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+}
+@media (max-width: 48rem) {
+	.bay-main { padding: 0 0.3rem 0 0 }
+}
+.bay-feature-slot {
+	flex: 1 1 auto;
+}
+.bay-chat {
+	flex: 0 0 auto;
+	height: 100%; /* overrides svc-chat's internal :host height:100vh — giữ trong bay-wrap đã khoá overflow:hidden */
+	box-sizing: border-box;
+}
+.bay-placeholder {
+	flex: 1 1 auto;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0.6;
+	font-size: 0.9rem;
+	color: var(--color-base-content);
+}
+.bay-unsupported {
+	position: relative;
+	max-width: 26rem;
+	margin: 4rem auto;
+	padding: 2rem;
+	border-radius: 1rem;
+	background: color-mix(in oklab, var(--color-base-200) 10%, transparent);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.75rem;
+	text-align: center;
+}
+.bay-unsupported-icon { font-size: 2.5rem; color: var(--color-error, #ef4444); }
+.bay-unsupported-title { font-size: 1.1rem; font-weight: 700; color: var(--color-base-content); margin: 0; }
+.bay-unsupported-body { font-size: 0.875rem; opacity: 0.8; color: var(--color-base-content); margin: 0; }
+.bay-loading {
+	flex: 1 1 auto;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0.75rem;
+	color: var(--color-base-content);
+}
+.bay-loading-icon { font-size: 2rem; color: var(--color-primary); animation: bay-loading-spin 0.9s linear infinite; }
+.bay-loading-text { font-size: 0.9rem; opacity: 0.75; margin: 0; }
+@keyframes bay-loading-spin { to { transform: rotate(360deg); } }
+.bay-sync-overlay {
+	position: absolute;
+	inset: 0;
+	z-index: 51;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0.75rem;
+	background: color-mix(in oklab, var(--color-base-100) 15%, transparent);
+	backdrop-filter: blur(3px);
+	color: var(--color-base-content);
+}

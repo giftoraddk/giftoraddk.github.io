@@ -1,0 +1,93 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-select'
+description: 'Select dropdown with search, multi-select, and customizable options'
+---
+
+# web-select
+
+A styled select dropdown component. Supports searchable filtering, multi-select, and a placeholder. More flexible than a native `<select>` while remaining accessible.
+
+## When to use
+
+- Single or multi-value selection from a predefined list
+- Filterable option lists with more than 5–7 items
+- Form fields that need consistent styling with the rest of the component system
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-select.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `options` | string (JSON) | `'[]'` | Array of `{ value: string, label: string, disabled?: boolean }` |
+| `value` | string | `''` | Selected value (single select) or JSON array string (multi-select) |
+| `placeholder` | string | `'Select…'` | Placeholder text when no value is selected |
+| `multiple` | boolean | `false` | Allow selecting multiple options |
+| `searchable` | boolean | `false` | Show a search input to filter options |
+| `disabled` | boolean | `false` | Disable the entire select |
+| `label` | string | `''` | Label displayed above the control |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+
+## Basic Example
+
+```html
+<web-select
+  label="Country"
+  placeholder="Choose a country"
+  options='[
+    {"value": "us", "label": "United States"},
+    {"value": "gb", "label": "United Kingdom"},
+    {"value": "fr", "label": "France"},
+    {"value": "de", "label": "Germany"}
+  ]'
+></web-select>
+
+<script type="module" src="/src/webs/apex/web-select.js"></script>
+```
+
+## Advanced Examples
+
+Searchable multi-select for tags:
+
+```html
+<web-select
+  label="Tags"
+  multiple
+  searchable
+  placeholder="Add tags…"
+  options='[
+    {"value": "astro",     "label": "Astro"},
+    {"value": "lit",       "label": "Lit"},
+    {"value": "tailwind",  "label": "Tailwind"},
+    {"value": "daisyui",   "label": "ApexUI"},
+    {"value": "typescript","label": "TypeScript"}
+  ]'
+  id="tag-select"
+></web-select>
+```
+
+Reading the selected value:
+
+```html
+<web-select
+  id="priority-select"
+  options='[{"value":"low","label":"Low"},{"value":"medium","label":"Medium"},{"value":"high","label":"High"}]'
+></web-select>
+
+<script>
+  document.getElementById('priority-select').addEventListener('web-select-change', e => {
+    console.log('Selected:', e.detail.value); // 'low', 'medium', or 'high'
+  });
+</script>
+```
+
+## Events
+
+| Event | When | Detail |
+|---|---|---|
+| `web-select-change` | User selects or deselects an option | `{ value: string \| string[], label: string }` |

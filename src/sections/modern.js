@@ -1,0 +1,62 @@
+import { getStyleOpts } from '@/services/helper';
+import * as _heroCard           from './another/_cardHero.js';
+import * as _featureNeat        from './another/_neatFeatures.js';
+import * as _featureNeatCta     from './another/_neatCta.js';
+import * as _picPromo           from './another/_picPromo.js';
+import * as _statsNeat          from './another/_neatStats.js';
+import * as _picShowcase        from './another/_picShowcase.js';
+import * as _cardSimple         from './another/_cardSimple.js';
+import * as _cardBasic          from './another/_cardBasic.js';
+import * as _cardChannel        from './another/_cardChannel.js';
+import * as _horiShowcase       from './another/_horiShowcase.js';
+import * as _cardBook           from './another/_cardBook.js';
+import * as _productCard        from './another/_cardProduct.js';
+import * as _productNeat        from './another/_cardProductNeat.js';
+import * as _cardPro            from './another/_cardPro.js';
+import * as _cardPost           from './another/_cardPost.js';
+import * as _cardTravel         from './another/_cardTravel.js';
+import * as _slideNews          from './another/_slideNews.js';
+import * as _neatTrusted        from './another/_neatTrusted.js';
+import * as _cardProfile        from './another/_cardProfile.js';
+import * as _cardPricing        from './another/_cardPricing.js';
+import * as _picPost            from './another/_picBlog.js';
+import * as _cardArticle        from './another/_cardArticle.js';
+import * as _horiPost           from './another/_horiPost.js';
+import * as _horiArticle        from './another/_horiArticle.js';
+import * as _picNotify          from './another/_picNotify.js';
+import * as _picCta             from './another/_picCta.js';
+import * as _cardTestimonials   from './another/_cardTestimonials.js';
+
+const bg = { ...getStyleOpts({ rounded: '1.75rem', hueCustom: 1 }) };
+const withBg = m => !m.config ? m : {
+	...m,
+	config: { ...m.config, bg },
+};
+
+export const heroCard           = withBg(_heroCard);
+export const featureNeat        = withBg(_featureNeat);
+export const featureNeatCta     = withBg(_featureNeatCta);
+export const picPromo           = withBg(_picPromo);
+export const statsNeat          = withBg(_statsNeat);
+export const picShowcase        = withBg(_picShowcase);
+export const cardSimple         = withBg(_cardSimple);
+export const cardBasic          = withBg(_cardBasic);
+export const cardChannel        = withBg(_cardChannel);
+export const horiShowcase       = withBg(_horiShowcase);
+export const cardBook           = withBg(_cardBook);
+export const productCard        = withBg(_productCard);
+export const productNeat        = withBg(_productNeat);
+export const cardPro            = withBg(_cardPro);
+export const cardPost           = withBg(_cardPost);
+export const cardTravel         = withBg(_cardTravel);
+export const slideNews          = withBg(_slideNews);
+export const neatTrusted        = withBg(_neatTrusted);
+export const cardProfile        = withBg(_cardProfile);
+export const cardPricing        = withBg(_cardPricing);
+export const picPost            = withBg(_picPost);
+export const cardArticle        = withBg(_cardArticle);
+export const horiPost           = withBg(_horiPost);
+export const horiArticle        = withBg(_horiArticle);
+export const picNotify          = withBg(_picNotify);
+export const picCta             = withBg(_picCta);
+export const cardTestimonials   = withBg(_cardTestimonials);

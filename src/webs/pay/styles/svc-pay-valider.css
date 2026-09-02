@@ -1,0 +1,96 @@
+:host {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	overflow: hidden;
+}
+
+.qr-body {
+	flex: 1;
+	overflow-y: auto;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 1rem 1.25rem;
+}
+.qr-body::-webkit-scrollbar { width: 4px; }
+.qr-body::-webkit-scrollbar-thumb {
+	background: color-mix(in oklab, var(--color-base-content, #000) 20%, transparent);
+	border-radius: 9999px;
+}
+
+.qr-card {
+	width: 100%;
+	max-width: 320px;
+	border-radius: 1rem;
+	border: 1px solid color-mix(in oklab, var(--color-base-content, #000) 12%, transparent);
+  background: color-mix(in oklab, var(--color-base-100) 20%, transparent);
+	overflow: hidden;
+}
+.qr-card-top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.75rem 1rem;
+	border-bottom: 1px solid color-mix(in oklab, var(--color-base-content, #000) 8%, transparent);
+}
+.qr-method-name { font-weight: 700; font-size: 0.9rem; }
+.qr-badge {
+	font-size: 0.65rem;
+	font-weight: 700;
+	padding: 0.2rem 0.5rem;
+	border-radius: 99px;
+	color: var(--color-success, #22c55e);
+	background: color-mix(in oklab, var(--color-success, #22c55e) 15%, transparent);
+	border: 1px solid color-mix(in oklab, var(--color-success, #22c55e) 35%, transparent);
+}
+.qr-img {
+	display: block;
+	width: 100%;
+	max-width: 260px;
+	margin: 0.75rem auto;
+}
+.qr-manual {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 1.5rem 1rem;
+}
+.qr-manual iconify-icon { font-size: 2.5rem; opacity: 0.6; }
+.spin { animation: spin 0.8s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.qr-manual-phone { font-size: 1.3rem; font-weight: 700; }
+.qr-manual-label { font-size: 0.8rem; opacity: 0.7; }
+.cash-icon { font-size: 3rem; color: var(--color-success, #22c55e); }
+.qr-sep {
+	height: 1px;
+	background: color-mix(in oklab, var(--color-base-content, #000) 8%, transparent);
+	margin: 0 1rem;
+}
+.qr-footer {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	padding: 0.625rem 1rem;
+}
+.qr-footer-label { font-size: 0.78rem; opacity: 0.7; }
+.qr-amount { font-weight: 800; font-size: 1.15rem; color: var(--color-success, #22c55e); }
+.qr-ref {
+	margin-top: 0.75rem;
+	font-size: 0.78rem;
+	font-weight: 600;
+	opacity: 0.7;
+	letter-spacing: 0.04em;
+}
+
+.actions {
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+	padding: 0.625rem 1.25rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	flex-shrink: 0;
+}

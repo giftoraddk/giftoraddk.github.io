@@ -1,0 +1,36 @@
+---
+import Core from '@/layouts/Core.astro';
+import ProductDetailBody from '@/components/Product/DetailBody.astro';
+import { fetchCollection } from '@/services/firestore.server.ts';
+import { productSlug, pickLang } from '@/services/helper.js';
+import { menuItems, policies, socials } from '@/modules/landing/home.js';
+
+// Trang chi tiết sản phẩm CRAWLABLE — biến thể SSG (mặc định, xem docs/BUILD_MODES nếu thêm sau):
+// build tĩnh, getStaticPaths + fetchCollection lúc build, nội dung thật bake vào HTML cho
+// AI/search crawler. Nội dung/markup thật sự nằm trong ProductDetailBody.astro (dùng chung với
+// biến thể ISR ở src/pages/product/_render-modes/[slug].isr.astro, xem astro.config.mjs
+// renderModeIntegration — PUBLIC_RENDER=isr swap file này bằng biến thể đó lúc build).
+//
+// URL dùng slug từ khoá (vd /product/hop-qua-sinh-nhat-{id}/) thay vì id thô — tốt hơn cho
+// Google/AI search match query, xem productSlug() (services/helper.js).
+
+export async function getStaticPaths() {
+	const products = await fetchCollection('products');
+	return products.map(product => ({
+		params: { slug: productSlug(product) },
+		props:  { product, allProducts: products },
+	}));
+}
+
+const { product, allProducts } = Astro.props as { product: any; allProducts: any[] };
+
+const pics = (product.pics || '').split('|').filter(Boolean);
+const heroImg = pics[0] || '';
+const description = product.description || String(product.content || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().slice(0, 160) || '';
+const pageTitle = product.title || pickLang({ en: 'Product', vi: 'Sản phẩm' });
+const bg = { blur: true, gradient: true, tint: '#2ebd85', total: 3, blobType: 'circleOverlap', blobMove: 'swap', deg: 180 };
+---
+
+<Core title={pageTitle} description={description} image={heroImg} footer={{ columns: menuItems, policies, socials, bg }}>
+	<ProductDetailBody product={product} allProducts={allProducts} />
+</Core>

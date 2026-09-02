@@ -1,0 +1,22 @@
+---
+import LayoutAdmin from '@/layouts/LayoutAdmin.astro';
+const pageTitle = 'Orders Admin';
+const pageDescription = 'Orders admin page';
+---
+
+<LayoutAdmin title={pageTitle} description={pageDescription}>
+	<div class='p-4'>
+		<h1 class='text-xl font-bold mb-5'>Quản lý đơn hàng</h1>
+		<svc-admin id='admin-orders' dataTable='orders' lang='vi'></svc-admin>
+	</div>
+
+	<script>
+		import '@/webs/auth/svc-admin.js';
+		import schema from '@/services/schemas/admin/orders.js';
+
+		document.addEventListener('astro:page-load', () => {
+			const el = document.getElementById('admin-orders');
+			if (el) (el as any).schema = schema((el as any).lang || 'vi');
+		});
+	</script>
+</LayoutAdmin>

@@ -1,0 +1,230 @@
+:host {
+	display: block;
+	--core-height: var(--height-selector, 2.25rem);
+	--core-radius: var(--radius-selector, 0.5rem);
+	--core-blur: var(--haze-blur, 12px);
+	--core-glass: var(--haze-glass, 20%);
+	--core-font: var(--font-sans, 'system-ui');
+}
+
+.svc-pay-customer {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+
+.entries-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 2px 0;
+}
+
+.entries-title {
+	font-family: var(--core-font);
+	font-size: 13px;
+	font-weight: 700;
+	color: color-mix(in oklab, var(--color-base-content, #ffffff) 70%, transparent);
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+}
+
+.btn-add {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 0 14px;
+	height: 28px;
+	background: color-mix(in oklab, var(--color-primary, #2ebd85) 15%, transparent);
+	color: var(--color-primary, #2ebd85);
+	border: 1px solid color-mix(in oklab, var(--color-primary, #2ebd85) 40%, transparent);
+	border-radius: var(--core-radius);
+	font-size: 12px;
+	font-weight: 700;
+	font-family: var(--core-font);
+	cursor: pointer;
+	transition: background 0.2s, border-color 0.2s;
+}
+
+.btn-add svg {
+	width: 12px;
+	height: 12px;
+	flex-shrink: 0;
+}
+
+.btn-add:hover {
+	background: color-mix(in oklab, var(--color-primary, #2ebd85) 22%, transparent);
+	border-color: var(--color-primary, #2ebd85);
+}
+
+/* ── List ────────────────────────────────────────────────────────────────── */
+
+.entries-list {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.entries-empty {
+	padding: 20px 16px;
+	text-align: center;
+	font-family: var(--core-font);
+	font-size: 13px;
+	color: color-mix(in oklab, var(--color-base-content, #ffffff) 35%, transparent);
+	border: 1px dashed color-mix(in oklab, var(--color-base-300, #393939) 50%, transparent);
+	border-radius: var(--core-radius);
+}
+
+/* ── Entry form (inside collapse) ───────────────────────────────────────── */
+
+.entry-form {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 14px 16px;
+}
+
+.entry-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px;
+}
+
+@media (max-width: 480px) {
+	.entry-row { grid-template-columns: 1fr; }
+}
+
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.field label {
+	font-size: 12px;
+	font-weight: 600;
+	font-family: var(--core-font);
+	color: color-mix(in oklab, var(--color-base-content, #ffffff) 70%, transparent);
+	letter-spacing: 0.03em;
+}
+
+.field input {
+	box-sizing: border-box;
+	width: 100%;
+	height: var(--core-height);
+	padding: 0 12px;
+	background: color-mix(in oklab, var(--color-base-100, #0d0d0d) 80%, transparent);
+	border: 1px solid color-mix(in oklab, var(--color-base-300, #393939) 70%, transparent);
+	border-radius: var(--core-radius);
+	color: var(--color-base-content, #ffffff);
+	font-family: var(--core-font);
+	font-size: 14px;
+	outline: none;
+	transition: border-color 0.2s, box-shadow 0.2s;
+	appearance: none;
+}
+
+.field input:focus {
+	border-color: var(--color-primary, #2ebd85);
+	box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary, #2ebd85) 15%, transparent);
+}
+
+.field input::placeholder {
+	color: color-mix(in oklab, var(--color-base-content, #ffffff) 30%, transparent);
+}
+
+.opt {
+	font-weight: 400;
+	opacity: 0.55;
+}
+
+/* ── Entry footer ────────────────────────────────────────────────────────── */
+
+.entry-footer {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding-top: 4px;
+	border-top: 1px solid color-mix(in oklab, var(--color-base-300, #393939) 40%, transparent);
+}
+
+.badge-default {
+	display: inline-flex;
+	align-items: center;
+	padding: 0 10px;
+	height: 24px;
+	background: color-mix(in oklab, var(--color-primary, #2ebd85) 15%, transparent);
+	color: var(--color-primary, #2ebd85);
+	border: 1px solid color-mix(in oklab, var(--color-primary, #2ebd85) 40%, transparent);
+	border-radius: 99px;
+	font-size: 11px;
+	font-weight: 700;
+	font-family: var(--core-font);
+	letter-spacing: 0.04em;
+}
+
+.btn-set-default {
+	display: inline-flex;
+	align-items: center;
+	padding: 0 10px;
+	height: 24px;
+	background: transparent;
+	color: color-mix(in oklab, var(--color-base-content, #ffffff) 45%, transparent);
+	border: 1px solid color-mix(in oklab, var(--color-base-300, #393939) 60%, transparent);
+	border-radius: 99px;
+	font-size: 11px;
+	font-weight: 600;
+	font-family: var(--core-font);
+	cursor: pointer;
+	transition: color 0.2s, border-color 0.2s;
+}
+
+.btn-set-default:hover {
+	color: var(--color-primary, #2ebd85);
+	border-color: color-mix(in oklab, var(--color-primary, #2ebd85) 50%, transparent);
+}
+
+.btn-remove {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	margin-left: auto;
+	padding: 0 10px;
+	height: 24px;
+	background: transparent;
+	color: color-mix(in oklab, var(--color-error, #f87171) 60%, transparent);
+	border: 1px solid color-mix(in oklab, var(--color-error, #f87171) 25%, transparent);
+	border-radius: 99px;
+	font-size: 11px;
+	font-weight: 600;
+	font-family: var(--core-font);
+	cursor: pointer;
+	transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.btn-remove svg {
+	width: 11px;
+	height: 11px;
+	flex-shrink: 0;
+}
+
+.btn-remove:hover {
+	color: var(--color-error, #f87171);
+	border-color: var(--color-error, #f87171);
+	background: color-mix(in oklab, var(--color-error, #f87171) 8%, transparent);
+}
+
+/* ── Spatial ─────────────────────────────────────────────────────────────── */
+
+.spatial .field input {
+	background: color-mix(in oklab, var(--color-base-300, #393939) var(--core-glass), transparent);
+	backdrop-filter: blur(var(--core-blur));
+	border: 1px solid #ffffff33;
+}
+
+.spatial .field input:focus {
+	background: rgba(255, 255, 255, 0.07);
+	border-color: var(--color-primary, #2ebd85);
+}

@@ -1,0 +1,10 @@
+---
+import Empty from '@/layouts/Empty.astro';
+---
+
+<Empty title="Tra cứu đơn hàng" description="Nhập mã đơn hàng để xem chi tiết & trạng thái giao hàng">
+	<div class="flex justify-center">
+    <script src='@/webs/pay/svc-pay-watch.js'></script>
+	  <svc-pay-watch class="w-full" id="svc-pay-watch" transition:persist="svc-pay-watch"></svc-pay-watch>
+  </div>
+</Empty>

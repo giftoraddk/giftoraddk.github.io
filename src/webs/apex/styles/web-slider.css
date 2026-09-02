@@ -1,0 +1,249 @@
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  position: relative;
+  box-sizing: border-box;
+  --core-font: var(--font-sans, 'system-ui');
+}
+
+:host([vertical]) {
+  height: 100%;
+}
+
+.web-slider {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.web-slider > .web-slider-track {
+  flex: 1;
+}
+
+.web-slider-track {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  user-select: none;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+  font-family: var(--core-font);
+}
+
+.web-slider-track[data-vertical] {
+  touch-action: pan-x;
+}
+
+/* Every slide (images-mode div or slotted light-DOM child) shares the same grid
+   cell (full overlap, without leaving layout flow like position:absolute would);
+   the SliderTrack engine positions each one individually via inline transform. */
+.web-slider-slide,
+::slotted(*) {
+  grid-row: 1;
+  grid-column: 1;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform;
+}
+
+/* Images-mode slides are full-bleed photos — always fill the track edge-to-edge
+   rather than sizing to intrinsic content like slotted light-DOM slides do. */
+.web-slider-slide.img-slide {
+  height: 100%;
+}
+
+/* Shadow DOM slides (images attribute mode) */
+.web-slider-slide.img-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Blur background slide — fills letterbox when image ratio ≠ container ratio */
+.img-slide.blur-slide {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #000;
+}
+
+.img-slide.blur-slide .blur-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(40px);
+  transform: scale(1.1);
+  pointer-events: none;
+}
+
+.img-slide.blur-slide img {
+  position: relative;
+  z-index: 1;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* Navigation & Controls */
+.web-slider-controls {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  user-select: none;
+  gap: 1.5rem;
+}
+
+.web-slider-controls.between {
+  justify-content: space-between;
+}
+
+.web-slider-controls.center {
+  justify-content: center;
+}
+
+.web-slider-controls.end {
+  justify-content: end;
+}
+
+.web-slider-controls.bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  padding: 0.5rem 0.75rem;
+}
+
+.web-slider-controls.top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  padding: 0.5rem 0.75rem;
+}
+
+.web-slider-nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.web-slider-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--color-base-content);
+  background: color-mix(in oklab, var(--color-base-100) 30%, transparent);
+  opacity: 0.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--color-base-content, #ffffff);
+  padding: 0;
+}
+
+.web-slider-btn:hover {
+  opacity: 0.8;
+}
+
+.web-slider-btn:focus {
+  opacity: 0.8;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.web-slider-dots {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.web-slider-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--color-base-content);
+  background: color-mix(in oklab, var(--color-base-100) 30%, transparent);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+.web-slider-dot:hover {
+  opacity: 0.8;
+}
+
+.web-slider-dot.active {
+  border-color: var(--color-primary);
+  opacity: 1;
+}
+
+.web-slider-count {
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  color: var(--color-base-content, #ffffff);
+  background: var(--color-base-200, #232323);
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--color-base-300, #393939);
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+/**
+ * ----------------------------------------
+ * maxHeight — cap height + center each slide's content vertically
+ * ----------------------------------------
+ */
+.web-slider-track.h-auto .web-slider-slide,
+.web-slider-track.h-auto ::slotted(*) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.web-slider-track.h-auto .img-slide img {
+  height: auto;
+  max-height: var(--slider-max-h);
+  width: 100%;
+  max-width: 100%;
+}
+
+/**
+ * ----------------------------------------
+ * Glassmorphism - spatial
+ * ----------------------------------------
+ */
+.spatial.web-slider-btn {
+    background: color-mix(in oklab, var(--color-base-300, #393939) var(--core-spatial), transparent);
+    backdrop-filter: blur(var(--core-blur));
+    border-color: #ffffff4d;
+}
+
+.spatial.web-slider-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.spatial.web-slider-count {
+    background: color-mix(in oklab, var(--color-base-300, #393939) var(--core-spatial), transparent);
+    backdrop-filter: blur(var(--core-blur));
+    border-color: #ffffff4d;
+}

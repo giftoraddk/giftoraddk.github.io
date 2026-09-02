@@ -1,0 +1,247 @@
+---
+import ActionBtnTheme from "@/components/Nav/Action/BtnTheme.astro";
+import Menu from "@/components/Nav/Action/Menu.astro";
+import I18nText from "@/components/I18nText.astro";
+import { plainText } from "@/utils";
+import "iconify-icon";
+const { items = [], class: c = "", isMenu = false } = Astro.props;
+
+const { pathname } = Astro.url;
+const normalizedPathname = pathname.replace(/\/$/, '') || '/';
+
+const isActive = (href: string | undefined) => {
+	if (!href) return false;
+	const normalizedHref = href.replace(/\/$/, '') || '/';
+	if (normalizedPathname === normalizedHref) return true;
+	if (!normalizedHref.startsWith('/')) {
+		const lastPart = normalizedPathname.split('/').pop();
+		if (lastPart === normalizedHref) return true;
+	}
+	return false;
+};
+---
+<nav class={`fixed bottom-0 left-0 right-0 mx-auto rounded-3xl z-[100] bg-base-100/30 backdrop-blur-2xl border-white/10 border-t pb-[env(safe-area-inset-bottom,0px)] ${items.length > 7 ? '' : 'max-w-lg'} ${c}`}>
+	<div class="flex items-center justify-around h-18 p-2 text-base-content">
+		{items.map((it, i) => {
+			const sub = it.items?.length > 0, id = `m_${i}`, T = sub ? 'button' : 'a';
+			return (
+				<div class="flex-1 flex justify-center">
+					{sub && isMenu ? (
+						<Menu isMobileRoot open horizontal items={[it]} class="menu-bottom p-0 m-0 [&>li>details>summary:after]:hidden" />
+					) : (
+							<T class="group flex flex-col items-center gap-1 w-full" data-nav-href={!sub ? (it.href || '#') : undefined} {...(sub?{type:"button", "data-dialog-trigger": id}:{href:it.href||"#"})}>
+								<div class={`menu-char-icon transition-all ${isActive(it.href) ? 'text-primary' : 'group-hover:scale-110 group-hover:-translate-y-1 opacity-60'}`}>
+									{it.iconMobile || it.icon ? <iconify-icon icon={it.iconMobile || it.icon} class="text-2xl" /> : <span>{it.textIcon || (plainText(it.text) || 'A').charAt(0)}</span>}
+								</div>
+							</T>
+					)}
+				</div>
+			)
+		})}
+		<slot name="actions" />
+		<div class="flex-1 flex justify-center"><div class="h-12 w-12 flex items-center justify-center rounded-full hover:bg-white/10 transition-all" style="background-color: color-mix(in oklab, var(--color-base-content) 10%, transparent);"><ActionBtnTheme /></div></div>
+	</div>
+</nav>
+
+<!-- Menu Dialogs -->
+{items.map((it, i) => {
+	const sub = it.items?.length > 0, id = `m_${i}`;
+	if (!sub || isMenu) return null;
+	return (
+		<dialog id={id} class="mobile-nav-dialog fixed inset-0 bottom-20 z-[90] w-full h-[calc(100dvh-4.5rem)] p-0 m-0 rounded-3xl bg-transparent opacity-0 invisible open:visible open:opacity-100 transition-all duration-500 overflow-hidden group flex flex-col">
+			<div class="glass text-base-content p-0 h-full w-full flex flex-col shadow-2xl translate-y-full group-open:translate-y-0 transition-transform duration-500 relative">
+				<div class="py-4 px-6 border-b border-white/10 flex items-center justify-between bg-base-200/20 sticky top-0 z-10">
+					<div class="flex items-center gap-4">
+						<div class="h-14 w-14 flex items-center justify-center bg-primary/20 rounded-full text-primary">
+							{it.icon ? <iconify-icon icon={it.icon} class="text-2xl" /> : <span class="font-bold text-2xl">{it.textIcon || (plainText(it.text) || 'A').charAt(0)}</span>}
+						</div>
+						<h3 class="font-bold text-2xl uppercase leading-none text-base-content/70"><I18nText text={it.text} /></h3>
+					</div>
+					<form method="dialog"><button class="opacity-60 hover:opacity-100 relative cursor-pointer">
+						<iconify-icon icon="ri:close-line" class="text-3xl" /></button>
+					</form>
+				</div>
+				<div class="flex-1 overflow-y-auto px-2 py-4 relative z-1 custom-scrollbar">
+					<div class="flex flex-col gap-2">
+						{it.items.map(s => (
+							<div class="flex flex-col gap-1">
+								<a href={s.href && s.href !== '#' ? s.href : undefined} class={`flex items-center gap-4 p-4 rounded-3xl transition-all active:scale-[0.97] group/s text-base-content/70 border border-transparent ${s.href ? 'hover:bg-primary/10 hover:border-primary/20' : 'opacity-70'}`}>
+									<div class={`h-14 w-14 flex items-center justify-center rounded-full transition-all bg-base-200/50 ${s.href ? 'group-hover/s:text-base-content group-hover/s:bg-primary/20 group-hover/s:scale-110' : ''}`}>
+										{s.icon ? <iconify-icon icon={s.icon} class="text-xl" /> : <span class="font-bold text-xl uppercase">{s.textIcon || (plainText(s.text) || 'A').charAt(0)}</span>}
+									</div>
+									<h4 class={`flex-1 font-bold text-xl truncate ${s.href ? 'group-hover/s:text-base-content' : ''}`}><I18nText text={s.text} /></h4>
+									{s.href && <iconify-icon icon="ri:arrow-right-s-line" class="text-2xl opacity-60 group-hover/s:translate-x-1" />}
+								</a>
+								{s.items?.length > 0 && <div class="ml-4 pl-1 border-l border-base-content/20 flex flex-col gap-1">
+									{s.items.map(d => (
+														<a href={d.href || '#'} class="flex items-center gap-4 p-4 rounded-3xl hover:bg-primary/10 transition-all group/d border border-transparent hover:border-primary/10 text-base-content/70 hover:text-base-content">
+															<div class="h-9 w-9 flex items-center justify-center bg-base-200/50 rounded-full group-hover/d:bg-primary/20 transition-all">
+																{d.icon ? <iconify-icon icon={d.icon} class="text-xl" /> : <span class="font-bold text-xs uppercase">{d.textIcon || (plainText(d.text) || 'A').charAt(0)}</span>}
+															</div>
+															<h5 class="font-bold truncate"><I18nText text={d.text} /></h5>
+															<iconify-icon icon="ri:arrow-right-s-line" class="ml-auto text-xl opacity-60 group-hover/d:translate-x-1" />
+														</a>
+									))}
+								</div>}
+								<div class="h-px w-[calc(100%-2rem)] mx-auto bg-base-content/5 last:hidden my-2" />
+							</div>
+						))}
+					</div>
+				</div>
+				<div class="dragdown z-10 absolute top-0 left-1/2 -translate-x-1/2 p-2 cursor-grab active:cursor-grabbing">
+					<div class="w-12 h-1.5 bg-white/20 rounded-full opacity-60" />
+				</div>
+			</div>
+			<form method="dialog" class="absolute inset-0 -z-10 bg-black/40 backdrop-blur-sm opacity-0 group-open:opacity-100 transition-opacity duration-500"><button class="w-full h-full" /></form>
+		</dialog>
+	)
+})}
+<style>
+	dialog::backdrop { display: none; }
+	.glass { 
+		background-color: rgba(255, 255, 255, 0.1);
+		backdrop-filter: blur(32px);
+	}
+</style>
+
+<script>
+	document.addEventListener("astro:page-load", () => {
+		document.querySelectorAll<HTMLDialogElement>('dialog.mobile-nav-dialog').forEach(dialog => {
+			const content = dialog.querySelector('.glass') as HTMLElement;
+			const handle = dialog.querySelector('.dragdown') as HTMLElement;
+			const scroll = dialog.querySelector('.overflow-y-auto') as HTMLElement;
+			if (!content || !scroll) return;
+
+			let startY = 0, currentY = 0, dragging = false;
+			content.style.willChange = 'transform';
+
+			// --- HÀM ĐÓNG DIALOG ---
+			// Xử lý hiệu ứng slide-down mượt mà trước khi thực sự biến mất khỏi DOM
+			const close = () => {
+				if (dialog.dataset.closing) return;
+				dialog.dataset.closing = 'true';
+				
+				Object.assign(content.style, { transition: 'transform 0.4s cubic-bezier(0.32,0.72,0,1)', transform: 'translate3d(0, 100%, 0)' });
+				Object.assign(dialog.style, { transition: 'opacity 0.4s ease-out', opacity: '0' });
+				
+				setTimeout(() => {
+					dialog.close();
+					delete dialog.dataset.closing;
+					content.style.cssText = 'will-change: transform';
+					dialog.style.cssText = '';
+				}, 400);
+			};
+			// Gắn hàm closeAnim để các nút bên ngoài có thể gọi được
+			(dialog as any).closeAnim = close;
+
+			// Bắt sự kiện click vào backdrop (lớp form ẩn)
+			dialog.querySelectorAll('form[method="dialog"]').forEach(f => {
+				f.addEventListener('submit', e => { 
+					e.preventDefault(); 
+					close(); 
+				});
+			});
+
+			// --- LOGIC VUỐT ĐỂ ĐÓNG (DRAG DOWN) ---
+			// Cập nhật khoảng cách khi đang vuốt tay
+			const onMove = (y: number, e?: Event) => {
+				if (!dragging) return;
+				currentY = y - startY;
+				// Chỉ cho phép kéo về phía dưới (currentY > 0)
+				if (currentY < 0) {
+					dragging = false;
+					content.style.transition = '';
+					return;
+				}
+				if (e && e.cancelable) e.preventDefault();
+				content.style.transform = `translate3d(0,${currentY}px,0)`;
+			};
+
+			// Kết thúc vuốt
+			const onEnd = () => {
+				if (!dragging) return;
+				dragging = false;
+				// Nếu đã kéo quá 120px, kích hoạt hàm đóng
+				if (currentY > 120) {
+					close();
+				} else {
+					// Ngược lại thả tay thì popup đàn hồi về nguyên vị trí cũ
+					Object.assign(content.style, { transition: 'transform 0.4s cubic-bezier(0.32,0.72,0,1)', transform: '' });
+				}
+				currentY = 0;
+				
+				// Tối ưu hóa: Gỡ sự kiện toàn cục khi đã kéo xong tránh rò rỉ bộ nhớ
+				window.removeEventListener('touchmove', onTouchMove);
+				window.removeEventListener('touchend', onEnd);
+				window.removeEventListener('mousemove', onMouseMove);
+				window.removeEventListener('mouseup', onEnd);
+			};
+
+			// Wrappers dùng cho hàm gắn Remove Event
+			const onTouchMove = (e: TouchEvent) => onMove(e.touches[0].clientY, e);
+			const onMouseMove = (e: MouseEvent) => onMove(e.clientY);
+
+			// Bắt đầu vuốt
+			const start = (y: number, target: EventTarget | null) => {
+				// Chỉ cho phép kéo khi đang cầm vào thanh handle đỉnh hoặc nội dung đã cuộn ở tít trên cùng
+				if (target !== handle && scroll.scrollTop > 0) return;
+				startY = y;
+				dragging = true;
+				content.style.transition = 'none';
+
+				// Tối ưu hóa: Chỉ lắng nghe di chuyển khi thực sự bắt đầu vuốt
+				window.addEventListener('touchmove', onTouchMove, { passive: false });
+				window.addEventListener('touchend', onEnd);
+				window.addEventListener('mousemove', onMouseMove);
+				window.addEventListener('mouseup', onEnd);
+			};
+
+			// Luôn luôn lắng nghe điểm xuất phát trên bản thân popup
+			content.addEventListener('touchstart', e => start(e.touches[0].clientY, e.target), { passive: true });
+			content.addEventListener('mousedown', e => start(e.clientY, e.target));
+		});
+
+		// --- ĐÓNG TỰ ĐỘNG KHỎI MOBILE VIEW ---
+		// Viết listener độc lập một lần để tránh attach dư thừa cho mỗi map loop
+		const onResizeDesktop = () => {
+			if (window.innerWidth >= 768) {
+				document.querySelectorAll<HTMLDialogElement>('dialog.mobile-nav-dialog[open]').forEach(d => {
+					d.close();
+					const content = d.querySelector('.glass') as HTMLElement;
+					if (content) content.style.cssText = 'will-change: transform';
+					d.style.cssText = '';
+				});
+			}
+		};
+		// Dẹp bỏ listener của phiên page-load trước (nếu có)
+		window.removeEventListener('resize', (window as any)._autoCloseNav);
+		(window as any)._autoCloseNav = onResizeDesktop;
+		window.addEventListener('resize', onResizeDesktop);
+
+		// --- XỬ LÝ CLICK TRIGGER NÚT MENU ---
+		document.querySelectorAll<HTMLButtonElement>('[data-dialog-trigger]').forEach(btn => {
+			btn.addEventListener('click', (e) => {
+				e.preventDefault();
+				const id = btn.getAttribute('data-dialog-trigger');
+				if (!id) return;
+				
+				const dialog = document.getElementById(id) as HTMLDialogElement;
+				if (!dialog) return;
+
+				if (dialog.open) {
+					// Toggle: Nếu đang mở -> bấm lại sẽ đóng (kèm hiệu ứng)
+					(dialog as any).closeAnim?.();
+				} else {
+					// Đóng toàn bộ các menu khác trước nhằm ngăn chặn chồng chéo
+					document.querySelectorAll<HTMLDialogElement>('dialog.mobile-nav-dialog[open]').forEach(d => {
+						if (d !== dialog) (d as any).closeAnim?.();
+					});
+					dialog.show();
+				}
+			});
+		});
+	});
+</script>
+
+
+

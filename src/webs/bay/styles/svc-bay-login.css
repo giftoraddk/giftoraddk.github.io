@@ -1,0 +1,36 @@
+/* src/webs/bay/styles/svc-bay-login.css */
+.byl-wrap {
+  position: relative; 
+    max-width: 380px;
+    margin: 4rem auto;
+    padding: 2rem;
+    border-radius: 1rem;
+    background: color-mix(in oklab, var(--color-base-200) 10%, transparent);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.byl-title { font-size: 1.25rem; font-weight: 700; color: var(--color-base-content); margin: 0; }
+.byl-sub   { font-size: .875rem; opacity: .75; color: var(--color-base-content); margin: 0 0 .5rem; }
+.byl-field { display: flex; flex-direction: column; gap: .25rem; }
+.byl-label { font-size: .8rem; color: var(--color-base-content); opacity: .8; }
+.byl-error {
+    display: flex; align-items: center; gap: .4rem;
+    font-size: .8rem; color: var(--color-error, #ef4444);
+}
+.byl-divider { display: flex; align-items: center; gap: .75rem; font-size: .75rem; opacity: .6; color: var(--color-base-content); }
+.byl-divider::before, .byl-divider::after { content: ''; flex: 1; height: 1px; background: var(--color-base-300); }
+.byl-google {
+    display: flex; align-items: center; justify-content: center; gap: .5rem;
+    height: 45px; border-radius: .5rem; border: 1px solid var(--color-base-300);
+    background: var(--color-base-100); color: var(--color-base-content);
+    cursor: pointer; font-size: .875rem; position: relative;
+}
+.byl-google:disabled { opacity: .6; cursor: not-allowed; }
+
+.byl-loading { align-items: center; justify-content: center; min-height: 120px; }
+.byl-spinner {
+    font-size: 2rem; color: var(--color-primary);
+    animation: byl-spin 1s linear infinite;
+}
+@keyframes byl-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

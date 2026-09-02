@@ -1,0 +1,42 @@
+---
+export const prerender = false;
+
+import Core from '@/layouts/Core.astro';
+import PostDetailBody from '@/components/Post/DetailBody.astro';
+import { fetchCollection, fetchDoc } from '@/services/firestore.server.ts';
+import { pickLang } from '@/services/helper.js';
+import { menuItems, policies, socials } from '@/modules/landing/home.js';
+import I18nText from '@/components/I18nText.astro';
+
+// Biến thể ISR của src/pages/post/[slug].astro — xem
+// src/pages/product/_render-modes/[slug].isr.astro để biết cơ chế swap (renderModeIntegration,
+// astro.config.mjs) và vì sao lấy id bằng split('-').pop().
+const slugParam = Astro.params.slug as string;
+const id = slugParam.split('-').pop() || '';
+
+const post = await fetchDoc('posts', id);
+
+// allPosts chỉ cần cho phần "bài viết liên quan" (so tag) — cùng cách SSG làm, chỉ khác là fetch
+// mỗi request thay vì mỗi lần build; đây chính là chi phí mà ISR cache hấp thụ.
+const allPosts = post ? await fetchCollection('posts') : [];
+
+if (!post) Astro.response.status = 404;
+
+const pics = post ? (post.pics || '').split('|').filter(Boolean) : [];
+const heroImg = pics[0] || '';
+const description = post
+	? (post.description || String(post.content || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().slice(0, 160) || '')
+	: '';
+const pageTitle = post?.title || pickLang({ en: 'Post', vi: 'Bài viết' });
+const bg = { blur: true, gradient: true, tint: "#00c7d4", total: 3, blobType: "circleOverlap", blobMove: 'swap', deg: 180 };
+---
+
+<Core title={pageTitle} description={description} image={heroImg} footer={{ columns: menuItems, policies, socials, bg }}>
+	{post ? (
+		<PostDetailBody post={post} allPosts={allPosts} />
+	) : (
+		<div class="mx-auto max-w-6xl px-4 py-24 text-center opacity-60">
+			<I18nText text={{ en: 'Post not found.', vi: 'Không tìm thấy bài viết.' }} />
+		</div>
+	)}
+</Core>

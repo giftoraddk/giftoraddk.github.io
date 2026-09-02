@@ -1,0 +1,28 @@
+---
+import "../styles/themes/default.css";
+import { ClientRouter, fade } from "astro:transitions";
+import Head from "@/components/Head/Base.astro";
+
+const { title = 'Components', description = '' } = Astro.props;
+---
+
+<html lang="en" class="scroll-smooth" data-theme="light">
+  <head>
+    <ClientRouter />
+    <Head title={title} description={description} />
+    <script is:inline>
+      (function() {
+        const m = document.cookie.match(/(?:^|; )dark=([^;]*)/);
+        const t = m ? decodeURIComponent(m[1]) : null;
+        if (t) document.documentElement.setAttribute('data-theme', t);
+      })();
+      document.addEventListener('astro:before-swap', function(e) {
+        const theme = document.documentElement.getAttribute('data-theme');
+        if (theme) e.newDocument.documentElement.setAttribute('data-theme', theme);
+      });
+    </script>
+  </head>
+  <body transition:animate={fade({ duration: "0.3s" })}>
+    <slot />
+  </body>
+</html>

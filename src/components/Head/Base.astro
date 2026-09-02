@@ -1,0 +1,90 @@
+---
+import { safeURL } from '@/utils'
+import { site } from '@/services/constants/site'
+
+export interface Props {
+	title: string
+	description?: string
+	ogImage?: string
+	articleDate?: string
+	// Trang redirect (vd '/' → '/gift', xem src/pages/index.astro) — khi có: canonical trỏ
+	// THẲNG vào đích redirect (không phải trang hiện tại) đúng khuyến nghị SEO cho trang
+	// redirect, + emit <meta http-equiv="refresh"> (hoạt động trên output:'static', không cần
+	// adapter/Astro.redirect()). title/description vẫn mô tả ĐÚNG trang hiện tại (không phải
+	// đích) — nhiều AI/search crawler chỉ đọc HTML 1 lần, không chạy JS/theo refresh, nên nội
+	// dung SEO/GEO thật của trang gốc vẫn phải chuẩn.
+	redirectTo?: string
+	// Trang không nên vào index (login, admin, …) — dùng thay vì disallow riêng lẻ trong robots.txt,
+	// vì robots.txt chỉ chặn crawl chứ không đảm bảo gỡ khỏi index nếu trang đã bị link tới nơi khác.
+	noindex?: boolean
+}
+
+const { title = site.title, description = site.description, ogImage, articleDate, redirectTo, noindex = false } = Astro.props
+// Check if Astro.site is defined
+const canonicalURL = safeURL(redirectTo || Astro.url.pathname, Astro.site)
+
+// Handle ogImage to ensure valid URL
+const socialImageURL = safeURL(ogImage ?? '/logo.png', Astro.site)
+
+const titleSeparator = '•'
+const siteTitle = `${title} ${titleSeparator} ${site.subtitle}`
+
+// JSON-LD Organization/WebSite (GEO) — entity gốc để AI Search/Google gắn mọi trang con
+// (post/product detail…) về đúng 1 thương hiệu, thay vì tự đoán qua favicon/domain. Bỏ qua ở
+// trang noindex (admin/login) — không cần quảng bá structured data ở trang không được index.
+const orgJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'Organization',
+	name: site.subtitle,
+	url: site.domain,
+	logo: safeURL('/logo.png', Astro.site),
+}
+---
+
+<!-- Global Metadata -->
+<meta charset='utf-8' />
+<meta name='viewport' content='width=device-width,initial-scale=1' />
+<link rel='icon' type='image/svg+xml' href='/favicon/favicon.ico' />
+<meta name='generator' content={Astro.generator} />
+
+<!-- Canonical URL -->
+<link rel='canonical' href={canonicalURL} />
+
+{noindex && <meta name='robots' content='noindex, nofollow' />}
+
+{!noindex && <script type='application/ld+json' is:inline set:html={JSON.stringify(orgJsonLd)} />}
+
+{redirectTo && <meta http-equiv='refresh' content={`0; url=${redirectTo}`} />}
+
+<!-- Primary Meta Tags -->
+<title>{siteTitle}</title>
+
+<!-- SEO -->
+<meta name='title' content={siteTitle} />
+<meta name='description' content={description} />
+<meta name='author' content={site.author} />
+
+<!-- Open Graph / Facebook -->
+<meta property='og:type' content={articleDate ? 'article' : 'website'} />
+<meta property='og:url' content={Astro.url} />
+<meta property='og:title' content={title} />
+<meta property='og:description' content={description} />
+<meta property='og:image' content={socialImageURL} />
+{
+	articleDate && (
+		<>
+			<meta property='article:author' content={site.author} />
+			<meta property='article:published_time' content={articleDate} />
+		</>
+	)
+}
+
+<!-- Twitter -->
+<meta property='twitter:card' content='summary_large_image' />
+<meta property='twitter:url' content={Astro.url} />
+<meta property='twitter:title' content={title} />
+<meta property='twitter:description' content={description} />
+<meta property='twitter:image' content={socialImageURL} />
+
+<!-- RSS auto-discovery -->
+<link rel='alternate' type='application/rss+xml' title={site.subtitle} href='/rss.xml' />

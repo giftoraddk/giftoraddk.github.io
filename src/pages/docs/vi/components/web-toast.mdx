@@ -1,0 +1,104 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-toast'
+description: 'Thông báo toast tự động ẩn sau một khoảng thời gian'
+---
+
+# web-toast
+
+Container thông báo toast toàn cục — đặt một lần trong layout rồi kích hoạt từ bất kỳ đâu trong DOM qua custom event. Toast tự động ẩn sau khoảng thời gian cài đặt.
+
+## Khi nào dùng
+
+- Phản hồi tức thì sau hành động người dùng (lưu, xóa, gửi form, v.v.)
+- Thông báo trạng thái ngắn gọn không yêu cầu người dùng xác nhận
+- Hiển thị lỗi hoặc cảnh báo không chặn luồng làm việc chính
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-toast.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `timeout` | number | `3000` | Thời gian (ms) trước khi toast tự động ẩn |
+| `placement` | string | `'bottom-center'` | Vị trí hiển thị: `top-left` \| `top-center` \| `top-right` \| `bottom-left` \| `bottom-center` \| `bottom-right` |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Cách kích hoạt
+
+`web-toast` lắng nghe event `web-toast-show` được dispatch lên `window`. Payload trong `detail`:
+
+| Trường | Kiểu | Mô tả |
+|--------|------|-------|
+| `message` | string | Nội dung thông báo |
+| `type` | string | Loại: `info` \| `success` \| `warning` \| `error` |
+
+## Ví dụ cơ bản
+
+```html
+<!-- Thêm vào layout 1 lần -->
+<web-toast timeout="4000" placement="bottom-right"></web-toast>
+
+<!-- Trigger từ bất kỳ đâu -->
+<script>
+  function showToast(message, type = 'info') {
+    window.dispatchEvent(new CustomEvent('web-toast-show', {
+      bubbles: true,
+      detail: { message, type } // type: info|success|warning|error
+    }));
+  }
+  
+  showToast('Đã lưu thành công!', 'success');
+  showToast('Có lỗi xảy ra', 'error');
+</script>
+```
+
+## Ví dụ nâng cao
+
+Kết hợp với form submit:
+
+```html
+<web-toast timeout="5000" placement="top-right"></web-toast>
+
+<form id="profile-form">
+  <web-text label="Tên hiển thị" id="display-name"></web-text>
+  <web-button type="primary" id="save-btn">Lưu thay đổi</web-button>
+</form>
+
+<script>
+  document.getElementById('save-btn').addEventListener('click', async () => {
+    try {
+      await saveProfile();
+      window.dispatchEvent(new CustomEvent('web-toast-show', {
+        detail: { message: 'Hồ sơ đã được cập nhật!', type: 'success' }
+      }));
+    } catch (err) {
+      window.dispatchEvent(new CustomEvent('web-toast-show', {
+        detail: { message: 'Không thể lưu. Vui lòng thử lại.', type: 'error' }
+      }));
+    }
+  });
+</script>
+```
+
+Toast với các loại thông báo khác nhau:
+
+```html
+<web-toast placement="bottom-left" ui="spatial"></web-toast>
+
+<script>
+  // Thông báo thông tin
+  window.dispatchEvent(new CustomEvent('web-toast-show', {
+    detail: { message: 'Phiên bản mới đã sẵn sàng.', type: 'info' }
+  }));
+
+  // Cảnh báo
+  window.dispatchEvent(new CustomEvent('web-toast-show', {
+    detail: { message: 'Phiên đăng nhập sắp hết hạn.', type: 'warning' }
+  }));
+</script>
+```

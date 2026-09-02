@@ -1,0 +1,80 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-pre'
+description: 'Syntax-highlighted code block powered by PrismJS with copy button and title'
+---
+
+# web-pre
+
+A styled code block with syntax highlighting via PrismJS. Supports language selection, an optional title bar, and a one-click copy button.
+
+## When to use
+
+- Documentation pages showing code samples
+- Tutorial steps with runnable or copyable code
+- Inline code previews in content-rich pages
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-pre.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `lang` | string | `'js'` | Language for syntax highlighting: `js` \| `ts` \| `html` \| `css` \| `bash` \| `json` \| `astro` |
+| `code` | string | `''` | The code string to display and highlight |
+| `title` | string | `''` | Title shown in the header bar above the code |
+| `copy` | boolean | `true` | Show a copy-to-clipboard button |
+| `lines` | boolean | `false` | Show line numbers |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+
+## Basic Example
+
+```html
+<web-pre
+  lang="js"
+  code="const greeting = 'Hello, world!';
+console.log(greeting);"
+  title="hello.js"
+></web-pre>
+
+<script type="module" src="/src/webs/apex/web-pre.js"></script>
+```
+
+## Advanced Examples
+
+TypeScript example with line numbers:
+
+```html
+<web-pre
+  lang="ts"
+  lines
+  title="conductor.ts"
+  code="interface ConductorOpts {
+  url: string;
+  cacheKey?: string;
+  cacheTtl?: number;
+  section?: string;
+}
+
+async function all(opts: ConductorOpts): Promise<unknown[]> {
+  // implementation
+}"
+></web-pre>
+```
+
+Astro frontmatter snippet without copy button:
+
+```html
+<web-pre
+  lang="astro"
+  copy="false"
+  code='---
+import Layout from "@/layouts/Layout.astro";
+import { productConfig } from "@/sections/shop/config.js";
+---'
+></web-pre>
+```

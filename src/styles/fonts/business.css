@@ -1,0 +1,6 @@
+/* --font-sans */
+@import url('https://fonts.googleapis.com/css2?family=Reddit+Sans:ital,wght@0,200..900;1,200..900&family=Merienda:wght@300..900&display=swap');
+/* --font-display */
+@import url('https://fonts.googleapis.com/css2?family=Merienda:wght@300..900&display=swap');
+/* other using font .font-display */
+html {font-family: var(--font-sans)}

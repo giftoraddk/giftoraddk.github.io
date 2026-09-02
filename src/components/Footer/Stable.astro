@@ -1,0 +1,127 @@
+---
+import "iconify-icon";
+import { site } from '@/services/constants/site'
+import I18nText from '@/components/I18nText.astro'
+
+const today = new Date()
+
+const {
+	logo = '/logo.png',
+	columns = [],
+	policies = [],
+	socials  = [], // [{ icon, href, text }] — icon là tên iconify (vd: ri:facebook-fill)
+	contact = null, // { name, taxNumber, address, hotline, email, info } — hiện dưới logo, xem svg mockup
+	bg = null,
+} = Astro.props
+---
+
+<footer class='relative w-full border-t border-base-content/10 py-6'>
+  {bg && (
+    <>
+      <script src="@/webs/underlay/svc-underlay.js"></script>
+      <svc-underlay id="footer-bg" class="-mt-1" transition:persist="footer-bg" {...bg}></svc-underlay>
+    </>
+  )}
+
+	<div class='relative mx-auto max-w-6xl px-4'>
+		<div class='flex flex-col gap-10 lg:flex-row lg:justify-between'>
+
+			<!-- Brand -->
+			<div class='flex flex-col justify-between gap-4 lg:w-80 shrink-0'>
+				<div class='flex flex-col gap-4'>
+					<a href='/' class='flex items-center gap-3 no-underline'>
+						<img src={logo} alt='Logo' class='h-8 w-auto object-contain' />
+						{contact?.name && (
+							<span class='text-base font-semibold text-base-content'><I18nText text={contact.name} /></span>
+						)}
+					</a>
+
+					{contact && (
+						<div class='flex flex-col gap-0.5 text-sm text-base-content/70'>
+							{contact.taxNumber && (
+								<p class='flex items-center gap-2'>
+									<iconify-icon icon='ri:file-text-fill' class='text-base text-base-content/50' aria-hidden="true"></iconify-icon>
+									<span><I18nText text={{ vi: 'MST', en: 'Tax code' }} /> {contact.taxNumber}</span>
+								</p>
+							)}
+							{contact.address && (
+								<p class='flex items-center gap-2'>
+									<iconify-icon icon='ri:map-pin-2-fill' class='text-base text-base-content/50' aria-hidden="true"></iconify-icon>
+									<span>{contact.address}</span>
+								</p>
+							)}
+							{contact.hotline && (
+								<a href={`tel:${contact.hotline}`} class='flex items-center gap-2 hover:text-base-content transition-colors no-underline'>
+									<iconify-icon icon='ri:phone-fill' class='text-base text-base-content/50' aria-hidden="true"></iconify-icon>
+									<span>{contact.hotline}</span>
+								</a>
+							)}
+							{contact.email && (
+								<a href={`mailto:${contact.email}`} class='flex items-center gap-2 hover:text-base-content transition-colors no-underline'>
+									<iconify-icon icon='ri:mail-fill' class='text-base text-base-content/50' aria-hidden="true"></iconify-icon>
+									<span>{contact.email}</span>
+								</a>
+							)}
+						</div>
+					)}
+				</div>
+
+				{contact?.info && (
+					<p class='text-justify text-sm text-base-content/60'><I18nText text={contact.info} /></p>
+				)}
+			</div>
+
+			<!-- Link columns -->
+			{columns.length > 0 && (
+				<nav class='grid grid-cols-2 gap-x-12 gap-y-8 sm:grid-cols-4' aria-label='Footer navigation'>
+					{columns.map((col: { text: string; items: { text: string; href: string }[]; full?: boolean }) => (
+						<div class:list={['flex flex-col gap-2', col.full && 'col-span-full order-first lg:order-none']}>
+              {col.items && col.items.length && <p class='text-xs font-semibold uppercase tracking-widest text-base-content/70'><I18nText text={col.text} /></p>}
+							<ul class='flex flex-col gap-0.5'>
+								{col.items && col.items.map((link: { text: string; href: string }) => (
+									<li>
+										<a href={link.href} class='text-sm text-justify text-base-content/70 hover:text-base-content transition-colors no-underline'>
+											<I18nText text={link.text} />
+										</a>
+									</li>
+								))}
+							</ul>
+						</div>
+					))}
+				</nav>
+			)}
+
+			<!-- Social icons -->
+			{socials.length > 0 && (
+				<div class='flex items-start gap-3 shrink-0'>
+					{socials.map((s: { text: string; href: string; icon: string }) => (
+						<a
+							href={s.href}
+							aria-label={s.text} target="_blank" rel="noopener"
+							class='flex h-9 w-9 items-center justify-center rounded-full border border-base-content/20 text-base-content/60 hover:border-base-content/50 hover:text-base-content transition-colors'
+						>
+							<iconify-icon icon={s.icon} class="text-base" aria-hidden="true"></iconify-icon>
+						</a>
+					))}
+				</div>
+			)}
+
+		</div>
+
+		<div class='flex flex-col gap-4 mt-8 pt-6 border-t border-base-content/10 sm:flex-row sm:items-center sm:justify-between'>
+			{policies.length > 0 && (
+				<div class='flex items-center gap-5'>
+					{policies.map((link: { text: string; href: string }) => (
+						<a href={link.href} class='text-sm text-base-content/60 hover:text-base-content transition-colors no-underline'>
+							<I18nText text={link.text} />
+						</a>
+					))}
+				</div>
+			)}
+
+      <p class='text-sm text-base-content/50'>
+				&copy; {today.getFullYear()} {site.author}. All rights reserved.
+			</p>
+		</div>
+	</div>
+</footer>

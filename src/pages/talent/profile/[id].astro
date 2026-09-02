@@ -1,0 +1,36 @@
+---
+import Core from '@/layouts/Core.astro';
+import { fetchCollection } from '@/services/firestore.server.ts';
+import { variant } from '@/modules/talent-page.js';
+
+// getStaticPaths — pre-generate 1 trang / talent ACTIVE lúc build, đúng convention
+// src/pages/post/[id].astro. Hồ sơ mới publish cần rebuild để có trang — chấp nhận cho MVP
+// (site tĩnh, xem docs/new_feature.md §0).
+export async function getStaticPaths() {
+	const talents = await fetchCollection('talents');
+	return talents.map((t) => ({ params: { id: t.id }, props: { talent: t } }));
+}
+
+const { id } = Astro.params;
+const { talent } = Astro.props as { talent: any };
+const pageTitle = talent?.title ? `${talent.title} — Talent Marketplace` : 'Talent Profile';
+---
+
+<Core title={pageTitle} description={talent?.description} theme={variant.theme} variant={variant}>
+	<script>
+		import '@/webs/talent/svc-talent-profile.js';
+		import { auth } from '@/webs/auth/tools/service.js';
+
+		async function applyCurrentUser() {
+			const el = document.getElementById('talent-profile') as any;
+			if (!el) return;
+			const user = await auth.get();
+			el.currentUserId = user?.id ?? '';
+		}
+		document.addEventListener('astro:page-load', applyCurrentUser);
+	</script>
+	<div class='p-4 lg:p-6 max-w-4xl mx-auto'>
+		<svc-talent-profile id="talent-profile" talentId={id} ui={variant.ui} theme={variant.theme}
+			mainColors={variant.mainColors} textColor={variant.textColor}></svc-talent-profile>
+	</div>
+</Core>

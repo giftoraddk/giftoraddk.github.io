@@ -1,0 +1,72 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-expansion'
+description: 'Accordion component with collapsible panels and optional multi-open mode'
+---
+
+# web-expansion
+
+An accordion (expansion panel) component. Each item has a clickable title that toggles its content open or closed. Supports single-open (collapse others on open) or multi-open mode.
+
+## When to use
+
+- FAQ sections where users expand only the questions they need
+- Settings panels grouped into categories
+- Long-form content that users should be able to skim and drill into
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-expansion.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `items` | string (JSON) | `'[]'` | Array of `{ title: string, content: string, open?: boolean }` |
+| `multiple` | boolean | `false` | Allow multiple panels open simultaneously |
+| `bordered` | boolean | `true` | Show borders between items |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+
+## Basic Example
+
+```html
+<web-expansion
+  items='[
+    {"title": "What is Astro Micro?",    "content": "A static site framework combining Astro 6, Lit, and Tailwind.", "open": true},
+    {"title": "Is it free?",             "content": "Yes, it is open source."},
+    {"title": "Can I use it with React?","content": "Astro supports multiple frameworks via Islands architecture."}
+  ]'
+></web-expansion>
+
+<script type="module" src="/src/webs/apex/web-expansion.js"></script>
+```
+
+## Advanced Examples
+
+Multi-open FAQ with spatial UI:
+
+```html
+<web-expansion
+  multiple
+  ui="spatial"
+  items='[
+    {"title": "Shipping policy",  "content": "We ship worldwide within 3–5 business days."},
+    {"title": "Return policy",    "content": "Returns accepted within 30 days of purchase."},
+    {"title": "Payment methods",  "content": "We accept credit cards, PayPal, and bank transfers."}
+  ]'
+></web-expansion>
+```
+
+## Events
+
+| Event | When | Detail |
+|---|---|---|
+| `web-expansion-change` | A panel opens or closes | `{ index: number, open: boolean, title: string }` |
+
+```js
+document.querySelector('web-expansion').addEventListener('web-expansion-change', e => {
+  console.log(`Panel ${e.detail.index} is now ${e.detail.open ? 'open' : 'closed'}`);
+});
+```

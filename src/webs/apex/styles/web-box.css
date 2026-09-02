@@ -1,0 +1,231 @@
+/** Colors
+  --color-base-100 = '#141414'
+  --color-base-200 = 'increase dark(white)/light(black) 12% of base-100'
+  --color-base-300 = 'increase dark(white)/light(black) 18% of base-100'
+  --color-base-content = '#f3f4f6'
+  --color-primary = '#2ebd85'
+  --color-secondary = '#f5465c'
+  --color-accent = '#a855f7'
+  --color-info = '#00c7d4'
+  --color-warning = '#fbbf24'
+*/
+/* 2 chế độ trong CÙNG 1 file (gộp từ web-box-old.css cũ):
+
+   MẶC ĐỊNH (không prop `responsive` trên web-boxs) — giống web-box-old.css: span cột áp
+   THẲNG theo config, chỉ 1 breakpoint viewport 1024px (dưới đó mọi cột full-width 12).
+
+   RESPONSIVE (prop `responsive` → class .responsive trên wrapper, xem _respCls trong
+   web-boxs.js) — container queries: span responsive theo bề rộng của CHÍNH .gi-wrap bao
+   quanh, không theo viewport; grid/masonry lồng bên trong (cards/slider/tabs con — render
+   .gi-wrap trần, KHÔNG mang class .responsive) được cover bằng descendant selector
+   `.responsive .gi-*` và tự lập containment context riêng để scale theo hộp của chính nó.
+
+   Các rule .responsive thắng rule mặc định bằng specificity: `.responsive .gi-col-N`
+   (0,1,1) / `.gi-col-N.responsive` (0,2,0) > `.gi-col-N` (0,1,0) — kể cả khi media query
+   mặc định đang match, không cần !important. */
+
+/* ______ container ______ */
+.gi-container {
+	max-width: 72rem; /* 1152px */
+	width: 100%;
+	padding-inline: 1rem;
+	box-sizing: border-box;
+	margin-inline: auto;
+}
+
+/* ______ grid sortable ______ */
+.gi-wrap {
+	display: grid;
+	grid-template-columns: repeat(12, 1fr);
+	gap: 0.5rem;
+	width: 100%;
+	box-sizing: border-box;
+	position: relative;
+}
+
+/* Chỉ chế độ responsive mới lập containment context — mặc định không đụng tới để giữ
+   nguyên hành vi cũ (container-type ảnh hưởng sizing của phần tử). */
+.gi-wrap.responsive,
+.responsive .gi-wrap {
+	container-type: inline-size;
+}
+
+.gi {
+  position: relative;
+}
+
+/* ── Column Spans — MẶC ĐỊNH (giống web-box-old.css) ─────────────────────────
+   Full-width dưới 1024px viewport, đúng span config từ 1024px trở lên. */
+.gi-col-1, .gi-col-2, .gi-col-3, .gi-col-4, .gi-col-5, .gi-col-6,
+.gi-col-7, .gi-col-8, .gi-col-9, .gi-col-10, .gi-col-11, .gi-col-12 {
+  grid-column: span 12;
+}
+
+@media (min-width: 1024px) {
+  .gi-col-1 { grid-column: span 1; }
+  .gi-col-2 { grid-column: span 2; }
+  .gi-col-3 { grid-column: span 3; }
+  .gi-col-4 { grid-column: span 4; }
+  .gi-col-5 { grid-column: span 5; }
+  .gi-col-6 { grid-column: span 6; }
+  .gi-col-7 { grid-column: span 7; }
+  .gi-col-8 { grid-column: span 8; }
+  .gi-col-9 { grid-column: span 9; }
+  .gi-col-10 { grid-column: span 10; }
+  .gi-col-11 { grid-column: span 11; }
+  .gi-col-12 { grid-column: span 12; }
+}
+
+/* ── Column Spans — RESPONSIVE (container queries) ───────────────────────────
+   Responsive theo .gi-wrap bao quanh gần nhất (container query), không theo
+   viewport. Khung hẹp nhất = 1 item/hàng; nở dần về span config khi chính khung
+   rộng ra: 1 → 2 → 3 → 4 → 6 → config items/hàng. .gi-wrap lồng bên trong
+   (tiers/cards) tự lập containment context riêng nên scale theo hộp của nó.
+
+   Ngưỡng được suy ra, không đoán: item không bao giờ hẹp hơn 17.5rem ở K
+   item/hàng, nên mỗi bậc chỉ kích hoạt khi khung thật sự đủ rộng —
+   K * 17.5rem + (K-1) * gap (0.5rem):
+     K=2 → 35.5rem   K=3 → 53.5rem   K=4 → 71.5rem
+     K=6 → 107.5rem  K=12 → 215.5rem */
+.responsive .gi-col-1, .responsive .gi-col-2, .responsive .gi-col-3,
+.responsive .gi-col-4, .responsive .gi-col-5, .responsive .gi-col-6,
+.responsive .gi-col-7, .responsive .gi-col-8, .responsive .gi-col-9,
+.responsive .gi-col-10, .responsive .gi-col-11, .responsive .gi-col-12 {
+  grid-column: span 12;
+}
+
+@container (min-width: 35.5rem) {
+  .responsive .gi-col-1, .responsive .gi-col-2, .responsive .gi-col-3,
+  .responsive .gi-col-4, .responsive .gi-col-5, .responsive .gi-col-6 { grid-column: span 6; }
+  .responsive .gi-col-7  { grid-column: span 7; }
+  .responsive .gi-col-8  { grid-column: span 8; }
+  .responsive .gi-col-9  { grid-column: span 9; }
+  .responsive .gi-col-10 { grid-column: span 10; }
+  .responsive .gi-col-11 { grid-column: span 11; }
+}
+
+@container (min-width: 53.5rem) {
+  .responsive .gi-col-1, .responsive .gi-col-2,
+  .responsive .gi-col-3, .responsive .gi-col-4 { grid-column: span 4; }
+  .responsive .gi-col-5 { grid-column: span 5; }
+}
+
+@container (min-width: 71.5rem) {
+  .responsive .gi-col-1, .responsive .gi-col-2, .responsive .gi-col-3 { grid-column: span 3; }
+}
+
+@container (min-width: 107.5rem) {
+  .responsive .gi-col-1, .responsive .gi-col-2 { grid-column: span 2; }
+}
+
+@container (min-width: 215.5rem) {
+  .responsive .gi-col-1 { grid-column: span 1; }
+}
+
+/* Row Spans — giống nhau ở cả 2 chế độ */
+.gi-row-1 { grid-row: span 1; }
+.gi-row-2 { grid-row: span 2; }
+.gi-row-3 { grid-row: span 3; }
+.gi-row-4 { grid-row: span 4; }
+.gi-row-5 { grid-row: span 5; }
+.gi-row-6 { grid-row: span 6; }
+.gi-row-7 { grid-row: span 7; }
+.gi-row-8 { grid-row: span 8; }
+.gi-row-9 { grid-row: span 9; }
+.gi-row-10 { grid-row: span 10; }
+.gi-row-11 { grid-row: span 11; }
+.gi-row-12 { grid-row: span 12; }
+
+/* ── Masonry: column-count only (no row spans) ────────────────────────────── */
+.gi-masonry { column-gap: var(--masonry-gap, 0.5rem); position: relative; }
+.gi-masonry .gi { break-inside: avoid; display: block; margin-bottom: var(--masonry-gap, 0.5rem); }
+
+.gi-masonry.responsive,
+.responsive .gi-masonry {
+	container-type: inline-size;
+}
+
+/* Base hẹp nhất: tối đa 2 cột — chung cho cả 2 chế độ (giá trị y hệt nhau) */
+.gi-masonry-1  { columns: 1; }
+.gi-masonry-2  { columns: 1; }
+.gi-masonry-3  { columns: 1; }
+.gi-masonry-4  { columns: 2; }
+.gi-masonry-5  { columns: 2; }
+.gi-masonry-6  { columns: 2; }
+.gi-masonry-7  { columns: 2; }
+.gi-masonry-8  { columns: 2; }
+.gi-masonry-9  { columns: 2; }
+.gi-masonry-10 { columns: 2; }
+.gi-masonry-11 { columns: 2; }
+.gi-masonry-12 { columns: 2; }
+
+/* ── Masonry — MẶC ĐỊNH (giống web-box-old.css): breakpoint viewport ──────── */
+@media (min-width: 768px) {
+  .gi-masonry-3  { columns: 2; }
+  .gi-masonry-4  { columns: 2; }
+  .gi-masonry-5  { columns: 3; }
+  .gi-masonry-6  { columns: 3; }
+  .gi-masonry-7  { columns: 4; }
+  .gi-masonry-8  { columns: 4; }
+  .gi-masonry-9  { columns: 4; }
+  .gi-masonry-10 { columns: 5; }
+  .gi-masonry-11 { columns: 5; }
+  .gi-masonry-12 { columns: 6; }
+}
+
+@media (min-width: 1024px) {
+  .gi-masonry-2  { columns: 2; }
+  .gi-masonry-3  { columns: 3; }
+  .gi-masonry-4  { columns: 4; }
+  .gi-masonry-5  { columns: 5; }
+  .gi-masonry-6  { columns: 6; }
+  .gi-masonry-7  { columns: 7; }
+  .gi-masonry-8  { columns: 8; }
+  .gi-masonry-9  { columns: 9; }
+  .gi-masonry-10 { columns: 10; }
+  .gi-masonry-11 { columns: 11; }
+  .gi-masonry-12 { columns: 12; }
+}
+
+/* ── Masonry — RESPONSIVE (container queries theo hộp của chính masonry) ─────
+   Cần lặp lại base hẹp scoped (specificity cao hơn) để ĐÈ media query mặc định
+   ở trên khi viewport rộng nhưng container còn hẹp. */
+.gi-masonry-1.responsive,  .responsive .gi-masonry-1  { columns: 1; }
+.gi-masonry-2.responsive,  .responsive .gi-masonry-2  { columns: 1; }
+.gi-masonry-3.responsive,  .responsive .gi-masonry-3  { columns: 1; }
+.gi-masonry-4.responsive,  .responsive .gi-masonry-4  { columns: 2; }
+.gi-masonry-5.responsive,  .responsive .gi-masonry-5  { columns: 2; }
+.gi-masonry-6.responsive,  .responsive .gi-masonry-6  { columns: 2; }
+.gi-masonry-7.responsive,  .responsive .gi-masonry-7  { columns: 2; }
+.gi-masonry-8.responsive,  .responsive .gi-masonry-8  { columns: 2; }
+.gi-masonry-9.responsive,  .responsive .gi-masonry-9  { columns: 2; }
+.gi-masonry-10.responsive, .responsive .gi-masonry-10 { columns: 2; }
+.gi-masonry-11.responsive, .responsive .gi-masonry-11 { columns: 2; }
+.gi-masonry-12.responsive, .responsive .gi-masonry-12 { columns: 2; }
+
+@container (min-width: 768px) {
+  .gi-masonry-3.responsive,  .responsive .gi-masonry-3  { columns: 2; }
+  .gi-masonry-4.responsive,  .responsive .gi-masonry-4  { columns: 2; }
+  .gi-masonry-5.responsive,  .responsive .gi-masonry-5  { columns: 3; }
+  .gi-masonry-6.responsive,  .responsive .gi-masonry-6  { columns: 3; }
+  .gi-masonry-7.responsive,  .responsive .gi-masonry-7  { columns: 4; }
+  .gi-masonry-8.responsive,  .responsive .gi-masonry-8  { columns: 4; }
+  .gi-masonry-9.responsive,  .responsive .gi-masonry-9  { columns: 4; }
+  .gi-masonry-10.responsive, .responsive .gi-masonry-10 { columns: 5; }
+  .gi-masonry-11.responsive, .responsive .gi-masonry-11 { columns: 5; }
+  .gi-masonry-12.responsive, .responsive .gi-masonry-12 { columns: 6; }
+}
+
+@container (min-width: 1024px) {
+  .gi-masonry-2.responsive,  .responsive .gi-masonry-2  { columns: 2; }
+  .gi-masonry-3.responsive,  .responsive .gi-masonry-3  { columns: 3; }
+  .gi-masonry-4.responsive,  .responsive .gi-masonry-4  { columns: 4; }
+  .gi-masonry-5.responsive,  .responsive .gi-masonry-5  { columns: 5; }
+  .gi-masonry-6.responsive,  .responsive .gi-masonry-6  { columns: 6; }
+  .gi-masonry-7.responsive,  .responsive .gi-masonry-7  { columns: 7; }
+  .gi-masonry-8.responsive,  .responsive .gi-masonry-8  { columns: 8; }
+  .gi-masonry-9.responsive,  .responsive .gi-masonry-9  { columns: 9; }
+  .gi-masonry-10.responsive, .responsive .gi-masonry-10 { columns: 10; }
+  .gi-masonry-11.responsive, .responsive .gi-masonry-11 { columns: 11; }
+  .gi-masonry-12.responsive, .responsive .gi-masonry-12 { columns: 12; }
+}

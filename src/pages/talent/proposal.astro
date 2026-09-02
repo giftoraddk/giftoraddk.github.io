@@ -1,0 +1,32 @@
+---
+import Core from '@/layouts/Core.astro';
+import { variant } from '@/modules/talent-page.js';
+
+// KHÔNG dùng [id].astro + getStaticPaths ở đây (khác /talent/profile/[id]) — proposal là dữ liệu
+// RIÊNG TƯ (thương lượng giữa 2 bên), build-time fetchCollection() (REST + API key, tuân theo
+// Firestore Security Rules) sẽ không đọc được nếu rules chặn public read, và dù đọc được cũng
+// không nên bake nội dung thương lượng vào static HTML công khai. Dùng 1 route tĩnh duy nhất +
+// đọc `?id=` từ query string phía client (đúng tinh thần site tĩnh — không cần biết trước danh
+// sách id lúc build), xem docs/new_feature.md §8.
+---
+
+<Core title="Đề nghị thuê" theme={variant.theme} variant={variant}>
+	<script>
+		import '@/webs/talent/svc-proposal.js';
+		import { auth } from '@/webs/auth/tools/service.js';
+
+		async function applyProposal() {
+			const el = document.getElementById('proposal') as any;
+			if (!el) return;
+			const id = new URLSearchParams(window.location.search).get('id') ?? '';
+			const user = await auth.get();
+			el.proposalId = id;
+			el.currentUserId = user?.id ?? '';
+		}
+		document.addEventListener('astro:page-load', applyProposal);
+	</script>
+	<div class='p-4 lg:p-6 max-w-3xl mx-auto'>
+		<svc-proposal id="proposal" ui={variant.ui} theme={variant.theme}
+			mainColors={variant.mainColors} textColor={variant.textColor}></svc-proposal>
+	</div>
+</Core>

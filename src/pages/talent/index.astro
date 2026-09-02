@@ -1,0 +1,28 @@
+---
+import Core from '@/layouts/Core.astro';
+import { variant, buildViews } from '@/modules/talent-page.js';
+
+const views = await buildViews('');
+const currentView = views[0];
+const navItems = views.map(({ text, href, iconMobile }) => ({ text, href, iconMobile }));
+---
+
+<Core
+	title="Talent Marketplace"
+	menu={{ type: 'mobile', menuItems: navItems }}
+	theme={variant.theme}
+	variant={variant}
+>
+	<script src='@/webs/apex/web-board.js'></script>
+	<script>
+		import { bindDirectoryNav } from '@/webs/talent/tools/service.js';
+		bindDirectoryNav();
+	</script>
+	<div class='p-4 lg:p-6 max-w-6xl mx-auto'>
+		<web-board
+			unlock={import.meta.env.PUBLIC_EXP}
+			theme={variant.theme}
+			variant={JSON.stringify(variant)}
+		><script type="application/json" is:inline set:html={JSON.stringify(currentView.sections)}></script></web-board>
+	</div>
+</Core>

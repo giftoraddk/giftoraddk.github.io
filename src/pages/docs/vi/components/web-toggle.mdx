@@ -1,0 +1,87 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-toggle'
+description: 'Toggle switch cho bật/tắt một tùy chọn'
+---
+
+# web-toggle
+
+Switch bật/tắt thay thế cho checkbox truyền thống khi cần giao diện rõ ràng hơn cho trạng thái nhị phân. Hỗ trợ nhiều màu sắc và kích thước.
+
+## Khi nào dùng
+
+- Bật/tắt các tính năng trong trang cài đặt người dùng
+- Cho phép/vô hiệu hóa thông báo, dark mode, tùy chọn hiển thị
+- Khi trạng thái thay đổi cần áp dụng ngay lập tức mà không cần nút Submit
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-toggle.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `label` | string | `''` | Nhãn text hiển thị bên cạnh toggle |
+| `checked` | boolean | `false` | Trạng thái bật mặc định |
+| `disabled` | boolean | `false` | Vô hiệu hóa, không thể thay đổi trạng thái |
+| `color` | string | `'primary'` | Màu khi bật: `primary` \| `secondary` \| `success` \| `warning` \| `error` \| `neutral` |
+| `size` | string | `'md'` | Kích thước: `sm` \| `md` \| `lg` |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Ví dụ cơ bản
+
+```html
+<web-toggle label="Nhận thông báo email" checked></web-toggle>
+<web-toggle label="Dark mode" color="neutral"></web-toggle>
+<web-toggle label="Tính năng beta" disabled></web-toggle>
+
+<script>
+  document.querySelector('web-toggle').addEventListener('web-toggle-change', (e) => {
+    console.log('Toggle:', e.detail.checked);
+  });
+</script>
+```
+
+## Ví dụ nâng cao
+
+Trang cài đặt thông báo với nhiều toggle:
+
+```html
+<h3>Cài đặt thông báo</h3>
+<web-toggle id="notify-email" label="Email thông báo đơn hàng" checked color="primary"></web-toggle>
+<web-toggle id="notify-sms" label="SMS khi giao hàng" color="success"></web-toggle>
+<web-toggle id="notify-promo" label="Khuyến mãi và ưu đãi" color="warning"></web-toggle>
+<web-toggle id="notify-newsletter" label="Bản tin hàng tuần" disabled></web-toggle>
+
+<script>
+  ['notify-email', 'notify-sms', 'notify-promo'].forEach(id => {
+    document.getElementById(id).addEventListener('web-toggle-change', (e) => {
+      const setting = id.replace('notify-', '');
+      saveNotificationSetting(setting, e.detail.checked);
+      console.log(`${setting}:`, e.detail.checked ? 'bật' : 'tắt');
+    });
+  });
+</script>
+```
+
+Toggle kích thước lớn cho giao diện mobile:
+
+```html
+<web-toggle label="Bật Wi-Fi" size="lg" checked color="success"></web-toggle>
+<web-toggle label="Bluetooth" size="lg" color="primary"></web-toggle>
+```
+
+## Sự kiện
+
+| Sự kiện | Khi nào | Chi tiết |
+|---------|---------|---------|
+| `web-toggle-change` | Người dùng nhấn vào toggle | `{ checked: boolean }` — trạng thái mới |
+
+```js
+document.querySelector('web-toggle').addEventListener('web-toggle-change', (e) => {
+  console.log('Trạng thái mới:', e.detail.checked ? 'Bật' : 'Tắt');
+});
+```

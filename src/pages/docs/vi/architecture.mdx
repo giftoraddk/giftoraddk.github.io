@@ -1,0 +1,166 @@
+---
+layout: '../../../layouts/LayoutDoc.astro'
+title: 'Kiến trúc hệ thống'
+description: 'Tổng quan về các lớp kiến trúc, Micro Service pattern và cách các hệ thống kết nối'
+---
+
+# Kiến trúc hệ thống
+
+<div class="doc-intro">
+  <p>Astro Micro được tổ chức theo kiến trúc phân lớp rõ ràng: từ trang Astro tĩnh ở trên cùng, xuống qua các Web Components, đến Conductor quản lý state và cache ở dưới cùng.</p>
+</div>
+
+## Sơ đồ lớp
+
+```
+┌─────────────────────────────────────────────────┐
+│                   Browser                        │
+├─────────────────────────────────────────────────┤
+│              Astro Page (.astro)                 │
+│    Route → import config → pass props to WC     │
+├─────────────────────────────────────────────────┤
+│              Layout Component                    │
+│    DocLayout / Layout — shell, nav, theme        │
+├─────────────────────────────────────────────────┤
+│           Web Components (Lit 3)                │
+│  web-board → web-boxs → web-box → web-cell      │
+│        svc-* (domain micro-services)            │
+├─────────────────────────────────────────────────┤
+│                 Conductor                        │
+│       nanostores atom + IndexedDB cache          │
+├─────────────────────────────────────────────────┤
+│              API / Data Sources                  │
+│         JSON endpoints, static files            │
+└─────────────────────────────────────────────────┘
+```
+
+Mỗi lớp chỉ giao tiếp với lớp liền kề — trang Astro không biết về IndexedDB, web-cell không biết về API endpoint.
+
+## Ba hệ thống cốt lõi
+
+### 1. Conductor — State và Data
+
+`src/services/conductor.js` là một **nanostores atom đơn lẻ** được toàn bộ ứng dụng chia sẻ. Cấu trúc store:
+
+```js
+// Cấu trúc state trong conductor
+{
+  sections: {
+    'product-list': { data: [...], loading: false, error: null },
+    'featured-items': { data: [...], loading: true, error: null },
+    // mỗi section được keyed theo id riêng
+  }
+}
+```
+
+Conductor đảm nhiệm:
+- Fetch dữ liệu từ API với retry tự động (3 lần, backoff 500ms/1000ms/2000ms)
+- Cache kết quả vào **IndexedDB** với TTL tùy chỉnh
+- Cung cấp hàm `sift()` để filter dữ liệu trên client
+
+### 2. Web Boxs — Card Grid Renderer
+
+`src/webs/apex/web-boxs.js` là engine render chính. Nó nhận:
+- `data[]` — mảng các object dữ liệu
+- `config` — object mô tả cách render (tiers, makes, groups)
+
+Web Boxs tự động tạo grid layout, render từng card theo config, và hỗ trợ nhiều render mode: box, list, masonry, slider, tabs.
+
+### 3. Micro Services — Domain Logic
+
+Các file `svc-*.js` là Lit custom elements hoàn chỉnh, mỗi element:
+- Đọc/ghi section riêng trong conductor store
+- Xử lý user interaction (search, filter, pagination)
+- Dispatch events xuyên Shadow DOM
+- Tự quản lý lifecycle (fetch, cache, update)
+
+## Naming Conventions
+
+### Apex Primitives — `apex/web-*`
+
+Các component tái sử dụng, không phụ thuộc domain:
+
+| Component | Mục đích |
+|---|---|
+| `web-boxs` | Card grid renderer chính |
+| `web-box` | Container của một card |
+| `web-cell` | Một cell trong card (ảnh, text, badge, ...) |
+| `web-board` | Quản lý nhiều web-boxs sections |
+| `web-slider` | Carousel/slider |
+| `web-gallery` | Image gallery |
+| `web-button` | Button với variants |
+
+### Domain Micro-services — `<domain>/svc-*`
+
+Các element mang business logic của một domain cụ thể:
+
+```
+src/webs/
+├── shop/
+│   ├── svc-product-list.js   # Danh sách sản phẩm
+│   ├── svc-cart.js            # Giỏ hàng
+│   └── tools/service.js       # Re-export hub
+├── blog/
+│   ├── svc-posts.js
+│   └── tools/service.js
+└── apex/                      # Primitives dùng chung
+```
+
+## Method Prefix Table
+
+Tất cả methods trong `svc-*` components tuân theo quy tắc đặt tên theo prefix:
+
+| Prefix | Vai trò | Ví dụ |
+|---|---|---|
+| `_dc*` | **Data Core** — `connectedCallback`, khởi tạo, setup conductor | `_dcInit()`, `_dcSetup()` |
+| `_dh*` | **Data Head** — xử lý user input, DOM events | `_dhSearch()`, `_dhFilter()` |
+| `_df*` | **Data Footer** — gọi service actions, mutations | `_dfFetch()`, `_dfSubmit()` |
+| `_com*` | **Computed getters** — tính toán thuần túy, không side effects | `_comFilteredData`, `_comTotal` |
+| `_rb*` | **Render Body** — các khối layout lớn | `_rbHeader()`, `_rbGrid()` |
+| `_rf*` | **Render Fragment** — render một item đơn lẻ | `_rfCard()`, `_rfRow()` |
+
+Quy tắc này giúp dễ dàng tìm kiếm và hiểu mục đích của bất kỳ method nào khi đọc code.
+
+## Events — Xuyên Shadow DOM
+
+Tất cả custom events đều phải khai báo:
+
+```js
+this.dispatchEvent(new CustomEvent('item-selected', {
+  detail: { id: item.id, data: item },
+  bubbles: true,   // lan lên DOM tree
+  composed: true,  // xuyên qua Shadow DOM boundary
+}));
+```
+
+Thiếu `composed: true`, event sẽ bị chặn tại ranh giới Shadow DOM và component cha sẽ không nhận được.
+
+## Quy tắc quan trọng trong service.js
+
+Trong file `tools/service.js` của mỗi domain, **event listeners phải được đăng ký đồng bộ (synchronously) TRƯỚC bất kỳ `await` nào**:
+
+```js
+// ĐÚNG — đăng ký listener trước khi await
+export function setupService(element) {
+  // Đăng ký trước
+  document.addEventListener('cart-updated', handler);
+  window.addEventListener('filter-change', filterHandler);
+
+  // Sau đó mới await
+  await conductor.all({ url: '/api/products.json' });
+}
+
+// SAI — listener bị đăng ký sau await, có thể bị miss
+export async function setupService(element) {
+  await conductor.all({ url: '/api/products.json' }); // await trước
+  document.addEventListener('cart-updated', handler); // listener sau — sai!
+}
+```
+
+Lý do: JavaScript là single-threaded nhưng `await` tạo ra điểm gián đoạn. Nếu event được dispatch trong thời gian chờ await, listener chưa kịp đăng ký sẽ bỏ lỡ event đó.
+
+## Tiếp theo
+
+- [Luồng dữ liệu](/docs/vi/dataflow) — từ config file đến UI render
+- [Conductor](/docs/vi/conductor) — chi tiết về state management
+- [Web Boxs](/docs/vi/web-boxs) — API và cách cấu hình card grid

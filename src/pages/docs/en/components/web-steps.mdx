@@ -1,0 +1,83 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-steps'
+description: 'Step indicator for multi-step flows with horizontal and vertical orientations'
+---
+
+# web-steps
+
+A step indicator showing progress through a multi-step process. Steps are numbered and labeled; the current step is highlighted. Supports horizontal and vertical layouts.
+
+## When to use
+
+- Multi-step checkout or onboarding flows
+- Installation or setup wizards
+- Progress through a sequential process (e.g. apply → review → confirm → done)
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-steps.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `steps` | string (JSON) | `'[]'` | Array of `{ label: string, description?: string }` objects |
+| `current` | number | `0` | Zero-based index of the active step |
+| `direction` | string | `'horizontal'` | Layout: `horizontal` \| `vertical` |
+| `color` | string | `'primary'` | ApexUI color for the active step indicator |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+
+## Basic Example
+
+```html
+<web-steps
+  current="1"
+  steps='[
+    {"label": "Cart"},
+    {"label": "Shipping"},
+    {"label": "Payment"},
+    {"label": "Confirm"}
+  ]'
+></web-steps>
+
+<script type="module" src="/src/webs/apex/web-steps.js"></script>
+```
+
+## Advanced Examples
+
+Vertical steps for an onboarding sidebar:
+
+```html
+<web-steps
+  direction="vertical"
+  current="2"
+  color="success"
+  steps='[
+    {"label": "Create account",  "description": "Sign up with your email"},
+    {"label": "Verify email",    "description": "Check your inbox"},
+    {"label": "Set up profile",  "description": "Add your details"},
+    {"label": "Invite team",     "description": "Optional"}
+  ]'
+></web-steps>
+```
+
+Advancing steps programmatically:
+
+```html
+<web-steps id="wizard" current="0"
+  steps='[{"label":"Step 1"},{"label":"Step 2"},{"label":"Step 3"}]'
+></web-steps>
+
+<web-button id="next-btn" type="fill">Next</web-button>
+
+<script>
+  const steps = document.getElementById('wizard');
+  document.getElementById('next-btn').addEventListener('click', () => {
+    const current = parseInt(steps.getAttribute('current') ?? '0');
+    steps.setAttribute('current', String(current + 1));
+  });
+</script>
+```

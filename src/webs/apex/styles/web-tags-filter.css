@@ -1,0 +1,71 @@
+:host {
+	display: block;
+	--core-font: var(--font-sans, 'system-ui');
+}
+
+.wtf-wrap {
+	font-family: var(--core-font);
+	display: flex;
+	flex-direction: column;
+	gap: 0.625rem;
+}
+
+/* ── Chips row ── */
+.wtf-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.375rem;
+	align-items: center;
+}
+
+.wtf-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	padding: 0.25rem 0.75rem;
+	border-radius: 2rem;
+	border: 1.5px solid color-mix(in oklab, var(--color-base-content, #111) 18%, transparent);
+	background: none;
+	color: var(--color-base-content, #111);
+	font-size: 0.78rem;
+	font-weight: 500;
+	cursor: pointer;
+	white-space: nowrap;
+	opacity: 0.55;
+	transition: opacity 0.18s, border-color 0.18s, background 0.18s, color 0.18s;
+	line-height: 1.5;
+}
+.wtf-chip:hover {
+	opacity: 1;
+	border-color: var(--wtf-active, var(--color-primary, #6366f1));
+	color: var(--wtf-active, var(--color-primary, #6366f1));
+}
+.wtf-chip.active {
+	background: var(--wtf-active, var(--color-primary, #6366f1));
+	border-color: var(--wtf-active, var(--color-primary, #6366f1));
+	color: #fff;
+	opacity: 1;
+	font-weight: 700;
+}
+.wtf-chip.active iconify-icon {
+	font-size: 0.85rem;
+}
+
+/* Spatial variant */
+.spatial .wtf-chip {
+	background: color-mix(in oklab, var(--color-base-100, #fff) 15%, transparent);
+	backdrop-filter: blur(8px);
+	border-color: color-mix(in oklab, var(--color-base-content, #111) 12%, transparent);
+}
+.spatial .wtf-chip.active {
+	background: var(--wtf-active, var(--color-primary, #6366f1));
+}
+
+/* ── Active count badge ── */
+.wtf-count {
+	font-size: 0.68rem;
+	padding: 0.05rem 0.35rem;
+	border-radius: 1rem;
+	background: rgba(255,255,255,0.3);
+	font-weight: 700;
+}

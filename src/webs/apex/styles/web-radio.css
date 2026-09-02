@@ -1,0 +1,92 @@
+:host {
+	display: inline-block;
+	--core-blur: var(--haze-blur, 12px);
+	--core-glass: var(--haze-glass, 20%);
+	--core-font: var(--font-sans, 'system-ui');
+}
+
+.web-radio-group {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.web-radio-group.horizontal {
+	flex-direction: row;
+	flex-wrap: wrap;
+	gap: 20px;
+}
+
+.web-radio {
+	font-family: var(--core-font);
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	cursor: pointer;
+	user-select: none;
+	font-size: 14px;
+	color: var(--color-base-content, #ffffff);
+	transition: opacity 0.3s ease;
+}
+
+.web-radio.disabled {
+	cursor: not-allowed;
+	opacity: 0.4;
+}
+
+.radio-circle {
+	position: relative;
+	width: 20px;
+	height: 20px;
+	background: var(--color-base-100, #0d0d0d);
+	border: 2px solid var(--color-base-300, #393939);
+	border-radius: 50%;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.web-radio:hover:not(.disabled) .radio-circle {
+	border-color: var(--color-primary, #2ebd85);
+	box-shadow: 0 0 10px rgba(46, 189, 133, 0.2);
+}
+
+.web-radio.checked .radio-circle {
+	border-color: var(--color-primary, #2ebd85);
+	background: transparent;
+}
+
+.radio-dot {
+	width: 10px;
+	height: 10px;
+	background: var(--color-primary, #2ebd85);
+	border-radius: 50%;
+	transform: scale(0);
+	transition: transform 0.4s cubic-bezier(0.12, 0.4, 0.29, 1.46);
+	box-shadow: 0 0 8px rgba(46, 189, 133, 0.4);
+}
+
+.web-radio.checked .radio-dot {
+	transform: scale(1);
+}
+
+/**
+ * ----------------------------------------
+ * Glassmorphism - spatial
+ * ----------------------------------------
+ */
+.spatial .radio-circle {
+	background: color-mix(in oklab, var(--color-base-300, #393939) var(--core-glass), transparent);
+	backdrop-filter: blur(calc(var(--core-blur) * 0.7));
+	border: 1px solid #ffffff4d;
+}
+
+.spatial.checked .radio-circle {
+	background: rgba(255, 255, 255, 0.1);
+	border-color: var(--color-primary, #2ebd85);
+}
+
+.spatial .radio-dot {
+	background: var(--color-primary, #2ebd85);
+}

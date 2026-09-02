@@ -1,0 +1,228 @@
+:host {
+	--core-height: var(--height-selector, 2.25rem);
+	--core-radius: var(--radius-selector, 0.5rem);
+	--core-blur: var(--haze-blur, 12px);
+	--core-glass: var(--haze-glass, 20%);
+	--core-font: var(--font-sans, 'system-ui');
+}
+
+.web-button {
+	font-family: var(--core-font);
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	font-weight: 600;
+	font-size: 1rem;
+	line-height: normal;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	cursor: pointer;
+	user-select: none;
+	border: 1px solid transparent;
+	overflow: hidden;
+	min-width: var(--core-height);
+	height: var(--core-height);
+	padding: 0 1rem;
+	outline: none;
+	box-sizing: border-box;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.web-button.web-square {
+	padding: 0;
+	aspect-ratio: 1 / 1;
+	width: var(--core-height);
+}
+
+.prefix-icon,
+.suffix-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	font-size: 1.2em;
+}
+
+/* Color Tokens mapping */
+.web-button.color-primary {
+	--btn-color: var(--color-primary, #2ebd85);
+}
+.web-button.color-secondary {
+	--btn-color: var(--color-secondary, #f5465c);
+}
+.web-button.color-accent {
+	--btn-color: var(--color-accent, #a855f7);
+}
+.web-button.color-info {
+	--btn-color: var(--color-info, #00c7d4);
+}
+.web-button.color-warning {
+	--btn-color: var(--color-warning, #fbbf24);
+}
+.web-button.color-success {
+	--btn-color: var(--color-success, #2ebd85);
+}
+.web-button.color-error,
+.web-button.color-danger {
+	--btn-color: var(--color-error, #f5465c);
+}
+.web-button.color-base-content {
+	--btn-color: var(--color-base-content, #ffffff);
+}
+
+/* Modern Style (Default) */
+.web-button.modern {
+	border-radius: var(--core-radius);
+}
+
+/* Types */
+.web-button.type-fill {
+	background-color: var(--btn-color, var(--color-base-content, #333));
+	color: var(--color-base-100, #ffffff);
+}
+
+/* Special Case for base-content fill: needs dark text if bg is light */
+.web-button.type-fill.color-base-content {
+	color: var(--color-base-100, #0d0d0d);
+}
+
+.web-button.type-fill:hover:not(.loading):not(.disabled) {
+	filter: brightness(1.1);
+	box-shadow: 0 4px 15px color-mix(in oklab, var(--btn-color, var(--color-base-content)) 30%, transparent);
+}
+
+.web-button.type-outline {
+	background-color: transparent;
+	border-color: var(--btn-color, var(--color-base-content, #ffffff));
+	color: var(--btn-color, var(--color-base-content, #ffffff));
+}
+
+.web-button.type-outline:hover:not(.loading):not(.disabled) {
+	background-color: color-mix(in oklab, var(--btn-color, var(--color-base-content)) 8%, transparent);
+}
+
+.web-button.type-dash {
+	background-color: transparent;
+	border-color: var(--btn-color, var(--color-base-content, #ffffff));
+	border-style: dashed;
+	color: var(--btn-color, var(--color-base-content, #ffffff));
+}
+
+.web-button.type-dash:hover:not(.loading):not(.disabled) {
+	background-color: color-mix(in oklab, var(--btn-color, var(--color-base-content)) 8%, transparent);
+}
+
+.web-button.type-ghost {
+	background-color: transparent !important;
+	color: var(--btn-color, var(--color-base-content, #ffffff)) !important;
+	border-color: transparent !important;
+}
+
+.web-button.type-ghost:hover:not(.loading):not(.disabled) {
+	background-color: color-mix(in oklab, var(--btn-color, var(--color-base-content)) 8%, transparent) !important;
+}
+
+.web-button.type-soft {
+	background-color: color-mix(in oklab, var(--btn-color, var(--color-base-content)) 15%, transparent);
+	color: var(--btn-color, var(--color-base-content, #ffffff));
+	border-color: transparent;
+}
+
+.web-button.type-soft:hover:not(.loading):not(.disabled) {
+	background-color: color-mix(in oklab, var(--btn-color, var(--color-base-content)) 25%, transparent);
+}
+
+/* States */
+.web-button.disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+
+.web-button.loading {
+	cursor: wait;
+	color: transparent !important;
+}
+
+.web-button:active:not(.disabled):not(.loading) {
+	transform: scale(0.96) translateY(0);
+	box-shadow: none;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.loading-spinner svg {
+	width: 20px;
+	height: 20px;
+	animation: spinner-rotate 0.8s linear infinite;
+	color: currentColor;
+}
+
+@keyframes spinner-rotate {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.web-button.type-fill.loading .loading-spinner svg {
+	color: #ffffff;
+}
+
+.web-button:not(.type-fill).loading .loading-spinner svg {
+	color: var(--btn-color, #ffffff);
+}
+
+/**
+ * ----------------------------------------
+ * Glassmorphism - spatial
+ * ----------------------------------------
+ */
+.spatial.web-button {
+	background: color-mix(in oklab, var(--color-base-300, #393939) var(--core-glass), transparent);
+	backdrop-filter: blur(calc(var(--core-blur) * 2));
+	border-color: #ffffff4d;
+	border-radius: 12px;
+	color: color-mix(in oklab, var(--color-base-content) 85%, transparent);
+}
+.spatial.web-button.type-dash,
+.spatial.web-button.type-ghost {
+  backdrop-filter: none;
+}
+
+.spatial.web-button.type-fill {
+	background: color-mix(in oklab, var(--btn-color) 25%, rgba(255, 255, 255, 0.1));
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.spatial.web-button.type-fill:hover:not(.loading):not(.disabled) {
+	background: color-mix(in oklab, var(--btn-color) 50%, rgba(255, 255, 255, 0.2));
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.spatial.web-button.type-soft {
+	background: color-mix(in oklab, var(--btn-color, var(--color-base-content)) 15%, rgba(255, 255, 255, 0.05));
+	color: var(--btn-color, var(--color-base-content, #ffffff));
+}
+
+.spatial.web-button.type-soft:hover:not(.loading):not(.disabled) {
+	background: color-mix(in oklab, var(--btn-color, var(--color-base-content)) 25%, rgba(255, 255, 255, 0.1));
+}
+
+.spatial.web-button:not(.type-fill):not(.type-soft):hover:not(.loading):not(.disabled) {
+	background: color-mix(in oklab, var(--btn-color) 80%, rgba(255, 255, 255, 0.3));
+}

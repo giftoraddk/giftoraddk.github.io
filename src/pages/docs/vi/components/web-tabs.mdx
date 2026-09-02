@@ -1,0 +1,105 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-tabs'
+description: 'Tabs để chuyển đổi giữa các nội dung'
+---
+
+# web-tabs
+
+Điều hướng tab cho phép người dùng chuyển đổi giữa nhiều nội dung trong cùng một khu vực. Hỗ trợ icon, căn chỉnh và nhiều kích thước.
+
+## Khi nào dùng
+
+- Trang chi tiết sản phẩm với các tab Mô tả / Thông số / Đánh giá
+- Dashboard với nhiều chế độ xem khác nhau (Tổng quan / Chi tiết / Lịch sử)
+- Cài đặt người dùng được nhóm thành các danh mục
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-tabs.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `tabs` | array JSON | `[]` | Cấu hình tab: `[{"label":"...","icon":"..."}]`. Trường `icon` tùy chọn |
+| `active` | number | `0` | Index của tab đang hiển thị (bắt đầu từ `0`) |
+| `align` | string | `'left'` | Căn chỉnh thanh tab: `left` \| `center` \| `right` |
+| `size` | string | `'md'` | Kích thước tab: `sm` \| `md` \| `lg` |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Slots
+
+Nội dung mỗi tab được đặt trong slot có tên theo index: `slot="0"`, `slot="1"`, `slot="2"`, v.v.
+
+## Ví dụ cơ bản
+
+```html
+<web-tabs tabs='[{"label":"Mô tả"},{"label":"Thông số"},{"label":"Đánh giá"}]' active="0">
+  <div slot="0"><p>Nội dung mô tả sản phẩm...</p></div>
+  <div slot="1"><p>Thông số kỹ thuật...</p></div>
+  <div slot="2"><web-rating value="4.5" readonly></web-rating></div>
+</web-tabs>
+```
+
+## Ví dụ nâng cao
+
+Tabs có icon, căn giữa, cỡ lớn:
+
+```html
+<web-tabs
+  tabs='[{"label":"Tổng quan","icon":"📊"},{"label":"Giao dịch","icon":"💳"},{"label":"Cài đặt","icon":"⚙️"}]'
+  active="0"
+  align="center"
+  size="lg">
+  <div slot="0">
+    <h3>Tổng quan tài khoản</h3>
+    <web-progress value="75" label="Hồ sơ hoàn thành 75%"></web-progress>
+  </div>
+  <div slot="1">
+    <web-table
+      columns='[{"key":"date","label":"Ngày"},{"key":"desc","label":"Mô tả"},{"key":"amount","label":"Số tiền"}]'
+      data='[{"date":"24/06","desc":"Mua hàng","amount":"-150.000đ"}]'>
+    </web-table>
+  </div>
+  <div slot="2">
+    <web-toggle label="Nhận thông báo email" checked></web-toggle>
+  </div>
+</web-tabs>
+```
+
+Điều khiển tab bằng JavaScript:
+
+```html
+<web-tabs id="my-tabs" tabs='[{"label":"Tab A"},{"label":"Tab B"},{"label":"Tab C"}]' active="0">
+  <div slot="0">Nội dung A</div>
+  <div slot="1">Nội dung B</div>
+  <div slot="2">Nội dung C</div>
+</web-tabs>
+
+<script>
+  const tabs = document.getElementById('my-tabs');
+  tabs.addEventListener('web-tab-change', (e) => {
+    console.log('Tab hiện tại:', e.detail.index, '-', e.detail.label);
+  });
+
+  // Chuyển tab theo chương trình
+  function goToTab(index) {
+    tabs.setAttribute('active', index);
+  }
+</script>
+```
+
+## Sự kiện
+
+| Sự kiện | Khi nào | Chi tiết |
+|---------|---------|---------|
+| `web-tab-change` | Người dùng nhấn vào một tab khác | `{ index: number, label: string }` |
+
+```js
+document.querySelector('web-tabs').addEventListener('web-tab-change', (e) => {
+  console.log('Chuyển sang tab:', e.detail.index, e.detail.label);
+});
+```

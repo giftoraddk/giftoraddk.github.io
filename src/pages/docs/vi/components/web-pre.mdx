@@ -1,0 +1,87 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-pre'
+description: 'Hiển thị code với syntax highlighting dùng PrismJS'
+---
+
+# web-pre
+
+Hiển thị khối code với tô sáng cú pháp (syntax highlighting) sử dụng PrismJS ở phía client. Hỗ trợ nhiều ngôn ngữ lập trình, tiêu đề block và nút sao chép.
+
+## Khi nào dùng
+
+- Hiển thị code được tạo động ở runtime (từ API, người dùng nhập, v.v.)
+- Nhúng ví dụ code trong ứng dụng web mà không cần build-time processing
+- Khi cần highlight code sau khi trang đã tải xong
+
+> **Lưu ý:** Trang docs này dùng **Shiki** qua Astro ở build-time để tô sáng code tĩnh. `web-pre` thích hợp hơn khi code được **generate động** ở runtime — đây là điểm khác biệt chính giữa hai phương pháp.
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-pre.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `lang` | string | `'js'` | Ngôn ngữ: `js` \| `ts` \| `html` \| `css` \| `json` \| `bash` \| `sql` |
+| `code` | string | `''` | Chuỗi code cần hiển thị |
+| `title` | string | `''` | Tiêu đề hiển thị phía trên khối code |
+| `copy` | boolean | `true` | Hiển thị nút sao chép (copy to clipboard) |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Ví dụ cơ bản
+
+```html
+<web-pre lang="js" title="Ví dụ JavaScript" copy code="const greeting = 'Hello World';
+console.log(greeting);"></web-pre>
+```
+
+## Ví dụ nâng cao
+
+Hiển thị JSON response từ API:
+
+```html
+<web-pre id="code-output" lang="json" title="API Response"></web-pre>
+<script>
+  async function fetchAndShow() {
+    const res = await fetch('/api/data');
+    const json = await res.json();
+    document.getElementById('code-output').setAttribute(
+      'code',
+      JSON.stringify(json, null, 2)
+    );
+  }
+  fetchAndShow();
+</script>
+```
+
+Hiển thị code SQL với giao diện spatial, không có nút copy:
+
+```html
+<web-pre
+  lang="sql"
+  title="Truy vấn mẫu"
+  copy="false"
+  ui="spatial"
+  code="SELECT u.name, COUNT(o.id) AS total_orders
+FROM users u
+LEFT JOIN orders o ON u.id = o.user_id
+GROUP BY u.id
+ORDER BY total_orders DESC;"></web-pre>
+```
+
+Hiển thị code HTML thoát động:
+
+```html
+<web-pre lang="html" title="Template mẫu" id="html-block"></web-pre>
+<script>
+  const template = `<div class="card">
+  <h2>Tiêu đề</h2>
+  <p>Nội dung...</p>
+</div>`;
+  document.getElementById('html-block').setAttribute('code', template);
+</script>
+```

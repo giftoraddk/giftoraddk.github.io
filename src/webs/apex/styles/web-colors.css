@@ -1,0 +1,128 @@
+:host {
+    display: block;
+    width: 100%;
+}
+
+.web-colors {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+}
+
+.wc-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+}
+
+/* Color swatch — native input[type=color] styled as a colored box */
+input.wc-swatch[type="color"] {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    padding: 2px;
+    border-radius: 6px;
+    border: 1px solid color-mix(in oklab, var(--color-base-300, #393939) 80%, transparent);
+    background: transparent;
+    cursor: pointer;
+    outline: none;
+    transition: transform 0.15s, box-shadow 0.15s;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+input.wc-swatch[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+    border-radius: 4px;
+}
+
+input.wc-swatch[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 4px;
+}
+
+input.wc-swatch[type="color"]::-moz-color-swatch {
+    border: none;
+    border-radius: 4px;
+}
+
+input.wc-swatch[type="color"]:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+input.wc-swatch[type="color"]:disabled {
+    opacity: 0.35;
+    pointer-events: none;
+}
+
+/* Hex text input */
+.wc-hex {
+    flex: 1;
+    min-width: 0;
+    height: 32px;
+    background: var(--color-base-100, #0d0d0d);
+    border: 1px solid var(--color-base-300, #393939);
+    border-radius: 6px;
+    color: var(--color-base-content, #fff);
+    font-size: 13px;
+    font-family: var(--font-mono, monospace);
+    font-weight: 500;
+    padding: 0 10px;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.wc-hex:hover  { border-color: var(--color-primary, #2ebd85); }
+
+.wc-hex:focus {
+    border-color: var(--color-primary, #2ebd85);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary, #2ebd85) 15%, transparent);
+}
+
+.wc-hex:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+/* Add / Delete buttons — reuse same style as web-texts */
+.wt-btn {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    background: transparent;
+    outline: none;
+    transition: background 0.15s;
+    border: 1px dashed color-mix(in oklab, var(--color-error, #f5465c) 50%, transparent);
+}
+
+.wt-btn:disabled {
+    opacity: 0.35;
+    pointer-events: none;
+}
+
+.wt-btn svg {
+    width: 15px;
+    height: 15px;
+    display: block;
+}
+
+.wt-del { color: var(--color-error, #f5465c); }
+.wt-del:hover { background: color-mix(in oklab, var(--color-error, #f5465c) 15%, transparent); }
+
+.wt-add {
+    color: var(--color-primary, #2ebd85);
+    border-color: color-mix(in oklab, var(--color-primary, #2ebd85) 50%, transparent);
+}
+.wt-add:hover {
+    background: color-mix(in oklab, var(--color-primary, #2ebd85) 15%, transparent);
+    border-color: var(--color-primary, #2ebd85);
+}

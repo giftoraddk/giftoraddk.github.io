@@ -1,0 +1,170 @@
+/** Colors
+  --color-base-100 = '#1f2937'
+  --color-base-200 = 'increase dark(white)/light(black) 12% of base-100'
+  --color-base-300 = 'increase dark(white)/light(black) 18% of base-100'
+  --color-base-content = '#f3f4f6'
+  --color-primary = '#2ebd85'
+  --color-secondary = '#f5465c'
+  --color-accent = '#a855f7'
+  --color-info = '#00c7d4'
+  --color-warning = '#fbbf24'
+*/
+:host {
+	display: inline-block;
+	width: 100%;
+	position: relative;
+	font-family: inherit;
+	overflow: visible;
+	--core-height: var(--height-selector, 2.25rem);
+	--core-radius: var(--radius-selector, 0.5rem);
+	--core-blur: var(--haze-blur, 12px);
+	--core-glass: var(--haze-glass, 20%);
+	--core-font: var(--font-sans, 'system-ui');
+}
+
+.web-datetime {
+	font-family: var(--core-font);
+	position: relative;
+	width: 100%;
+	user-select: none;
+}
+
+.datetime-trigger {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	box-sizing: border-box;
+	height: var(--core-height);
+	padding: 0 16px;
+	background: var(--color-base-100, #0d0d0d);
+	border: 1px solid var(--color-base-300, #393939);
+	border-radius: var(--core-radius);
+	cursor: pointer;
+	color: var(--color-base-content, #ffffff);
+	font-size: 14px;
+	font-weight: 500;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.datetime-trigger:hover {
+	border-color: var(--color-primary, #2ebd85);
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.datetime-trigger.open {
+	border-color: var(--color-primary, #2ebd85);
+	box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary, #2ebd85) 15%, transparent);
+}
+
+.datetime-trigger.disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+
+.selected-value {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.placeholder {
+	color: color-mix(in oklab, var(--color-base-content, #ffffff) 60%, transparent);
+}
+
+.chevron {
+	width: 18px;
+	height: 18px;
+	margin-left: 10px;
+	transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	opacity: 0.7;
+}
+
+.open .chevron {
+	transform: rotate(180deg);
+}
+
+.dropdown-menu {
+	box-sizing: border-box;
+	position: fixed;
+	/* Reset UA popover defaults (inset:0, margin:auto, padding, border) — top/left/width
+	   are computed and applied inline by _updateDropdownPosition(). */
+	inset: auto;
+	margin: 0;
+	padding: 0;
+	background: var(--color-base-100, #0d0d0d);
+	border: 1px solid var(--color-base-300, #393939);
+	box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+	z-index: 100;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	min-width: 300px;
+
+	/* Animation Properties */
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	transform: scale(0.92) translateY(10px);
+	transition:
+			opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+			transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+			visibility 0.4s;
+	will-change: transform, opacity;
+}
+.dropdown-menu, .dropdown-menu > [data-vc] {
+	border-radius: var(--core-radius);
+}
+
+.dropdown-menu.show {
+	visibility: visible;
+	pointer-events: auto;
+	opacity: 1;
+	transform: scale(1) translateY(0);
+}
+
+/* Popover elements start from display:none, so the entry transition above has no "from" frame
+   to interpolate from — @starting-style supplies one. Unsupported browsers just skip the intro
+   animation (still opens correctly via .show). */
+@starting-style {
+	.dropdown-menu.show {
+		opacity: 0;
+		transform: scale(0.92) translateY(10px);
+	}
+}
+
+/* Custom styles for vanilla-calendar-pro to match theme */
+:host {
+	--vc-clr-layout-bg: transparent;
+	--vc-clr-font: var(--color-base-content, #ffffff);
+	--vc-clr-accent: var(--color-primary, #2ebd85);
+}
+
+.vc-container {
+	border: none !important;
+	background: transparent !important;
+	padding: 12px !important;
+}
+
+/**
+ * ----------------------------------------
+ * Glassmorphism - spatial
+ * ----------------------------------------
+ */
+.spatial.web-datetime .datetime-trigger {
+	background: color-mix(in oklab, var(--color-base-300, #393939) var(--core-glass), transparent);
+	backdrop-filter: blur(var(--core-blur));
+	border: 1px solid #ffffff4d;
+}
+
+.spatial.web-datetime .datetime-trigger:hover {
+	background: rgba(255, 255, 255, 0.06);
+	border-color: rgba(255, 255, 255, 0.2);
+}
+
+.spatial.dropdown-menu {
+	background: color-mix(in oklab, var(--color-base-300, #393939) 15%, transparent);
+	backdrop-filter: blur(calc(var(--core-blur) * 1.5));
+    border: 1px solid #ffffff4d;
+}

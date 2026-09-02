@@ -1,0 +1,58 @@
+---
+import "iconify-icon";
+import BtnLang from "./BtnLang.astro";
+import I18nText from "@/components/I18nText.astro";
+
+const {
+	hotlineLabel = "Hotline",
+	hotline = "",
+	address = "",
+	socialsLabel = "Mạng xã hội",
+	socials = [], // [{ icon, href, text }] — icon là tên iconify (vd: ri:facebook-fill)
+	class: className = "",
+} = Astro.props;
+
+const hasSocials = socials.length > 0;
+---
+
+<div class={`z-1 relative w-full bg-primary text-white ${className}`}>
+	<div class="mx-auto max-w-6xl px-4 flex items-center justify-between gap-4 min-h-9 text-xs">
+		<div class="flex items-center gap-4 flex-wrap">
+			{hotline && (
+				<span class="flex items-center gap-1.5">
+					<iconify-icon icon="ri:phone-fill" class="text-sm"></iconify-icon>
+					<span class="hidden sm:inline"><I18nText text={hotlineLabel} />:</span> {hotline}
+				</span>
+			)}
+			{hotline && address && <span class="hidden md:flex w-px h-3 bg-white/30"></span>}
+			{address && (
+				<span class="hidden md:flex items-center gap-1.5">
+					<iconify-icon icon="ri:map-pin-2-fill" class="text-sm"></iconify-icon>
+					{address}
+				</span>
+			)}
+		</div>
+
+		<div class="flex items-center gap-3 shrink-0">
+			{hasSocials && (
+				<>
+					<span class="hidden sm:inline"><I18nText text={socialsLabel} /></span>
+					<div class="flex items-center gap-2">
+						{socials.map((s: { icon: string; href: string; text?: string }) => (
+							<a
+								href={s.href}
+								aria-label={s.text}
+								target="_blank"
+								rel="noopener"
+								class="flex items-center justify-center w-6 h-6 rounded-full bg-white text-primary hover:opacity-80 transition-opacity"
+							>
+								<iconify-icon icon={s.icon} class="text-sm"></iconify-icon>
+							</a>
+						))}
+					</div>
+				</>
+			)}
+			<BtnLang />
+		</div>
+	</div>
+</div>

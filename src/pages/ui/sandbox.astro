@@ -1,0 +1,10 @@
+---
+import LayoutUI from "@/layouts/LayoutUI.astro";
+const pageTitle = "Sandbox";
+const pageDescription = "Live web-board config editor";
+---
+
+<LayoutUI title={pageTitle} description={pageDescription}>
+    <script src="@/webs/sandbox/svc-sandbox.js"></script>
+    <svc-sandbox showIntro="false" style="display:block; height:100%;"></svc-sandbox>
+</LayoutUI>

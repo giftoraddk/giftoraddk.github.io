@@ -1,0 +1,78 @@
+/* src/webs/underlay/styles/underlay.css */
+
+:host {
+    display: block;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    /* Gradient-blob layer defaults (ported from web-bg-old.js) — only used
+       when the `gradient` prop is on; harmless/unused otherwise. */
+    --bg-blob-opacity: 0.5;
+    --bg-blob-blend: screen;
+    --bg-blob-blur: 120px;
+    --bg-spatial-border: #ffffff1a;
+    --bg-spatial-bg: #ffffff0d;
+}
+
+:host([data-theme="light"]) {
+    --bg-blob-opacity: 0.35;
+    --bg-blob-blend: multiply;
+}
+
+:host([fixed]) {
+    position: fixed;
+}
+
+:host([fixed]) .blob {
+    width: 85vmax;
+    height: 85vmax;
+}
+
+:host([blur]) .underlay-wrapper {
+    box-sizing: border-box;
+    background: var(--bg-spatial-bg) !important;
+    backdrop-filter: blur(.75rem);
+}
+
+.underlay-wrapper {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Large, blurred radial blobs — circleOverlap layout (gradient="true" type="circleOverlap") */
+.blob {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    filter: blur(var(--bg-blob-blur));
+    opacity: var(--bg-blob-opacity);
+    mix-blend-mode: var(--bg-blob-blend);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+/* Single soft linear-gradient band — ellipse layout (gradient="true" type="ellipse") */
+.blob-ellipse {
+    position: absolute;
+    inset: -20%;
+    pointer-events: none;
+}
+
+.underlay-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    opacity: 0;
+    transition: opacity 350ms ease;
+}
+
+.underlay-canvas.is-visible {
+    opacity: 1;
+}

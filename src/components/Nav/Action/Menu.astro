@@ -1,0 +1,239 @@
+---
+import "./menu.css"
+import type { HTMLAttributes } from 'astro/types'
+import I18nText from '@/components/I18nText.astro'
+import { plainText } from '@/utils'
+
+type LocalizedText = string | { vi: string; en?: string }
+
+interface MenuItem {
+	text: LocalizedText
+	href?: string
+	iconMobile?: string
+	icon?: string
+	textIcon?: string
+	disabled?: boolean
+	divider?: boolean
+	items?: MenuItem[]
+}
+
+interface Props extends HTMLAttributes<'ul'> {
+	horizontal?: boolean
+	class?: string
+	items?: MenuItem[]
+	open?: boolean
+	isMobileRoot?: boolean
+}
+
+const { horizontal = false, class: className = '', items = [], open = false, isMobileRoot = false, ...props } = Astro.props
+
+// Khi horizontal, cấp 1 là dropdown → không auto-open; chỉ cấp 2+ mới open
+const openLevel1 = horizontal ? false : open
+
+const { pathname } = Astro.url
+const normalizedPathname = pathname.replace(/\/$/, '') || '/'
+
+const isActive = (href: string | undefined) => {
+	if (!href) return false
+	// Remove trailing slash and handle empty/root href
+	const normalizedHref = href.replace(/\/$/, '') || '/'
+	
+	// Exact match
+	if (normalizedPathname === normalizedHref) return true
+	
+	// Handle cases where href might be relative or missing leading slash
+	if (!normalizedHref.startsWith('/')) {
+		const parts = normalizedPathname.split('/')
+		const lastPart = parts[parts.length - 1]
+		if (lastPart === normalizedHref) return true
+	}
+	
+	return false
+}
+
+// Kiểm tra đệ quy xem có con/cháu nào active không
+const hasActiveChild = (items: MenuItem[]): boolean => {
+	return items.some(item => {
+		if (isActive(item.href)) return true
+		if (item.items && item.items.length > 0) return hasActiveChild(item.items)
+		return false
+	})
+}
+
+const wrapperClass = ['menu', horizontal ? 'menu-horizontal' : '', className]
+	.filter(Boolean)
+	.join(' ')
+---
+
+<ul class={wrapperClass} {...props}>
+	{
+		items.length > 0 ? (
+			items.map((item) => {
+				const active = isActive(item.href)
+				const renderIcon = (i: MenuItem) => {
+					if (i.icon) {
+						return <iconify-icon icon={i.icon} />
+					}
+					else if (i.textIcon && !horizontal) {
+						return <span class='menu-char-icon'>{i.textIcon}</span>
+					}
+					else {
+						return ''
+					}
+				}
+
+				if (item.divider) {
+					return (
+						<li class='menu-title'>
+							<span class='menu-text'><I18nText text={item.text} /></span>
+						</li>
+					)
+				}
+
+				if (item.href) {
+					return (
+						<li>
+							<a href={item.href} class:list={[item.disabled ? 'disabled' : '', { 'menu-active': active }]}>
+								{renderIcon(item)}
+								<span class='menu-text'><I18nText text={item.text} /></span>
+							</a>
+						</li>
+					)
+				}
+
+				if (item.items && item.items.length > 0) {
+					const parentActive = hasActiveChild(item.items)
+					return (
+						<li>
+							<details open={openLevel1} data-keep-open={openLevel1 ? 'true' : undefined}>
+								<summary class:list={[
+									item.disabled ? 'disabled' : '', 
+									{ 'menu-parent-active': parentActive },
+									isMobileRoot ? 'group flex flex-col items-center gap-1 w-full !py-0 !px-0 !min-h-0 transition-all rounded-2xl menu-mobile-root-summary' : ''
+								]}>
+									{isMobileRoot ? (
+										<div class="menu-char-icon transition-all group-hover:scale-110 group-hover:-translate-y-1">
+											{ item.iconMobile || item.icon ? <iconify-icon icon={item.iconMobile || item.icon} class="text-2xl" /> : <span>{item.textIcon || (plainText(item.text) || 'A').charAt(0)}</span>}
+										</div>
+									) : (
+										<>
+											{renderIcon(item)}
+											<span class='menu-text'><I18nText text={item.text} /></span>
+										</>
+									)}
+								</summary>
+								<ul>
+									{item.items.map((subItem) => {
+										const subActive = isActive(subItem.href)
+										if (subItem.divider) {
+											return (
+												<li class='menu-title'>
+													<span class='menu-text'><I18nText text={subItem.text} /></span>
+												</li>
+											)
+										}
+
+										if (subItem.href) {
+											return (
+												<li>
+													<a
+														href={subItem.href}
+														class:list={[subItem.disabled ? 'disabled' : '', { 'menu-active': subActive }]}>
+														{renderIcon(subItem)}
+														<span class='menu-text'><I18nText text={subItem.text} /></span>
+													</a>
+												</li>
+											)
+										}
+
+										if (subItem.items && subItem.items.length > 0) {
+											const subParentActive = hasActiveChild(subItem.items)
+											return (
+												<li>
+													<details open={open} data-keep-open={open ? 'true' : undefined}>
+														<summary class:list={[subItem.disabled ? 'disabled' : '', { 'menu-parent-active': subParentActive }]}>
+															{renderIcon(subItem)}
+															<span class='menu-text'><I18nText text={subItem.text} /></span>
+														</summary>
+														<ul>
+															{subItem.items.map((subSubItem) => {
+																const subSubActive = isActive(subSubItem.href)
+																if (subSubItem.divider) {
+																	return (
+																		<li class='menu-title'>
+																			<span class='menu-text'><I18nText text={subSubItem.text} /></span>
+																		</li>
+																	)
+																}
+
+																if (subSubItem.href) {
+																	return (
+																		<li>
+																			<a
+																				href={subSubItem.href}
+																				class:list={[subSubItem.disabled ? 'disabled' : '', { 'menu-active': subSubActive }]}>
+																				{renderIcon(subSubItem)}
+																				<span class='menu-text'><I18nText text={subSubItem.text} /></span>
+																			</a>
+																		</li>
+																	)
+																}
+
+																return (
+																	<li>
+																		<span class={subSubItem.disabled ? 'disabled' : ''}>
+																			{renderIcon(subSubItem)}
+																			<span class='menu-text'><I18nText text={subSubItem.text} /></span>
+																		</span>
+																	</li>
+																)
+															})}
+														</ul>
+													</details>
+												</li>
+											)
+										}
+
+										return (
+											<li>
+												<span class={subItem.disabled ? 'disabled' : ''}>
+													{renderIcon(subItem)}
+													<span class='menu-text'><I18nText text={subItem.text} /></span>
+												</span>
+											</li>
+										)
+									})}
+								</ul>
+							</details>
+						</li>
+					)
+				}
+
+				return (
+					<li>
+						<span class={item.disabled ? 'disabled' : ''}>
+							{renderIcon(item)}
+							<span class='menu-text'><I18nText text={item.text} /></span>
+						</span>
+					</li>
+				)
+			})
+		) : (
+			<slot />
+		)
+	}
+</ul>
+
+<script>
+	import 'iconify-icon'
+
+	// Click outside to close menu dropdowns
+	document.addEventListener('click', (e) => {
+		const target = e.target as HTMLElement;
+		document.querySelectorAll('.menu details[open]:not([data-keep-open="true"])').forEach(details => {
+			if (!details.contains(target)) {
+				details.removeAttribute('open');
+			}
+		});
+	});
+</script>

@@ -1,0 +1,68 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+type Props = HTMLAttributes<'a'>;
+
+const { href = '', class: className = 'hover:text-sky-500', ...props } = Astro.props;
+
+// Get current path directly from Astro.url.pathname
+const currentPath = Astro.url.pathname;
+
+// Normalize path by removing trailing slashes (if any)
+const normalize = (path: string) => (typeof path === 'string' ? path.replace(/\/+$/, '') : '') || '/';
+
+// Fix: Ensure href always starts with a single slash and does not double-slash
+const getHref = (href: string) => {
+	// If href is an absolute URL, return as is
+	if (/^(https?:)?\/\//.test(href)) return href;
+
+	// Remove all leading and trailing slashes, then add one leading slash
+	const cleanHref = href.replace(/^\/+|\/+$/g, '');
+	return '/' + cleanHref;
+};
+
+const normalizedHref = getHref(href);
+const normalizedCurrentPath = normalize(currentPath);
+const normalizedHrefPath = normalize(normalizedHref);
+
+// Simplified active state logic
+let isActive = false;
+
+// For root path (/)
+if (normalizedHrefPath === '/' && normalizedCurrentPath === '/') {
+	isActive = true;
+}
+// For other paths, check exact match
+else if (normalizedHrefPath !== '/') {
+	isActive = normalizedCurrentPath === normalizedHrefPath;
+}
+---
+
+<a
+	href={normalizedHref}
+	class:list={[
+		className,
+		{
+			'border-b-2': isActive,
+		},
+	]}
+	aria-current={isActive ? 'page' : undefined}
+	{...props}>
+	<slot />
+</a>
+
+<style>
+	a {
+		display: inline-block;
+		text-decoration: none;
+		transition: all 0.2s ease-in-out;
+	}
+
+	a:hover {
+		transform: translateY(-1px);
+	}
+
+	a[aria-current='page'] {
+		font-weight: bold;
+	}
+</style>

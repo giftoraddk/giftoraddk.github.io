@@ -1,0 +1,27 @@
+---
+import Core from '@/layouts/Core.astro';
+import { variant, views, menuItems, policies, socials } from '@/modules/landing/sakura.js';
+
+const currentView = views.find(v => v.href === '/landing/sakura/') ?? views[0];
+const navItems    = views.map(({ text, href, iconMobile }) => ({ text, href, iconMobile }));
+
+const bg = { blur: true, gradient: true, tint: '#f9a8d4', total: 3, blobType: 'ellipse', blobMove: 'swap', deg: 300 }
+---
+
+<Core
+	title="Sakura — Soft Pastel Landing"
+	menu={{ type: 'top', position: 'prefix', menuItems: navItems }}
+	footer={{ columns: menuItems, policies, socials, bg }}
+	bg={variant.bg}
+	theme={variant.theme}
+	variant={variant}
+>
+	<script src='@/webs/apex/web-board.js'></script>
+	<div>
+		<web-board
+			unlock={import.meta.env.PUBLIC_EXP}
+			variant={JSON.stringify(variant)}
+			draggable
+		><script type="application/json" is:inline set:html={JSON.stringify(currentView.sections)}></script></web-board>
+	</div>
+</Core>

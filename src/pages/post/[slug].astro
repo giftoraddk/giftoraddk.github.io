@@ -1,0 +1,34 @@
+---
+import Core from '@/layouts/Core.astro';
+import PostDetailBody from '@/components/Post/DetailBody.astro';
+import { fetchCollection } from '@/services/firestore.server.ts';
+import { postSlug, pickLang } from '@/services/helper.js';
+import { menuItems, policies, socials } from '@/modules/landing/home.js';
+
+// Trang chi tiết bài viết — biến thể SSG (mặc định). Nội dung thật nằm trong PostDetailBody.astro
+// (dùng chung với biến thể ISR ở src/pages/post/_render-modes/[slug].isr.astro, xem
+// astro.config.mjs renderModeIntegration — PUBLIC_RENDER=isr swap file này lúc build).
+//
+// URL dùng slug từ khoá (vd /post/ten-bai-viet-{id}/) thay vì id thô — cùng cách
+// src/pages/product/[slug].astro làm, xem postSlug() (services/helper.js).
+
+export async function getStaticPaths() {
+	const posts = await fetchCollection('posts');
+	return posts.map(post => ({
+		params: { slug: postSlug(post) },
+		props:  { post, allPosts: posts },
+	}));
+}
+
+const { post, allPosts } = Astro.props as { post: any; allPosts: any[] };
+
+const pics = (post.pics || '').split('|').filter(Boolean);
+const heroImg = pics[0] || '';
+const description = post.description || String(post.content || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().slice(0, 160) || '';
+const pageTitle = post.title || pickLang({ en: 'Post', vi: 'Bài viết' });
+const bg = { blur: true, gradient: true, tint: "#00c7d4", total: 3, blobType: "circleOverlap", blobMove: 'swap', deg: 180 };
+---
+
+<Core title={pageTitle} description={description} image={heroImg} footer={{ columns: menuItems, policies, socials, bg }}>
+	<PostDetailBody post={post} allPosts={allPosts} />
+</Core>

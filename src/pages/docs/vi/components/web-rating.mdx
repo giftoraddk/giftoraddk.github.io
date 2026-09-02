@@ -1,0 +1,88 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-rating'
+description: 'Đánh giá sao từ 1-5 với giao diện tương tác'
+---
+
+# web-rating
+
+Hiển thị và thu thập đánh giá sao từ người dùng. Hỗ trợ chế độ chỉ hiển thị (readonly) và chế độ tương tác với nhiều kích thước.
+
+## Khi nào dùng
+
+- Hiển thị điểm đánh giá sản phẩm, dịch vụ hoặc nội dung
+- Thu thập phản hồi đánh giá từ người dùng sau khi mua hàng hoặc sử dụng dịch vụ
+- Hiển thị xếp hạng trong danh sách sản phẩm, bài viết hoặc nhận xét
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-rating.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `value` | number | `0` | Giá trị đánh giá từ `0` đến `max` (hỗ trợ số thập phân như `4.5`) |
+| `max` | number | `5` | Số sao tối đa |
+| `readonly` | boolean | `false` | Chỉ hiển thị, không cho phép tương tác |
+| `size` | string | `'md'` | Kích thước sao: `sm` \| `md` \| `lg` |
+| `color` | string | `'warning'` | Màu sao: `warning` \| `primary` \| `success` \| `error` |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Ví dụ cơ bản
+
+```html
+<!-- Chỉ hiển thị -->
+<web-rating value="4.5" readonly></web-rating>
+
+<!-- Interactive -->
+<web-rating value="0" size="lg"></web-rating>
+<script>
+  document.querySelector('web-rating').addEventListener('web-rating-change', (e) => {
+    console.log('Rating:', e.detail.value);
+  });
+</script>
+```
+
+## Ví dụ nâng cao
+
+Hiển thị đánh giá trong card sản phẩm:
+
+```html
+<div class="product-card">
+  <h3>Cà phê Arabica</h3>
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <web-rating value="4.5" readonly size="sm"></web-rating>
+    <span>4.5 (128 đánh giá)</span>
+  </div>
+</div>
+```
+
+Form thu thập đánh giá với lưu kết quả:
+
+```html
+<p>Bạn đánh giá sản phẩm này như thế nào?</p>
+<web-rating id="user-rating" value="0" size="lg" color="warning"></web-rating>
+<p id="rating-text">Chưa đánh giá</p>
+
+<script>
+  const labels = ['', 'Rất tệ', 'Tệ', 'Bình thường', 'Tốt', 'Xuất sắc'];
+  document.getElementById('user-rating').addEventListener('web-rating-change', (e) => {
+    document.getElementById('rating-text').textContent = labels[e.detail.value] || 'Chưa đánh giá';
+  });
+</script>
+```
+
+## Sự kiện
+
+| Sự kiện | Khi nào | Chi tiết |
+|---------|---------|---------|
+| `web-rating-change` | Người dùng nhấn vào một sao (chỉ khi không có `readonly`) | `{ value: number }` — giá trị sao được chọn |
+
+```js
+document.querySelector('web-rating').addEventListener('web-rating-change', (e) => {
+  console.log('Người dùng đánh giá:', e.detail.value, 'sao');
+});
+```

@@ -1,0 +1,148 @@
+---
+import "../styles/themes/gold.css";
+import { ClientRouter, fade } from "astro:transitions";
+import Head from "@/components/Head/Base.astro";
+import NavBase from "@/components/Nav/Base.astro";
+import { variant, views, SHOP_SELLER_ID, SHOP_WALLET, SHOP_VIETQR } from "@/modules/shop-page.js";
+// Shop.astro là 1 gian hàng đơn (không có khái niệm "bay"/multi-tenant như webs/bay) — buyer luôn
+// là khách vãng lai (guest, không đăng nhập) — khớp đúng mức đơn giản của trang này (webs/pay's
+// promoteToInvoice() cũng chỉ tự lấy buyer qua auth.get() khi có, không bắt buộc).
+//
+// "Đơn hàng"/"Thống kê" KHÔNG còn là page riêng (/shop/orders, /shop/stats) — <svc-pay-warden>/
+// <svc-pay-stats> tự thân đã là nút tròn + dialog (giống hệt cách svc-bay-sections.js dùng chúng
+// trong toolbox), nên mount thẳng vào slot "actions" của NavBase (→ NavMobile's <slot name="actions">,
+// xem components/Nav/Mobile.astro) — không cần href/điều hướng trang nào nữa. role="seller"|"buyer"
+// gán qua script cuối file, dựa vào auth.isAdmin() (xem docs/PAY.rst §3.9, §4 Wiring — nơi mount).
+
+const currentView     = views.find(v => v.href === Astro.url.pathname) ?? views[0];
+const currentSections = (currentView.sections ?? []).map(({ config: _, data: __, ...s }: any) => s);
+
+const {
+	title       = '',
+	description,
+	image,
+	articleDate,
+	menu        = { type: "top" },
+	adminOnly   = false,
+} = Astro.props as { title?: string; description?: string; image?: string; articleDate?: string; menu?: any; adminOnly?: boolean };
+
+const isHorizontal = menu.type === "top" || menu.type === "bottom" || menu.type === "mobile";
+const wrapClass    = (isHorizontal ? "flex-col" : "flex-row") + " flex bg-base-100";
+const screenClass  = " h-screen overflow-y-auto overflow-x-hidden";
+---
+
+<html
+	lang="en"
+	class="scroll-smooth"
+	data-theme="light"
+>
+	<head>
+		<ClientRouter />
+		<Head
+			title={title}
+			description={description}
+			ogImage={image}
+			articleDate={articleDate}
+		/>
+		{adminOnly && <meta name="page-admin-only" content="">}
+		<script is:inline>
+			(function() {
+				const m = document.cookie.match(/(?:^|; )dark=([^;]*)/);
+				const t = m ? decodeURIComponent(m[1]) : null;
+				if (t) document.documentElement.setAttribute('data-theme', t);
+			})();
+			document.addEventListener('astro:before-swap', function(e) {
+				const theme = document.documentElement.getAttribute('data-theme');
+				if (theme) e.newDocument.documentElement.setAttribute('data-theme', theme);
+			});
+		</script>
+		{adminOnly && <script is:inline>document.documentElement.style.visibility='hidden'</script>}
+	</head>
+
+	<body transition:animate={fade({ duration: "0.5s" })}>
+		<div
+			id="main-wrap"
+			class={wrapClass + (isHorizontal ? screenClass : "")}
+		> 
+			<script src="@/webs/setting/svc-setting.js"></script>
+			<svc-setting id="svc-setting" transition:persist="svc-setting"
+				link="/shop"
+				variant={JSON.stringify(variant)}
+				sections={JSON.stringify(currentSections)}
+			></svc-setting>
+
+			<script src="@/webs/pay/svc-pay-warden.js"></script>
+			<script src="@/webs/pay/svc-pay-stats.js"></script>
+			<NavBase
+				type={menu.type}
+				logoText=""
+				class={`${menu.order || ""} ${menu.type === "bottom" ? "order-last" : ""}`}
+				items={menu.menuItems}
+				open={true}
+				isMenu={true}
+			>
+				<div slot="actions" class="flex-1 flex justify-center">
+					<svc-pay-warden id="shop-orders-warden" transition:persist="shop-orders-warden"
+						ui={variant.ui} theme={variant.theme} mainColors={variant.mainColors} lang="vi">
+					</svc-pay-warden>
+				</div>
+				<div slot="actions" class="flex-1 flex justify-center">
+					<svc-pay-stats id="shop-stats" transition:persist="shop-stats"
+						ui={variant.ui} theme={variant.theme} mainColors={variant.mainColors} lang="vi">
+					</svc-pay-stats>
+				</div>
+			</NavBase>
+
+			<main
+				id="main"
+				class={`text-base-content pb-20 ${menu.type === "side" ? "flex-1" + screenClass : "flex-1"}`}
+			>
+				<slot />
+			</main>
+		</div>
+
+		<script src="@/webs/pay/svc-pay.js"></script>
+		<svc-pay id="pay-factor" isCart position="fixed" role="buyer" transition:persist="pay-factor"
+			sellerId={SHOP_SELLER_ID}
+			seller="Cafe ABC~0909123456~Quan 1 TP.HCM~invoice@cafe.vn~0123456789"
+			wallet={JSON.stringify(SHOP_WALLET)}
+			vietqr={JSON.stringify(SHOP_VIETQR)}
+		></svc-pay>
+
+		<script src="@/webs/auth/svc-logged.js"></script>
+		<svc-logged id="svc-logged" transition:persist="svc-logged" pathLink="/"></svc-logged>
+
+		<script>
+			import { auth } from '@/webs/auth/tools/service.js';
+			import { SHOP_SELLER_ID, SHOP_WALLET } from '@/modules/shop-page.js';
+
+			// Flow gán role cho <svc-pay-warden>/<svc-pay-stats> ở nav "actions": auth.isAdmin() ->
+			// seller (chủ shop, sellerId cố định) hoặc buyer (bất kỳ ai khác, kể cả khách vãng lai
+			// chưa đăng nhập — buyerId rỗng thì warden tự hiện rỗng, xem svc-pay-warden.js).
+			// svc-pay-stats KHÔNG có chế độ buyer (chỉ seller mới có doanh thu/khách hàng để xem) —
+			// ẩn hẳn khi không phải seller, thay vì để rỗng, tránh lộ 1 nút bấm không dùng được.
+			async function applyShopRole() {
+				const wardenEl = document.getElementById('shop-orders-warden') as any;
+				const statsEl  = document.getElementById('shop-stats') as any;
+				const [user, isAdmin] = await Promise.all([auth.get(), auth.isAdmin()]);
+
+				if (wardenEl) {
+					wardenEl.wallet = SHOP_WALLET;
+					if (isAdmin) {
+						wardenEl.role = 'seller';
+						wardenEl.sellerId = SHOP_SELLER_ID;
+					} else {
+						wardenEl.role = 'buyer';
+						wardenEl.buyerId = user?.id ?? '';
+					}
+				}
+
+				if (statsEl) {
+					statsEl.style.display = isAdmin ? '' : 'none';
+					if (isAdmin) statsEl.sellerId = SHOP_SELLER_ID;
+				}
+			}
+			document.addEventListener('astro:page-load', applyShopRole);
+		</script>
+	</body>
+</html>

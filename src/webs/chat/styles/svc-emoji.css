@@ -1,0 +1,90 @@
+/* Noto Color Emoji — scoped to emoji glyphs only (.emoji-btn), not the whole app's font
+   stack, since the rest of the UI should keep using --font-sans (see business.css/cute.css). */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');
+
+:host {
+	display: inline-block;
+	--core-height: var(--height-selector, 2.25rem);
+	--core-radius: var(--radius-selector, 0.5rem);
+	--core-blur: var(--haze-blur, 12px);
+	--core-glass: var(--haze-glass, 20%);
+	--core-font: var(--font-sans, 'system-ui');
+	--core-emoji-font: 'Noto Color Emoji', sans-serif;
+}
+
+.emoji-trigger {
+	font-family: var(--core-font);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--core-height);
+	height: var(--core-height);
+	border-radius: 50%;
+	border: none;
+	cursor: pointer;
+	background-color: color-mix(in oklab, var(--color-primary, #2ebd85) 15%, transparent);
+	color: var(--color-primary, #2ebd85);
+	transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.emoji-trigger:hover {
+	background-color: color-mix(in oklab, var(--color-primary, #2ebd85) 25%, transparent);
+}
+
+.emoji-panel {
+	font-family: var(--core-font);
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	width: 280px;
+}
+
+.emoji-grid {
+	display: grid;
+	grid-template-columns: repeat(6, 1fr);
+	gap: 0.15rem;
+	max-height: 220px;
+	overflow-y: auto;
+	padding: 0.25rem 0;
+}
+
+.emoji-grid::-webkit-scrollbar {
+	width: 6px;
+}
+
+.emoji-grid::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.emoji-grid::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.1);
+	border-radius: 3px;
+}
+
+.emoji-btn {
+	font-family: var(--core-emoji-font);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	aspect-ratio: 1 / 1;
+	font-size: 1.35rem;
+	line-height: 1;
+	border: none;
+	border-radius: var(--core-radius);
+	background: transparent;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+}
+
+.emoji-btn:hover {
+	background-color: color-mix(in oklab, var(--color-base-content, #ffffff) 8%, transparent);
+}
+
+.emoji-empty {
+	font-family: var(--core-font);
+	padding: 1rem;
+	text-align: center;
+	color: color-mix(in oklab, var(--color-base-content, #ffffff) 60%, transparent);
+	font-size: 13px;
+	font-style: italic;
+}

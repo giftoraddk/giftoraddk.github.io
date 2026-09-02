@@ -1,0 +1,68 @@
+:host {
+	display: block;
+	--core-font: var(--font-sans, 'system-ui');
+	--core-glass: var(--haze-glass, 20%);
+}
+
+.web-breadcrumb {
+	font-family: var(--core-font);
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 10px;
+	font-size: 14px;
+	font-weight: 500;
+}
+
+.breadcrumb-item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	color: var(--color-base-content, #ffffff);
+	opacity: 0.6;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.breadcrumb-item.link {
+	cursor: pointer;
+	text-decoration: none;
+}
+
+.breadcrumb-item.link:hover {
+	opacity: 1;
+	color: var(--color-primary, #2ebd85);
+	transform: translateY(-1px);
+}
+
+.breadcrumb-item.last {
+	opacity: 1;
+	font-weight: 700;
+	color: var(--color-base-content, #ffffff);
+}
+
+.separator {
+	opacity: 0.4;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--color-base-content, #ffffff);
+}
+
+.separator svg {
+	width: 16px;
+	height: 16px;
+}
+
+/**
+ * ----------------------------------------
+ * Glassmorphism - spatial
+ * ----------------------------------------
+ */
+.spatial.web-breadcrumb {
+	padding: 8px 16px;
+	background: color-mix(in oklab, var(--color-base-300, #393939) var(--core-glass), transparent);
+	backdrop-filter: blur(12px);
+	border-radius: 999px;
+	border-color: #ffffff4d;
+	width: fit-content;
+}

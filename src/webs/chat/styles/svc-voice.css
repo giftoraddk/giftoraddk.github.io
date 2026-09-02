@@ -1,0 +1,27 @@
+:host {
+    display: inline-block;
+    --core-height: var(--height-selector, 2.25rem);
+    --core-radius: var(--radius-selector, 0.5rem);
+    --core-font: var(--font-sans, 'system-ui');
+}
+
+.voice-panel {
+    font-family: var(--core-font);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    min-width: 200px;
+}
+
+.voice-label {
+    font-size: 0.8rem;
+    color: color-mix(in oklab, var(--color-error, #f04438) 90%, transparent);
+}
+
+.voice-stopped {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}

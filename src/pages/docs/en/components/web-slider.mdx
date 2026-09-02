@@ -1,0 +1,97 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-slider'
+description: 'Carousel slider with autoplay, loop, navigation arrows, dot indicators, and slide or fade mode'
+---
+
+# web-slider
+
+A responsive image carousel with autoplay, loop, navigation arrows, dot indicators, and two transition modes (slide and fade).
+
+## When to use
+
+- Hero image banners rotating through key messages
+- Product photo galleries showing multiple angles
+- Testimonial or feature carousels
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-slider.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `images` | string (JSON) | `'[]'` | Array of `{ src: string, alt: string, caption?: string }` |
+| `autoplay` | boolean | `false` | Auto-advance slides on an interval |
+| `interval` | number | `4000` | Autoplay interval in ms |
+| `loop` | boolean | `true` | Loop back to the first slide after the last |
+| `slides` | number | `1` | Number of slides visible at once |
+| `nav` | boolean | `true` | Show previous/next arrow buttons |
+| `dots` | boolean | `true` | Show dot indicators |
+| `mode` | string | `'slide'` | Transition style: `slide` \| `fade` |
+| `height` | string | `'400px'` | Slider height |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+
+## Basic Example
+
+```html
+<web-slider
+  images='[
+    {"src": "/images/slide1.jpg", "alt": "Feature 1"},
+    {"src": "/images/slide2.jpg", "alt": "Feature 2"},
+    {"src": "/images/slide3.jpg", "alt": "Feature 3"}
+  ]'
+  autoplay
+  loop
+  nav
+  dots
+></web-slider>
+
+<script type="module" src="/src/webs/apex/web-slider.js"></script>
+```
+
+## Advanced Examples
+
+Fade transition hero banner with captions:
+
+```html
+<web-slider
+  mode="fade"
+  autoplay
+  interval="5000"
+  height="500px"
+  images='[
+    {"src": "/hero1.jpg", "alt": "Summer Sale",    "caption": "Up to 50% off"},
+    {"src": "/hero2.jpg", "alt": "New Arrivals",   "caption": "Shop the latest"},
+    {"src": "/hero3.jpg", "alt": "Free Shipping",  "caption": "On all orders over $50"}
+  ]'
+></web-slider>
+```
+
+Multi-slide product carousel (3 visible at once):
+
+```html
+<web-slider
+  slides="3"
+  nav
+  dots="false"
+  autoplay
+  interval="3000"
+  images='[
+    {"src": "/p1.jpg", "alt": "Product 1"},
+    {"src": "/p2.jpg", "alt": "Product 2"},
+    {"src": "/p3.jpg", "alt": "Product 3"},
+    {"src": "/p4.jpg", "alt": "Product 4"},
+    {"src": "/p5.jpg", "alt": "Product 5"}
+  ]'
+></web-slider>
+```
+
+## Events
+
+| Event | When | Detail |
+|---|---|---|
+| `web-slider-change` | Slide changes | `{ index: number, total: number }` |

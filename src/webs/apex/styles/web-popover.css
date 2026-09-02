@@ -1,0 +1,70 @@
+:host {
+    display: inline-block;
+    --core-blur: var(--haze-blur, 12px);
+    --core-glass: var(--haze-glass, 20%);
+    --core-font: var(--font-sans, 'system-ui');
+}
+
+.web-popover-trigger {
+	font-family: var(--core-font);
+    display: inline-block;
+    cursor: pointer;
+}
+
+.web-popover-content {
+	font-family: var(--core-font);
+    position: fixed;
+    /* Reset UA popover defaults (inset:0, margin:auto) — top/left are computed and applied
+       inline by _updatePosition(); padding/border are already set below, no reset needed. */
+    inset: auto;
+    margin: 0;
+    background: var(--color-base-100, #1a1a1a);
+    color: var(--color-base-content, #ffffff);
+    border: 1px solid var(--color-base-300, #393939);
+    border-radius: .5rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+    padding: .5rem;
+    z-index: 101;
+    
+    /* Animation Properties */
+    visibility: hidden;
+    pointer-events: none;
+    opacity: 0;
+    transform: scale(0.92) translateY(10px);
+    transition: 
+        opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+        transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+        visibility 0.4s;
+    
+    min-width: 200px;
+    will-change: transform, opacity;
+}
+
+.web-popover-content.show {
+    visibility: visible;
+    pointer-events: auto;
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+
+/* Popover elements start from display:none, so the entry transition above has no "from" frame
+   to interpolate from — @starting-style supplies one. Unsupported browsers just skip the intro
+   animation (still opens correctly via .show). */
+@starting-style {
+    .web-popover-content.show {
+        opacity: 0;
+        transform: scale(0.92) translateY(10px);
+    }
+}
+
+/**
+ * ----------------------------------------
+ * Glassmorphism - spatial
+ * ----------------------------------------
+ */
+.spatial.web-popover-content {
+    color: var(--color-base-content, #ffffff);
+    background: color-mix(in oklab, var(--color-base-100, #0d0d0d) 90%, transparent);
+    border: 1px solid #ffffff4d;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}

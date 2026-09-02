@@ -1,0 +1,142 @@
+:host {
+	display: flex;
+	flex-direction: column;
+	/* min-width/max-width — không có thì trong grid cell (min-width:auto mặc định của
+	   flex/grid item) host nở rộng theo dải tab thay vì để .tabs-header cuộn ngang */
+	min-width: 0;
+	max-width: 100%;
+	--core-blur:  var(--haze-blur,  12px);
+	--core-glass: var(--haze-glass, 20%);
+	--core-font:  var(--font-sans,  'system-ui');
+}
+
+.web-tabs {
+	font-family: var(--core-font);
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	min-width: 0;
+	overflow: hidden;
+}
+
+/* ── Size variants ───────────────────────────────────────────────────────── */
+
+.web-tabs.size-sm { --tab-font: clamp(0.7rem, 0.9vw, 0.8rem);    --tab-height: 1.75rem; --tab-gap: 0.5rem;  --tab-pad: 0 0.75rem; }
+.web-tabs.size-md { --tab-font: clamp(0.875rem, 1.2vw, 1rem);    --tab-height: 2.25rem; --tab-gap: 0.75rem; --tab-pad: 0 1rem;   }
+.web-tabs.size-lg { --tab-font: clamp(1rem, 1.5vw, 1.25rem);     --tab-height: 2.75rem; --tab-gap: 1rem;    --tab-pad: 0 1.25rem;  }
+.web-tabs.size-xl { --tab-font: clamp(1.25rem, 2vw, 1.5rem);     --tab-height: 3.25rem; --tab-gap: 1.25rem; --tab-pad: 0 1.5rem;     }
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+
+.tabs-header {
+	font-family: var(--core-font);
+	display: flex;
+	gap: var(--tab-gap, 0.75rem);
+	overflow-x: auto;
+	scrollbar-width: none;
+	flex-shrink: 0;
+	max-width: 100%;
+	overscroll-behavior-x: contain;
+	border-bottom: 1px solid var(--color-base-300, #393939);
+}
+
+.tabs-header::-webkit-scrollbar { display: none; }
+
+/* Align bằng margin:auto trên item đầu/cuối thay vì justify-content trên scroller —
+   justify-content: center/right khi nội dung TRÀN sẽ đẩy phần tràn về cả 2 phía, đầu
+   danh sách rơi ra ngoài vùng cuộn không bao giờ với tới được; margin:auto chỉ căn khi
+   còn chỗ trống, hết chỗ thì tự triệt tiêu → cuộn ngang luôn với được mọi tab. */
+.tabs-header.align-center .tab-item:first-child { margin-inline-start: auto; }
+.tabs-header.align-center .tab-item:last-child  { margin-inline-end: auto; }
+.tabs-header.align-right  .tab-item:first-child { margin-inline-start: auto; }
+
+/* ── Tab items ───────────────────────────────────────────────────────────── */
+
+.tab-item {
+	font-family: var(--core-font);
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--tab-pad, 0 0.5rem);
+	box-sizing: border-box;
+	min-height: var(--tab-height, 2.25rem);
+	font-size: var(--tab-font, clamp(0.875rem, 1.2vw, 1rem));
+	font-weight: 500;
+	color: var(--color-base-content, #ffffff);
+	opacity: 0.6;
+	cursor: pointer;
+	white-space: nowrap;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab-item:hover  { opacity: 1; }
+.tab-item.active, .tab-item:hover { opacity: 1; color: var(--color-primary, #2ebd85); text-shadow: 0 0 16px #ffffff99; }
+
+.tab-item::after {
+	content: '';
+	position: absolute;
+	bottom: -1px; left: 0;
+	width: 0; height: 2px;
+	background: var(--color-primary, #2ebd85);
+	transition: width 0.3s ease;
+	border-radius: 999px;
+}
+
+.tab-item.active::after { width: 100%; }
+
+/* ── Content area ────────────────────────────────────────────────────────── */
+
+.tabs-content {
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+}
+
+/* Each named-slot wrapper */
+.tab-panel {
+	display: none;
+}
+
+.tab-panel.active {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+	animation: fadeIn 0.3s ease;
+}
+
+/* Slot transparent so slotted elements are direct flex children */
+.tab-panel slot { display: contents; }
+
+@keyframes fadeIn {
+	from { opacity: 0; transform: translateY(4px); }
+	to   { opacity: 1; transform: translateY(0);   }
+}
+
+/* ── Glassmorphism — spatial ─────────────────────────────────────────────── */
+
+.spatial .tabs-header {
+	background:      color-mix(in oklab, var(--color-base-300, #393939) var(--core-glass), transparent);
+	backdrop-filter: blur(var(--core-blur));
+	border:          1px solid #ffffff4d;
+	border-radius:   12px;
+  padding:         6px;
+	gap:             0.5rem;
+}
+
+.spatial .tab-item {
+	padding:       var(--tab-pad, 0.5rem);
+	border-radius: 8px;
+}
+
+.spatial .tab-item.active {
+	background:  color-mix(in oklab, var(--color-primary, #2ebd85) 15%, rgba(255, 255, 255, 0.05));
+	box-shadow:  0 0 6px rgba(0, 0, 0, 0.2);
+}
+
+.spatial .tab-item::after { display: none; }

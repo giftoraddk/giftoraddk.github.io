@@ -1,0 +1,130 @@
+:host {
+  display: block;
+  background: #141414;
+  border-radius: 12px;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  font-family: inherit;
+  color: #fff;
+  --core-font: var(--font-sans, 'system-ui');
+}
+
+.wrap {
+	font-family: var(--core-font);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Canvas ── */
+.canvas {
+  position: relative;
+  width: 100%;
+  line-height: 0;
+  background: #000;
+  overflow: hidden;
+}
+
+.img {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+/* ── Overlays (4 darkened regions outside crop) ── */
+.ov {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+}
+
+/* ── Crop box ── */
+.box {
+  position: absolute;
+  box-sizing: border-box;
+  cursor: move;
+  touch-action: none;
+}
+
+.box-border {
+  position: absolute;
+  inset: 0;
+  border: 1.5px dashed rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+/* Rule-of-thirds grid lines */
+.gl {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.14);
+  pointer-events: none;
+}
+.gl.h { height: 1px; left: 0; right: 0; }
+.gl.v { width: 1px;  top: 0; bottom: 0; }
+
+/* ── Handles ── */
+.hl {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  box-sizing: border-box;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 1px;
+}
+.hl.nw { top: -5px;              left: -5px;              cursor: nw-resize; }
+.hl.n  { top: -5px;              left: calc(50% - 5px);   cursor: n-resize;  }
+.hl.ne { top: -5px;              right: -5px;             cursor: ne-resize; }
+.hl.e  { top:  calc(50% - 5px); right: -5px;             cursor: e-resize;  }
+.hl.se { bottom: -5px;           right: -5px;             cursor: se-resize; }
+.hl.s  { bottom: -5px;           left: calc(50% - 5px);  cursor: s-resize;  }
+.hl.sw { bottom: -5px;           left: -5px;             cursor: sw-resize; }
+.hl.w  { top:  calc(50% - 5px); left: -5px;             cursor: w-resize;  }
+
+/* ── Ratio bar ── */
+.bar {
+  display: flex;
+  align-items: stretch;
+  background: #1c1c1c;
+  padding: 2px 6px;
+  gap: 1px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+.bar::-webkit-scrollbar { display: none; }
+
+.rbtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.42);
+  font-size: 11px;
+  font-family: inherit;
+  min-width: 50px;
+  transition: color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+.rbtn:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.06);
+}
+.rbtn.active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.07);
+}
+.rbtn svg {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}

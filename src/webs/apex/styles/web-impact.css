@@ -1,0 +1,17 @@
+/* position:fixed đặt thẳng lên :host — cùng kỹ thuật web-bg.js dùng cho overlay toàn màn hình:
+   đặt web-impact ở gần gốc cây DOM trang (không lồng trong phần tử có
+   transform/filter/backdrop-filter) thì không cần thoát top-layer như web-dialog phải làm. */
+:host {
+	display: block;
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	overflow: hidden;
+	z-index: 99;
+}
+
+canvas {
+	display: block;
+	width: 100%;
+	height: 100%;
+}

@@ -1,0 +1,76 @@
+:host {
+    display: block;
+    --core-font: var(--font-sans, 'system-ui');
+    font-family: var(--core-font);
+    color: var(--color-base-content);
+}
+
+.order-panel { display: flex; flex-direction: column; gap: 0.6rem; }
+
+web-toggle { margin-bottom: 0.3rem; }
+
+.hint { font-size: 0.8rem; opacity: 0.6; margin: 0; }
+
+.countdown { font-size: 0.85rem; font-weight: 600; opacity: 0.8; margin-bottom: 0.5rem; }
+.countdown.expired { color: var(--color-error); opacity: 1; }
+
+/* ── Order items summary (bước "Đặt hàng") — cùng khối với svc-pay.css's readonly summary, xem
+   tools/render.js's orderItemsBlock() (Shadow DOM không share CSS xuyên component). ───────────── */
+.order-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.75rem 0.9rem;
+    border-radius: 0.75rem;
+    border: 1px solid color-mix(in oklab, var(--color-base-content, #000) 12%, transparent);
+    background: color-mix(in oklab, var(--color-base-100) 20%, transparent);
+}
+.order-items-empty { font-size: 0.85rem; opacity: 0.7; font-style: italic; margin: 0; }
+.order-item-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; }
+.order-item-name { opacity: 0.8; }
+.order-item-price { font-weight: 600; }
+.order-item-total {
+    margin-top: 0.3rem;
+    padding-top: 0.4rem;
+    border-top: 1px dashed var(--color-base-300);
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+/* ── Invoice lookup QR (sau khi buyer xác nhận thanh toán) ───────────────────────────────────── */
+.invoice-lookup {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0 1rem;
+    text-align: center;
+}
+.invoice-qr {
+    border-radius: 0.75rem;
+    border: 1px solid var(--color-base-300);
+    background: var(--color-base-100);
+    padding: 0.5rem;
+}
+.invoice-id-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--color-primary);
+    text-decoration: none;
+}
+.invoice-id-link:hover { text-decoration: underline; }
+.invoice-hint { font-size: 0.8rem; opacity: 0.6; margin: 0; max-width: 320px; }
+
+.actions {
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+    padding: 0.625rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}

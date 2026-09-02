@@ -1,0 +1,10 @@
+---
+import { site } from '@/services/constants/site' // Fixed import path
+
+const today = new Date()
+---
+
+<footer class='flex justify-center items-center w-full px-16 h-28'>
+	&copy; {today.getFullYear()}
+	{site.author}. All rights reserved.
+</footer>

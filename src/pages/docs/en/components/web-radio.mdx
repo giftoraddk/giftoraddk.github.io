@@ -1,0 +1,75 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-radio'
+description: 'Radio button for single-selection within a named group'
+---
+
+# web-radio
+
+A single radio button. Group multiple `web-radio` elements with the same `name` attribute to create a mutually exclusive selection.
+
+## When to use
+
+- Single-choice selections: plan tiers, gender, payment method
+- Settings where only one option can be active at a time
+- Form fields requiring explicit single-value selection over a dropdown
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-radio.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `name` | string | `''` | Radio group name — must match across all options in the group |
+| `value` | string | `''` | Value submitted when this radio is selected |
+| `label` | string | `''` | Label text displayed next to the radio |
+| `checked` | boolean | `false` | Initially selected state |
+| `disabled` | boolean | `false` | Disable this radio option |
+| `color` | string | `'primary'` | ApexUI color for the selected state |
+| `size` | string | `'md'` | Size: `xs` \| `sm` \| `md` \| `lg` |
+
+## Basic Example
+
+```html
+<web-radio name="plan" value="free"       label="Free — $0/month"       checked></web-radio>
+<web-radio name="plan" value="pro"        label="Pro — $12/month"></web-radio>
+<web-radio name="plan" value="enterprise" label="Enterprise — Contact us" disabled></web-radio>
+
+<script type="module" src="/src/webs/apex/web-radio.js"></script>
+```
+
+## Advanced Examples
+
+Color-coded radio options:
+
+```html
+<web-radio name="priority" value="low"    label="Low"    color="success" checked></web-radio>
+<web-radio name="priority" value="medium" label="Medium" color="warning"></web-radio>
+<web-radio name="priority" value="high"   label="High"   color="error"></web-radio>
+```
+
+Reading selected value:
+
+```html
+<web-radio name="size" value="sm" label="Small" checked></web-radio>
+<web-radio name="size" value="md" label="Medium"></web-radio>
+<web-radio name="size" value="lg" label="Large"></web-radio>
+
+<script>
+  document.querySelectorAll('web-radio[name="size"]').forEach(el => {
+    el.addEventListener('web-radio-change', e => {
+      console.log('Selected size:', e.detail.value);
+    });
+  });
+</script>
+```
+
+## Events
+
+| Event | When | Detail |
+|---|---|---|
+| `web-radio-change` | User selects this radio option | `{ value: string, name: string }` |

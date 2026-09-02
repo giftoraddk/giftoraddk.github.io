@@ -1,0 +1,122 @@
+---
+import LayoutUI from "@/layouts/LayoutUI.astro";
+const pageTitle = "Spatial UI";
+const pageDescription = "Phân loại theo config spatial";
+import "@/styles/global.css";
+import "@/styles/masonry.css";
+
+import * as boxs from "@/sections/spatial";
+
+const allTags = [...new Set(
+    Object.values(boxs as Record<string, any>).flatMap((b: any) => b.hashtags ?? [])
+)]
+---
+
+<LayoutUI title={pageTitle} description={pageDescription} extendClass="bg-wrap">
+    <script src="@/webs/apex/web-button.js"></script>
+    <script src="@/webs/apex/web-boxs.js"></script>
+    <script src="@/webs/apex/web-boxs-search.js"></script>
+    <script src="@/webs/apex/web-dialog.js"></script>
+    <script src="@/webs/apex/web-pre.js"></script>
+
+    <div class="p-6">
+        <h1 class="text-3xl font-bold mb-8 text-center">{pageTitle}</h1>
+
+        <web-boxs-search
+            id="hashtag-search"
+            class="mb-4"
+            tags={JSON.stringify(allTags)}
+            multi
+            color="primary"
+            ui="spatial"
+            placeholder="Tìm hashtag..."
+        ></web-boxs-search>
+
+        <div class="masonry-box">
+            {
+                Object.entries(boxs).map(([key, boxData]: [string, any]) => (
+                    <div
+                        class="masonry-wrap"
+                        data-key={key}
+                        data-tags={JSON.stringify(boxData.hashtags ?? [])}
+                    >
+                        <div class="flex justify-end mb-2">
+                            <web-button
+                                type="soft"
+                                color="warning"
+                                rounded="72px"
+                                height="32px"
+                                square
+                                class="view-btn"
+                                data-key={key}
+                            >
+                                👁️‍🗨️
+                            </web-button>
+                        </div>
+                        <web-boxs
+                            class="content-boxs"
+                            col="12"
+                            data={JSON.stringify([...boxData.data])}
+                            config={JSON.stringify(boxData.config)}
+                        />
+                    </div>
+                ))
+            }
+        </div>
+    </div>
+
+    <web-dialog id="config-dialog" title="Box Configuration" ui="modern">
+        <div class="flex flex-col gap-4">
+            <web-pre id="dialog-data" title="Dữ liệu (Data)" lang="json"></web-pre>
+            <web-pre id="dialog-config" title="Cấu hình (Config)" lang="json"></web-pre>
+        </div>
+        <web-button id="close-dialog-btn" slot="footer" type="fill" color="primary">
+            Close
+        </web-button>
+    </web-dialog>
+</LayoutUI>
+
+<script>
+    import * as boxs from "@/sections/spatial";
+
+    document.addEventListener("astro:page-load", () => {
+        const search   = document.getElementById("hashtag-search") as any
+        const wrappers = document.querySelectorAll<HTMLElement>(".masonry-wrap")
+
+        // ── Filter groups theo active chips + query từ web-boxs-search ──────────
+        if (search) {
+            search.addEventListener("filter", (e: CustomEvent) => {
+                const { active, query } = e.detail ?? {}
+                const q = (query || "").toLowerCase()
+
+                wrappers.forEach(wrap => {
+                    const tags: string[] = JSON.parse(wrap.dataset.tags || "[]")
+                    const matchActive = !active?.length || active.some((t: string) => tags.includes(t))
+                    const matchQuery  = !q || tags.some(t => t.toLowerCase().includes(q))
+                    wrap.style.display = matchActive && matchQuery ? "" : "none"
+                })
+            })
+        }
+
+        // ── View button → dialog ─────────────────────────────────────────────────
+        const dialog    = document.getElementById("config-dialog") as any
+        const dataPre   = document.getElementById("dialog-data")   as any
+        const configPre = document.getElementById("dialog-config") as any
+        const closeBtn  = document.getElementById("close-dialog-btn")
+
+        closeBtn?.addEventListener("click", () => { dialog.open = false })
+
+        document.addEventListener("click", (e) => {
+            const btn = (e.target as HTMLElement).closest(".view-btn")
+            if (!btn) return
+            const key = btn.getAttribute("data-key")
+            if (key && (boxs as any)[key]) {
+                const boxData = (boxs as any)[key]
+                if (dataPre)   dataPre.data   = boxData.data
+                if (configPre) configPre.data = boxData.config
+                dialog.title = `Box: ${key}`
+                dialog.open  = true
+            }
+        })
+    })
+</script>

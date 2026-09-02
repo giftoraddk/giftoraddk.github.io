@@ -1,0 +1,185 @@
+---
+import "../styles/themes/popular.css";
+import { ClientRouter, fade } from "astro:transitions";
+import Head from "@/components/Head/Base.astro";
+import NavBase from "@/components/Nav/Base.astro";
+import UtilityBar from "@/components/Nav/Action/UtilityBar.astro";
+import FooterOptimal from "@/components/Footer/Optimal.astro";
+import { COOKIE_CONFIG } from "@/services/storeCookie.js";
+import { site } from "@/services/constants/site.js";
+// Props astro
+const {
+	title,
+	description,
+	image,
+	articleDate,
+	redirectTo, // '/gift' — xem src/components/Head/Base.astro; forward tới <Head> bên dưới
+	menu = {
+    type: "top",
+    position: "default", // default, prefix, suffix
+  },
+	footer = {},
+	bg = {},
+	theme = "light", // data-theme value, cũng là key chọn variant[theme]
+	variant = {}, // { [theme]: { ui, mainColors, bgColors, textColor, bgImage } }
+	bar = null, // { hotlineLabel, phone, address, socialsLabel, socials: [{ icon, href, text }] } — không truyền thì ẩn UtilityBar
+} = Astro.props;
+
+const { ui } = variant[theme] ?? {}; // forwarded as data-ui on <html> (spatial UI variant hook, glassmorphism etc.)
+
+const isHorizontal = menu.type === "top" || menu.type === "bottom" || menu.type === "mobile";
+const wrapClass = (isHorizontal ? "flex-col" : "flex-row") + " flex bg-base-100";
+const screenClass = " h-screen overflow-y-auto overflow-x-hidden bg-wrap";
+
+const pipeVars = (value, keys) =>
+	value
+		? value
+				.split("|")
+				.map((c) => c.trim())
+				.map((c, i) => (c && keys[i] ? `--color-${keys[i]}: ${c};` : ""))
+				.filter(Boolean)
+				.join(" ")
+		: "";
+
+// Emit a `[data-theme]`-scoped rule per theme key in `variant` (not just the current
+// `theme` prop) — so switching data-theme at runtime (cookie toggle / BtnTheme, see
+// Core.astro's anti-flash script) picks up the matching colors purely via CSS cascade,
+// same mechanism popular.css itself uses. A static inline `style` baked from a single
+// resolved theme would freeze colors at whatever theme was active during SSR and never
+// react to a later client-side data-theme change.
+const themeBlock = (themeKey, cfg) => {
+	if (!cfg) return "";
+	const vars = [
+		pipeVars(cfg.mainColors, ["primary", "secondary", "accent", "info", "warning", "success", "error"]),
+		pipeVars(cfg.bgColors, ["base-100", "base-200", "base-300"]),
+		pipeVars(cfg.textColor, ["base-content"]),
+		cfg.bgImage ? `--bg-wrap-image: url("${cfg.bgImage}");` : "",
+	]
+		.filter(Boolean)
+		.join(" ");
+	// html[data-theme=...] (not just [data-theme=...]) — matches popular.css's own
+	// [data-theme='dark'] specificity plus the element type, so this page-level
+	// override reliably wins regardless of stylesheet source order.
+	return vars ? `html[data-theme='${themeKey}'] { ${vars} }` : "";
+};
+
+const themeCSS = Object.entries(variant)
+	.filter(([key]) => key !== "theme")
+	.map(([key, cfg]) => themeBlock(key, cfg))
+	.filter(Boolean)
+	.join("\n");
+---
+
+<html lang={site.defaultLang} class="scroll-smooth overflow-hidden" data-theme={theme} data-ui={ui}>
+	<head>
+		<ClientRouter />
+		<Head
+			title={title}
+			description={description}
+			ogImage={image}
+			articleDate={articleDate}
+			redirectTo={redirectTo}
+		/>
+		<style set:html={themeCSS}></style>
+		<!-- Apply saved theme before first paint to prevent flash -->
+		<script define:vars={{ themeCookie: COOKIE_CONFIG.THEME, langCookie: COOKIE_CONFIG.LANGUAGE }} is:inline>
+			(function() {
+				const m = document.cookie.match(new RegExp('(?:^|; )' + themeCookie + '=([^;]*)'));
+				const t = m ? decodeURIComponent(m[1]) : null;
+				if (t) document.documentElement.setAttribute('data-theme', t);
+				const lm = document.cookie.match(new RegExp('(?:^|; )' + langCookie + '=([^;]*)'));
+				const l = lm ? decodeURIComponent(lm[1]) : null;
+				if (l) document.documentElement.setAttribute('lang', l);
+			})();
+			// Carry theme/lang across SPA transitions before Astro swaps the new document in
+			document.addEventListener('astro:before-swap', function(e) {
+				const theme = document.documentElement.getAttribute('data-theme');
+				if (theme) e.newDocument.documentElement.setAttribute('data-theme', theme);
+				const lang = document.documentElement.getAttribute('lang');
+				if (lang) e.newDocument.documentElement.setAttribute('lang', lang);
+			});
+		</script>
+    
+    <script is:inline>
+      document.addEventListener('click', (e) => {
+        const a = e.target.closest('a[href^="#"]')
+        if (!a) return
+        const id = decodeURIComponent(a.getAttribute('href').slice(1))
+        const el = document.getElementById(id)
+        if (!el) return
+        e.preventDefault()
+        const container = document.getElementById('main-wrap') ?? document.documentElement
+        const top = el.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop
+        container.scrollTo({ top, behavior: 'smooth' })
+      })
+    </script>
+    
+    <script is:inline>
+      document.addEventListener('click', (e) => {
+        const a = e.target.closest('a[href^="#"]')
+        if (!a) return
+        const id = decodeURIComponent(a.getAttribute('href').slice(1))
+        const el = document.getElementById(id)
+        if (!el) return
+        e.preventDefault()
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
+    </script>
+	</head>
+
+	<body transition:animate={fade({ duration: "0.5s" })}>
+		<div
+			id="main-wrap"
+			class={wrapClass + (isHorizontal ? screenClass : "")}
+		>
+			<!-- Utility bar: chỉ render khi có prop bar -->
+			{bar && (
+				<UtilityBar
+					hotlineLabel={bar.hotlineLabel}
+					hotline={bar.hotline}
+					address={bar.address}
+					socialsLabel={bar.socialsLabel}
+					socials={bar.socials ?? []}
+				/>
+			)}
+			<!-- Nav -->
+			<NavBase
+				logoText=""
+				type={menu.type}
+        position={menu.position}
+				class={`${menu.order || ""} ${menu.type === "bottom" ? "order-last" : ""}`}
+				items={menu.menuItems}
+				open={true}
+				isMenu={true}
+			/>
+			<!-- Main -->
+			<main
+				id="main"
+				class={`text-base-content ${menu.type === "side" ? "flex-1" + screenClass : "flex-1"}`}
+			>
+        <script src="@/webs/underlay/svc-underlay.js"></script>
+        <svc-underlay id="main-bg" class="-mt-1" transition:persist="main-bg" {...bg}></svc-underlay>
+        <div class="min-h-dvh relative">
+				  <slot />
+        </div>
+			  <!-- Footer -->
+        {(footer.columns || footer.policies || footer.socials) && (
+          <FooterOptimal
+            columns={footer.columns ?? []}
+            policies={footer.policies ?? []}
+            socials={footer.socials ?? []}
+            contact={footer.contact}
+            bg={footer.bg}
+          />
+        )}
+			</main>
+		</div>
+	</body>
+	<style>
+		.bg-wrap {
+			background-image: var(--bg-wrap-image, none);
+			background-size: cover;
+			background-position: center;
+		}
+	</style>
+</html>

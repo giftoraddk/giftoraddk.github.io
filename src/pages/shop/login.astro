@@ -1,0 +1,14 @@
+---
+import Shop from '@/layouts/Shop.astro';
+import { views } from '@/modules/shop-page.js';
+
+const navItems = views.map(({ text, href, iconMobile }) => ({ text, href, iconMobile }));
+---
+
+<Shop
+	title="Shop — Đăng nhập"
+	menu={{ type: 'mobile', menuItems: navItems }}
+>
+	<script src='@/webs/auth/svc-login.js'></script>
+	<svc-login pathLink="/shop/"></svc-login>
+</Shop>
