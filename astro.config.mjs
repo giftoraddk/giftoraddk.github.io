@@ -15,7 +15,7 @@ import vercel from '@astrojs/vercel';
 // thường lúc `pnpm dev`/`pnpm preview` (chỉ áp dụng khi command === 'build', xem
 // excludePagesIntegration bên dưới). Ghi tên thư mục tương đối tới src/pages/, vd 'channel' loại
 // toàn bộ src/pages/channel/**.
-const excludePages = ['channel', 'docs', 'landing', 'shop', 'talent', 'software', 'ui'];
+const excludePages = ['channel', 'docs', 'landing', 'shop', 'talent', 'ui', 'software'];
 
 // 'ssg' (mặc định) — mọi route bake tĩnh lúc build, đúng như trước giờ.
 // 'isr' (`PUBLIC_RENDER=isr pnpm build`, xem package.json "build:isr") — 4 route data-động ở
