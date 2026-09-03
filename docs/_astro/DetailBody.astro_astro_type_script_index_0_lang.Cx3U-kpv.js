@@ -1,1 +1,0 @@
-import"./web-boxs.BxGJPHyC.js";document.getElementById("copy-caption-btn")?.addEventListener("click",async t=>{const e=t.currentTarget,n=e.dataset.caption||"";try{await navigator.clipboard.writeText(n);const t=e.textContent;e.textContent="vi"===document.documentElement.lang?"Đã copy!":"Copied!",setTimeout(()=>{e.textContent=t},1500)}catch{}});

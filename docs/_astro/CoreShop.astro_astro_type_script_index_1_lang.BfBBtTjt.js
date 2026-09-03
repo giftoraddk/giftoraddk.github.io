@@ -1,1 +1,0 @@
-import"./svc-pay.CaiSQrft.js";

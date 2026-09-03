@@ -1,1 +1,0 @@
-import"./iconify-icon.CciI8O2w.js";document.addEventListener("click",e=>{const t=e.target;document.querySelectorAll('.menu details[open]:not([data-keep-open="true"])').forEach(e=>{e.contains(t)||e.removeAttribute("open")})});
