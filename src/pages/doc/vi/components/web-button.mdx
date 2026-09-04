@@ -1,0 +1,71 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-button'
+description: 'Button đa dạng kiểu dáng, màu sắc và trạng thái'
+---
+
+# web-button
+
+Button đa năng với nhiều kiểu dáng, màu sắc, kích thước và trạng thái. Hỗ trợ icon prefix/suffix, trạng thái loading, và chế độ badge.
+
+## Khi nào dùng
+
+- Hành động chính của trang (submit form, xác nhận, lưu dữ liệu)
+- Hành động phụ hoặc hủy bỏ với kiểu `ghost` hoặc `outline`
+- Nhãn trạng thái hoặc tag với `mode="badge"`
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-button.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `type` | string | `'fill'` | Kiểu dáng: `fill` \| `outline` \| `ghost` \| `dash` \| `soft` |
+| `color` | string | `'primary'` | Màu sắc: `primary` \| `secondary` \| `accent` \| `neutral` \| `info` \| `success` \| `warning` \| `error` |
+| `rounded` | string | `'md'` | Độ bo góc: `none` \| `sm` \| `md` \| `lg` \| `full` |
+| `height` | string | `'md'` | Kích thước chiều cao: `xs` \| `sm` \| `md` \| `lg` |
+| `loading` | boolean | `false` | Hiển thị spinner loading, vô hiệu hóa tương tác |
+| `disabled` | boolean | `false` | Vô hiệu hóa button |
+| `prefix` | string | `''` | Tên icon hiển thị trước text |
+| `suffix` | string | `''` | Tên icon hiển thị sau text |
+| `mode` | string | `'button'` | Chế độ: `button` \| `badge` |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Ví dụ cơ bản
+
+```html
+<web-button type="fill" color="primary">Xác nhận</web-button>
+<web-button type="outline" color="error" loading>Đang xử lý...</web-button>
+<web-button type="ghost" color="neutral" disabled>Không khả dụng</web-button>
+<web-button type="soft" color="success" prefix="check">Đã lưu</web-button>
+```
+
+## Ví dụ nâng cao
+
+Các kiểu dáng đầy đủ:
+
+```html
+<web-button type="fill" color="primary" rounded="full" height="lg" prefix="plus">
+  Thêm mới
+</web-button>
+
+<web-button type="dash" color="warning" rounded="sm" suffix="arrow-right">
+  Tiếp tục
+</web-button>
+
+<web-button type="outline" color="secondary" rounded="none" height="xs">
+  Nhỏ gọn
+</web-button>
+```
+
+Dùng làm badge:
+
+```html
+<web-button mode="badge" color="success" type="soft">Hoạt động</web-button>
+<web-button mode="badge" color="warning" type="soft">Chờ duyệt</web-button>
+<web-button mode="badge" color="error" type="soft">Đã khóa</web-button>
+```

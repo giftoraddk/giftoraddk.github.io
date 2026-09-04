@@ -8,7 +8,7 @@ import './svc-player.js'
  * SvcPlayerInput
  *
  * Text input for a video link (YouTube/Vimeo/TikTok/native mp4), the
- * video-embed counterpart of `web-photor-upload` — same input/clear/preview
+ * video-embed counterpart of `svc-photor` — same input/clear/preview
  * shell, but no file upload/crop: a link is pasted directly, and the preview
  * button opens a live `svc-player` instead of an `<img>`.
  *

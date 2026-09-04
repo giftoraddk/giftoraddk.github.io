@@ -104,7 +104,7 @@ export const views = [
 				id: 'processModernStepTimeline',
 				data: [{
 					subtitle: { vi: 'CÁCH CHÚNG TÔI LÀM VIỆC', en: 'HOW WE WORK' },
-					meta: { heroTitle: { vi: 'Từ ý tưởng đến sản phẩm,\nrõ ràng từng bước', en: 'From idea to product,\nclear at every step' } },
+					title: { vi: 'Từ ý tưởng đến sản phẩm,\nrõ ràng từng bước', en: 'From idea to product,\nclear at every step' },
 					steps: [
 						{ id: 'brief', title: { vi: 'Khám phá yêu cầu', en: 'Discovery' }, icon: 'ri:file-list-3-line', content: { vi: 'Chúng tôi lắng nghe vấn đề thực tế, phân tích nhu cầu kinh doanh và chốt phạm vi rõ ràng trước khi bắt tay xây dựng.', en: 'We listen to the real problem, analyze your business needs, and lock in a clear scope before any building starts.' } },
 						{ id: 'design', title: { vi: 'Thiết kế giải pháp', en: 'Solution design' }, icon: 'ri:pencil-ruler-2-line', content: { vi: 'Chúng tôi thiết kế kiến trúc hệ thống và giao diện phù hợp với quy mô, ngân sách và định hướng phát triển của bạn.', en: 'We architect the system and interface to fit your scale, budget, and growth trajectory.' } },
@@ -365,7 +365,7 @@ export const views = [
 				data: [{
 					subtitle: { vi: 'HỎI THẲNG, ĐÁP THẬT', en: 'STRAIGHT QUESTIONS, HONEST ANSWERS' },
 					description: { vi: 'Những câu hỏi khách hàng thường đặt ra trước khi bắt đầu hợp tác.', en: 'Questions clients usually ask before we start working together.' },
-					meta: { heroTitle: { vi: 'Câu hỏi thường gặp', en: 'Frequently asked questions' } },
+					title: { vi: 'Câu hỏi thường gặp', en: 'Frequently asked questions' },
 					expansion: [
 						{ title: { vi: 'Golden Key có nhận dự án nhỏ, 1-2 tháng không?', en: 'Does Golden Key take on small, 1-2 month projects?' }, content: { vi: 'Có — chúng tôi nhận cả dự án ngắn hạn có phạm vi cụ thể lẫn hợp tác dài hạn dưới hình thức đội ngũ mở rộng hoặc đối tác công nghệ toàn diện.', en: 'Yes — we take on short-term projects with a specific scope as well as long-term partnerships as an extended team or full technology partner.' } },
 						{ title: { vi: 'Chi phí dự án phần mềm riêng được tính như thế nào?', en: 'How is the cost of a custom software project calculated?' }, content: { vi: 'Dựa trên phạm vi công việc, độ phức tạp nghiệp vụ và thời gian bàn giao. Chi phí được chốt rõ ràng trước khi ký hợp đồng — không phát sinh ẩn giữa dự án.', en: 'Based on scope of work, business complexity, and delivery timeline. Pricing is locked in clearly before the contract is signed — no hidden costs mid-project.' } },
@@ -468,8 +468,8 @@ export const menuItems = [
 	},
   {
 		iconMobile: 'ri:file-search-line',
-		text: { vi: 'Tài liệu', en: 'Docs' },
-    href: '/docs'
+		text: { vi: 'Tài liệu', en: 'Document' },
+    href: '/doc'
   },
   {
 		iconMobile: 'ri:apps-ai-line',

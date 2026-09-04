@@ -1,0 +1,80 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-alert'
+description: 'Contextual alert notifications with type, title, and optional close button'
+---
+
+# web-alert
+
+Displays a contextual notification bar (info, warning, error, success). Supports a title, slotted content, and an optional close button.
+
+## When to use
+
+- Notify users of the result of an action (saved successfully, deletion failed, etc.)
+- Warn users before an irreversible action
+- Display system information or additional guidance on a page
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-alert.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `type` | string | `'info'` | Alert type: `primary` \| `info` \| `warning` \| `error` \| `success` |
+| `title` | string | `''` | Title displayed above the content |
+| `closable` | boolean | `false` | Show a close button in the top-right corner |
+| `visible` | boolean | `true` | Visibility state of the alert |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+
+## Basic Example
+
+```html
+<web-alert type="info" title="Note">Your session expires in 10 minutes.</web-alert>
+
+<web-alert type="warning" title="Warning" closable>
+  This action cannot be undone.
+</web-alert>
+
+<web-alert type="success">Changes saved successfully!</web-alert>
+```
+
+## Advanced Examples
+
+Error alert with close button and spatial UI:
+
+```html
+<web-alert type="error" title="Connection Error" closable ui="spatial">
+  Unable to reach the server. Please check your connection and try again.
+</web-alert>
+```
+
+Control visibility programmatically:
+
+```html
+<web-alert type="success" title="Export Complete" id="export-alert">
+  Your file is ready to download.
+</web-alert>
+
+<script>
+  // Auto-hide after 4 seconds
+  setTimeout(() => {
+    document.getElementById('export-alert').setAttribute('visible', 'false');
+  }, 4000);
+</script>
+```
+
+## Events
+
+| Event | When | Detail |
+|---|---|---|
+| `web-alert-close` | User clicks the close button | None |
+
+```js
+document.querySelector('web-alert').addEventListener('web-alert-close', () => {
+  console.log('Alert dismissed');
+});
+```

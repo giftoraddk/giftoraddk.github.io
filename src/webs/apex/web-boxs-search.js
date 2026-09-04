@@ -2,6 +2,8 @@ import { LitElement, html, css } from 'lit';
 import './web-text.js';
 import './web-select.js';
 import './web-button.js';
+import './web-ranger.js';
+import './web-tooltip.js';
 
 const TXT_STD = {
     vi: { ph: 'Tìm kiếm...', clear: 'Xoá lọc' },
@@ -23,6 +25,10 @@ export class WebBoxsSearch extends LitElement {
         lang:  { type: String },
         active:       { type: Array },
         query:        { type: String },
+        // Numeric price-range chips — separate single-select group from the tag chips above,
+        // { key, label, min, max }[]; `range` is the currently-active entry's key (or '').
+        ranges:       { type: Array },
+        range:        { type: String },
         _expanded:      { state: true },
     };
 
@@ -32,6 +38,8 @@ export class WebBoxsSearch extends LitElement {
         .wbs-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 2px; align-items: center; }
         .wbs-filter-select { flex-shrink: 0; }
         .wbs-filter-trigger { border-radius: 99px; }
+        .wbs-range { display: flex; align-items: center; gap: 1rem; padding: 2px; }
+        .wbs-range web-ranger { flex: 1 1 auto; min-width: 0; }
     `;
 
     constructor() {
@@ -46,8 +54,11 @@ export class WebBoxsSearch extends LitElement {
         this.lang  = 'vi';
         this.active       = [];
         this.query        = '';
+        this.ranges       = [];
+        this.range        = '';
         this._active   = new Set();
         this._query     = '';
+        this._rangeKey  = '';
         this._timer     = null;
         this._expanded  = false;
     }
@@ -55,6 +66,7 @@ export class WebBoxsSearch extends LitElement {
     willUpdate(changed) {
         if (changed.has('active')) this._active = new Set(this.active || []);
         if (changed.has('query'))  this._query  = this.query || '';
+        if (changed.has('range'))  this._rangeKey = this.range || '';
     }
 
     // ── Derived ───────────────────────────────────────────────────────────────
@@ -84,11 +96,42 @@ export class WebBoxsSearch extends LitElement {
         this._emit();
     }
 
-    _clear() {
+    // Tags/query and range are independent filter dimensions (combined with AND in
+    // web-boxs.js's _applyFilter) — each gets its OWN "dirty" state and Clear button below,
+    // so clearing one never touches the other.
+    _clearTags() {
         this._active.clear();
         this._query = '';
         this.requestUpdate();
         this._emit();
+    }
+
+    _clearRange() {
+        this._rangeKey = '';
+        this.requestUpdate();
+        this._emit();
+    }
+
+    _toggleRange(key) {
+        this._rangeKey = this._rangeKey === key ? '' : key;
+        this.requestUpdate();
+        this._emit();
+    }
+
+    // web-ranger's steps map 1:1 to this.ranges' indices (0..length-1) — a slider has no
+    // "unselected" position like a pill does, so dragging always commits to the tier at that step.
+    _onRangeSlide(e) {
+        const key = this.ranges[e.detail.value]?.key || '';
+        if (key === this._rangeKey) return;
+        this._rangeKey = key;
+        this._emit();
+    }
+
+    // Range label can be a plain string or an i18n {vi,en} object — same convention as
+    // section-level title/description fields (see web-cell.js's _resolveLocale).
+    _locLabel(label) {
+        if (label == null) return '';
+        return typeof label === 'object' ? (label[this.lang] ?? label.vi ?? Object.values(label)[0]) : label;
     }
 
     _onSelectChange(e) {
@@ -118,11 +161,13 @@ export class WebBoxsSearch extends LitElement {
     }
 
     _emit() {
+        const range = (this.ranges || []).find(r => r.key === this._rangeKey) || null;
         this.dispatchEvent(new CustomEvent('filter', {
             detail: {
                 active: [...this._active],
                 query: this._query,
                 field: this.field,
+                range,
             },
             bubbles:  true,
             composed: true,
@@ -135,7 +180,8 @@ export class WebBoxsSearch extends LitElement {
 
     render() {
         const tags   = this._extractedTags;
-        const dirty  = this._active.size > 0 || this._query;
+        const tagsDirty  = this._active.size > 0 || this._query;
+        const rangeDirty = !!this._rangeKey;
         const showAll  = this._expanded || tags.length <= CHIP_LIMIT;
         const shown    = showAll ? tags : tags.slice(0, CHIP_LIMIT);
         const hasMore  = !showAll && tags.length > CHIP_LIMIT;
@@ -198,17 +244,54 @@ export class WebBoxsSearch extends LitElement {
                                 @clicked=${this._showMore}
                             ></web-button>
                         ` : ''}
-                        ${dirty ? html`
-                            <web-button
-                                type="outline"
-                                color="error"
-                                .ui=${this.ui}
-                                height="32px"
-                                fontSize="0.82rem"
-                                rounded="99px"
-                                prefix="ri:filter-off-line"
-                                @clicked=${this._clear}
-                            >${this._txt.clear}</web-button>
+                        ${tagsDirty ? html`
+                            <web-tooltip .ui=${this.ui} placement="top">
+                                <web-button
+                                    type="outline"
+                                    color="error"
+                                    .ui=${this.ui}
+                                    height="32px"
+                                    fontSize="0.9rem"
+                                    rounded="50%"
+                                    square
+                                    prefix="ri:filter-off-line"
+                                    @clicked=${this._clearTags}
+                                ></web-button>
+                                <span slot="content">${this._txt.clear}</span>
+                            </web-tooltip>
+                        ` : ''}
+                    </div>
+                ` : ''}
+
+                ${this.ranges?.length ? html`
+                    <div class="wbs-range">
+                        <web-ranger
+                            .min=${0}
+                            .max=${this.ranges.length - 1}
+                            .step=${1}
+                            .value=${Math.max(0, this.ranges.findIndex(r => r.key === this._rangeKey))}
+                            .ticks=${this.ranges.map((_, i) => i)}
+                            .format=${(i) => this._locLabel(this.ranges[i]?.label)}
+                            .color=${this.color}
+                            .ui=${this.ui}
+                            .lang=${this.lang}
+                            @input=${this._onRangeSlide}
+                        ></web-ranger>
+                        ${rangeDirty ? html`
+                            <web-tooltip .ui=${this.ui} placement="top">
+                                <web-button
+                                    type="outline"
+                                    color="error"
+                                    .ui=${this.ui}
+                                    height="32px"
+                                    fontSize="0.9rem"
+                                    rounded="50%"
+                                    square
+                                    prefix="ri:filter-off-line"
+                                    @clicked=${this._clearRange}
+                                ></web-button>
+                                <span slot="content">${this._txt.clear}</span>
+                            </web-tooltip>
                         ` : ''}
                     </div>
                 ` : ''}

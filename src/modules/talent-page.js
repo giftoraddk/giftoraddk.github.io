@@ -20,7 +20,7 @@ export const variant = {
 
 /**
  * 1 section: card grid Talent, filter theo category khi có (native Firestore `where`, chỉ áp dụng
- * khi `loadLimit > 0` — xem conductor.js's paginated path, docs/SERVICES.rst). `talents.meta`
+ * khi `loadLimit > 0` — xem conductor.js's paginated path, hook/SERVICES.rst). `talents.meta`
  * chỉ lưu id CHA ở `category` và id CON ở `subCategory` (xem svc-talent-edit.js's `_dfSave`) —
  * `categoryId` truyền vào đây có thể là 1 trong 2 loại (getStaticPaths ở [category].astro sinh
  * trang cho CẢ CATEGORIES cha lẫn con), nên phải chọn đúng field để filter, nếu không mọi trang

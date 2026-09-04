@@ -1,0 +1,88 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-table'
+description: 'Data table with configurable columns, sortable headers, striped rows, and loading state'
+---
+
+# web-table
+
+Renders a structured data table from a `columns` definition and a `data` array. Supports column sorting, striped rows, hoverable rows, and a skeleton loading state.
+
+## When to use
+
+- Displaying structured records (orders, users, inventory)
+- Admin dashboards with sortable and filterable data
+- Comparison tables for features or pricing
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-table.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `columns` | string (JSON) | `'[]'` | Array of `{ key: string, label: string, sortable?: boolean, width?: string }` |
+| `data` | string (JSON) | `'[]'` | Array of row objects — keys must match column `key` values |
+| `striped` | boolean | `false` | Apply alternating row background |
+| `hoverable` | boolean | `true` | Highlight row on hover |
+| `loading` | boolean | `false` | Show skeleton loading rows instead of data |
+| `loadingRows` | number | `5` | Number of skeleton rows to show when `loading` is true |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+
+## Basic Example
+
+```html
+<web-table
+  striped
+  columns='[
+    {"key": "name",   "label": "Name",   "sortable": true},
+    {"key": "email",  "label": "Email"},
+    {"key": "role",   "label": "Role",   "sortable": true},
+    {"key": "status", "label": "Status"}
+  ]'
+  data='[
+    {"name": "Alice",   "email": "alice@example.com",   "role": "Admin",  "status": "Active"},
+    {"name": "Bob",     "email": "bob@example.com",     "role": "Editor", "status": "Active"},
+    {"name": "Charlie", "email": "charlie@example.com", "role": "Viewer", "status": "Inactive"}
+  ]'
+></web-table>
+
+<script type="module" src="/src/webs/apex/web-table.js"></script>
+```
+
+## Advanced Examples
+
+Table with loading state and dynamic data:
+
+```html
+<web-table id="orders-table" striped hoverable loading loading-rows="8"
+  columns='[
+    {"key":"id",     "label":"Order ID","width":"120px"},
+    {"key":"product","label":"Product", "sortable": true},
+    {"key":"qty",    "label":"Qty",     "width":"80px"},
+    {"key":"total",  "label":"Total",   "sortable": true}
+  ]'
+  data='[]'
+></web-table>
+
+<script>
+  async function loadOrders() {
+    const table = document.getElementById('orders-table');
+    const res = await fetch('/api/orders.json');
+    const data = await res.json();
+    table.setAttribute('data', JSON.stringify(data));
+    table.removeAttribute('loading');
+  }
+  loadOrders();
+</script>
+```
+
+## Events
+
+| Event | When | Detail |
+|---|---|---|
+| `web-table-sort` | User clicks a sortable column header | `{ key: string, direction: 'asc' \| 'desc' }` |
+| `web-table-row-click` | User clicks a row | `{ row: object, index: number }` |

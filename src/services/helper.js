@@ -74,7 +74,7 @@ export const toPrice = (pricing, lang = 'vi-VN', currency = 'đ') => {
 };
 
 // Location field format — street~ward~region~country[~lat~lng], cùng chuẩn rooms.location
-// (xem docs/CHANNEL.rst § rooms Schema) và web-location-map.js. Không phải location (không có
+// (xem hook/CHANNEL.rst § rooms Schema) và web-location-map.js. Không phải location (không có
 // '~') → trả nguyên giá trị, giữ tương thích ngược với address dạng text thường cũ.
 export const humanizeLocation = (v) => {
     if (!v || !String(v).includes('~')) return v || '';

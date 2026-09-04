@@ -1,6 +1,7 @@
 ---
 import Core from '@/layouts/Core.astro';
-import { variant, views, bar, menuItems, footerMenuItems, policies, socials, contact } from '@/modules/landing/gift';
+import { variant, views, bar, socials, contact } from '@/modules/landing/gift';
+import { menuItems, footerMenuItems, policies } from '@/modules/shop/gift';
 
 const currentView = views.find(v => v.href === '/') ?? views[0];
 

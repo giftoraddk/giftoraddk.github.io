@@ -1,6 +1,6 @@
 // src/webs/pay/tools/service.js
 //
-// Domain `pay` độc lập hoàn toàn với domain khác (xem docs/PAY.rst §1) — mọi hàm dưới đây tự viết,
+// Domain `pay` độc lập hoàn toàn với domain khác (xem hook/PAY.rst §1) — mọi hàm dưới đây tự viết,
 // KHÔNG import tools/service.js của domain khác. Không có mesh/P2P — chỉ Firestore `listen()`
 // thường, buyer/seller cùng đọc 1 invoice doc.
 //
@@ -59,7 +59,7 @@ function _buildOrder(opts = {}) {
 
 /** Flow setup: opts -> order tạm mới (major='order', sub='placing'). Idempotent — nếu section đã
  *  có order_id (dù terminal hay chưa) thì GIỮ NGUYÊN, không ghi đè. Muốn ép bắt đầu mới hẳn dùng
- *  startNewOrder() bên dưới — xem docs/PAY.rst §3.2. */
+ *  startNewOrder() bên dưới — xem hook/PAY.rst §3.2. */
 export function setup(name, opts = {}) {
     _bindOrderPersist(name); // [1] CHECK: đảm bảo đã bind persist Storager cho section này
     const existing = get(name);
@@ -70,7 +70,7 @@ export function setup(name, opts = {}) {
 }
 
 /** Flow startNewOrder: opts -> order MỚI (ghi đè hẳn order_id/major/sub, khác setup() idempotent)
- *  — dùng khi order cũ đã terminal và buyer checkout tiếp. Bug-fix lịch sử: xem docs/PAY.rst §5
+ *  — dùng khi order cũ đã terminal và buyer checkout tiếp. Bug-fix lịch sử: xem hook/PAY.rst §5
  *  "Mua tiếp sau khi order trước đã xong". */
 export function startNewOrder(name, opts = {}) {
     const order = _buildOrder(opts); // [2] PROCESS
@@ -79,7 +79,7 @@ export function startNewOrder(name, opts = {}) {
 }
 
 // ── Persist order tạm qua Storager (IndexedDB) — F5/đóng tab không mất order đang xử lý, xem
-// docs/PAY.rst §3.2 và §5 "F5 mất order — ĐÃ SỬA".
+// hook/PAY.rst §3.2 và §5 "F5 mất order — ĐÃ SỬA".
 
 const _restoredOrderNames = new Set();
 const _orderStorageKey = name => `pay_order_${name}`;
@@ -144,7 +144,7 @@ export function setQty(name, id, qty) {
  *  `opts.notes`/`opts.promo`/`opts.disc` chỉ patch khi caller THẬT SỰ truyền (không mặc định
  *  `[]`/`null`/`0` đè lên giá trị cũ) — svc-pay.js's updated() gọi hàm này chỉ với `items` (đồng
  *  bộ prop `items`), không có ngữ cảnh notes/promo/disc, nên không được phép xoá mất giá trị đã
- *  có. Bug-fix lịch sử: xem docs/PAY.rst §5 "Sửa giỏ lúc đã ở bước paying". */
+ *  có. Bug-fix lịch sử: xem hook/PAY.rst §5 "Sửa giỏ lúc đã ở bước paying". */
 export function setOrderItems(name, items, opts = {}) {
     const s = get(name);
     if (!s || (s.sub !== 'placing' && s.sub !== 'paying')) return; // [1] CHECK
@@ -166,7 +166,7 @@ export function setOrderItems(name, items, opts = {}) {
  *  (cùng lý do với setOrderItems() — buộc buyer xác nhận lại, đặc biệt cần khi đổi sang 'delivery'
  *  để buyer còn được yêu cầu điền địa chỉ, chưa chắc đã điền nếu order phục hồi từ trạng thái
  *  'pickup' cũ). Dùng bởi <svc-pay>'s onlyDelivery (order phục hồi từ Storager có thể đang kẹt ở
- *  'paying' với fulfillment cũ trước khi onlyDelivery được set) — xem docs/PAY.rst §3.3 field
+ *  'paying' với fulfillment cũ trước khi onlyDelivery được set) — xem hook/PAY.rst §3.3 field
  *  `fulfillment`. */
 export function setFulfillment(name, fulfillment) {
     const s = get(name);
@@ -189,7 +189,7 @@ export function placeOrder(name) {
     return get(name); // [4] RETURN
 }
 
-// ── Promote: order tạm -> invoice thật (Firestore, đúng docs/SCHEMA.rst bảng `invoice`) ────────
+// ── Promote: order tạm -> invoice thật (Firestore, đúng hook/SCHEMA.rst bảng `invoice`) ────────
 
 function _encodeItems(items) {
     return (items ?? []).map(i => [i.name ?? '', Number(i.price ?? 0), i.unit ?? '', Number(i.qty ?? 1), 0, Number(i.price ?? 0) * Number(i.qty ?? 1), 0, 0].join('~')).join('|');
@@ -238,7 +238,7 @@ export function buildInvoiceUrl(invoiceId, { role, sellerId, bayId } = {}) {
 
 // Handler tracking — format tilde `getTime~name~phone~reason` dùng CHUNG mọi field xử lý bước
 // (`return` thêm slot 5 `media`) — parse qua parseHandler(). `cancel`/`subStatus` là state machine
-// huỷ đơn. Chi tiết từng field/ý nghĩa: xem docs/PAY.rst §3.3 (bảng field) và §3.4 (state machine).
+// huỷ đơn. Chi tiết từng field/ý nghĩa: xem hook/PAY.rst §3.3 (bảng field) và §3.4 (state machine).
 function _encodeHandler(h = {}, withMedia = false) {
     const parts = [h.at ?? Date.now(), (h.name ?? '').trim(), (h.phone ?? '').trim(), (h.note ?? '').trim()];
     if (withMedia) parts.push((h.media ?? '').trim());
@@ -250,9 +250,9 @@ export function parseHandler(str) {
     return { at: Number(at) || 0, name, phone, note, media };
 }
 
-// Chuỗi pipe `buyer` đúng schema (docs/SCHEMA.rst: name~phone~address~email~taxCode~userId) —
+// Chuỗi pipe `buyer` đúng schema (hook/SCHEMA.rst: name~phone~address~email~taxCode~userId) —
 // lấy từ entry mặc định (`isDefault`, hoặc entry đầu) của <svc-pay-customer> (section RIÊNG
-// `pay_customer`, xem nhóm 4. CUSTOMER). Bug-fix lịch sử: xem docs/PAY.rst §5 "invoice.seller
+// `pay_customer`, xem nhóm 4. CUSTOMER). Bug-fix lịch sử: xem hook/PAY.rst §5 "invoice.seller
 // luôn trống" (cùng lỗi tương tự cũng từng xảy ra ở buyer).
 function _buildBuyerSlot(buyerId) {
     const entries = get('pay_customer')?.entries ?? [];
@@ -261,9 +261,9 @@ function _buildBuyerSlot(buyerId) {
     return [entry.fullName ?? '', entry.phone ?? '', addr, entry.email ?? '', '', buyerId ?? ''].join('~');
 }
 
-// Chuỗi pipe `seller` đúng schema (docs/SCHEMA.rst, 9 slot) — ghép `sellerSlot` (prop `seller`
+// Chuỗi pipe `seller` đúng schema (hook/SCHEMA.rst, 9 slot) — ghép `sellerSlot` (prop `seller`
 // truyền vào <svc-pay>, 5 slot "name~phone~address~email~taxCode") vào đúng slot 3-7, userId ở
-// slot cuối, 3 slot đầu (tài khoản nhận tiền) để trống. Bug-fix lịch sử: xem docs/PAY.rst §5
+// slot cuối, 3 slot đầu (tài khoản nhận tiền) để trống. Bug-fix lịch sử: xem hook/PAY.rst §5
 // "invoice.seller luôn trống".
 function _buildSellerSlot(sellerSlot, sellerId) {
     const [name = '', phone = '', address = '', email = '', taxCode = ''] = (sellerSlot ?? '').split('~');
@@ -273,25 +273,25 @@ function _buildSellerSlot(sellerSlot, sellerId) {
 /** Flow promoteToInvoice: order tạm (paying) + paymentId/sellerSlot -> invoice thật Firestore
  *  (idempotent theo order_id), tạo NGAY khi buyer confirm — không đợi seller; notes/promo cũng
  *  đóng băng vào invoice.note/invoice.meta.promo tại đây. `summary`'s slot `total` đã trừ
- *  `s.disc` — số thực buyer phải trả, xem Addendum 2 (docs/PAY.rst). Lý do/field: xem
- *  docs/PAY.rst §1 điểm 3 và §3.3. */
+ *  `s.disc` — số thực buyer phải trả, xem Addendum 2 (hook/PAY.rst). Lý do/field: xem
+ *  hook/PAY.rst §1 điểm 3 và §3.3. */
 export async function promoteToInvoice(name, paymentId, sellerSlot) {
     const s = get(name);
     if (!s || s.sub !== 'paying' || !paymentId) return null; // [1] CHECK
     const now = Date.now();
-    const invoice = { // [2] PROCESS: dựng invoice đúng schema — chi tiết field: xem docs/PAY.rst §3.3
+    const invoice = { // [2] PROCESS: dựng invoice đúng schema — chi tiết field: xem hook/PAY.rst §3.3
         id: s.order_id,
         order_id: s.order_id,
         issued_at: new Date(now).toISOString(),
         status: 'issued',
         currency: s.currency,
-        no: '', series: '', note: (s.notes ?? []).join('; '), // ghi chú/yêu cầu đặc biệt buyer chọn ở <svc-cart>, đóng băng tại đây — xem docs/SCHEMA.rst's `note` field
+        no: '', series: '', note: (s.notes ?? []).join('; '), // ghi chú/yêu cầu đặc biệt buyer chọn ở <svc-cart>, đóng băng tại đây — xem hook/SCHEMA.rst's `note` field
         seller_id: s.seller_id,
         buyer_id: s.buyer_id,
         seller: _buildSellerSlot(sellerSlot, s.seller_id),
         buyer: _buildBuyerSlot(s.buyer_id),
         items: _encodeItems(s.items),
-        summary: `${s.amount}~0~${Math.max(0, s.amount - safeDisc(s.disc))}`, // subTotal~vatAmount~total (docs/SCHEMA.rst) — total đã trừ s.disc (qua safeDisc phòng trường hợp order phục hồi từ Storager cũ/hỏng), xem docs/PAY.rst's ghi chú Addendum 2
+        summary: `${s.amount}~0~${Math.max(0, s.amount - safeDisc(s.disc))}`, // subTotal~vatAmount~total (hook/SCHEMA.rst) — total đã trừ s.disc (qua safeDisc phòng trường hợp order phục hồi từ Storager cũ/hỏng), xem hook/PAY.rst's ghi chú Addendum 2
         meta: {
             major: 'order', sub: 'paying',
             bay_id: s.bay_id,
@@ -356,7 +356,7 @@ export function notifyOrderPlaced(invoice) {
 // ── Post-invoice: mọi thao tác sau đó thẳng lên Firestore, invoiceId là khoá ────────────────────
 
 /** Flow _patchInvoiceMeta: invoiceId + guard/patchFn -> invoice.meta patched (read-modify-write,
- *  crud.js's update() không deep-merge JSONB — cùng tradeoff `bumpMeta`, xem docs/SCHEMA.rst).
+ *  crud.js's update() không deep-merge JSONB — cùng tradeoff `bumpMeta`, xem hook/SCHEMA.rst).
  *  guard(meta,row) false -> no-op (null). */
 async function _patchInvoiceMeta(invoiceId, guard, patchFn, extra = {}) {
     const svc = _invoiceSvc();
@@ -378,7 +378,7 @@ async function _patchInvoiceMeta(invoiceId, guard, patchFn, extra = {}) {
 
 // crud.js's .listen() trả về Promise<unsubscribe> (không đồng bộ) nhưng mọi call site coi
 // listenXxx() dưới đây như trả thẳng 1 hàm unsub gọi NGAY được — bọc lại đồng bộ hoá ngay lập
-// tức. Bug-fix lịch sử: xem docs/PAY.rst §5 "TypeError: this._unsubInvoice is not a function".
+// tức. Bug-fix lịch sử: xem hook/PAY.rst §5 "TypeError: this._unsubInvoice is not a function".
 function _syncUnsub(listenPromise) {
     let unsub = null;
     let cancelled = false;
@@ -398,7 +398,7 @@ export function listenSellerInvoices(sellerId, onNext, onErr) {
     return _syncUnsub(_invoiceSvc().listen({ filters: { seller_id: sellerId } }, onNext, onErr));
 }
 
-// "Đơn của tôi" (buyer) — chỉ lọc buyer_id (xuyên mọi seller đã từng mua), xem docs/PAY.rst §3.9.
+// "Đơn của tôi" (buyer) — chỉ lọc buyer_id (xuyên mọi seller đã từng mua), xem hook/PAY.rst §3.9.
 export function loadBuyerInvoices(buyerId) {
     return _invoiceSvc().findAll({ filters: { buyer_id: buyerId } });
 }
@@ -424,7 +424,7 @@ export function needsRefund(meta) {
 
 /** Flow confirmReceivedMoney: invoice (order/paying, buyer đã xác nhận) + handler -> invoice
  *  (processing/preparing), stamp meta.preparing (dự kiến — completeProcessing() sẽ ghi đè lúc kết
- *  thúc). Chi tiết field/fulfillment: xem docs/PAY.rst §3.3. */
+ *  thúc). Chi tiết field/fulfillment: xem hook/PAY.rst §3.3. */
 export function confirmReceivedMoney(invoiceId, handler = {}) {
     return _patchInvoiceMeta(
         invoiceId,
@@ -434,7 +434,7 @@ export function confirmReceivedMoney(invoiceId, handler = {}) {
 }
 
 /** Flow completeProcessing: invoice (processing/preparing) + handler -> invoice (processing/done)
- *  HOẶC (delivery/received) nếu fulfillment='pickup' — xem docs/PAY.rst §3.3 field `fulfillment`. */
+ *  HOẶC (delivery/received) nếu fulfillment='pickup' — xem hook/PAY.rst §3.3 field `fulfillment`. */
 export function completeProcessing(invoiceId, handler = {}) {
     return _patchInvoiceMeta(
         invoiceId,
@@ -447,7 +447,7 @@ export function completeProcessing(invoiceId, handler = {}) {
 
 /** Flow advanceToDelivery: invoice (processing/done) -> invoice (delivery/packing). Không nhận
  *  `handler` — người soạn hàng nhập ngay trên màn 'packing' (xem startShipping()), tránh lệch vai
- *  trò, xem docs/PAY.rst §3.3 field `packing`. */
+ *  trò, xem hook/PAY.rst §3.3 field `packing`. */
 export function advanceToDelivery(invoiceId) {
     return _patchInvoiceMeta(
         invoiceId,
@@ -457,7 +457,7 @@ export function advanceToDelivery(invoiceId) {
 }
 
 /** Flow startShipping: invoice (packing) + handler -> invoice (shipping), stamp meta.packing —
- *  xem docs/PAY.rst §3.3 field `packing`/`shipping`. */
+ *  xem hook/PAY.rst §3.3 field `packing`/`shipping`. */
 export function startShipping(invoiceId, handler = {}) {
     return _patchInvoiceMeta(invoiceId, meta => meta.sub === 'packing', { sub: 'shipping', packing: _encodeHandler(handler) }); // [1][3]
 }
@@ -472,7 +472,7 @@ export function confirmShipped(invoiceId, handler = {}) {
 /** Flow confirmDeliveryDone: invoice (delivered, chưa meta.delivered) + handler (kèm media, ảnh
  *  minh chứng giống requestReturn()) -> invoice (stamp meta.delivered, KHÔNG đổi sub). Seller/
  *  shipper tự xác nhận NGAY TRÊN màn 'delivered' rằng hàng đã thật sự tới tay buyer — mốc giờ này
- *  mới là cái autoConfirmReceived() dùng để tính deadline, xem docs/PAY.rst §3.6. */
+ *  mới là cái autoConfirmReceived() dùng để tính deadline, xem hook/PAY.rst §3.6. */
 export function confirmDeliveryDone(invoiceId, handler = {}) {
     return _patchInvoiceMeta(
         invoiceId,
@@ -490,7 +490,7 @@ export function confirmReceived(invoiceId, handler = {}) {
 
 /** Flow autoConfirmReceived: invoice (delivered, quá hạn DELIVERY_CONFIRM_WINDOW_MS kể từ
  *  meta.delivered) -> invoice (received, autoCompleted=true). Idempotent (guard theo mốc giờ)
- *  — gọi lặp từ client bất kỳ đang mở invoice, xem docs/PAY.rst §3.6. */
+ *  — gọi lặp từ client bất kỳ đang mở invoice, xem hook/PAY.rst §3.6. */
 export function autoConfirmReceived(invoiceId) {
     return _patchInvoiceMeta(
         invoiceId,
@@ -503,10 +503,10 @@ export function autoConfirmReceived(invoiceId) {
 }
 
 // ── Cancel: buyer request (+ lý do) -> pending -> seller accept/reject, HOẶC seller tự huỷ thẳng
-// (sellerCancelOrder) — state machine đầy đủ: xem docs/PAY.rst §3.4.
+// (sellerCancelOrder) — state machine đầy đủ: xem hook/PAY.rst §3.4.
 
 /** Flow requestCancel: invoice (preparing, không có yêu cầu huỷ pending) + reason/handler ->
- *  invoice (subStatus='pending'), stamp meta.cancel — xem docs/PAY.rst §3.4. */
+ *  invoice (subStatus='pending'), stamp meta.cancel — xem hook/PAY.rst §3.4. */
 export function requestCancel(invoiceId, reason, handler = {}) {
     const trimmed = (reason ?? '').trim();
     if (!trimmed) return null; // [1] CHECK
@@ -518,7 +518,7 @@ export function requestCancel(invoiceId, reason, handler = {}) {
 }
 
 /** Flow acceptCancel: invoice (subStatus='pending') + handler -> invoice (cancelled,
- *  buyer_cancelled) terminal, stamp meta.sellerCancelled — xem docs/PAY.rst §3.4. */
+ *  buyer_cancelled) terminal, stamp meta.sellerCancelled — xem hook/PAY.rst §3.4. */
 export function acceptCancel(invoiceId, handler = {}) {
     return _patchInvoiceMeta(
         invoiceId,
@@ -530,7 +530,7 @@ export function acceptCancel(invoiceId, handler = {}) {
 
 /** Flow sellerCancelOrder: invoice (preparing, không đang pending) + reason/handler -> invoice
  *  (cancelled, seller_cancelled) terminal NGAY (không qua accept), stamp meta.cancel — xem
- *  docs/PAY.rst §3.4. */
+ *  hook/PAY.rst §3.4. */
 export function sellerCancelOrder(invoiceId, reason, handler = {}) {
     const trimmed = (reason ?? '').trim();
     if (!trimmed) return null; // [1] CHECK
@@ -543,7 +543,7 @@ export function sellerCancelOrder(invoiceId, reason, handler = {}) {
 }
 
 /** Flow confirmRefund: invoice (cancelled|returned, chưa refunded) + handler -> invoice (stamp
- *  meta.refunded, không đổi major/sub) — xem docs/PAY.rst §3.5. */
+ *  meta.refunded, không đổi major/sub) — xem hook/PAY.rst §3.5. */
 export function confirmRefund(invoiceId, handler = {}) {
     return _patchInvoiceMeta(
         invoiceId,
@@ -554,7 +554,7 @@ export function confirmRefund(invoiceId, handler = {}) {
 
 /** Flow rejectCancel: invoice (subStatus='pending') + rejectReason/handler -> invoice
  *  (subStatus='rejected'), stamp meta.sellerCancelled (note = lý do từ chối) — xem
- *  docs/PAY.rst §3.4. */
+ *  hook/PAY.rst §3.4. */
 export function rejectCancel(invoiceId, rejectReason, handler = {}) {
     const trimmed = (rejectReason ?? '').trim();
     if (!trimmed) return null; // [1] CHECK
@@ -566,7 +566,7 @@ export function rejectCancel(invoiceId, rejectReason, handler = {}) {
 }
 
 /** Flow requestReturn: invoice (delivery: delivered|received) + reason/handler -> invoice
- *  (returned) terminal NGAY, stamp meta.return (5 slot, kèm media) — xem docs/PAY.rst §3.5. */
+ *  (returned) terminal NGAY, stamp meta.return (5 slot, kèm media) — xem hook/PAY.rst §3.5. */
 export function requestReturn(invoiceId, reason, handler = {}) {
     const trimmed = (reason ?? '').trim();
     if (!trimmed) return null; // [1] CHECK
@@ -669,7 +669,7 @@ export function toggleCartNote(name, note) {
 }
 
 /** Flow clearCart: cart -> items rỗng. CHỈ gọi sau khi payment đã xác nhận (promoteToInvoice()
- *  thành công) — không phải mỗi lần checkout, xem docs/PAY.rst §5 "Giỏ hàng bị xoá NGAY khi
+ *  thành công) — không phải mỗi lần checkout, xem hook/PAY.rst §5 "Giỏ hàng bị xoá NGAY khi
  *  checkout". `promos` không bị đụng (catalog của seller, không phải state của đơn này). */
 export function clearCart(name) {
     const s = get(name); if (!s) return; // [1] CHECK
@@ -681,7 +681,7 @@ export function clearCart(name) {
 // ════════════════════════════════════════════════════════════════════════════
 //
 // Chủ động CHỈ lưu IndexedDB cục bộ (conductor + Storager) — KHÔNG qua Firestore. Mã seller tạo
-// trên thiết bị của họ không tự đồng bộ sang thiết bị khác — đánh đổi đã biết, xem docs/PAY.rst §3.8.
+// trên thiết bị của họ không tự đồng bộ sang thiết bị khác — đánh đổi đã biết, xem hook/PAY.rst §3.8.
 
 export function addPromo(name, promo) {
     const s = get(name); if (!s) return;
@@ -723,10 +723,10 @@ export async function initCustomer(name) {
 // biết rõ hơn về người mua (vd svc-bay.js: nếu người đang đăng nhập CHÍNH LÀ chủ 1 bay khác, dùng
 // luôn phone/địa chỉ đã xác minh lúc họ tạo bay đó khi đi MUA ở 1 bay khác). Hàm này thuần —
 // KHÔNG tự biết gì về "bay", chỉ nhận sẵn field cần điền, giữ `pay` độc lập domain (xem
-// docs/PAY.rst §1). Không đè field đã có giá trị (tôn trọng dữ liệu người dùng tự nhập/đã lưu
+// hook/PAY.rst §1). Không đè field đã có giá trị (tôn trọng dữ liệu người dùng tự nhập/đã lưu
 // trước đó). Có thể chạy TRƯỚC cả initCustomer() (domain gọi ngay lúc mở app, trước khi buyer mở
 // tab checkout) — nên đọc/ghi thẳng Storager, không dựa vào state conductor đã setup hay chưa.
-// webs/bay (được phép dùng pay, xem docs/PAY.rst §1 điểm 4) gọi hàm này để mồi sẵn dữ liệu.
+// webs/bay (được phép dùng pay, xem hook/PAY.rst §1 điểm 4) gọi hàm này để mồi sẵn dữ liệu.
 export async function seedCustomerExtra({ fullName = '', email = '', phone = '', location = '' } = {}, name = 'pay_customer') {
     if (!fullName && !email && !phone && !location) return;
     const { default: Storager } = await import('@/services/storager.js');

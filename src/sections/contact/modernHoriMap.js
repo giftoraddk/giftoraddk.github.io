@@ -1,6 +1,6 @@
 export const hashtags = ['contact', 'modern', 'hori', 'map', 'icon', 'link'];
 
-// subtitle/title/description theo chuẩn docs/SCHEMA.rst `records` cho Tier 0 (Intro);
+// subtitle/title/description theo chuẩn hook/SCHEMA.rst `records` cho Tier 0 (Intro);
 // meta.address/meta.phone/meta.email cho Tier 2 (Contact info — CHỈ field trong meta, không
 // dùng field top-level nào) — sửa qua svc-admin (dataTable="sectionItems", schema chung
 // records.js) sẽ đổi trực tiếp cả 2 tier dưới đây (map vẫn tĩnh — flourish trang trí).
@@ -33,7 +33,7 @@ const baseConfig = {
 
 	tiers: [
 		// ── Tier 0: Intro — data-bound (subtitle/title/description), tier động
-		// render đúng 1 lần vì `data` chỉ có 1 phần tử (xem docs/web-board.rst § Tiers mode) ──
+		// render đúng 1 lần vì `data` chỉ có 1 phần tử (xem hook/web-board.rst § Tiers mode) ──
 		[{
 			groupCol: [12],
 			groupRow: ['auto'],

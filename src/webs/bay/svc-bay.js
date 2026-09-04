@@ -6,7 +6,7 @@
 // gửi/nhận qua session, render <svc-chat> (component chat DÙNG CHUNG mọi domain — src/webs/chat/,
 // KHÔNG thuộc channel — xem comment đầu file đó) + <svc-bay-sections> (board sản phẩm/section)
 // + <svc-bay-call> (UI cuộc gọi) trong feature slot/overlay. Đây là sub-project cuối trong
-// roadmap 5 phần — xem docs/superpowers/specs/2026-07-23-bay-foundation-design.md.
+// roadmap 5 phần — xem hook/superpowers/specs/2026-07-23-bay-foundation-design.md.
 //
 // Light DOM (createRenderRoot trả `this`) — cần cho <web-board> bên trong <svc-bay-sections>
 // (CSS grid của nó chỉ inject document.head, không vượt qua được ranh giới Shadow DOM).
@@ -271,7 +271,7 @@ export class SvcBay extends LitElement {
     // Người đang đăng nhập nếu đã tự tạo 1 bay của chính mình thì rất có khả năng dùng đúng
     // phone/địa chỉ đã xác minh lúc tạo bay đó khi đi MUA ở 1 bay khác — mồi sẵn vào "Thông tin
     // khách hàng" (section `pay_customer` của svc-pay-customer.js, webs/pay — bay ĐƯỢC PHÉP dùng
-    // pay, xem docs/PAY.rst §1 điểm 4) đỡ họ gõ lại tay. Fire-and-forget, không chặn render — chỉ
+    // pay, xem hook/PAY.rst §1 điểm 4) đỡ họ gõ lại tay. Fire-and-forget, không chặn render — chỉ
     // có ý nghĩa "tiện" chứ không phải path chính.
     async _dcSeedOwnCustomer() {
         if (!this._user) return

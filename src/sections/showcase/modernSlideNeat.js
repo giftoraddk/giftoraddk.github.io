@@ -36,7 +36,7 @@ const baseConfig = {
 			],
 			stys: { overflow: 'hidden' },
 			bg: { ...getStyleOpts({ rounded: '1.75rem', gradient: false }) },
-			slider: { autoplay: 5000, loop: true, slides: 1, spacing: 0, nav: false, dots: false },
+			slider: { autoplay: 5000, loop: true, slides: 1, spacing: 20, nav: false, dots: false },
 		}],
 		{
       // intro

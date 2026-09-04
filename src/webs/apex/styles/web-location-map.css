@@ -68,7 +68,7 @@
 }
 
 .suggest-text.pulse {
-	color: var(--color-primary, #2ebd85);
+	color: var(--color-primary, #34ace0);
 	animation: wlmap-pulse 1.2s ease-in-out infinite;
 }
 
@@ -107,13 +107,13 @@
 }
 
 .btn-icon.confirm {
-	color: var(--color-primary, #2ebd85);
-	border-color: color-mix(in oklab, var(--color-primary, #2ebd85) 35%, transparent);
+	color: var(--color-primary, #34ace0);
+	border-color: color-mix(in oklab, var(--color-primary, #34ace0) 35%, transparent);
 }
 
 .btn-icon.confirm:hover {
-	background: color-mix(in oklab, var(--color-primary, #2ebd85) 12%, transparent);
-	border-color: var(--color-primary, #2ebd85);
+	background: color-mix(in oklab, var(--color-primary, #34ace0) 12%, transparent);
+	border-color: var(--color-primary, #34ace0);
 }
 
 .btn-icon.clear {
@@ -128,9 +128,9 @@
 }
 
 .btn-icon.pick:hover {
-	color: var(--color-primary, #2ebd85);
-	border-color: var(--color-primary, #2ebd85);
-	background: color-mix(in oklab, var(--color-primary, #2ebd85) 8%, transparent);
+	color: var(--color-primary, #34ace0);
+	border-color: var(--color-primary, #34ace0);
+	background: color-mix(in oklab, var(--color-primary, #34ace0) 8%, transparent);
 }
 
 /* ── Map dialog ──────────────────────────────────────────────────── */
@@ -169,7 +169,7 @@
 	gap: 6px;
 	padding: 0 18px;
 	height: 32px;
-	background: var(--color-primary, #2ebd85);
+	background: var(--color-primary, #34ace0);
 	color: #000;
 	border: none;
 	border-radius: var(--core-radius);

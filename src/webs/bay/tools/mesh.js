@@ -8,7 +8,7 @@
 //
 // Topology: star, hub = chủ bay — mọi peer khác `joinHub(hubPeerId)` thẳng vào đúng 1 id đã biết
 // (đọc từ Firestore `bays/{id}.peer_id`, xem tools/service.js writeHubPeerId/readHubPeerId).
-// Không còn full-mesh (mỗi cặp tự bắt tay riêng) — xem docs/CHANNEL.rst cho lý do đánh đổi.
+// Không còn full-mesh (mỗi cặp tự bắt tay riêng) — xem hook/CHANNEL.rst cho lý do đánh đổi.
 
 import Peer from 'peerjs'
 import { createTokenBucket } from './ratelimit.js'

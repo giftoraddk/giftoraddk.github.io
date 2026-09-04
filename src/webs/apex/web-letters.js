@@ -20,7 +20,7 @@ export class WebLetters extends LitElement {
 		.wl-unit { display: inline-block; }
 		.wl-motion { opacity: 0; }
 
-		/* Typography chuẩn — xem docs/DESIGN.rst § "Font size chuẩn". Override qua stys (kèm // custom <prop>). */
+		/* Typography chuẩn — xem hook/DESIGN.rst § "Font size chuẩn". Override qua stys (kèm // custom <prop>). */
 		h1.wl-text { font-size: clamp(2.5rem, 5vw, 4.5rem); font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; white-space: pre-line; }
 		h2.wl-text { font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; white-space: pre-line; }
 		h3.wl-text { font-size: clamp(1.75rem, 3vw, 2.5rem); font-weight: 600; line-height: 1.2; letter-spacing: -0.01em; white-space: pre-line; }
@@ -146,7 +146,7 @@ export class WebLetters extends LitElement {
 		if (!icon) return nothing
 		const m = side === 'pre' ? 'margin-right:0.375rem' : 'margin-left:0.375rem'
 		return this.iconSize
-			? html`<iconify-icon .icon=${icon} style="${m};vertical-align:middle;font-size:${this.iconSize}"></iconify-icon>`
+			? html`<iconify-icon .icon=${icon} style="${m};vertical-align:sub;font-size:${this.iconSize}"></iconify-icon>`
 			: html`<span>${icon}</span>`
 	}
 

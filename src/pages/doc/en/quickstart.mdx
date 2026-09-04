@@ -1,0 +1,122 @@
+---
+layout: '../../../layouts/LayoutDoc.astro'
+title: 'Quick Start'
+description: 'Installation, dev server, and your first page'
+---
+
+# Quick Start
+
+<div class="doc-intro">
+  <p>From repo clone to a running page in under 5 minutes — this guide covers installation, core commands, and how to create your first page.</p>
+</div>
+
+## Requirements
+
+- **Node.js** 18 or higher
+- **pnpm** (recommended) — install with `npm install -g pnpm`
+- An editor with TypeScript and Astro support (VSCode + Astro extension)
+
+## Installation
+
+```bash
+# Clone the project
+git clone <repo-url> my-site
+cd my-site
+
+# Install dependencies
+pnpm install
+```
+
+## Core Commands
+
+| Command | Description |
+|---|---|
+| `pnpm dev` | Start dev server at `http://localhost:5000` with hot reload |
+| `pnpm build` | Production build — outputs static HTML to `dist/` |
+| `pnpm preview` | Preview the production build on a local server |
+| `pnpm run webs` | Bundle Lit Web Components (uses `vite.webs.mjs`) |
+| `pnpm run mega` | Bundle with aggressive minification + obfuscation (uses `vite.mega.mjs`) |
+
+During development, only `pnpm dev` is needed. The `webs` and `mega` commands are used when you want to package and distribute Web Components independently.
+
+## Directory Structure
+
+```
+src/
+├── pages/          # Astro pages (.astro, .mdx) — each file is a route
+├── layouts/        # Layout components (LayoutDoc.astro, Layout.astro, etc.)
+├── components/     # Reusable Astro components (Head, Nav, etc.)
+├── webs/
+│   ├── apex/       # Primitive Web Components: web-boxs, web-box, web-cell, web-board, ...
+│   └── <domain>/   # Domain micro-services: svc-*.js and tools/service.js
+├── sections/       # Config files per domain section
+│   └── <domain>/   # baseConfig and data config for a specific domain
+├── services/       # conductor.js and shared services
+└── styles/         # Global CSS, theme variables, typography
+```
+
+**Path alias**: `@/` points to `src/`. Use `@/services/conductor.js` instead of `../../services/conductor.js`.
+
+## Your First Page
+
+Create `src/pages/products.astro`:
+
+```astro
+---
+// src/pages/products.astro
+import Layout from '@/layouts/Layout.astro';
+
+// Import section config
+import { productConfig } from '@/sections/shop/config.js';
+---
+
+<Layout title="Products">
+  <!-- Web Component receives config and data -->
+  <web-boxs
+    config={JSON.stringify(productConfig)}
+    dataApi="/api/products.json"
+    ui="modern"
+  ></web-boxs>
+
+  <!-- Load Web Component script -->
+  <script type="module" src="/src/webs/apex/web-boxs.js"></script>
+</Layout>
+```
+
+## Loading Web Components
+
+There are two ways to load Web Components in Astro:
+
+**Option 1 — Script tag in page:**
+```astro
+<script type="module" src="/src/webs/apex/web-boxs.js"></script>
+```
+
+**Option 2 — Import in frontmatter (bundled):**
+```astro
+---
+import '@/webs/apex/web-boxs.js';
+---
+```
+
+Option 2 bundles the component into the output — suited for use with `pnpm run webs`.
+
+## Path Alias `@/`
+
+The entire project uses the `@/` alias instead of relative paths:
+
+```js
+// Instead of:
+import { all, get } from '../../services/conductor.js';
+
+// Use:
+import { all, get } from '@/services/conductor.js';
+```
+
+The alias is pre-configured in `astro.config.mjs` and `tsconfig.json`.
+
+## Next Steps
+
+- Read [Architecture](/doc/en/architecture) to understand how the layers connect
+- See [Web Boxs](/doc/en/web-boxs) to create your first card grid
+- Learn about [Conductor](/doc/en/conductor) for data management

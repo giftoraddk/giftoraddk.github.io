@@ -30,7 +30,7 @@
 .sub-steps { max-width: 860px; }
 
 /* ── Panels renderer trực tiếp trong <svc-pay> — panel LIVE của 3 major đã tách sang
-   svc-pay-order.js/-processing.js/-delivery.js (CSS riêng mỗi file, xem docs/PAY.rst
+   svc-pay-order.js/-processing.js/-delivery.js (CSS riêng mỗi file, xem hook/PAY.rst
    §3.1/§3.12) — ở đây chỉ còn panel tóm tắt/xem lại (_rbOrderReadonlySummary,
    _rbPastMajorSummary) + refund block dùng chung 2 major (_rbRefundBlock). ─────────────────── */
 

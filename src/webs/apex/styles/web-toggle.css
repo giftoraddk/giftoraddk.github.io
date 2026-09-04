@@ -36,7 +36,7 @@
 }
 
 .web-toggle.active .toggle-track {
-	background: var(--color-primary, #2ebd85);
+	background: var(--color-primary, #34ace0);
 }
 
 .toggle-thumb {
@@ -72,7 +72,7 @@
 }
 
 .spatial.active .toggle-track {
-	background: color-mix(in oklab, var(--color-primary, #2ebd85) 60%, rgba(255, 255, 255, 0.1));
+	background: color-mix(in oklab, var(--color-primary, #34ace0) 60%, rgba(255, 255, 255, 0.1));
 }
 
 .spatial .toggle-thumb {

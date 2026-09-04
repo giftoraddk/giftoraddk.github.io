@@ -17,20 +17,20 @@
 
 .progress-bar {
     height: 100%;
-    background: var(--color-primary, #2ebd85);
+    background: var(--color-primary, #34ace0);
     transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
 }
 
 /* Color Tokens mapping */
-.web-progress.primary { --progress-color: var(--color-primary, #2ebd85); }
+.web-progress.primary { --progress-color: var(--color-primary, #34ace0); }
 .web-progress.info { --progress-color: var(--color-info, #00c7d4); }
 .web-progress.warning { --progress-color: var(--color-warning, #fbbf24); }
-.web-progress.error { --progress-color: var(--color-secondary, #f5465c); }
-.web-progress.success { --progress-color: var(--color-primary, #2ebd85); }
+.web-progress.error { --progress-color: var(--color-secondary, #706fd3); }
+.web-progress.success { --progress-color: var(--color-primary, #34ace0); }
 
 .web-progress .progress-bar {
-    background: var(--progress-color, var(--color-primary, #2ebd85));
+    background: var(--progress-color, var(--color-primary, #34ace0));
 }
 
 .web-progress.striped .progress-bar {

@@ -1,6 +1,6 @@
 import { getStyleOpts } from '@/services/helper';
 
-// Card config cho talentDirectoryGrid (docs/new_feature.md §8) — theo đúng khuôn
+// Card config cho talentDirectoryGrid (hook/new_feature.md §8) — theo đúng khuôn
 // src/sections/products/cardBase.js (card đơn, không tiers — dùng trực tiếp với `dataTable`,
 // KHÔNG phải section 'single' kiểu team/spatialCardGridNeat).
 //

@@ -12,12 +12,12 @@ const _BLANK = { name: '', phone: '', note: '', media: '' };
 
 /**
  * <svc-pay-delivery> — panel LIVE của major "Vận chuyển" (subId
- * 'packing'|'shipping'|'delivered'|'received'|'returned') — xem docs/PAY.rst §3.1/§3.12. Thuần
+ * 'packing'|'shipping'|'delivered'|'received'|'returned') — xem hook/PAY.rst §3.1/§3.12. Thuần
  * presentational — mọi form nhập (packing/shipping/delivered/received/return) là state NỘI BỘ, kể
  * cả toggle "Trả hàng" (`_showReturnForm`, trước đây sống ở <svc-pay>) — chỉ bắn event
  * `delivery:*` kèm payload đầy đủ khi bấm action. Ảnh minh chứng (return/delivered) đi qua
  * `<svc-pay-reason>`'s `showMedia` (dùng chung, xem svc-pay-reason.js) — không tự render
- * `<web-photor-upload>` riêng nữa. `isPast` (đang xem lại 1 sub đã qua trong CÙNG major) tự tính
+ * `<svc-photor>` riêng nữa. `isPast` (đang xem lại 1 sub đã qua trong CÙNG major) tự tính
  * từ `meta`/`subId` — không cần prop riêng. Bước hoàn tiền (subId 'returned') vẫn do <svc-pay> tự
  * render sau component này, xem svc-pay.js's _rbRefundBlock().
  *
@@ -150,7 +150,7 @@ export class SvcPayDelivery extends LitElement {
     // meta.shipping = ai đã chuyển giao cho đơn vị giao hàng (confirmShipped(), stamp lúc rời màn
     // 'shipping') — KHÁC meta.delivered (seller/shipper tự xác nhận ĐÃ THẬT SỰ giao xong, chốt
     // ngay trên màn 'delivered', xem _rbDelivered()). isPast đọc đúng field 'shipping', không phải
-    // 'packing' (người đóng gói, khác người giao — bug đã gặp thật, xem docs/PAY.rst §5).
+    // 'packing' (người đóng gói, khác người giao — bug đã gặp thật, xem hook/PAY.rst §5).
     _rbShipping() {
         const isPast = this._comIsPast;
         const h = this._shippingForm;
@@ -177,7 +177,7 @@ export class SvcPayDelivery extends LitElement {
     // nhận hàng" ngay khi vào sub này — có thể tự bấm bất kỳ lúc nào, không phụ thuộc seller/
     // shipper đã "Xác nhận đã giao" hay chưa. Seller: PHẢI tự bấm hành động đó trước (field
     // 'delivered', kèm media minh chứng — KHÁC meta.shipping) — countdown tự động hoàn tất CHỈ bắt
-    // đầu SAU bước này, xem docs/PAY.rst §3.6.
+    // đầu SAU bước này, xem hook/PAY.rst §3.6.
     _rbDelivered() {
         const isPast = this._comIsPast;
         const h = this._receivedForm;

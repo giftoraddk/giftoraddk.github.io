@@ -13,7 +13,7 @@
 import { requester } from '@/services/requester.js';
 
 // Cùng bảng ENV_KEYS như firestore.js (client) — giữ đồng bộ tên kết nối khi thêm/đổi.
-const ENV_KEYS: Record<string, string> = { firestore: 'PUBLIC_DB_INVO', auth: 'PUBLIC_DB_AUTH', invoices: 'PUBLIC_DB_INVO' };
+const ENV_KEYS: Record<string, string> = { firestore: 'PUBLIC_DB', auth: 'PUBLIC_DB_AUTH', invoices: 'PUBLIC_DB_INVO' };
 
 // Cùng cơ chế mask như firestore.js (client) — `~k!t@d~` có thể chèn ở bất kỳ
 // đâu trong env value để né grep plaintext; bóc ra trước khi split('~').

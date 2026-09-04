@@ -2,7 +2,7 @@ import { LitElement, html, unsafeCSS } from 'lit';
 import '@/webs/apex/web-text.js';
 import '@/webs/apex/web-textarea.js';
 import '@/webs/apex/web-button.js';
-import '@/webs/apex/web-photor-upload.js';
+import '@/webs/media/svc-photor.js';
 import css from './styles/svc-pay-reason.css?inline';
 import { emit } from '@/services/helper.js';
 import { loadHandlerCache, saveHandlerCache } from './tools/service.js';
@@ -18,9 +18,9 @@ import { loadHandlerCache, saveHandlerCache } from './tools/service.js';
  * truyền vào; mỗi lần đổi field bắn `reason:input` ({key, value}), bấm nút bắn `reason:action` —
  * parent tự merge state + gọi service.js tương ứng.
  *
- * `showMedia` (mặc định false) bật thêm `<web-photor-upload>` — dùng CHUNG cho mọi form cần đính
+ * `showMedia` (mặc định false) bật thêm `<svc-photor>` — dùng CHUNG cho mọi form cần đính
  * ảnh minh chứng (return: ảnh hàng trả; delivery: ảnh xác nhận đã giao...) thay vì mỗi nơi gọi tự
- * render `<web-photor-upload>` + tự quản lý 1 state `media` rời như trước — nay chỉ cần truyền
+ * render `<svc-photor>` + tự quản lý 1 state `media` rời như trước — nay chỉ cần truyền
  * `?showMedia mediaPh=... media=${h.media}`, đổi field `media` cũng đi qua CHUNG event
  * `reason:input` ({key:'media', value}) như name/phone/note.
  *
@@ -185,13 +185,13 @@ export class SvcPayReason extends LitElement {
 					: ''}
 				${this.showMedia
 					? html`
-							<web-photor-upload
+							<svc-photor
 								class="reason-input"
 								multiple
 								ui=${this.ui}
 								placeholder=${this.mediaPh}
 								.value=${this.media}
-								@change=${(e) => this._dhInput('media', e.detail.value)}></web-photor-upload>
+								@change=${(e) => this._dhInput('media', e.detail.value)}></svc-photor>
 					  `
 					: ''}
 				${this.actionLabel

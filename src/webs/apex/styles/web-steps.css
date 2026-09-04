@@ -2,7 +2,7 @@
     box-sizing: border-box;
     display: block;
     width: 100%;
-    --step-color:  var(--color-primary, #2ebd85);
+    --step-color:  var(--color-primary, #34ace0);
     --step-error:  var(--color-error, #f5465c);
     --step-muted:  color-mix(in oklab, var(--color-base-content, #fff) 35%, transparent);
     --core-font:   var(--font-sans, system-ui);
@@ -29,6 +29,11 @@
     /* grid-template-columns set inline */
     align-items: center;
     width: 100%;
+}
+:host(.horizontal-custom) .steps-head {
+  margin: -1rem -1rem 0;
+  padding: 1rem;
+  background: #ffffff26;
 }
 
 .web-steps.steps-vertical .steps-head {
@@ -136,6 +141,7 @@
 }
 
 .step-label {
+    line-height: 1;
     font-size: var(--step-label-font, clamp(0.75rem, 0.9vw, 0.875rem));
     font-weight: 500;
     color: var(--step-muted);

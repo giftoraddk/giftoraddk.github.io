@@ -26,7 +26,7 @@ const QUALITY_SAMPLE_MS = 1000;
  * a fade-out grace period once it leaves, so live context count tracks what's actually
  * on-screen. Motion is computed entirely in the vertex shader from a single time
  * uniform, so per-frame JS cost stays flat regardless of particle count. See
- * docs/superpowers/specs/2026-08-26-underlay-webgl-background-design.md for the full
+ * hook/superpowers/specs/2026-08-26-underlay-webgl-background-design.md for the full
  * design rationale.
  *
  * Also supports an optional CSS gradient-blob layer (`gradient` + `blobType`
@@ -687,7 +687,7 @@ if (!customElements.get('svc-underlay')) {
     customElements.define('svc-underlay', SvcUnderlay);
 }
 
-// Config object (getStyleOpts() output, xem docs/DESIGN.rst) → <svc-underlay> template — dùng
+// Config object (getStyleOpts() output, xem hook/DESIGN.rst) → <svc-underlay> template — dùng
 // chung bởi web-boxs.js (bg mỗi tier/card) và web-board.js (bg cấp section), thay cho web-bg.js
 // trước đây. Chỉ forward các field getStyleOpts thực sự tạo ra (blur/gradient/blobType/total/
 // colorful/distance/deg/tint/rounded/fixed) — concept/density/speed/size/push/trail… giữ nguyên

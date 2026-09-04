@@ -128,8 +128,8 @@ export const menuItems = [
 	},
 	{
 		iconMobile: 'ri:file-search-line',
-		text: 'Docs',
-		href: '/docs',
+		text: 'Document',
+		href: '/doc',
 	},
 	{
 		iconMobile: 'ri:apps-ai-line',

@@ -11,7 +11,7 @@ const TXT_STD = {
 
 /**
  * <svc-pay-booking> — chọn phương thức thanh toán, độc lập domain `pay` (dùng ở bước "Đặt hàng"
- * của <svc-pay-order>, xem docs/PAY.rst).
+ * của <svc-pay-order>, xem hook/PAY.rst).
  *
  * Props:
  *   wallet       — { bank: { accountNo, accountName, bankName, bin },

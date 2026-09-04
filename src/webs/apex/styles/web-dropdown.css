@@ -82,21 +82,31 @@
 }
 
 .option-item:hover {
-	background: var(--color-primary, #2ebd85);
+	background: var(--color-primary, #34ace0);
 	color: #ffffff;
 }
 
 .option-item iconify-icon {
 	font-size: 1.25rem;
 	opacity: 0.8;
+	flex-shrink: 0;
+}
+
+.option-item .option-label {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	text-align: left;
 }
 
 .option-item.danger {
-	color: var(--color-secondary, #f5465c);
+	color: var(--color-secondary, #706fd3);
 }
 
 .option-item.danger:hover {
-	background: var(--color-secondary, #f5465c);
+	background: var(--color-secondary, #706fd3);
 	color: #ffffff;
 }
 
@@ -115,7 +125,7 @@
 }
 
 .options-list::-webkit-scrollbar-thumb:hover {
-	background: var(--color-primary, #2ebd85);
+	background: var(--color-primary, #34ace0);
 }
 
 /**
@@ -131,5 +141,5 @@
 
 .spatial .option-item:hover {
 	background: rgba(255, 255, 255, 0.1);
-	color: var(--color-primary, #2ebd85);
+	color: var(--color-primary, #34ace0);
 }

@@ -3,10 +3,10 @@
 // Nút tròn "Thống kê" trong bysec-toolbox (svc-bay-sections.js) — hoặc tự nổi fixed qua prop
 // position/x/y (vd CoreShop.astro) — cùng khuôn nút tròn + dialog riêng của
 // <svc-pay-warden>/<svc-pay-promo type="circle">. Bản viết lại ĐỘC LẬP từ
-// webs/bay/svc-bay-stats.js cho domain `pay` (xem docs/PAY.rst §1 — không import gì từ webs/bay),
+// webs/bay/svc-bay-stats.js cho domain `pay` (xem hook/PAY.rst §1 — không import gì từ webs/bay),
 // KHÁC bản gốc ở 2 điểm bắt buộc vì khác data model:
 //   1. Không có "khách ghé thăm" (presence/devices qua P2P mesh — domain pay không có mesh, xem
-//      docs/PAY.rst §1 điểm 2) — thay bằng "khách hàng" = số buyer_id duy nhất suy thẳng từ chính
+//      hook/PAY.rst §1 điểm 2) — thay bằng "khách hàng" = số buyer_id duy nhất suy thẳng từ chính
 //      invoice đã tải, không cần nguồn dữ liệu nào khác.
 //   2. Không có field lưu HÌNH THỨC THANH TOÁN trên invoice (`payment_id` chỉ là mã tham chiếu QR,
 //      xem promoteToInvoice() ở tools/service.js — _payMethod không bao giờ được persist) — thay
@@ -14,7 +14,7 @@
 //      (meta.fulfillment: 'delivery'|'pickup', LUÔN có mặt trên mọi invoice).
 // Chỉ tính trên đơn ĐÃ HOÀN TẤT thật (meta.sub === 'received') — khác bản gốc đếm nguyên
 // this._invoices.length dù nhãn ghi "thành công": domain `pay` có state machine huỷ/trả hàng rõ
-// ràng (meta.sub 'cancelled'/'returned', xem docs/PAY.rst §3.4/§3.5) nên gộp cả đơn đã huỷ/trả vào
+// ràng (meta.sub 'cancelled'/'returned', xem hook/PAY.rst §3.4/§3.5) nên gộp cả đơn đã huỷ/trả vào
 // doanh thu là SAI — lọc _comCompleted trước khi tính bất kỳ KPI/biểu đồ nào.
 import { LitElement, html, unsafeCSS } from 'lit';
 import '@/webs/apex/web-dialog.js';

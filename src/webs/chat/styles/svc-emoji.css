@@ -22,13 +22,13 @@
 	border-radius: 50%;
 	border: none;
 	cursor: pointer;
-	background-color: color-mix(in oklab, var(--color-primary, #2ebd85) 15%, transparent);
-	color: var(--color-primary, #2ebd85);
+	background-color: color-mix(in oklab, var(--color-primary, #34ace0) 15%, transparent);
+	color: var(--color-primary, #34ace0);
 	transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .emoji-trigger:hover {
-	background-color: color-mix(in oklab, var(--color-primary, #2ebd85) 25%, transparent);
+	background-color: color-mix(in oklab, var(--color-primary, #34ace0) 25%, transparent);
 }
 
 .emoji-panel {

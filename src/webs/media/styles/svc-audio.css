@@ -39,7 +39,7 @@
 }
 
 .audio-bar.played {
-    background-color: var(--color-primary, #2ebd85);
+    background-color: var(--color-primary, #34ace0);
 }
 
 .audio-duration {

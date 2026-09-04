@@ -1,5 +1,5 @@
 // src/webs/bay/tools/bayAdapter.js
-// DbAdapter (docs/CRUD.rst) cho products — Firestore THẬT (collection `products`, project
+// DbAdapter (hook/CRUD.rst) cho products — Firestore THẬT (collection `products`, project
 // PUBLIC_DB, xem services/firestore.js), KHÔNG còn IndexedDB + P2P mesh (PRODUCT_EVENT/
 // SYNC_RESPONSE.products) như trước: Firestore onSnapshot đã tự lo real-time cho mọi thiết bị/
 // peer, khỏi cần tự dựng lại qua mesh. Field `bay_id` do adapter này tự thêm khi ghi + tự lọc khi
@@ -11,7 +11,7 @@
 // KHÔNG đẩy sortBy/searchField xuống Firestore: kết hợp equality-filter với orderBy/range trên
 // field khác (vd svc-admin's `orderable` → sortBy:'index', xem _comQueryOpts() trong
 // svc-admin.js) sẽ bắt buộc composite index tạo thủ công trên Firestore Console mới chạy được
-// (xem docs/CRUD.rst § "Lưu ý Firestore index") — tránh hẳn phụ thuộc đó cho products.
+// (xem hook/CRUD.rst § "Lưu ý Firestore index") — tránh hẳn phụ thuộc đó cho products.
 import { registerAdapter } from '@/services/crud.js'
 import { firestoreAdapter } from '@/services/firestore.js'
 import { applyListOpts } from './bayChannel.js'

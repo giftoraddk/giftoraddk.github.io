@@ -1,0 +1,96 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-tabs'
+description: 'Tab switcher with configurable labels, active state, alignment, and size'
+---
+
+# web-tabs
+
+Renders a tab bar for switching between labeled content sections. Supports left, center, or right alignment, multiple sizes, and keyboard navigation.
+
+## When to use
+
+- Organize related content into named sections without a full page navigation
+- Filter a view by category (e.g. "All", "Active", "Archived")
+- Settings panels with distinct groups of options
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-tabs.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `tabs` | string (JSON) | `'[]'` | Array of `{ label: string, value?: string, disabled?: boolean }` |
+| `active` | number | `0` | Zero-based index of the initially active tab |
+| `align` | string | `'left'` | Tab bar alignment: `left` \| `center` \| `right` |
+| `size` | string | `'md'` | Tab size: `xs` \| `sm` \| `md` \| `lg` |
+| `variant` | string | `'line'` | Visual style: `line` \| `boxed` \| `lifted` |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+
+## Basic Example
+
+```html
+<web-tabs
+  active="0"
+  tabs='[
+    {"label": "Overview"},
+    {"label": "Features"},
+    {"label": "Pricing"},
+    {"label": "FAQ"}
+  ]'
+  id="main-tabs"
+></web-tabs>
+
+<!-- Tab panels — show/hide based on active tab -->
+<div id="tab-overview">Overview content</div>
+<div id="tab-features"  hidden>Features content</div>
+<div id="tab-pricing"   hidden>Pricing content</div>
+<div id="tab-faq"       hidden>FAQ content</div>
+
+<script type="module" src="/src/webs/apex/web-tabs.js"></script>
+```
+
+## Advanced Examples
+
+Center-aligned boxed tabs with disabled option:
+
+```html
+<web-tabs
+  variant="boxed"
+  align="center"
+  size="lg"
+  tabs='[
+    {"label": "Daily"},
+    {"label": "Weekly"},
+    {"label": "Monthly"},
+    {"label": "Yearly", "disabled": true}
+  ]'
+></web-tabs>
+```
+
+Wiring tabs to content panels:
+
+```html
+<web-tabs id="product-tabs" active="0"
+  tabs='[{"label":"Description"},{"label":"Specs"},{"label":"Reviews"}]'
+></web-tabs>
+
+<script>
+  const panels = ['description', 'specs', 'reviews'];
+  document.getElementById('product-tabs').addEventListener('web-tab-change', e => {
+    panels.forEach((id, i) => {
+      document.getElementById(id).hidden = (i !== e.detail.index);
+    });
+  });
+</script>
+```
+
+## Events
+
+| Event | When | Detail |
+|---|---|---|
+| `web-tab-change` | User clicks a tab | `{ index: number, label: string, value: string }` |

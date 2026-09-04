@@ -6,7 +6,7 @@ import { toPrice, productSlug } from '@/services/helper.js';
 import { menuItems, policies, socials } from '@/modules/landing/home.js';
 
 // Trang catalog CRAWLABLE cho products — song song với /shop (cart UI 100% client-side, xem
-// docs/geo-platform-plan.md §B0). Cùng khung với src/pages/post/index.astro: fetch build-time,
+// hook/geo-platform-plan.md §B0). Cùng khung với src/pages/post/index.astro: fetch build-time,
 // bake data thật vào HTML (SEO/GEO), rồi client script "làm giàu" bằng search/sort/infinite-scroll.
 // KHÔNG có add-to-cart ở đây — trang này chỉ để crawl/đọc, mua hàng vẫn qua /shop.
 
@@ -146,7 +146,7 @@ const desStys = {
 
 		// ── Firebase executor (serverExecutor = true) ───────────────────────────
 		// Routed through conductor — cùng section 'products' mà /shop dùng, nên đã sẵn IndexedDB
-		// cache/TTL (docs/SERVICES.rst) — không tạo section riêng cho trang này.
+		// cache/TTL (hook/SERVICES.rst) — không tạo section riêng cho trang này.
 		async function getFirebaseData() {
 			await conductorAll('products', { dataTable: 'products' });
 			const raw = conductorGet('products')?.data ?? [];

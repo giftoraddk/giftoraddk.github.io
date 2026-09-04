@@ -1,0 +1,91 @@
+---
+import CoreShop from '@/layouts/CoreShop.astro';
+import { variant, views, menuItems, footerMenuItems, policies, socials, shop, bar, contact } from '@/modules/shop/gift';
+import { budgetTiers } from '@/modules/gift-budget.js';
+
+// Build đúng 4 mức ngân sách (xem gift-budget.js) — mỗi mức 1 trang static, lọc sản phẩm theo
+// khoảng giá thật (field `pricing`, xem web-boxs.js's _applyFilter/_priceOf) — khác cơ chế đoán
+// biến thể tag như [occasions].astro vì đây là so sánh số, không phải so khớp chuỗi.
+// getStaticPaths() được compiler tách ra scope riêng, chỉ giữ lại import — không đọc được const
+// khai báo bên ngoài — nên phải tính lại BUDGET_TIERS ngay trong hàm này.
+export function getStaticPaths() {
+	return budgetTiers.map((tier) => ({ params: { budget: tier.key } }));
+}
+
+const { budget: budgetKey } = Astro.params;
+const tier = budgetTiers.find((t) => t.key === budgetKey)!;
+
+const BUDGET_SEO: Record<string, { title: string; description: string }> = {
+	'under-200k': {
+		title: 'Quà Tặng Doanh Nghiệp Dưới 200k – Đẹp & Tiết Kiệm',
+		description: 'Tổng hợp quà tặng doanh nghiệp giá dưới 200.000đ, đẹp mắt và tiết kiệm chi phí. Giftora DDK gợi ý quà tặng phù hợp số lượng lớn, in logo theo yêu cầu.',
+	},
+	'200-500k': {
+		title: 'Quà Tặng Doanh Nghiệp 200k – 500k – Tinh Tế, Vừa Túi Tiền',
+		description: 'Quà tặng doanh nghiệp tầm giá 200.000đ – 500.000đ, tinh tế và chất lượng. Giftora DDK có đa dạng mẫu mã phù hợp tặng nhân viên, khách hàng và đối tác.',
+	},
+	'500k-1m': {
+		title: 'Quà Tặng Doanh Nghiệp 500k – 1 Triệu – Sang Trọng',
+		description: 'Quà tặng doanh nghiệp tầm giá 500.000đ – 1.000.000đ, sang trọng và ý nghĩa. Giftora DDK cung cấp set quà cao cấp, đóng gói tinh tế, giao hàng toàn quốc.',
+	},
+	'premium': {
+		title: 'Quà Tặng Doanh Nghiệp Cao Cấp – Đẳng Cấp & Ấn Tượng',
+		description: 'Quà tặng doanh nghiệp cao cấp trên 1.000.000đ, đẳng cấp và ấn tượng dành cho đối tác, khách hàng VIP. Giftora DDK tư vấn set quà cao cấp theo yêu cầu riêng.',
+	},
+};
+const seo = BUDGET_SEO[budgetKey] ?? {
+	title: `Quà Tặng Doanh Nghiệp ${tier.label.vi} – Giftora DDK`,
+	description: `Gợi ý quà tặng doanh nghiệp tầm giá ${tier.label.vi} tại Giftora DDK — đa dạng mẫu mã, đóng gói tinh tế, giao hàng nhanh toàn quốc.`,
+};
+
+const currentView = views.find(v => v.href === '/') ?? views[0];
+
+// Chỉ hard-filter đúng section sản phẩm (dataTable: 'products'): preset range (áp dụng ngay khi
+// vào trang) + ranges (danh sách đủ 4 mức để hiện chip, cho phép người dùng đổi mức khác ngay
+// trên trang mà không cần quay lại menu — xem web-boxs-search.js). Section hero ghi thêm tên mức
+// ngân sách vào trước title có sẵn, tương tự [occasions].astro.
+const sections = currentView.sections.map((sec: any) => {
+	if (sec.dataTable === 'products') {
+		return {
+			...sec,
+			filterState: {
+				...(sec.filterState || {}),
+				rangeField: 'pricing',
+				rangeKey: tier.key,
+				ranges: budgetTiers.map((t) => ({ key: t.key, label: t.label, min: t.min, max: t.max })),
+			},
+		};
+	}
+	if (sec.id === 'showcaseModernSlideNeat' && sec.data?.[0]) {
+		const baseTitle = sec.data[0].title;
+		const baseVi = typeof baseTitle === 'object' ? (baseTitle.vi ?? Object.values(baseTitle)[0]) : baseTitle;
+		const baseEn = typeof baseTitle === 'object' ? (baseTitle.en ?? baseVi) : baseTitle;
+		const title = { vi: `${tier.label.vi} • ${baseVi}`, en: `${tier.label.en} • ${baseEn}` };
+		return { ...sec, data: [{ ...sec.data[0], title }, ...sec.data.slice(1)] };
+	}
+	return sec;
+});
+
+const bg = { blur: true }
+---
+
+<CoreShop
+	title={seo.title}
+  description={seo.description}
+  image="/images/common/gift-light.webp"
+	menu={{ type: 'top', position: 'prefix', menuItems: menuItems }}
+	footer={{ columns: footerMenuItems, policies, socials, contact, bg }}
+	bg={variant.bg}
+	theme={variant.theme}
+	variant={variant}
+  shop={shop}
+  bar={bar}
+>
+	<script src='@/webs/apex/web-board.js'></script>
+	<div>
+		<web-board
+			unlock={import.meta.env.PUBLIC_EXP}
+			variant={JSON.stringify(variant)}
+		><script type="application/json" is:inline set:html={JSON.stringify(sections)}></script></web-board>
+	</div>
+</CoreShop>

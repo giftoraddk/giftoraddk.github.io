@@ -1,9 +1,9 @@
 // src/webs/bay/tools/service.js — domain hub cho bay: bays directory (Firestore), device
 // identity, signaling 1-shot offer/answer, presence + chat + blob transfer + commerce
 // (sections/sectionItems — IndexedDB db_bay; products lưu Firestore thật, xem tools/bayAdapter.js;
-// order/invoice thật thuộc webs/pay, xem docs/PAY.rst). IndexedDB riêng `db_bay`. Chỉ import tầng
+// order/invoice thật thuộc webs/pay, xem hook/PAY.rst). IndexedDB riêng `db_bay`. Chỉ import tầng
 // infra chung dùng cho mọi domain (services/*, webs/auth) — xem
-// docs/superpowers/specs/2026-07-23-bay-foundation-design.md § Context.
+// hook/superpowers/specs/2026-07-23-bay-foundation-design.md § Context.
 
 import { createService } from '@/services/crud.js'
 import { getFirebaseApp } from '@/services/firestore.js'
@@ -134,7 +134,7 @@ export function listenBay(bayId, onNext, onError) {
 // ── Ping — báo tin nhắn riêng cho peer KHÔNG đang link mesh của đúng bay đó (mesh chỉ sống
 // cho 1 bay tại 1 thời điểm, xem svc-bay.js._dhOpenBay/_dhLeaveBay). Key theo CẢ (to, from) —
 // không phải chỉ `pings.{toDeviceId}` — vì 1 field đơn sẽ bị đè mất nếu 2 sender khác nhau ping
-// cùng 1 recipient gần nhau (đúng race mà docs/CHANNEL.rst § 4.4 đã từng vá 1 lần cho `signals`,
+// cùng 1 recipient gần nhau (đúng race mà hook/CHANNEL.rst § 4.4 đã từng vá 1 lần cho `signals`,
 // không lặp lại ở đây). Không có clearPing — recipient tự dedupe qua _seenPingIds (svc-bay.js),
 // để key cũ nằm im trên doc vô hại, đổi lại bớt hẳn 1 write/ping.
 export function writePing(bayId, toDeviceId, fromDeviceId, fromUser) {

@@ -11,7 +11,7 @@ const TXT_STD = {
 }
 
 /**
- * <svc-pay-customer> — form hồ sơ liên hệ buyer, độc lập domain `pay` (xem docs/PAY.rst). Section
+ * <svc-pay-customer> — form hồ sơ liên hệ buyer, độc lập domain `pay` (xem hook/PAY.rst). Section
  * conductor riêng `pay_customer` (Storager key riêng, tách hoàn toàn khỏi domain khác).
  */
 export class SvcPayCustomer extends LitElement {

@@ -19,9 +19,9 @@
 .Editor li { margin: 0.2em 0; }
 .Editor strong, .Editor b { font-weight: 700; }
 .Editor em, .Editor i { font-style: italic; }
-.Editor a { color: var(--color-primary, #2ebd85); text-decoration: underline; }
+.Editor a { color: var(--color-primary, #34ace0); text-decoration: underline; }
 .Editor blockquote {
-	border-left: 3px solid var(--color-primary, #2ebd85);
+	border-left: 3px solid var(--color-primary, #34ace0);
 	padding-left: 1em; opacity: 0.8; margin: 0.5em 0;
 }
 .Editor code {

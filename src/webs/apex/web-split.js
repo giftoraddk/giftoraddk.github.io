@@ -98,7 +98,7 @@ export class WebSplit extends LitElement {
     }
 
     .resizer:hover {
-      background-color: var(--color-primary, #2ebd85);
+      background-color: var(--color-primary, #34ace0);
     }
 
     .horizontal > .resizer {
@@ -148,7 +148,7 @@ export class WebSplit extends LitElement {
     }
 
     .toggle-btn:hover {
-      background-color: var(--color-primary, #2ebd85);
+      background-color: var(--color-primary, #34ace0);
       color: #fff;
       transform: translate(-50%, -50%) scale(1.1);
     }

@@ -1,0 +1,159 @@
+---
+layout: '../../../layouts/LayoutDoc.astro'
+title: 'Theming'
+description: 'CSS variable system, dark/light mode, and customization'
+---
+
+# Theming
+
+<div class="doc-intro">
+  <p>All colors in Astro Micro flow through ApexUI CSS variables. Switching themes is a single HTML attribute change — no CSS overrides needed.</p>
+</div>
+
+## ApexUI Themes
+
+Themes are applied via the `data-theme` attribute on the `<html>` element:
+
+```html
+<html data-theme="dark">   <!-- dark mode -->
+<html data-theme="light">  <!-- light mode -->
+```
+
+ApexUI provides a set of built-in themes and allows custom themes defined in `tailwind.config`. All color variables update automatically when `data-theme` changes.
+
+## CSS Variables
+
+Components read from the following CSS variables — always use these, never hardcode colors:
+
+| Variable | Purpose |
+|---|---|
+| `--color-primary` | Brand accent color |
+| `--color-secondary` | Secondary accent |
+| `--color-base-100` | Page background |
+| `--color-base-200` | Slightly elevated surface (cards, panels) |
+| `--color-base-300` | Further elevated surface (popovers, modals) |
+| `--color-base-content` | Default text on base backgrounds |
+| `--color-primary-content` | Text on primary-colored backgrounds |
+| `--color-error` | Error / destructive state |
+| `--color-warning` | Warning state |
+| `--color-success` | Success state |
+| `--color-info` | Informational state |
+
+## mainColors Prop
+
+Web Components accept a `mainColors` prop — a pipe-separated string of exactly 5 CSS variable names:
+
+```
+primary|base-100|base-200|base-300|base-content
+```
+
+The component maps these to internal `--color-*` variables. Always pass variable names, not resolved values:
+
+```html
+<!-- Correct -->
+<web-boxs main-colors="primary|base-100|base-200|base-300|base-content"></web-boxs>
+
+<!-- Wrong — hardcoded values break theme switching -->
+<web-boxs main-colors="#3b82f6|#ffffff|#f3f4f6|#e5e7eb|#111827"></web-boxs>
+```
+
+## textColor Prop
+
+For quick overrides on individual components:
+
+```html
+<web-boxs
+  text-color="var(--color-base-content)"
+></web-boxs>
+```
+
+Only CSS variable references — no hex or rgb values. Decorative backgrounds use the `bg` config field (built via `getStyleOpts`, rendered through `<web-bg>`) instead of a flat background-color override.
+
+## Color Rule (Strict)
+
+> **Only use system CSS variables in any config (`makes`, `stys`, `groupStyle`, etc.). Never hardcode hex/rgb values.**
+
+This rule applies everywhere: component props, `sty` objects in `makes`, `groupStyle`, and inline styles.
+
+```js
+// Correct
+{ stys: { color: 'var(--color-primary)', background: 'var(--color-base-200)' } }
+
+// Wrong
+{ stys: { color: '#3b82f6', background: '#f9fafb' } }
+```
+
+## Spatial UI — Glassmorphism
+
+The `spatial` UI variant activates glassmorphism on surfaces:
+
+```html
+<web-boxs ui="spatial"></web-boxs>
+```
+
+This applies:
+
+```css
+backdrop-filter: blur(var(--core-blur));
+background: color-mix(in sRGB, var(--color-base-100) 60%, transparent);
+```
+
+`--core-blur` defaults to `12px` and can be customized in your theme CSS.
+
+## Dark Mode Toggle
+
+Dark mode state is stored in a cookie and applied to `<html>` before paint to avoid flash:
+
+```astro
+---
+// In your layout file
+const theme = Astro.cookies.get('theme')?.value ?? 'light';
+---
+<html data-theme={theme}>
+```
+
+Toggle via JavaScript:
+
+```js
+function toggleTheme() {
+  const html = document.documentElement;
+  const next = html.dataset.theme === 'dark' ? 'light' : 'dark';
+  html.dataset.theme = next;
+  document.cookie = `theme=${next}; path=/; max-age=31536000`;
+}
+```
+
+## Custom Theme
+
+Define a custom theme in `tailwind.config.mjs`:
+
+```js
+export default {
+  plugins: [
+    require('daisyui'),
+  ],
+  daisyui: {
+    themes: [
+      {
+        mybrand: {
+          'primary': '#6366f1',
+          'base-100': '#0f172a',
+          'base-200': '#1e293b',
+          'base-300': '#334155',
+          'base-content': '#f1f5f9',
+        },
+      },
+      'light',
+      'dark',
+    ],
+  },
+};
+```
+
+Then apply: `<html data-theme="mybrand">`.
+
+## Next Steps
+
+- [Design Guide](/doc/en/design-guide) — how to use CSS variables in baseConfig
+- [Animations](/doc/en/animations) — combining themes with motion effects
+- [Components](/doc/en/components) — component-level `ui` and `theme` props

@@ -1,8 +1,8 @@
 :host {
 	z-index: 0;
 	position: relative;
-	display: inline;
-  width: 100%;
+	display: contents;
+  min-width: fit-content;
 	cursor: pointer;
 	--core-font: var(--font-sans, system-ui);
 }

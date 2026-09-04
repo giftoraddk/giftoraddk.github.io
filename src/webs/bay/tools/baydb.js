@@ -3,9 +3,9 @@
 // Version 1: devices (presence). Version 2 (chat + blob): + chats, blobs. Version 3 (commerce):
 // + products, sections, sectionItems. Version 4 (promo): + promos. Mỗi sub-project sau bump
 // DB_VERSION + thêm store riêng trong onupgradeneeded, không đụng store cũ (xem
-// docs/superpowers/specs/2026-07-23-bay-foundation-design.md). `orders`/`invoices` (checkout
+// hook/superpowers/specs/2026-07-23-bay-foundation-design.md). `orders`/`invoices` (checkout
 // cục bộ dựa trên svc-basket cũ) đã có mặt ở version 3 nhưng KHÔNG còn accessor nào ghi/đọc —
-// order/invoice thật giờ thuộc webs/pay (Firestore, xem docs/PAY.rst); DB_VERSION giữ nguyên,
+// order/invoice thật giờ thuộc webs/pay (Firestore, xem hook/PAY.rst); DB_VERSION giữ nguyên,
 // chỉ ngưng tạo 2 store đó cho cài đặt mới. `products` cùng cảnh ngộ — giờ lưu Firestore thật
 // (xem tools/bayAdapter.js), store IndexedDB vẫn khai báo cho tương thích DB_VERSION cũ nhưng
 // không còn accessor nào ghi/đọc.

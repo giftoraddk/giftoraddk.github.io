@@ -206,7 +206,7 @@
 }
 .img-prompt-header span { flex: 1; }
 .img-prompt-body { padding: 10px 12px; }
-.img-prompt-body web-photor-upload { display: block; }
+.img-prompt-body svc-photor { display: block; }
 .img-prompt-actions {
   display: flex;
   align-items: center;

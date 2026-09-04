@@ -29,12 +29,12 @@ const pageDescription = "LIT Custom Elements (Web Components)";
     <script src="@/webs/apex/web-files.js"></script>
     <script src="@/webs/apex/web-pagination.js"></script>
     <script src="@/webs/apex/web-photor.js"></script>
-    <script src="@/webs/apex/web-photor-upload.js"></script>
     <script src="@/webs/apex/web-popover.js"></script>
     <script src="@/webs/apex/web-split.js"></script>
     <script src="@/webs/apex/web-text.js"></script>
     <script src="@/webs/apex/web-textarea.js"></script>
     <script src="@/webs/apex/web-toast.js"></script>
+    <script src="@/webs/apex/svc-photor.js"></script>
     <script src="@/webs/graph/svc-graph.js"></script>
     <script src="@/webs/graph/svc-pie.js"></script>
 
@@ -545,16 +545,16 @@ const pageDescription = "LIT Custom Elements (Web Components)";
                 <div
                     class="badge badge-soft badge-info absolute top-0 left-0 group-hover:block hidden"
                 >
-                    web-photor-upload
+                    svc-photor
                 </div>
                 <div class="flex flex-col gap-4 w-full max-w-md mx-auto">
                     <div>
                         <p class="text-[10px] uppercase opacity-50 mb-2">Single URL</p>
-                        <web-photor-upload placeholder="Upload ảnh → lấy URL"></web-photor-upload>
+                        <svc-photor placeholder="Upload ảnh → lấy URL"></svc-photor>
                     </div>
                     <div>
                         <p class="text-[10px] uppercase opacity-50 mb-2">Multiple URLs</p>
-                        <web-photor-upload multiple placeholder="Upload nhiều ảnh → link1|link2..."></web-photor-upload>
+                        <svc-photor multiple placeholder="Upload nhiều ảnh → link1|link2..."></svc-photor>
                     </div>
                 </div>
             </figure>

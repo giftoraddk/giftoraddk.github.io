@@ -1,9 +1,6 @@
-import { occasions } from '@/services/constants/tags.js';
-import { policies as policyDocs } from '@/modules/policies';
-
-// 5 dịp đầu tiên đã build static tại src/pages/gift/[occasions].astro — dùng chung nguồn để menu
-// và route static luôn khớp nhau.
-const OCCASION_KEYS = Object.keys(occasions.vi).slice(0, 5);
+// menuItems/footerMenuItems/policies giờ dùng chung 1 nguồn duy nhất từ modules/shop/gift.js
+// (hrefs tuyệt đối '/gift/...' — dùng được cho mọi trang /gift/*, kể cả index.astro này) — xem
+// src/pages/gift/index.astro. File này chỉ còn giữ nội dung riêng của trang landing (variant/views).
 
 // ── UI Common ─────────────────────────────────────────────────────────────────
 export const variant = {
@@ -37,7 +34,7 @@ export const views = [
 				data: [
 					{
 						title: { vi: 'Giftora DDK', en: 'Giftora DDK' },
-						slider: [{ pics: '/images/common/gift-banner.webp' }, { pics: '/images/common/gift-light.webp' }, { pics: '/images/common/gift-dark.webp' }],
+						slider: [{ pics: '/images/common/gift-main.webp' }, { pics: '/images/common/gift-banner.webp' }, { pics: '/images/common/gift-light.webp' }, { pics: '/images/common/gift-dark.webp' }],
 					},
 				],
 				config: (await import('@/sections/showcase/modernSlideNeat.js')).config,
@@ -120,60 +117,6 @@ export const bar = {
 		{ icon: 'ri:tiktok-fill', href: '#', text: 'TikTok' },
 	],
 };
-
-export const menuSpecials = [
-  {
-		iconMobile: 'ri:home-line',
-		text: { vi: 'Hỗ trợ khách hàng', en: 'Customer support' },
-		full: true, // chiếm trọn hàng ngang trong grid cột của footer
-		items: [
-			{ text: { vi: 'Thời gian làm việc: 8:00 - 17:30 từ thứ 2 đến thứ 6. Thứ 7 từ 8:00 - 12:00 (Nghỉ chủ nhật và các ngày lễ)', en: 'Working hours: 8:00 AM - 5:30 PM, Monday to Friday. Saturday from 8:00 AM - 12:00 PM (Closed on Sundays and public holidays)' } },
-		],
-	},
-]
-
-export const menuItems = [
-  {
-    iconMobile: 'ri:home-line',
-    text: { vi: 'Tổng quan', en: 'Overview' },
-    items: [
-      { text: { vi: 'Giới thiệu', en: 'Introduction' }, href: '#showcaseModernSlideNeat' },
-      { text: { vi: 'Bộ sưu tập', en: 'Collection' }, href: '#giftsModernStatsIntro' },
-    ],
-  },
-  {
-    iconMobile: 'ri:gift-2-line',
-    text: { vi: 'Dịch vụ', en: 'Services' },
-    items: [
-      { text: { vi: 'Dịch vụ', en: 'Services' }, href: '#giftsModernServiceGrid' },
-      { text: { vi: 'Bán chạy nhất', en: 'Best sellers' }, href: '#giftsModernSlideBestSeller' },
-      { text: { vi: 'Hình ảnh nổi bật', en: 'Featured gallery' }, href: '#giftsModernGalleryStrip' },
-    ],
-  },
-  {
-    iconMobile: 'ri:chat-quote-line',
-    text: { vi: 'Khách hàng', en: 'Customers' },
-    items: [
-      { text: { vi: 'Khách hàng nói gì', en: 'What customers say' }, href: '#giftsModernSlideTestimonials' },
-      { text: { vi: 'Thương hiệu đối tác', en: 'Partner brands' }, href: '#giftsModernSlideBrands' },
-    ],
-  },
-  {
-    iconMobile: 'ri:shopping-bag-4-line',
-    text: { vi: 'Sản phẩm', en: 'Products' },
-    items: OCCASION_KEYS.map((key) => ({
-      text: { vi: occasions.vi[key], en: occasions.en[key] },
-      href: `/gift/${key}`,
-    })),
-  },
-];
-
-// footer dùng menuItems trước, menuSpecials xếp dưới cùng (chiếm trọn hàng) — menu top nav vẫn giữ nguyên menuItems
-export const footerMenuItems = [...menuItems, ...menuSpecials];
-
-// 4 chính sách công ty (thanh toán, vận chuyển, đổi trả/hoàn tiền, bảo mật) — nội dung song ngữ
-// đầy đủ tại src/modules/policies.js, render tại src/pages/gift/policy/[slug].astro
-export const policies = policyDocs.map((doc) => ({ text: doc.title, href: `/gift/policy/${doc.slug}` }));
 
 export const socials = [
 	{ text: 'Facebook', href: 'https://www.facebook.com/giftoraddk', icon: 'ri:facebook-fill' },

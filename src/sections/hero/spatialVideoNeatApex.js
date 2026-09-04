@@ -1,6 +1,6 @@
 export const hashtags = ['hero', 'spatial', 'video', 'fullbleed', 'overlay', 'apex'];
 
-// subtitle/title/description theo chuẩn docs/SCHEMA.rst `records` — sửa qua svc-admin
+// subtitle/title/description theo chuẩn hook/SCHEMA.rst `records` — sửa qua svc-admin
 // (dataTable="sectionItems", schema chung records.js) sẽ đổi trực tiếp nội dung dưới đây
 // (cue/video vẫn tĩnh — flourish trang trí của template, không phải content).
 export const data = [
@@ -30,7 +30,7 @@ const baseConfig = {
 
 	tiers: [
 		// Array = tier động, render đúng 1 lần vì `data` chỉ có 1 phần tử (xem
-		// docs/web-board.rst § Tiers mode) — subtitle/heading/description data-bound.
+		// hook/web-board.rst § Tiers mode) — subtitle/heading/description data-bound.
 		[{
 			groupCol: ['12', '12'],
 			groupRow: ['auto', 'auto'],

@@ -76,11 +76,11 @@ input.wc-swatch[type="color"]:disabled {
     transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.wc-hex:hover  { border-color: var(--color-primary, #2ebd85); }
+.wc-hex:hover  { border-color: var(--color-primary, #34ace0); }
 
 .wc-hex:focus {
-    border-color: var(--color-primary, #2ebd85);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary, #2ebd85) 15%, transparent);
+    border-color: var(--color-primary, #34ace0);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary, #34ace0) 15%, transparent);
 }
 
 .wc-hex:disabled {
@@ -119,10 +119,10 @@ input.wc-swatch[type="color"]:disabled {
 .wt-del:hover { background: color-mix(in oklab, var(--color-error, #f5465c) 15%, transparent); }
 
 .wt-add {
-    color: var(--color-primary, #2ebd85);
-    border-color: color-mix(in oklab, var(--color-primary, #2ebd85) 50%, transparent);
+    color: var(--color-primary, #34ace0);
+    border-color: color-mix(in oklab, var(--color-primary, #34ace0) 50%, transparent);
 }
 .wt-add:hover {
-    background: color-mix(in oklab, var(--color-primary, #2ebd85) 15%, transparent);
-    border-color: var(--color-primary, #2ebd85);
+    background: color-mix(in oklab, var(--color-primary, #34ace0) 15%, transparent);
+    border-color: var(--color-primary, #34ace0);
 }

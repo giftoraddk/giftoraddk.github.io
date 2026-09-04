@@ -76,7 +76,7 @@ export class WebTooltip extends LitElement {
     // (creates a new containing block for fixed descendants) combined with overflow:hidden/
     // auto (then clips it, vd bên trong 1 khung chat scroll). Top-layer rendering bypasses cả
     // 2 trường hợp bất kể lồng sâu bao nhiêu — cùng kỹ thuật với web-dropdown/web-select/
-    // web-popover, xem docs/web-apex.rst.
+    // web-popover, xem hook/web-apex.rst.
     _showPopover() {
         const content = this.shadowRoot.querySelector('.tooltip-container');
         if (content?.showPopover && !content.matches(':popover-open')) {

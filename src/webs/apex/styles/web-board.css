@@ -32,7 +32,7 @@
 	position: absolute;
 	inset: -3px;
 	border-radius: 0.75rem;
-	border: 2px dashed var(--color-primary, #2ebd85);
+	border: 2px dashed var(--color-primary, #34ace0);
 	pointer-events: none;
 	z-index: 10;
 }
@@ -122,5 +122,5 @@
 
 .wb-empty.is-clickable:hover {
 	opacity: 0.85;
-	border-color: var(--color-primary, #2ebd85);
+	border-color: var(--color-primary, #34ace0);
 }

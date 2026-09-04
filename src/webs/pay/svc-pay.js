@@ -21,12 +21,12 @@ import { fmtDateTime, fmtCountdown, handledByLine, orderItemsBlock } from './too
 const _EMPTY_HANDLER = { name: '', phone: '', note: '' };
 
 /**
- * <svc-pay> — quy trình giao dịch thật giữa buyer/seller cho 1 order (xem docs/PAY.rst §2). Điều
+ * <svc-pay> — quy trình giao dịch thật giữa buyer/seller cho 1 order (xem hook/PAY.rst §2). Điều
  * phối flow/state TOÀN CỤC (order/invoice/countdown/refund) — 3 panel LIVE theo từng major (Đặt
  * hàng/Xử lý đơn hàng/Vận chuyển) tách thành 3 component con thuần presentational —
  * `<svc-pay-order>`/`<svc-pay-processing>`/`<svc-pay-delivery>` — mỗi con chỉ bắn event
  * `order:*`/`processing:*`/`delivery:*` lên đây, KHÔNG tự gọi tools/service.js. Đầy đủ
- * contract prop/event từng component con: xem docs/PAY.rst §3.1/§3.12.
+ * contract prop/event từng component con: xem hook/PAY.rst §3.1/§3.12.
  *
  * 2 nguồn state:
  *  - `_order` — section conductor local (trước khi có invoice): items/payment method/deadline.
@@ -271,7 +271,7 @@ export class SvcPay extends LitElement {
     /** Flow _dcMaybeAutoConfirm: tick mỗi giây -> autoConfirmReceived() nếu đã quá hạn. App
      *  không có server/cron riêng — bất kỳ client nào đang mở invoice này (buyer, hoặc seller qua
      *  <svc-pay-warden>'s detail dialog) khi hết hạn đều có thể là người kích hoạt; hàm gọi tự
-     *  guard theo mốc giờ nên gọi thừa vẫn an toàn — xem docs/PAY.rst §3.6. */
+     *  guard theo mốc giờ nên gọi thừa vẫn an toàn — xem hook/PAY.rst §3.6. */
     _dcMaybeAutoConfirm() {
         if (this.invoiceId && this._comSub === 'delivered' && this._comDeliveredExpired) { // [1] CHECK
             autoConfirmReceived(this.invoiceId); // [3] EXECUTE
@@ -302,7 +302,7 @@ export class SvcPay extends LitElement {
     get _comPaymentRef() { return this._order?.order_id ? `PAY-${this._order.order_id}` : ''; }
 
     // Link tra cứu đơn hàng độc lập (src/pages/channel/invoice.astro — không cần đăng nhập/bay
-    // nào, chỉ cần đúng invoiceId), forward cho svc-pay-order — xem docs/PAY.rst §4. Dùng chung
+    // nào, chỉ cần đúng invoiceId), forward cho svc-pay-order — xem hook/PAY.rst §4. Dùng chung
     // buildInvoiceUrl() với svc-pay-warden.js's nút "mở tab mới" — cùng 1 công thức URL.
     get _comInvoiceUrl() {
         return buildInvoiceUrl(this.invoiceId, { role: this.role, sellerId: this.sellerId, bayId: this.bayId });
@@ -412,7 +412,7 @@ export class SvcPay extends LitElement {
     // — KHÁC meta.shipping, mốc "đã chuyển giao cho đơn vị giao hàng" chốt từ màn 'shipping') —
     // đọc thẳng slot đầu, dùng lại ở cả countdown dưới đây LẪN updated()'s `inDelivered` check.
     // Trước khi seller xác nhận, mốc này chưa tồn tại (0) nên chưa có countdown nào chạy — xem
-    // docs/PAY.rst §3.6.
+    // hook/PAY.rst §3.6.
     get _comDeliveredAt() { return parseHandler(this._comMeta.delivered).at; }
 
     // Deadline tự động xác nhận "Đã nhận hàng" — DELIVERY_CONFIRM_WINDOW_MS kể từ _comDeliveredAt.
@@ -457,7 +457,7 @@ export class SvcPay extends LitElement {
      *  cục bộ KHÔNG BAO GIỜ tự tiến theo invoice thật (chỉ mỗi Firestore mới biết processing/
      *  delivery đã tới đâu) — nếu vẫn dùng `_comOrderTerminal`, buyer mở giỏ mua tiếp LÚC đơn 1
      *  đang được seller xử lý (chưa terminal) sẽ bị GHI ĐÈ NHẦM lên chính đơn 1 đó thay vì tạo đơn
-     *  mới, tức giỏ hàng "không reset" sau khi đã thanh toán — xem docs/PAY.rst §5 "Chỉ hỗ trợ 1
+     *  mới, tức giỏ hàng "không reset" sau khi đã thanh toán — xem hook/PAY.rst §5 "Chỉ hỗ trợ 1
      *  order đang xử lý tại 1 thời điểm". Dùng `invoiceId` (set đồng bộ ngay trong
      *  `_dcSubscribeInvoice`, không đợi Firestore listen() trả về) thay vì `this._invoice` (populate
      *  bất đồng bộ) để tránh 1 khoảng hở ngắn ngay sau khi vừa xác nhận thanh toán. Luôn emit lại
@@ -499,7 +499,7 @@ export class SvcPay extends LitElement {
 
     /** Flow _dfConfirmPaid: order tạm (paying) -> promoteToInvoice() -> push Telegram notification
      *  + clearCart() (isCart, chỉ SAU KHI tạo invoice thành công — đây là ranh giới THẬT SỰ reset
-     *  giỏ hàng, xem docs/PAY.rst §5 "Giỏ hàng bị xoá NGAY khi checkout"). Guard `_confirmingPaid`
+     *  giỏ hàng, xem hook/PAY.rst §5 "Giỏ hàng bị xoá NGAY khi checkout"). Guard `_confirmingPaid`
      *  chặn double-click gọi trùng (nút chỉ tự ẩn sau khi `hasInvoice` cập nhật qua Firestore
      *  listenInvoice, có 1 khoảng trễ ngắn buyer vẫn bấm được lần 2). */
     async _dfConfirmPaid() {
@@ -576,7 +576,7 @@ export class SvcPay extends LitElement {
         // chỉ cần 1 thẻ <svc-pay isCart>. <svc-cart> (mua hàng) chỉ có ý nghĩa với role="buyer" —
         // seller không "mua hàng của chính mình" (chốt chặn thứ 2, độc lập với gate ?_isOwner ở
         // nơi mount). Lối vào lại đơn đã đặt dùng CHUNG 1 <svc-pay-warden> ở cấp toolbox cha, xem
-        // docs/PAY.rst §3.9/§4.
+        // hook/PAY.rst §3.9/§4.
         return html`
             <div class="pay-cart-wrap">
                 ${this.role === 'seller' ? html`` : html`
@@ -648,7 +648,7 @@ export class SvcPay extends LitElement {
 
     // 'cancelled' cần thêm bước hoàn tiền (refund) DÙNG CHUNG với major 3's 'returned' — vẫn do
     // <svc-pay> tự render (KHÔNG thuộc component con nào), bọc chung 1 `.order-panel` để giữ đúng
-    // khoảng cách dọc như trước khi tách file (xem docs/PAY.rst §3.12).
+    // khoảng cách dọc như trước khi tách file (xem hook/PAY.rst §3.12).
     _rbProcessingLive(subId) {
         const child = html`
             <svc-pay-processing

@@ -3,7 +3,7 @@ import { getStyleOpts } from '@/services/helper';
 export const hashtags = ['faq', 'spatial', 'accordion', 'expansion', 'questions', 'apex'];
 
 // Section này CHỈ có 1 record editable (svc-admin dùng mode `single`, xem svc-bay-sections.js)
-// — data luôn `data[0]` duy nhất: subtitle/description/meta.heroTitle là field top-level, còn
+// — data luôn `data[0]` duy nhất: subtitle/description/title là field top-level, còn
 // danh sách câu hỏi FAQ (nhiều item, độ dài co giãn) nằm NESTED trong `expansion` (tên field
 // khớp tên tier marker `expansion` mà web-board dùng, xem Tier 1's `dataKey: 'expansion'` bên
 // dưới). Mỗi phần tử `expansion[i]` là `{title, content}` — không phải 1 record thật nên tự do
@@ -12,7 +12,7 @@ export const data = [
 	{
 		subtitle: 'FREQUENTLY ASKED',
 		description: 'Everything you need to know about Apex — and then some.',
-		meta: { heroTitle: 'FAQs Answered' },
+		title: 'FAQs Answered',
 		expansion: [
 			{
 				title: 'What is Apex?',
@@ -93,7 +93,7 @@ const baseConfig = {
 				// Group 1: heading + subtitle
 				[
 					{
-						bit: 'meta.heroTitle',
+						bit: 'title',
 						opt: {
 							mode: 'h2',
 							motion: true, word: false, effect: 'riseUp',

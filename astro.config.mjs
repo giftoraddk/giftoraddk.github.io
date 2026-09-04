@@ -15,7 +15,7 @@ import vercel from '@astrojs/vercel';
 // thường lúc `pnpm dev`/`pnpm preview` (chỉ áp dụng khi command === 'build', xem
 // excludePagesIntegration bên dưới). Ghi tên thư mục tương đối tới src/pages/, vd 'channel' loại
 // toàn bộ src/pages/channel/**.
-const excludePages = ['channel', 'docs', 'landing', 'shop', 'talent', 'ui', 'software'];
+const excludePages = ['channel', 'doc', 'landing', 'shop', 'talent', 'ui', 'software'];
 
 // 'ssg' (mặc định) — mọi route bake tĩnh lúc build, đúng như trước giờ.
 // 'isr' (`PUBLIC_RENDER=isr pnpm build`, xem package.json "build:isr") — 4 route data-động ở
@@ -140,7 +140,7 @@ export default defineConfig({
 	// 	svgo: true,
 	// },
 	output: 'static',
-	outDir: './docs',
+	outDir: './doc',
 	// Only routes with `export const prerender = false` (e.g. the fake CRUD mock under
 	// /api/products, or the 4 ISR routes swapped in by renderModeIntegration when
 	// PUBLIC_RENDER=isr) run through an adapter — everything else stays a fully static build.

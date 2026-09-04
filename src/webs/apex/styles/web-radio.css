@@ -48,19 +48,19 @@
 }
 
 .web-radio:hover:not(.disabled) .radio-circle {
-	border-color: var(--color-primary, #2ebd85);
+	border-color: var(--color-primary, #34ace0);
 	box-shadow: 0 0 10px rgba(46, 189, 133, 0.2);
 }
 
 .web-radio.checked .radio-circle {
-	border-color: var(--color-primary, #2ebd85);
+	border-color: var(--color-primary, #34ace0);
 	background: transparent;
 }
 
 .radio-dot {
 	width: 10px;
 	height: 10px;
-	background: var(--color-primary, #2ebd85);
+	background: var(--color-primary, #34ace0);
 	border-radius: 50%;
 	transform: scale(0);
 	transition: transform 0.4s cubic-bezier(0.12, 0.4, 0.29, 1.46);
@@ -84,9 +84,9 @@
 
 .spatial.checked .radio-circle {
 	background: rgba(255, 255, 255, 0.1);
-	border-color: var(--color-primary, #2ebd85);
+	border-color: var(--color-primary, #34ace0);
 }
 
 .spatial .radio-dot {
-	background: var(--color-primary, #2ebd85);
+	background: var(--color-primary, #34ace0);
 }

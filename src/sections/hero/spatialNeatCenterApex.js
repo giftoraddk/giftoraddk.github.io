@@ -2,7 +2,7 @@ import { getStyleOpts } from '@/services/helper';
 
 export const hashtags = ['hero', 'spatial', 'centered', 'badge', 'avatar', 'cta'];
 
-// subtitle/title/description/meta.* theo chuẩn docs/SCHEMA.rst `records` — sửa qua svc-admin
+// subtitle/title/description/meta.* theo chuẩn hook/SCHEMA.rst `records` — sửa qua svc-admin
 // (dataTable="sectionItems", schema chung records.js) sẽ đổi trực tiếp nội dung dưới đây
 // (avatar ảnh vẫn tĩnh — flourish trang trí của template, không phải content).
 export const data = [
@@ -32,7 +32,7 @@ const baseConfig = {
 
 	tiers: [
 		// Array = tier động, render đúng 1 lần vì `data` chỉ có 1 phần tử (xem
-		// docs/web-board.rst § Tiers mode) — badge/headline/subtitle/CTA đều data-bound
+		// hook/web-board.rst § Tiers mode) — badge/headline/subtitle/CTA đều data-bound
 		// (title đã dùng nên phần "natively." + CTA/social-proof nằm ở meta.*), avatar ảnh
 		// vẫn bitLocal (flourish trang trí, không phải content).
 		[{

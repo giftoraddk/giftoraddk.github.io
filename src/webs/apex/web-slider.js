@@ -89,6 +89,7 @@ class SliderTrack {
 
     this._measure();
     if (this.opts.marquee) this._startMarquee();
+    setTimeout(() => this._measure(), 400); // FIXME: re-render
   }
 
   destroy() {
@@ -472,12 +473,21 @@ export class WebSlider extends LitElement {
       this.style.display = "flex";
     }
     this.initSlider();
+    // updated() runs right after this in the same pass — mark this cycle so it doesn't treat
+    // the first render's implicit "changed" props (every bound value differs from the
+    // constructor default) as a reinit trigger and immediately tear down/rebuild the track
+    // (and its ResizeObserver) it just built above, right on mount.
+    this._justInitialized = true;
   }
 
   updated(changed) {
     if (changed.has('theme') || changed.has('mainColors')
         || changed.has('textColor')) {
       this._applyCSS()
+    }
+    if (this._justInitialized) {
+      this._justInitialized = false;
+      return;
     }
     const reinitKeys = ["loop","mode","vertical","slides","spacing","effect","origin","images","reverse","marquee","autoplay"];
     if (reinitKeys.some(k => changed.has(k)) && this._track) {
@@ -540,7 +550,7 @@ export class WebSlider extends LitElement {
     }
   }
 
-  // Public JS API — see docs/web-apex.rst
+  // Public JS API — see hook/web-apex.rst
   next() { this._track?.next(); }
   prev() { this._track?.prev(); }
   goto(index) { this._track?.goto(index, true); }

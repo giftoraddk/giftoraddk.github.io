@@ -1,0 +1,84 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-pagination'
+description: 'Page number navigation with configurable total, per-page, and visible page count'
+---
+
+# web-pagination
+
+Renders a row of page number buttons for navigating paginated data. Automatically handles ellipsis for large page counts and emits an event when the user changes pages.
+
+## When to use
+
+- Paginated data tables, product grids, or search results
+- Blog post archives or article lists with many entries
+- Any list where loading all items at once is impractical
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-pagination.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `page` | number | `1` | Current active page (1-based) |
+| `total` | number | `0` | Total number of items |
+| `perPage` | number | `10` | Number of items per page |
+| `maxVisible` | number | `5` | Maximum number of page buttons shown before ellipsis |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+
+## Basic Example
+
+```html
+<web-pagination
+  page="1"
+  total="150"
+  per-page="10"
+  max-visible="7"
+></web-pagination>
+
+<script type="module" src="/src/webs/apex/web-pagination.js"></script>
+```
+
+## Advanced Examples
+
+Pagination wired to a data grid:
+
+```html
+<web-pagination id="pager" page="1" total="200" per-page="20"></web-pagination>
+
+<script>
+  document.getElementById('pager').addEventListener('web-page-change', e => {
+    const { page } = e.detail;
+    loadData({ page, perPage: 20 });
+  });
+
+  async function loadData({ page, perPage }) {
+    const offset = (page - 1) * perPage;
+    const res = await fetch(`/api/items.json?offset=${offset}&limit=${perPage}`);
+    renderItems(await res.json());
+    document.getElementById('pager').setAttribute('page', String(page));
+  }
+</script>
+```
+
+Compact pagination with spatial styling:
+
+```html
+<web-pagination
+  page="3"
+  total="50"
+  per-page="5"
+  max-visible="3"
+  ui="spatial"
+></web-pagination>
+```
+
+## Events
+
+| Event | When | Detail |
+|---|---|---|
+| `web-page-change` | User clicks a page button | `{ page: number, perPage: number, total: number }` |

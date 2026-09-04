@@ -58,11 +58,11 @@ web-text {
 }
 
 .wt-add {
-  color: var(--color-primary, #2ebd85);
-  border-color: color-mix(in oklab, var(--color-primary, #2ebd85) 50%, transparent);
+  color: var(--color-primary, #34ace0);
+  border-color: color-mix(in oklab, var(--color-primary, #34ace0) 50%, transparent);
 }
 
 .wt-add:hover {
-  background: color-mix(in oklab, var(--color-primary, #2ebd85) 15%, transparent);
-  border-color: var(--color-primary, #2ebd85);
+  background: color-mix(in oklab, var(--color-primary, #34ace0) 15%, transparent);
+  border-color: var(--color-primary, #34ace0);
 }

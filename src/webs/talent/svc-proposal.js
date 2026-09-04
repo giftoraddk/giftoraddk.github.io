@@ -31,10 +31,10 @@ const TXT_STD = {
 const TERMINAL_STAGES = ['declined'];
 
 /**
- * <svc-proposal> — orchestrator cho 1 proposal/negotiation/deal (docs/new_feature.md §1.4/§2.2/§7).
+ * <svc-proposal> — orchestrator cho 1 proposal/negotiation/deal (hook/new_feature.md §1.4/§2.2/§7).
  * Subscribe live qua listenProposal(), route panel theo `meta.stage`, panel con
  * (`svc-proposal-negotiate`/`svc-proposal-deal`) chỉ emit event — mọi gọi tools/service.js nằm ở
- * đây, đúng mẫu panel-splitting của `webs/pay` (docs/PAY.rst).
+ * đây, đúng mẫu panel-splitting của `webs/pay` (hook/PAY.rst).
  */
 export class SvcProposal extends LitElement {
     static styles = unsafeCSS(css);

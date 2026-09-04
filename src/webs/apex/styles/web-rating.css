@@ -67,13 +67,13 @@
 
 .rating *:focus-visible {
   transform: scale(1.2);
-  outline: 2px solid var(--color-primary, #2ebd85);
+  outline: 2px solid var(--color-primary, #34ace0);
   outline-offset: 2px;
 }
 
 /* Color Tokens mapping */
-.rating .color-primary { --rating-color: var(--color-primary, #2ebd85); }
-.rating .color-secondary { --rating-color: var(--color-secondary, #f5465c); }
+.rating .color-primary { --rating-color: var(--color-primary, #34ace0); }
+.rating .color-secondary { --rating-color: var(--color-secondary, #706fd3); }
 .rating .color-accent { --rating-color: var(--color-accent, #a855f7); }
 .rating .color-info { --rating-color: var(--color-info, #00c7d4); }
 .rating .color-warning { --rating-color: var(--color-warning, #fbbf24); }
@@ -142,7 +142,7 @@
 .spatial.rating *[aria-checked="true"],
 .spatial.rating *[aria-current="true"],
 .spatial.rating *:has(~ *:checked, ~ *[aria-checked="true"], ~ *[aria-current="true"]) {
-    background-color: var(--rating-color, var(--color-primary, #2ebd85));
+    background-color: var(--rating-color, var(--color-primary, #34ace0));
     background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, transparent 100%);
-    box-shadow: 0 0 15px color-mix(in oklab, var(--rating-color, var(--color-primary, #2ebd85)) 40%, transparent);
+    box-shadow: 0 0 15px color-mix(in oklab, var(--rating-color, var(--color-primary, #34ace0)) 40%, transparent);
 }

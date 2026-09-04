@@ -31,16 +31,16 @@
 }
 
 .page-btn.active {
-	box-shadow: 0 4px 15px color-mix(in oklab, var(--color-primary, #2ebd85) 50%, transparent);
-	background: var(--color-primary, #2ebd85) !important;
+	box-shadow: 0 4px 15px color-mix(in oklab, var(--color-primary, #34ace0) 50%, transparent);
+	background: var(--color-primary, #34ace0) !important;
 	color: #ffffff !important;
-	border-color: var(--color-primary, #2ebd85) !important;
+	border-color: var(--color-primary, #34ace0) !important;
 }
 
 .page-btn:hover:not(:disabled) {
-	background: color-mix(in oklab, var(--color-primary, #2ebd85) 5%, transparent);
-	color: var(--color-primary, #2ebd85);
-	border-color: var(--color-primary, #2ebd85);
+	background: color-mix(in oklab, var(--color-primary, #34ace0) 5%, transparent);
+	color: var(--color-primary, #34ace0);
+	border-color: var(--color-primary, #34ace0);
 	transform: translateY(-2px);
 }
 
@@ -73,6 +73,6 @@
 
 .spatial.web-pagination .page-btn:hover:not(:disabled) {
 	background: color-mix(in oklab, var(--color-base-content, #ffffff) 5%, transparent);
-	color: var(--color-primary, #2ebd85);
-	border-color: var(--color-primary, #2ebd85);
+	color: var(--color-primary, #34ace0);
+	border-color: var(--color-primary, #34ace0);
 }

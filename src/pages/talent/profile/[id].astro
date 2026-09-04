@@ -5,7 +5,7 @@ import { variant } from '@/modules/talent-page.js';
 
 // getStaticPaths — pre-generate 1 trang / talent ACTIVE lúc build, đúng convention
 // src/pages/post/[id].astro. Hồ sơ mới publish cần rebuild để có trang — chấp nhận cho MVP
-// (site tĩnh, xem docs/new_feature.md §0).
+// (site tĩnh, xem hook/new_feature.md §0).
 export async function getStaticPaths() {
 	const talents = await fetchCollection('talents');
 	return talents.map((t) => ({ params: { id: t.id }, props: { talent: t } }));

@@ -12,7 +12,7 @@ import { variant, views, SHOP_SELLER_ID, SHOP_WALLET, SHOP_VIETQR } from "@/modu
 // <svc-pay-stats> tự thân đã là nút tròn + dialog (giống hệt cách svc-bay-sections.js dùng chúng
 // trong toolbox), nên mount thẳng vào slot "actions" của NavBase (→ NavMobile's <slot name="actions">,
 // xem components/Nav/Mobile.astro) — không cần href/điều hướng trang nào nữa. role="seller"|"buyer"
-// gán qua script cuối file, dựa vào auth.isAdmin() (xem docs/PAY.rst §3.9, §4 Wiring — nơi mount).
+// gán qua script cuối file, dựa vào auth.isAdmin() (xem hook/PAY.rst §3.9, §4 Wiring — nơi mount).
 
 const currentView     = views.find(v => v.href === Astro.url.pathname) ?? views[0];
 const currentSections = (currentView.sections ?? []).map(({ config: _, data: __, ...s }: any) => s);

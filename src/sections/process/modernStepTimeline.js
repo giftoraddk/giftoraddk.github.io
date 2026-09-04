@@ -1,13 +1,13 @@
 export const hashtags = ['process', 'modern', 'timeline', 'steps'];
 
 // Section này CHỈ có 1 record editable (svc-admin dùng mode `single`, xem svc-bay-sections.js)
-// — data luôn `data[0]` duy nhất: subtitle/meta.heroTitle là field top-level, còn danh sách
+// — data luôn `data[0]` duy nhất: subtitle/title là field top-level, còn danh sách
 // step (nhiều item, độ dài co giãn) nằm NESTED trong `steps` (tên field khớp tên tier marker
 // `steps` mà web-board dùng, xem Tier 1's `dataKey: 'steps'` bên dưới).
 export const data = [
 	{
 		subtitle: 'PROCESS',
-		meta: { heroTitle: 'A better way to work from start to ship' },
+		title: 'A better way to work from start to ship',
 		steps: [
 			{ id: 'plan', title: 'Plan', icon: 'ri:file-list-3-line', content: 'Map your work and set clear priorities.' },
 			{ id: 'build', title: 'Build', icon: 'ri:code-s-slash-line', content: 'Collaborate and build with your team.' },
@@ -49,7 +49,7 @@ const baseConfig = {
 						},
 					},
 					{
-						bit: 'meta.heroTitle',
+						bit: 'title',
 						opt: {
 							mode: 'h2',
               motion: true,

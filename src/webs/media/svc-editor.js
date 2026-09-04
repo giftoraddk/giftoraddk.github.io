@@ -42,7 +42,7 @@ import { emit } from '@/services/helper.js'
 import css from './styles/svc-editor.css?inline'
 import pmCss from './styles/prose-mirror.css?inline'
 
-import '@/webs/apex/web-photor-upload.js'
+import '@/webs/media/svc-photor.js'
 import '@/webs/media/svc-player-embed.js'
 
 export class SvcEditor extends LitElement {
@@ -382,6 +382,14 @@ export class SvcEditor extends LitElement {
     // [2] PROCESS: Build user message theo mode (continue = viết tiếp, ask = trả lời theo prompt)
     const docText = this._editor?.getText() || ''
     const isCont  = this._aiPanel.mode === 'continue'
+
+    // Continue-writing trên tài liệu trống: không có gì để tiếp — báo lỗi tại chỗ,
+    // khỏi tốn 1 lượt gọi AI chỉ để nhận lại câu hỏi "bạn muốn tiếp cái gì?".
+    if (isCont && !docText.trim()) {
+      this._aiPanel = { ...this._aiPanel, loading: false, draft: '⚠ Chưa có nội dung để viết tiếp — hãy gõ vài dòng trước.' }
+      return
+    }
+
     const userMsg = isCont
       ? `Continue writing naturally from where this text ends. Output only the continuation:\n\n${docText}`
       : `Document context:\n${docText}\n\nUser request: ${this._aiPanel.prompt}`
@@ -689,11 +697,11 @@ export class SvcEditor extends LitElement {
           <button class="ai-close" @click=${() => { this._imgPrompt = { ...this._imgPrompt, open: false } }}>✕</button>
         </div>
         <div class="img-prompt-body">
-          <web-photor-upload
+          <svc-photor
             lang="vi"
             .value=${url}
             @change=${e => { this._imgPrompt = { ...this._imgPrompt, url: e.detail?.value ?? '' } }}
-          ></web-photor-upload>
+          ></svc-photor>
         </div>
         ${url.trim() ? html`
           <div class="img-preview">

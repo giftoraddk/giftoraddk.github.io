@@ -1,0 +1,109 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-table'
+description: 'Bảng dữ liệu với sort, filter và phân trang tích hợp'
+---
+
+# web-table
+
+Bảng dữ liệu đầy đủ tính năng: sắp xếp cột, hover highlight, sọc xen kẽ hàng và trạng thái loading. Nhận cấu hình cột và dữ liệu qua JSON.
+
+## Khi nào dùng
+
+- Hiển thị danh sách dữ liệu có cấu trúc: đơn hàng, người dùng, sản phẩm, v.v.
+- Khi người dùng cần so sánh dữ liệu theo hàng và cần sắp xếp theo cột
+- Thay thế cho bảng HTML thuần khi cần giao diện nhất quán với hệ thống thiết kế
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-table.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `columns` | array JSON | `[]` | Cấu hình cột: `[{"key":"...","label":"...","sortable":true}]` |
+| `data` | array JSON | `[]` | Mảng dữ liệu hàng — mỗi object là một hàng, key khớp với `columns[].key` |
+| `striped` | boolean | `false` | Sọc màu xen kẽ hàng chẵn/lẻ |
+| `hoverable` | boolean | `true` | Highlight hàng khi hover chuột |
+| `loading` | boolean | `false` | Hiển thị skeleton/spinner khi đang tải dữ liệu |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Ví dụ cơ bản
+
+```html
+<web-table
+  columns='[{"key":"name","label":"Tên","sortable":true},{"key":"price","label":"Giá","sortable":true},{"key":"status","label":"Trạng thái"}]'
+  data='[{"name":"Espresso","price":"35.000đ","status":"active"},{"name":"Latte","price":"49.000đ","status":"active"}]'
+  striped
+  hoverable>
+</web-table>
+```
+
+## Ví dụ nâng cao
+
+Bảng đơn hàng với trạng thái loading động:
+
+```html
+<web-table
+  id="orders-table"
+  columns='[
+    {"key":"id","label":"Mã đơn"},
+    {"key":"customer","label":"Khách hàng","sortable":true},
+    {"key":"total","label":"Tổng tiền","sortable":true},
+    {"key":"date","label":"Ngày đặt","sortable":true},
+    {"key":"status","label":"Trạng thái"}
+  ]'
+  data='[]'
+  striped
+  loading>
+</web-table>
+
+<script>
+  const table = document.getElementById('orders-table');
+
+  async function loadOrders() {
+    table.setAttribute('loading', '');
+    const res = await fetch('/api/orders');
+    const json = await res.json();
+    table.setAttribute('data', JSON.stringify(json.items));
+    table.removeAttribute('loading');
+  }
+
+  table.addEventListener('web-sort-change', (e) => {
+    console.log('Sắp xếp theo:', e.detail.key, e.detail.direction);
+    // Gọi lại API với sort params
+  });
+
+  loadOrders();
+</script>
+```
+
+Bảng nhỏ không có sort, spatial UI:
+
+```html
+<web-table
+  ui="spatial"
+  columns='[{"key":"lang","label":"Ngôn ngữ"},{"key":"ext","label":"Phần mở rộng"},{"key":"paradigm","label":"Mô hình"}]'
+  data='[
+    {"lang":"JavaScript","ext":".js","paradigm":"Multi-paradigm"},
+    {"lang":"TypeScript","ext":".ts","paradigm":"Object-oriented"},
+    {"lang":"Python","ext":".py","paradigm":"Multi-paradigm"}
+  ]'
+  hoverable>
+</web-table>
+```
+
+## Sự kiện
+
+| Sự kiện | Khi nào | Chi tiết |
+|---------|---------|---------|
+| `web-sort-change` | Người dùng nhấn tiêu đề cột có `sortable: true` | `{ key: string, direction: 'asc' \| 'desc' }` |
+
+```js
+document.querySelector('web-table').addEventListener('web-sort-change', (e) => {
+  console.log('Sắp xếp cột:', e.detail.key, 'chiều:', e.detail.direction);
+});
+```

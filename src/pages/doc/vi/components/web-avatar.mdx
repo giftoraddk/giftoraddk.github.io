@@ -1,0 +1,61 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-avatar'
+description: 'Hiển thị ảnh đại diện người dùng với trạng thái online/offline'
+---
+
+# web-avatar
+
+Hiển thị ảnh đại diện người dùng. Khi không có ảnh, tự động tạo placeholder từ chữ cái đầu của tên. Hỗ trợ badge trạng thái hoạt động.
+
+## Khi nào dùng
+
+- Hiển thị thông tin người dùng trong header, danh sách bình luận, hoặc profile card
+- Kết hợp với badge trạng thái để thể hiện online/offline trong ứng dụng chat
+- Nhóm nhiều avatar lại với nhau để hiển thị danh sách thành viên
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-avatar.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `src` | string | `''` | URL ảnh đại diện |
+| `name` | string | `''` | Tên hiển thị — dùng để tạo placeholder khi không có ảnh |
+| `size` | string | `'md'` | Kích thước: `xs` \| `sm` \| `md` \| `lg` \| `xl` |
+| `shape` | string | `'circle'` | Hình dạng: `circle` \| `square` |
+| `status` | string | `''` | Trạng thái hoạt động: `online` \| `away` \| `busy` \| `offline` |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Ví dụ cơ bản
+
+```html
+<web-avatar src="/avatar.jpg" name="Nguyễn Văn A" size="md" shape="circle" status="online"></web-avatar>
+<web-avatar name="AB" size="lg" shape="square"></web-avatar>
+```
+
+## Ví dụ nâng cao
+
+Hiển thị các kích thước khác nhau:
+
+```html
+<web-avatar src="/user1.jpg" name="An" size="xs"></web-avatar>
+<web-avatar src="/user2.jpg" name="Bình" size="sm" status="away"></web-avatar>
+<web-avatar src="/user3.jpg" name="Cường" size="md" status="online"></web-avatar>
+<web-avatar src="/user4.jpg" name="Dung" size="lg" status="busy"></web-avatar>
+<web-avatar name="EM" size="xl" shape="square" status="offline"></web-avatar>
+```
+
+Avatar nhóm (xếp chồng) bằng CSS wrapper:
+
+```html
+<div style="display:flex; gap:-8px;">
+  <web-avatar name="A" size="sm" shape="circle"></web-avatar>
+  <web-avatar name="B" size="sm" shape="circle"></web-avatar>
+  <web-avatar name="C" size="sm" shape="circle"></web-avatar>
+</div>
+```

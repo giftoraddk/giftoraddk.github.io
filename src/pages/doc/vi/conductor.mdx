@@ -1,0 +1,211 @@
+---
+layout: '../../../layouts/LayoutDoc.astro'
+title: 'Conductor'
+description: 'State management và data fetching — nanostores + IndexedDB cache'
+---
+
+# Conductor
+
+<div class="doc-intro">
+  <p>Conductor là trung tâm dữ liệu của toàn bộ ứng dụng — một nanostores atom đơn lẻ, mỗi service/component sở hữu 1 section riêng, cộng với fetch tự động qua <code>crud.js</code> và cache IndexedDB.</p>
+</div>
+
+## Conductor là gì?
+
+`src/services/conductor.js` export một **nanostores atom** (`state`) được chia sẻ bởi mọi component trong ứng dụng. Không có "store riêng" cho từng feature — tất cả dùng chung một conductor, nhưng mỗi service **sở hữu một section riêng** trong `state.sections[]` (một **mảng**, không phải object map), được đánh key theo `id`.
+
+```js
+// Cấu trúc state toàn cục
+{
+  apiUrl: 'https://api.example.com/',   // root-level field, set qua patch()
+  sections: [
+    { id: 'product-list', data: [...] },
+    { id: 'cart',         items: [...], total: 0 },
+    { id: 'blog-posts',   data: [...] },
+  ]
+}
+```
+
+## `setup(initialState, opts?)` — Khởi tạo
+
+Gọi 1 lần lúc load trang (thường trong `shopSetup` hoặc tương đương). Merge `initialState.sections` với bản đã lưu trong IndexedDB (key `conductor_config` mặc định), đồng thời **giữ lại** các section đang có sẵn trong RAM (basket, payment…) để không bị xoá khi `setup()` chạy lại mỗi lần Astro ViewTransitions chuyển trang.
+
+```js
+import { setup } from '@/services/conductor.js';
+
+await setup({
+  apiUrl: 'https://api.example.com/',
+  sections: [{ id: 'theme', mode: 'dark' }],
+}, {
+  storageKey: 'conductor_config',   // mặc định — đổi tên nếu cần nhiều bộ nhớ độc lập
+});
+```
+
+## `all(sectionId, opts?)` — Fetch với cache
+
+`all()` là hàm chính để nạp dữ liệu vào 1 section:
+
+```js
+import { all } from '@/services/conductor.js';
+
+await all('products', {
+  dataTable: 'products',   // Firestore collection
+});
+
+await all('news', {
+  dataSrc: '/api/news.json',   // REST endpoint (url là tên cũ, vẫn nhận làm alias)
+  cache:   10,                 // phút — mặc định 5, 0 = tắt cache
+});
+```
+
+### Tham số `opts`
+
+| Tham số | Kiểu | Mặc định | Mô tả |
+|---|---|---|---|
+| `dataSrc` (hoặc `url`) | `String` | — | REST endpoint |
+| `dataTable` | `String` | `''` | Firestore collection (hoặc resource REST nếu đi kèm `dataSrc`) |
+| `cache` | `Number` (phút) | `5` | TTL cache IndexedDB; `0` = tắt cache |
+
+Không còn tham số `cacheKey` tuỳ chỉnh — cache key được tự sinh từ `dataSrc`/`dataTable` (hàm `loadKey()` trong `crud.js`), đảm bảo `conductor.all()` và `crud.loadData()` luôn dùng chung 1 cache entry cho cùng nguồn dữ liệu.
+
+### Luồng xử lý
+
+```
+all(sectionId, opts)
+  │
+  ├─ section đã có data trong state (RAM)?
+  │     └─ có → return ngay, KHÔNG fetch, KHÔNG chạm IndexedDB
+  │
+  └─ chưa có → loadData({ dataSrc, dataTable, cache })   (từ crud.js)
+        │
+        ├─ IndexedDB hit (chưa hết TTL) → trả về ngay
+        └─ miss/hết hạn → fetch thật (REST hoặc Firestore) → lưu IndexedDB → trả về
+        │
+        └─ có data → ghi vào section.data
+```
+
+Nói cách khác: **state trong RAM là lớp cache nhanh nhất** — phía dưới là IndexedDB (qua `crud.js`), dưới cùng mới là network. Nhiều component cùng gọi `all()` với cùng `sectionId` sẽ chỉ fetch 1 lần.
+
+### Retry
+
+Retry KHÔNG nằm trong `conductor.js` — nó là hành vi của `crud.js` khi fetch REST (`dataSrc`), áp dụng cho mọi caller kể cả `all()`:
+
+| Lần retry | Delay |
+|---|---|
+| 1 | 500 ms |
+| 2 | 1000 ms |
+| 3 | 2000 ms |
+
+Firestore (`dataTable`) không có retry — lỗi ở 1 collection được cô lập (không chặn các collection pipe-separated khác) chứ không tự thử lại.
+
+## `sift(sectionId, params, operator?)` — Filter client-side
+
+Đọc `section.data` hiện tại, trả về mảng đã lọc — **không** gọi API, **không** đổi store:
+
+```js
+import { sift } from '@/services/conductor.js';
+
+// Lọc theo field chính xác (operator mặc định: 'absolute')
+const results = sift('products', { tags: ['coffee', 'hot'] });
+
+// Tìm kiếm text toàn field (key đặc biệt 'q')
+const found = sift('products', { q: 'espresso' }, 'like');
+```
+
+| Tham số | Kiểu | Mô tả |
+|---|---|---|
+| `sectionId` | `String` | Section cần lọc |
+| `params` | `Object` | Field cần khớp; value rỗng/`null`/mảng rỗng bị bỏ qua |
+| `operator` | `'absolute' \| 'like'` | `absolute` = khớp chính xác; `like` = chứa chuỗi (không phân biệt hoa/thường) |
+
+Trả về `[]` nếu section không tồn tại hoặc `section.data` không phải mảng.
+
+## Subscribe trong Lit Component
+
+```js
+import { subscribe, all } from '@/services/conductor.js';
+
+class SvcProductList extends LitElement {
+  static properties = {
+    service: { type: String },
+    _data:   { state: true },
+  };
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    // QUAN TRỌNG: subscribe TRƯỚC khi gọi all() — tránh miss dữ liệu
+    this._unsub = subscribe(this.service, section => {
+      this._data = section?.data ?? [];
+    });
+
+    all(this.service, { dataTable: this.service });
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._unsub?.();   // dọn dẹp — tránh memory leak
+  }
+}
+```
+
+`subscribe()` chỉ fire khi section **thực sự đổi** (so sánh reference), không fire cho mọi `state.set()` khác trong app.
+
+## `make()` / `patch()` — Cập nhật store trực tiếp
+
+Dùng khi cần đổi state mà không fetch API (thêm vào giỏ hàng, đổi theme…):
+
+```js
+import { make, patch, get } from '@/services/conductor.js';
+
+// make: upsert 1 section — tạo mới nếu chưa có, merge fields nếu đã có
+make('cart', { items: [...(get('cart')?.items ?? []), newItem] });
+
+// patch: merge vào ROOT-level state (apiUrl, ui, theme…) — KHÔNG đụng vào sections
+patch({ apiUrl: 'https://api2.example.com/' });
+```
+
+Lưu ý: `patch()` không nhận `sectionId` — nếu cần cập nhật 1 section, dùng `make(sectionId, fields)`.
+
+## Không có `loading` / `error` tự động
+
+Conductor không expose trạng thái fetch riêng (không có atom `loading`/`success`/`error`). Trạng thái được suy ra gián tiếp: `get(sectionId)?.data` có dữ liệu hay chưa sau khi `all()` resolve. Nếu cần trạng thái loading rõ ràng, tự quản lý ở component (ví dụ property `loader` trong các `svc-*`).
+
+## Quy tắc Event Listener
+
+**Bắt buộc**: đăng ký event listeners **đồng bộ** trước bất kỳ `await` nào trong `service.js`:
+
+```js
+// ĐÚNG
+export function initShopService(element) {
+  element.addEventListener('add-to-cart', handleAddToCart);   // sync — đăng ký ngay
+  return all('products', { dataTable: 'products' });          // await sau — an toàn
+}
+
+// SAI — listener bị miss nếu event fire trong lúc await
+export async function initShopService(element) {
+  await all('products', { dataTable: 'products' });
+  element.addEventListener('add-to-cart', handleAddToCart);   // quá muộn!
+}
+```
+
+## Tóm tắt API
+
+```js
+import { state, setup, all, make, patch, get, subscribe, sift } from '@/services/conductor.js';
+
+await setup(initialState, opts);            // khởi tạo + merge IndexedDB
+await all(sectionId, opts);                 // fetch (nếu chưa có) + cache + ghi section.data
+make(sectionId, fields);                    // upsert 1 section
+patch(partial);                             // merge vào root state
+const section = get(sectionId);             // đọc 1 section, null nếu chưa có
+const unsub   = subscribe(sectionId, fn);   // lắng nghe 1 section
+unsub();                                     // dừng lắng nghe
+const filtered = sift(sectionId, params, operator);   // lọc client-side
+```
+
+## Tiếp theo
+
+- [Luồng dữ liệu](/doc/vi/dataflow) — conductor trong toàn bộ data flow
+- [Section Config](/doc/vi/section-config) — cách khai báo `dataSrc`/`dataTable`/`cache` trong section config
+- [Kiến trúc](/doc/vi/architecture) — vị trí conductor trong kiến trúc tổng thể

@@ -10,7 +10,7 @@
 // Rendering order (left → right in svc-roles.js's table header).
 export const ORDER_PRESETS = ['editor', 'moderator', 'admin'];
 
-/** Short Vietnamese description of each granular capability — see docs/AUTH_ROLES.rst for the full map. */
+/** Short Vietnamese description of each granular capability — see hook/AUTH_ROLES.rst for the full map. */
 // export const CAP_DESCRIPTIONS = {
 //     read:            'Xem danh sách và chi tiết nội dung',
 //     create:          'Tạo bản ghi mới',

@@ -1,62 +1,61 @@
 ---
 import CoreShop from '@/layouts/CoreShop.astro';
 import { variant, views, menuItems, footerMenuItems, policies, socials, shop, bar, contact } from '@/modules/shop/gift';
-import { occasions } from '@/services/constants/tags.js';
+import { corporateGiftCategories } from '@/services/constants/tags.js';
 import { normText } from '@/services/helper.js';
 
-// Chỉ build sẵn 5 dịp đầu tiên trong danh mục occasions (xem tags.js) — mỗi dịp 1 trang static,
-// lọc cứng sản phẩm theo 3 dạng tag coi như tương đương: key ('birthday'), nhãn tiếng Việt có dấu
-// ('Sinh nhật') và không dấu ('sinh nhat') — dữ liệu sản phẩm có thể lưu tag ở bất kỳ dạng nào.
+// Build đúng 5 danh mục quà tặng doanh nghiệp (xem tags.js) — mỗi danh mục 1 trang static,
+// lọc cứng sản phẩm theo 3 dạng tag coi như tương đương: key ('employee'), nhãn tiếng Việt có dấu
+// ('Quà nhân viên') và không dấu ('qua nhan vien') — dữ liệu sản phẩm có thể lưu tag ở bất kỳ dạng nào.
 // getStaticPaths() được compiler tách ra scope riêng, chỉ giữ lại import — không đọc được const
-// khai báo bên ngoài — nên phải tính OCCASION_KEYS ngay trong hàm này.
+// khai báo bên ngoài — nên phải tính CATEGORY_KEYS ngay trong hàm này.
 export function getStaticPaths() {
-	const OCCASION_KEYS = Object.keys(occasions.vi).slice(0, 5);
-	return OCCASION_KEYS.map((key) => ({ params: { occasions: key } }));
+	const CATEGORY_KEYS = Object.keys(corporateGiftCategories.vi);
+	return CATEGORY_KEYS.map((key) => ({ params: { occasions: key } }));
 }
 
-const { occasions: occasionKey } = Astro.params;
-const labelVi = occasions.vi[occasionKey];
-const labelEn = occasions.en[occasionKey];
+const { occasions: categoryKey } = Astro.params;
+const labelVi = corporateGiftCategories.vi[categoryKey];
+const labelEn = corporateGiftCategories.en[categoryKey];
 
-// SEO/GEO copy riêng cho từng dịp (thay vì 1 title/description chung cho mọi occasion) — giúp
-// mỗi trang trả lời đúng intent tìm kiếm/AI Search theo dịp cụ thể thay vì nội dung trùng lặp
-// giữa các trang /gift/[occasions]. Chỉ cần cover đúng 5 khóa build sẵn ở getStaticPaths ở trên;
-// occasion nào ngoài danh sách (nếu sau này mở rộng slice) rơi vào fallback build từ labelVi.
-const OCCASION_SEO: Record<string, { title: string; description: string }> = {
-	'corporate': {
-		title: 'Quà Tặng Doanh Nghiệp Cao Cấp – Tinh Tế & Chuyên Nghiệp',
-		description: 'Quà tặng doanh nghiệp sang trọng, tinh tế cho đối tác, khách hàng và nhân viên. Giftora DDK cung cấp set quà công ty đa dạng mẫu mã, in logo theo yêu cầu, giao số lượng lớn toàn quốc.',
+// SEO/GEO copy riêng cho từng danh mục (thay vì 1 title/description chung) — giúp mỗi trang trả
+// lời đúng intent tìm kiếm/AI Search theo danh mục cụ thể thay vì nội dung trùng lặp giữa các
+// trang /gift/[occasions]. Cover đúng 5 khóa build sẵn ở getStaticPaths ở trên.
+const CATEGORY_SEO: Record<string, { title: string; description: string }> = {
+	'employee': {
+		title: 'Quà Tặng Nhân Viên Ý Nghĩa – Gắn Kết Đội Ngũ',
+		description: 'Gợi ý quà tặng nhân viên ý nghĩa, tinh tế cho các dịp lễ, Tết, khen thưởng. Giftora DDK cung cấp quà tặng chất lượng, in logo theo yêu cầu, giao số lượng lớn toàn quốc.',
 	},
-	'birthday': {
-		title: 'Quà Sinh Nhật Ý Nghĩa – Gợi Ý Quà Tặng Độc Đáo',
-		description: 'Tổng hợp quà sinh nhật ý nghĩa, độc đáo cho người thân, bạn bè và người yêu. Giftora DDK gợi ý những món quà tinh tế, phù hợp mọi độ tuổi và ngân sách, giao nhanh toàn quốc.',
+	'customer': {
+		title: 'Quà Tặng Khách Hàng Sang Trọng – Tri Ân & Kết Nối',
+		description: 'Quà tặng khách hàng cao cấp, tinh tế, giúp doanh nghiệp giữ chân và tri ân khách hàng thân thiết. Giftora DDK có đa dạng mẫu mã, đóng gói sang trọng, giao hàng nhanh.',
 	},
-	'christmas': {
-		title: 'Quà Giáng Sinh - Noel Ấm Áp & Ý Nghĩa',
-		description: 'Khám phá bộ sưu tập quà Giáng Sinh - Noel ấm áp, ý nghĩa dành tặng gia đình, bạn bè và người thương. Giftora DDK mang đến những món quà tinh tế, sẵn sàng trao gửi yêu thương mùa lễ hội.',
+	'event': {
+		title: 'Quà Tặng Sự Kiện Doanh Nghiệp – Ấn Tượng & Chuyên Nghiệp',
+		description: 'Quà tặng sự kiện doanh nghiệp (khai trương, hội nghị, roadshow...) ấn tượng, đúng thương hiệu. Giftora DDK hỗ trợ in logo, đóng gói và giao hàng đúng tiến độ sự kiện.',
 	},
-	'new-year': {
-		title: 'Quà Tết Dương Lịch – Khởi Đầu Năm Mới Trọn Vẹn',
-		description: 'Chọn quà Tết Dương lịch ý nghĩa để gửi lời chúc năm mới đến người thân, đối tác và bạn bè. Giftora DDK cung cấp quà tặng sang trọng, đóng gói tinh tế, giao hàng nhanh trước thềm năm mới.',
+	'appreciation': {
+		title: 'Quà Tặng Tri Ân Đối Tác – Chuyên Nghiệp & Tinh Tế',
+		description: 'Quà tặng tri ân khách hàng, đối tác thể hiện sự trân trọng và gắn kết lâu dài. Giftora DDK cung cấp set quà tri ân cao cấp, in logo theo yêu cầu, giao hàng toàn quốc.',
 	},
-	'lunar-new-year': {
-		title: 'Quà Tết Nguyên Đán – Sang Trọng, Đậm Đà Bản Sắc',
-		description: 'Gợi ý quà Tết Nguyên Đán sang trọng, ý nghĩa để biếu tặng ông bà, cha mẹ, đối tác dịp Tết cổ truyền. Giftora DDK có đa dạng set quà Tết cao cấp, giao hàng tận nơi kịp đón năm mới.',
+	'tet': {
+		title: 'Quà Tết Doanh Nghiệp – Sang Trọng, Đậm Đà Bản Sắc',
+		description: 'Gợi ý quà Tết doanh nghiệp sang trọng, ý nghĩa để biếu tặng nhân viên, khách hàng và đối tác dịp Tết. Giftora DDK có đa dạng set quà Tết cao cấp, giao hàng tận nơi kịp đón năm mới.',
 	},
 };
-const seo = OCCASION_SEO[occasionKey] ?? {
+const seo = CATEGORY_SEO[categoryKey] ?? {
 	title: `Quà Tặng ${labelVi} Ý Nghĩa & Tinh Tế`,
-	description: `Gợi ý quà tặng ${labelVi} ý nghĩa, sang trọng tại Giftora DDK — đa dạng mẫu mã, đóng gói tinh tế, giao hàng nhanh toàn quốc. Chọn ngay món quà phù hợp nhất cho dịp ${labelVi}.`,
+	description: `Gợi ý quà tặng ${labelVi} ý nghĩa, sang trọng tại Giftora DDK — đa dạng mẫu mã, đóng gói tinh tế, giao hàng nhanh toàn quốc. Chọn ngay món quà phù hợp nhất cho ${labelVi}.`,
 };
-// Dữ liệu tags từ API có thể lưu dịp ở bất kỳ dạng nào trong số này — key (dạng dash mới, vd
-// "corporate-gift"), key dạng underscore cũ (tương thích ngược data tag từ trước khi đổi sang
+// Dữ liệu tags từ API có thể lưu danh mục ở bất kỳ dạng nào trong số này — key (dạng dash, vd
+// "client-partner"), key dạng underscore cũ (tương thích ngược data tag từ trước khi đổi sang
 // dash), nhãn tiếng Việt có dấu, không dấu có khoảng trắng/underscore/dash, không dấu liền không
 // khoảng trắng, hoặc nhãn tiếng Anh.
 const normVi = normText(labelVi);
 const tagVariants = [...new Set([
-	occasionKey,
-	occasionKey.replace(/-/g, '_'),
-	occasionKey.replace(/-/g, ' '),
+	categoryKey,
+	categoryKey.replace(/-/g, '_'),
+	categoryKey.replace(/-/g, ' '),
 	labelVi,
 	normVi,
 	normVi.replace(/\s+/g, ''),
@@ -68,7 +67,7 @@ const tagVariants = [...new Set([
 const currentView = views.find(v => v.href === '/') ?? views[0];
 
 // Chỉ hard-filter đúng section sản phẩm (dataTable: 'products'); section hero đầu tiên
-// (showcaseModernSlideNeat) ghi thêm tên dịp vào trước title có sẵn — vd "Sinh nhật • Giftora DDK".
+// (showcaseModernSlideNeat) ghi thêm tên danh mục vào trước title có sẵn — vd "Quà nhân viên • Giftora DDK".
 // title là field đa ngôn ngữ (xem web-cell.js's _resolveLocale) nên phải build đủ { vi, en },
 // không chỉ 1 string — nếu không trang sẽ luôn hiện tiếng Việt kể cả khi đổi ngôn ngữ sang en.
 const sections = currentView.sections.map((sec: any) => {

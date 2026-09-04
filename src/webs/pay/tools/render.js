@@ -4,7 +4,7 @@
 // -delivery.js con — tách khỏi tools/service.js (thuần business logic, KHÔNG Lit) để giữ ranh
 // giới rõ: file này chỉ render, không gọi service.js/Firestore. Lit templates là hàm thuần, share
 // được xuyên Shadow DOM boundary (chỉ CSS mới cần duplicate riêng mỗi file styles/*.css — xem
-// docs/PAY.rst §3.1/§3.12).
+// hook/PAY.rst §3.1/§3.12).
 
 import { html } from 'lit';
 import { fmtPrice } from '@/services/helper.js';

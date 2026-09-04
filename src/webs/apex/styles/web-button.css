@@ -48,10 +48,10 @@
 
 /* Color Tokens mapping */
 .web-button.color-primary {
-	--btn-color: var(--color-primary, #2ebd85);
+	--btn-color: var(--color-primary, #34ace0);
 }
 .web-button.color-secondary {
-	--btn-color: var(--color-secondary, #f5465c);
+	--btn-color: var(--color-secondary, #706fd3);
 }
 .web-button.color-accent {
 	--btn-color: var(--color-accent, #a855f7);

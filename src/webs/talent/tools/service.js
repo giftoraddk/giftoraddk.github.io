@@ -2,9 +2,9 @@
 //
 // Domain `talent` — re-export hub: conductor cơ bản + toàn bộ business logic (talent profile, job,
 // proposal/negotiation/deal state machine, Xu ledger, escrow, contact masking, review/trust score).
-// Leaf domain (docs/new_feature.md §0) — không import từ bay/pay/socials. Mỗi khái niệm sống trong
+// Leaf domain (hook/new_feature.md §0) — không import từ bay/pay/socials. Mỗi khái niệm sống trong
 // collection Firestore RIÊNG (talents/jobs/proposals/walletTxns/reviews), dùng chung field
-// vocabulary của docs/SCHEMA.rst — xem docs/new_feature.md §1.1 cho lý do (không phải 1 bảng
+// vocabulary của hook/SCHEMA.rst — xem hook/new_feature.md §1.1 cho lý do (không phải 1 bảng
 // `records` chung, khác giả định ban đầu).
 
 import { createService } from '@/services/crud.js';
@@ -36,7 +36,7 @@ function _parseMeta(row) {
 
 /** Flow _patchMeta: id + guard/patchFn -> row.meta patched (read-modify-write, bản sao
  *  _patchInvoiceMeta() của src/webs/pay/tools/service.js — crud.js's update() không deep-merge
- *  JSONB, xem docs/CRUD.rst). guard(meta,row) false -> no-op (null). */
+ *  JSONB, xem hook/CRUD.rst). guard(meta,row) false -> no-op (null). */
 async function _patchMeta(svc, id, guard, patchFn, extra = {}) {
     const row = await svc.findById(id); // [1] CHECK: load hiện trạng
     if (!row) return null;
@@ -64,7 +64,7 @@ function _syncUnsub(listenPromise) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
-// TALENT PROFILE — docs/new_feature.md §1.2
+// TALENT PROFILE — hook/new_feature.md §1.2
 // ═══════════════════════════════════════════════════════════════════════════════════════════
 
 /** Flow createTalentProfile: userId + form -> talent record mới (status: 'draft'). */
@@ -121,7 +121,7 @@ export function publishTalentProfile(talentId, userId) {
 }
 
 // Directory grid card dispatch 'view-profile' qua cell-action (web-cell.js) — nghe SYNCHRONOUS
-// (không await trước) đúng convention docs/ARCHITECT.rst, gọi 1 lần từ <script> của
+// (không await trước) đúng convention hook/ARCHITECT.rst, gọi 1 lần từ <script> của
 // src/pages/talent/index.astro|[category].astro (page không có orchestrator svc-* nào luôn mount
 // để tự bind như svc-pay.js/svc-bay.js làm).
 let _navBound = false;
@@ -147,7 +147,7 @@ export function findTalentByUserId(userId) {
     return _talentSvc().findAll({ filters: { user_id: userId } }).then((rows) => rows[0] ?? null);
 }
 
-/** Flow verifyTalent: moderator/admin (capability `talents.approve`, xem docs/new_feature.md §6.2)
+/** Flow verifyTalent: moderator/admin (capability `talents.approve`, xem hook/new_feature.md §6.2)
  *  approve -> talent.meta.verification.professional = true. */
 export async function verifyTalent(talentId, moderatorId, { verifiedByOrg = '' } = {}) {
     const svc = _talentSvc();
@@ -160,7 +160,7 @@ export async function verifyTalent(talentId, moderatorId, { verifiedByOrg = '' }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
-// JOB — docs/new_feature.md §1.3/§2.1
+// JOB — hook/new_feature.md §1.3/§2.1
 // ═══════════════════════════════════════════════════════════════════════════════════════════
 
 export async function createJob(employerId, form = {}) {
@@ -206,7 +206,7 @@ export function findJobById(jobId) { return _jobSvc().findById(jobId); }
 export function loadEmployerJobs(employerId) { return _jobSvc().findAll({ filters: { user_id: employerId } }); }
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
-// PROPOSAL / NEGOTIATION / DEAL — meta.stage state machine, docs/new_feature.md §1.4/§2.2
+// PROPOSAL / NEGOTIATION / DEAL — meta.stage state machine, hook/new_feature.md §1.4/§2.2
 // ═══════════════════════════════════════════════════════════════════════════════════════════
 
 const _patchProposalMeta = (id, guard, patchFn, extra) => _patchMeta(_proposalSvc(), id, guard, patchFn, extra);
@@ -328,7 +328,7 @@ export function confirmCompleted(proposalId, actorId) {
     );
 }
 
-/** capability `proposals.manage_status` (admin) mới được resolve dispute — xem docs/new_feature.md §6.2.
+/** capability `proposals.manage_status` (admin) mới được resolve dispute — xem hook/new_feature.md §6.2.
  *  Guard cũ chặn stage 'cancelled' — giá trị đó KHÔNG BAO GIỜ xuất hiện ở `meta.stage` (huỷ là
  *  subStatus, xem cancelProposal), nên check nhầm field khiến 1 proposal đã huỷ vẫn mở dispute
  *  được. Sửa lại check đúng `subStatus`, và chặn luôn dispute trùng lặp. */
@@ -364,7 +364,7 @@ export function loadTalentProposals(talentId) { return _proposalSvc().findAll({ 
 export function loadEmployerProposals(employerId) { return _proposalSvc().findAll({ filters: { 'meta.employerId': employerId } }); }
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
-// XU (CREDIT) SYSTEM — docs/new_feature.md §3, tách biệt hoàn toàn với escrow (§ dưới)
+// XU (CREDIT) SYSTEM — hook/new_feature.md §3, tách biệt hoàn toàn với escrow (§ dưới)
 // ═══════════════════════════════════════════════════════════════════════════════════════════
 
 export function findUserById(userId) { return _userSvc().findById(userId); }
@@ -375,7 +375,7 @@ export async function getXuBalance(userId) {
 }
 
 /** Flow spendXu: userId + action -> { ok, balance }. Không throw khi thiếu Xu — trả { ok:false }
- *  để component tự hiện CTA "Mua Xu" (docs/new_feature.md §3.3, §8 nguyên tắc UX). */
+ *  để component tự hiện CTA "Mua Xu" (hook/new_feature.md §3.3, §8 nguyên tắc UX). */
 export async function spendXu(userId, action, refId = '') {
     const cost = XU_COSTS[action];
     if (!cost) throw new Error(`[talent] spendXu: unknown action "${action}"`); // [1] CHECK
@@ -425,7 +425,7 @@ export const refundXu = (userId, amount, refId = '') => _creditXu(userId, amount
 
 /** Flow requestTopUp: user tự tạo yêu cầu nạp Xu — CHƯA cộng balance, chỉ tạo wallet_txn
  *  status:'pending'. Admin xác minh chuyển khoản thật rồi gọi approveTopUp() để cộng thật
- *  (tách 2 hàm để user client không tự cấp Xu miễn phí được, xem docs/new_feature.md §3.2/§9). */
+ *  (tách 2 hàm để user client không tự cấp Xu miễn phí được, xem hook/new_feature.md §3.2/§9). */
 export async function requestTopUp(userId, amount, note = '') {
     const walletSvc = _walletSvc();
     return walletSvc.create({
@@ -453,11 +453,11 @@ export function loadWalletHistory(userId) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
-// ESCROW (invoice) — docs/new_feature.md §1.8/§2.3, tái dùng invoices collection của webs/pay
+// ESCROW (invoice) — hook/new_feature.md §1.8/§2.3, tái dùng invoices collection của webs/pay
 // ═══════════════════════════════════════════════════════════════════════════════════════════
 
 /** Flow issueEscrowInvoice: proposal (stage:'accepted') -> invoice 'issued' + proposal.meta.escrow
- *  = 'held'. seller/buyer theo format docs/SCHEMA.rst §"seller format"/"buyer format". */
+ *  = 'held'. seller/buyer theo format hook/SCHEMA.rst §"seller format"/"buyer format". */
 export async function issueEscrowInvoice(proposalId, actorId, { seller = {}, buyer = {}, vatRate = 0 } = {}) {
     const proposal = await _proposalSvc().findById(proposalId); // [1] CHECK
     const meta = _parseMeta(proposal);
@@ -482,7 +482,7 @@ export async function issueEscrowInvoice(proposalId, actorId, { seller = {}, buy
     return invoice; // [4] RETURN
 }
 
-// Chưa có UI gọi 2 hàm này (Phase 2 — dispute resolution admin, xem docs/new_feature.md §6.2) —
+// Chưa có UI gọi 2 hàm này (Phase 2 — dispute resolution admin, xem hook/new_feature.md §6.2) —
 // vẫn nhận `actorId` và xác minh là 1 bên của đúng proposal đó, không để hở API cho việc thêm UI
 // sau này vô tình quên guard.
 export function releaseEscrow(proposalId, actorId) {
@@ -494,7 +494,7 @@ export function refundEscrow(proposalId, actorId) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
-// CONTACT MASKING — docs/new_feature.md §5, tái dùng records.scope/secure (ACL sẵn có)
+// CONTACT MASKING — hook/new_feature.md §5, tái dùng records.scope/secure (ACL sẵn có)
 // ═══════════════════════════════════════════════════════════════════════════════════════════
 
 const _maskPhone = (phone) => (!phone || phone.length <= 3 ? phone || '' : `${phone.slice(0, 3)} *** *** ${phone.slice(-3)}`);
@@ -513,7 +513,7 @@ export function maskContact(contact = {}, canRead) {
     };
 }
 
-/** ACL check đúng format docs/SCHEMA.rst §"secure format" (entries cách nhau ','). Chủ sở hữu luôn
+/** ACL check đúng format hook/SCHEMA.rst §"secure format" (entries cách nhau ','). Chủ sở hữu luôn
  *  đọc được contact của chính mình. */
 export function canReadContact(currentUserId, talentRow) {
     if (!currentUserId) return false;
@@ -539,14 +539,14 @@ export async function unlockContact(talentUserId, employerId, proposalId) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
-// REVIEW & TRUST SCORE — docs/new_feature.md §1.5/§4
+// REVIEW & TRUST SCORE — hook/new_feature.md §1.5/§4
 // ═══════════════════════════════════════════════════════════════════════════════════════════
 
 /**
  * Flow submitReview: RegisterReview -> UserResponse
  */
 export async function submitReview(employerId, proposalId, { rating, comment = '', breakdown = {} } = {}) {
-    // [1] CHECK: điều kiện hợp lệ ở tầng service, không chỉ UI (docs/new_feature.md §1.5)
+    // [1] CHECK: điều kiện hợp lệ ở tầng service, không chỉ UI (hook/new_feature.md §1.5)
     const proposal = await _proposalSvc().findById(proposalId);
     if (!proposal) throw new Error('[talent] submitReview: proposal not found');
     const pMeta = _parseMeta(proposal);
@@ -587,12 +587,12 @@ function _computeTrustScore(meta) {
         (meta.ratings ? (_avgOf(meta.ratings) / 5) * 20 : 0) +
         (s.reviewRate ?? 0) * 10 +
         Math.min(s.repeatClients ?? 0, 5) +
-        4, // account history — placeholder cố định MVP, xem docs/new_feature.md §4.4
+        4, // account history — placeholder cố định MVP, xem hook/new_feature.md §4.4
     );
 }
 
 /** Flow recomputeTalentStats: đọc lại toàn bộ review + proposal của 1 talent, tính lại
- *  ratings/stats/verification/trustScore — KHÔNG cộng dồn thủ công (docs/new_feature.md §1.2). */
+ *  ratings/stats/verification/trustScore — KHÔNG cộng dồn thủ công (hook/new_feature.md §1.2). */
 export async function recomputeTalentStats(talentUserId) {
     // `talentUserId` = users.id (khớp meta.talentId lưu trong proposal/review) — KHÔNG phải id
     // document `talents`, xem unlockContact() cho cùng lưu ý.

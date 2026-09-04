@@ -2,7 +2,7 @@ import { getStyleOpts } from '@/services/helper';
 
 export const hashtags = ['contact', 'spatial', 'hori', 'map', 'google-map', 'simple'];
 
-// subtitle/title/description theo chuẩn docs/SCHEMA.rst `records` cho Tier 1 (Intro).
+// subtitle/title/description theo chuẩn hook/SCHEMA.rst `records` cho Tier 1 (Intro).
 // meta.address cho Tier 0 (Map) — 1 field DUY NHẤT vừa hiển thị địa chỉ vừa cho toạ độ map:
 // field kiểu 'location' trong records.js (schema chung) → sửa qua svc-admin hiện
 // <web-location-map>, lưu dạng street~ward~region~country~lat~lng (cùng format
@@ -57,7 +57,7 @@ const baseConfig = {
 		}],
 
 		// ── Tier 1: Intro — data-bound (subtitle/title/description), tier động
-		// render đúng 1 lần vì `data` chỉ có 1 phần tử (xem docs/web-board.rst § Tiers mode) ──
+		// render đúng 1 lần vì `data` chỉ có 1 phần tử (xem hook/web-board.rst § Tiers mode) ──
 		[{
 			groupCol: [12],
 			groupRow: ['auto'],

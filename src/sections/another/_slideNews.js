@@ -100,7 +100,7 @@ const baseConfig = {
 	bg: {
 		...getStyleOpts({ rounded: '1.25rem', gradient: false })
 	},
-  slider: { autoplay: 5000, loop: true, slides: 1, spacing: 0, nav: false, dots: false, effect: 'fade', blur: true }
+  slider: { autoplay: 5000, loop: true, slides: 1, spacing: 20, nav: false, dots: false, effect: 'fade', blur: true }
 };
 
 export const config = { ...baseConfig };

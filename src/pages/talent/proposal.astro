@@ -7,7 +7,7 @@ import { variant } from '@/modules/talent-page.js';
 // Firestore Security Rules) sẽ không đọc được nếu rules chặn public read, và dù đọc được cũng
 // không nên bake nội dung thương lượng vào static HTML công khai. Dùng 1 route tĩnh duy nhất +
 // đọc `?id=` từ query string phía client (đúng tinh thần site tĩnh — không cần biết trước danh
-// sách id lúc build), xem docs/new_feature.md §8.
+// sách id lúc build), xem hook/new_feature.md §8.
 ---
 
 <Core title="Đề nghị thuê" theme={variant.theme} variant={variant}>

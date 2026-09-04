@@ -404,6 +404,9 @@ export class WebBoard extends LitElement {
             color:     sec.tags?.filterColor ?? 'primary',
             active:    [],
             query:     '',
+            ranges:      [], // { key, label, min, max }[] — numeric price-range chips (see web-boxs.js's _applyFilter)
+            rangeField:  'pricing',
+            rangeKey:    '',
             ...(sec.filterState || {}),
         }
 

@@ -1,0 +1,33 @@
+---
+import CoreShop from '@/layouts/CoreShop.astro';
+import { variant, menuItems, footerMenuItems, policies, socials, shop, bar, contact } from '@/modules/shop/gift';
+import { services } from '@/modules/gift-services.js';
+
+export function getStaticPaths() {
+	return services.map((svc) => ({ params: { slug: svc.slug }, props: { svc } }));
+}
+
+const { svc } = Astro.props;
+const bg = { blur: true }
+---
+
+<CoreShop
+	title={`${svc.seo.title} — Giftora DDK`}
+  description={svc.seo.description}
+  image="/images/common/gift-light.webp"
+	menu={{ type: 'top', position: 'prefix', menuItems: menuItems }}
+	footer={{ columns: footerMenuItems, policies, socials, contact, bg }}
+	bg={variant.bg}
+	theme={variant.theme}
+	variant={variant}
+  shop={shop}
+  bar={bar}
+>
+	<script src='@/webs/apex/web-board.js'></script>
+	<div>
+		<web-board
+			unlock={import.meta.env.PUBLIC_EXP}
+			variant={JSON.stringify(variant)}
+		><script type="application/json" is:inline set:html={JSON.stringify(svc.sections)}></script></web-board>
+	</div>
+</CoreShop>

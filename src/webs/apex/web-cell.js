@@ -7,12 +7,12 @@ import './web-button.js';
 import './web-dropdown.js';
 import './web-rating.js';
 import './web-popover.js';
-import './web-photor-upload.js';
 import './web-loader.js';
 import './web-gallery.js';
 import './web-letters.js';
 import './web-google-map.js';
 import '@/webs/media/svc-player.js';
+import '@/webs/media/svc-photor.js';
 
 const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
@@ -141,7 +141,7 @@ export class WebCell extends LitElement {
         // CTA "Xem thêm" trỏ cố định 1 trang, không gắn theo item nào), template chứa {field}
         // (vd '/product/{id}' — build URL trực tiếp từ field có sẵn trên item, không cần page gọi
         // tự inject thêm field URL riêng), HOẶC field path tra cứu nguyên 1 URL đã dựng sẵn trong
-        // data của item (vd 'meta.url' — xem docs/DESIGN.rst's bảng Cell modes).
+        // data của item (vd 'meta.url' — xem hook/DESIGN.rst's bảng Cell modes).
         const _resolveOrg = (orgField) => {
             if (!orgField || orgField === '#') return '#';
             if (orgField.includes('{')) {
@@ -159,7 +159,7 @@ export class WebCell extends LitElement {
             gallery:{ src: bit, alt: ext.tip || ext.cap || '', href: _resolveOrg(ext.org), zoom: !!this.zoom },
             // bit = field location đầy đủ (vd meta.address, format street~ward~region~country
             // ~lat~lng) — 1 field duy nhất vừa cho địa chỉ hiển thị vừa cho toạ độ map, không
-            // cần field lat/lng riêng nữa (xem docs/CHANNEL.rst § rooms Schema).
+            // cần field lat/lng riêng nữa (xem hook/CHANNEL.rst § rooms Schema).
             'google-map': { address: humanizeLocation(bit), ...locationLatLng(bit) },
         };
         const resolvedStys = typeof opt.stys === 'string'
@@ -477,14 +477,14 @@ const renderers = [
         },
     },
     {
-        name: 'web-photor-upload',
-        render: p => html`<web-photor-upload
+        name: 'svc-photor',
+        render: p => html`<svc-photor
             .value=${p.content ?? ''}
             .multiple=${p.opt?.multiple ?? false}
             .placeholder=${p.opt?.placeholder ?? 'Upload ảnh...'}
             .height=${p.opt?.height ?? '36px'}
             .ui=${p.ui}
-        ></web-photor-upload>`,
+        ></svc-photor>`,
     },
     {
         name: 'web-popover',

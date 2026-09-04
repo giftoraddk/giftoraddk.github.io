@@ -2,7 +2,7 @@ import { getStyleOpts } from '@/services/helper';
 
 // Card config cho trang GEO/SEO của products (src/pages/product/index.astro,
 // src/pages/product/[slug].astro) — cùng khung với _cardPost.js (post pages) nhưng dùng field
-// products THẬT (pics/title/tags/score/pricing, xem docs/SCHEMA.rst) thay vì field bịa
+// products THẬT (pics/title/tags/score/pricing, xem hook/SCHEMA.rst) thay vì field bịa
 // (meta.badge/meta.oldPrice như _cardProductNeat.js) — trang này phải render đúng dữ liệu Firestore
 // thật, không phải mockup.
 export const hashtags = ['products', 'modern', 'seo', 'geo', 'card', 'ecommerce'];

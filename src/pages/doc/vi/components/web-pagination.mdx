@@ -1,0 +1,85 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-pagination'
+description: 'Điều hướng phân trang với số trang và nút prev/next'
+---
+
+# web-pagination
+
+Hiển thị thanh phân trang với các số trang, nút Trước và Tiếp theo. Tự động tính số trang dựa trên tổng số items và số items mỗi trang.
+
+## Khi nào dùng
+
+- Danh sách sản phẩm, bài viết hoặc bất kỳ tập dữ liệu nào cần chia nhỏ thành nhiều trang
+- Kết hợp với API có hỗ trợ phân trang phía server (offset/limit)
+- Thay thế cho cuộn vô hạn khi người dùng cần biết vị trí trong danh sách
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-pagination.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `page` | number | `1` | Trang hiện tại đang hiển thị |
+| `total` | number | `0` | Tổng số items trong tập dữ liệu |
+| `perPage` | number | `10` | Số items hiển thị trên mỗi trang |
+| `maxVisible` | number | `5` | Số nút trang hiển thị tối đa trước khi rút gọn |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Ví dụ cơ bản
+
+```html
+<web-pagination page="1" total="100" per-page="10"></web-pagination>
+<script>
+  document.querySelector('web-pagination').addEventListener('web-page-change', (e) => {
+    console.log('Trang mới:', e.detail.page);
+  });
+</script>
+```
+
+## Ví dụ nâng cao
+
+Phân trang với nhiều items mỗi trang và giới hạn nút hiển thị:
+
+```html
+<web-pagination page="3" total="500" per-page="25" max-visible="7" ui="spatial"></web-pagination>
+```
+
+Tích hợp với fetch API:
+
+```html
+<web-pagination id="pager" page="1" total="0" per-page="20"></web-pagination>
+<script>
+  const pager = document.getElementById('pager');
+
+  async function loadPage(page) {
+    const res = await fetch(`/api/products?page=${page}&limit=20`);
+    const json = await res.json();
+    pager.setAttribute('total', json.total);
+    pager.setAttribute('page', page);
+    renderProducts(json.items);
+  }
+
+  pager.addEventListener('web-page-change', (e) => {
+    loadPage(e.detail.page);
+  });
+
+  loadPage(1);
+</script>
+```
+
+## Sự kiện
+
+| Sự kiện | Khi nào | Chi tiết |
+|---------|---------|---------|
+| `web-page-change` | Người dùng nhấn số trang hoặc nút Trước/Tiếp | `{ page: number }` — số trang được chọn |
+
+```js
+document.querySelector('web-pagination').addEventListener('web-page-change', (e) => {
+  console.log('Chuyển đến trang:', e.detail.page);
+});
+```

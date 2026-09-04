@@ -93,7 +93,7 @@
 	width: 4rem;
 	height: 4rem;
 	border-radius: 9999px;
-	background: var(--color-primary, #2ebd85);
+	background: var(--color-primary, #34ace0);
 	color: var(--color-base-content, #ffffff);
 	display: flex;
 	align-items: center;
@@ -115,6 +115,6 @@
 
 /* spatial UI variant — glassmorphism play button */
 .facade.spatial .facade-play {
-	background: color-mix(in oklab, var(--color-primary, #2ebd85), transparent 15%);
+	background: color-mix(in oklab, var(--color-primary, #34ace0), transparent 15%);
 	backdrop-filter: blur(var(--core-blur, 12px));
 }

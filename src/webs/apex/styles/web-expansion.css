@@ -62,7 +62,7 @@
 	transition: color 0.2s ease;
 }
 
-.exp-item.open .exp-icon { color: var(--color-primary, #2ebd85); }
+.exp-item.open .exp-icon { color: var(--color-primary, #34ace0); }
 
 /* ── Label ────────────────────────────────────────────────────────────────── */
 
@@ -75,7 +75,7 @@
 	transition: color 0.2s ease;
 }
 
-.exp-item.open .exp-label { color: var(--color-primary, #2ebd85); }
+.exp-item.open .exp-label { color: var(--color-primary, #34ace0); }
 
 /* ── Chevron ──────────────────────────────────────────────────────────────── */
 
@@ -91,7 +91,7 @@
 .exp-item.open .chevron {
 	transform: rotate(180deg);
 	opacity: 1;
-	color: var(--color-primary, #2ebd85);
+	color: var(--color-primary, #34ace0);
 }
 
 /* ── Animated content ─────────────────────────────────────────────────────── */

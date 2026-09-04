@@ -19,11 +19,11 @@ const TXT_STD = {
 
 /**
  * <svc-cart> — "giỏ hàng" độc lập của domain `pay` (fab+dialog+items/qty/promo/notes/tổng tiền —
- * không có tab checkout/QR, thuộc <svc-pay>). Không import domain nào khác — xem docs/PAY.rst §1.
+ * không có tab checkout/QR, thuộc <svc-pay>). Không import domain nào khác — xem hook/PAY.rst §1.
  *
  * "Đặt hàng →" chỉ emit `cart:checkout` cho parent mount <svc-pay>, không tự tạo invoice.
  * `promosStore` override nơi lưu/đọc promo (mặc định: conductor+Storager cục bộ, không đồng bộ
- * xuyên thiết bị) — chi tiết + sơ đồ: xem docs/PAY.rst §3.8.
+ * xuyên thiết bị) — chi tiết + sơ đồ: xem hook/PAY.rst §3.8.
  *
  * Events: cart:checkout — { items, seller, sellerId, bayId, notes, promo, disc }, act:clear, close,
  * promo:create/promo:delete.
@@ -168,7 +168,7 @@ export class SvcCart extends LitElement {
     _dfPromoUse(code) { if (this.promosStore) this.promosStore.use(code); else usePromo(this.service, code); }
 
     /** Flow _dfCheckout: giỏ + promo -> emit cart:checkout (không tự xoá items — giỏ chỉ reset
-     *  sau khi payment xác nhận, xem clearCart()/svc-pay.js's _dfConfirmPaid() và docs/PAY.rst §5
+     *  sau khi payment xác nhận, xem clearCart()/svc-pay.js's _dfConfirmPaid() và hook/PAY.rst §5
      *  "Giỏ hàng bị xoá NGAY khi checkout"). Promo vẫn tự clear+tính usage ngay tại đây. `disc` là
      *  số tiền giảm giá ĐÃ TÍNH SẴN (giống hệt con số hiển thị ở _rbSummary()) — carry sang cho
      *  <svc-pay> để số tiền THẬT SỰ phải trả (QR/invoice) cũng được trừ giảm giá, không chỉ hiển

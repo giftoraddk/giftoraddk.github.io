@@ -1,0 +1,71 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-breadcrumb'
+description: 'Breadcrumb navigation trail with configurable items and separators'
+---
+
+# web-breadcrumb
+
+Renders a horizontal breadcrumb trail from an array of label/href pairs. The last item is treated as the current page and rendered as plain text without a link.
+
+## When to use
+
+- Help users understand their location within a multi-level page hierarchy
+- Provide quick navigation back to parent sections in documentation or e-commerce
+- Add structured navigation markup for SEO breadcrumb rich results
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-breadcrumb.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `items` | string (JSON) | `'[]'` | Serialized array of `{ label: string, href?: string }` objects |
+| `separator` | string | `'/'` | Separator character between items |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+
+## Basic Example
+
+```html
+<web-breadcrumb
+  items='[
+    {"label": "Home",     "href": "/"},
+    {"label": "Products", "href": "/products"},
+    {"label": "Headphones"}
+  ]'
+></web-breadcrumb>
+
+<script type="module" src="/src/webs/apex/web-breadcrumb.js"></script>
+```
+
+## Advanced Examples
+
+Custom separator with Astro dynamic items:
+
+```astro
+---
+const crumbs = [
+  { label: 'Document',       href: '/doc/en' },
+  { label: 'Components', href: '/doc/en/components' },
+  { label: 'web-breadcrumb' },
+];
+---
+
+<web-breadcrumb
+  items={JSON.stringify(crumbs)}
+  separator="›"
+></web-breadcrumb>
+```
+
+Using the spatial UI variant in a dark hero section:
+
+```html
+<web-breadcrumb
+  items='[{"label":"Home","href":"/"},{"label":"Blog","href":"/blog"},{"label":"Post Title"}]'
+  ui="spatial"
+></web-breadcrumb>
+```

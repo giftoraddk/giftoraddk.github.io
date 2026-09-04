@@ -83,7 +83,7 @@ export class WebButton extends LitElement {
     const style = cssInline({
       '--core-height': this.height || (isBadge ? '18px' : '36px'),
       width,
-      borderRadius: this.rounded || (isBadge ? '1rem' : (this.ui === 'spatial' ? '3rem' : 'var(--core-radius)')),
+      borderRadius: this.rounded || isBadge ? '1rem' : 'var(--core-radius, .5rem)',
       fontSize: this.fontSize || (isBadge ? '.7rem' : 'var(--text-xs, .75rem)'),
       padding: this.padding || (isBadge ? '0 .5rem' : (this.square ? '0' : '0 .75rem')),
       ...(this.stys || {})

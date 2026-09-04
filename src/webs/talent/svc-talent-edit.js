@@ -2,9 +2,9 @@ import { LitElement, html, unsafeCSS } from 'lit';
 import '@/webs/apex/web-text.js';
 import '@/webs/apex/web-textarea.js';
 import '@/webs/apex/web-select.js';
-import '@/webs/apex/web-photor-upload.js';
 import '@/webs/apex/web-button.js';
 import '@/webs/apex/web-toast.js';
+import '@/webs/media/svc-photor.js';
 import css from './styles/svc-talent-edit.css?inline';
 import { emit, toastEmit, txtLingo, watchHtmlAttr } from '@/services/helper.js';
 import { createTalentProfile, updateTalentProfile, findTalentById, findTalentByUserId } from './tools/service.js';
@@ -56,7 +56,7 @@ const _EMPTY_FORM = {
     contact: { phone: '', email: '', zalo: '', whatsapp: '', telegram: '' },
 };
 
-// Dữ liệu mẫu — khớp mockup Talent Card ở bản gốc product plan (docs/new_feature.md §3), dùng cho
+// Dữ liệu mẫu — khớp mockup Talent Card ở bản gốc product plan (hook/new_feature.md §3), dùng cho
 // nút "Điền dữ liệu mẫu" (test nhanh, không cần gõ tay toàn bộ form khi demo).
 const _DEMO_FORM = {
     title: 'Nguyễn Minh An',
@@ -75,7 +75,7 @@ const _DEMO_FORM = {
 };
 
 /**
- * <svc-talent-edit> — form tạo/sửa Talent Profile (chỉ chủ sở hữu / admin, xem docs/new_feature.md
+ * <svc-talent-edit> — form tạo/sửa Talent Profile (chỉ chủ sở hữu / admin, xem hook/new_feature.md
  * §7). Tự load hồ sơ hiện có theo `talentId` (ưu tiên) hoặc `userId` (tìm theo user_id), tự quản lý
  * state nội bộ (KHÔNG phải controlled-thuần như svc-pay-reason.js — không có orchestrator cha nào
  * giữ state form này).
@@ -204,7 +204,7 @@ export class SvcTalentEdit extends LitElement {
     get _subCategoryOptions() { return subCategoriesOf(this._form.category).map((c) => ({ label: c.label, value: c.id })); }
 
     // Field nhỏ có label cố định (web-text/web-select không có prop `label` sẵn — chỉ
-    // web-textarea mới có, xem docs/web-apex.rst) — wrap chung 1 kiểu cho nhất quán UI.
+    // web-textarea mới có, xem hook/web-apex.rst) — wrap chung 1 kiểu cho nhất quán UI.
     _rfField(label, node) {
         return html`<div class="talent-edit-field"><label>${label}</label>${node}</div>`;
     }
@@ -221,8 +221,8 @@ export class SvcTalentEdit extends LitElement {
 
                 <h3 class="talent-edit-section">${t.secBasic}</h3>
                 ${this._rfField(t.fAvatar, html`
-                    <web-photor-upload class="talent-edit-avatar" placeholder=${t.fAvatar} .value=${f.avatarUrl}
-                        @change=${(e) => this._dhField('avatarUrl', e.detail.value)}></web-photor-upload>
+                    <svc-photor class="talent-edit-avatar" placeholder=${t.fAvatar} .value=${f.avatarUrl}
+                        @change=${(e) => this._dhField('avatarUrl', e.detail.value)}></svc-photor>
                 `)}
                 ${this._rfField(t.fTitle, html`
                     <web-text placeholder=${t.fTitle} ui=${this.ui} theme=${this.theme} .value=${f.title}
@@ -303,8 +303,8 @@ export class SvcTalentEdit extends LitElement {
 
                 <h3 class="talent-edit-section">${t.secPortfolio}</h3>
                 ${this._rfField(t.fPics, html`
-                    <web-photor-upload placeholder=${t.fPics} multiple .value=${f.pics}
-                        @change=${(e) => this._dhField('pics', e.detail.value)}></web-photor-upload>
+                    <svc-photor placeholder=${t.fPics} multiple .value=${f.pics}
+                        @change=${(e) => this._dhField('pics', e.detail.value)}></svc-photor>
                 `)}
 
                 <h3 class="talent-edit-section">${t.secContact}</h3>

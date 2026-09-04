@@ -1,0 +1,87 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-toggle'
+description: 'Toggle switch for boolean settings with label, color, size, and change event'
+---
+
+# web-toggle
+
+A toggle switch representing a single boolean setting. Visually distinct from a checkbox — ideal for on/off settings where the current state needs to be immediately obvious.
+
+## When to use
+
+- Enable/disable individual features or notifications
+- Dark mode switches
+- Settings panels where immediate effect is expected on toggle
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-toggle.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `label` | string | `''` | Label text displayed next to the toggle |
+| `checked` | boolean | `false` | Current on/off state |
+| `disabled` | boolean | `false` | Disable interaction |
+| `color` | string | `'primary'` | ApexUI color when toggled on |
+| `size` | string | `'md'` | Toggle size: `xs` \| `sm` \| `md` \| `lg` |
+| `labelPosition` | string | `'right'` | Label placement: `left` \| `right` |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+
+## Basic Example
+
+```html
+<web-toggle label="Enable notifications" checked></web-toggle>
+<web-toggle label="Dark mode"></web-toggle>
+<web-toggle label="Beta features" disabled></web-toggle>
+
+<script type="module" src="/src/webs/apex/web-toggle.js"></script>
+```
+
+## Advanced Examples
+
+Dark mode toggle wired to `data-theme`:
+
+```html
+<web-toggle
+  id="theme-toggle"
+  label="Dark mode"
+  color="primary"
+  size="md"
+></web-toggle>
+
+<script>
+  const toggle = document.getElementById('theme-toggle');
+
+  // Set initial state from cookie
+  const current = document.documentElement.dataset.theme;
+  if (current === 'dark') toggle.setAttribute('checked', '');
+
+  toggle.addEventListener('web-toggle-change', e => {
+    const theme = e.detail.checked ? 'dark' : 'light';
+    document.documentElement.dataset.theme = theme;
+    document.cookie = `theme=${theme}; path=/; max-age=31536000`;
+  });
+</script>
+```
+
+Settings group with label on left:
+
+```html
+<div style="display: flex; flex-direction: column; gap: 0.75rem; max-width: 300px;">
+  <web-toggle label="Email alerts"   label-position="left" checked></web-toggle>
+  <web-toggle label="SMS alerts"     label-position="left"></web-toggle>
+  <web-toggle label="Push alerts"    label-position="left" checked></web-toggle>
+  <web-toggle label="Weekly digest"  label-position="left" disabled></web-toggle>
+</div>
+```
+
+## Events
+
+| Event | When | Detail |
+|---|---|---|
+| `web-toggle-change` | User clicks the toggle | `{ checked: boolean }` |

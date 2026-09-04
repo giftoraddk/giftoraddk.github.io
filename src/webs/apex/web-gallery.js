@@ -155,7 +155,7 @@ export class WebGallery extends LitElement {
                 <web-slider
                     .images=${imgs}
                     ?nav=${false}
-                    ?dots=${true}
+                    ?dots=${false}
                     ?loop=${true}
                     .autoplay=${3000}
                     ?reverse=${this.reverse}

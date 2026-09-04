@@ -1,0 +1,135 @@
+---
+layout: '../../../layouts/LayoutDoc.astro'
+title: 'Web Board'
+description: 'Manage multiple sections with web-board'
+---
+
+# Web Board
+
+<div class="doc-intro">
+  <p><code>web-board</code> orchestrates multiple <code>web-boxs</code> instances as named sections on a single page. It renders in the light DOM and supports optional drag-and-drop section reordering.</p>
+</div>
+
+## What web-board Does
+
+While `web-boxs` renders a single card grid, `web-board` acts as a page-level layout manager:
+
+- Accepts an array of section configs
+- Renders each section as a `web-boxs` instance
+- Provides a shared `ui`, `theme`, and `mainColors` context to all sections
+- Optionally allows users to drag and reorder sections
+- Uses **light DOM** (not Shadow DOM) so it can be styled from a parent stylesheet
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `sections` | string (JSON) | `'[]'` | Serialized array of section config objects |
+| `theme` | string | `'light'` | Live-tracked via a `MutationObserver` on `<html data-theme>` — only used as the initial value |
+| `variant` | object | `{}` | `{ theme, light: {...}, dark: {...} }` (theme-keyed) or a flat `{ ui, mainColors, textColor(s) }` — sole source for `ui`/`mainColors`/`textColor`, re-resolved against the active `theme` on every render |
+| `container` | boolean | `true` | Wrap sections in a max-width container |
+| `draggable` | boolean | `false` | Enable drag-and-drop section reordering |
+
+## Sections Schema
+
+Each item in the `sections` array is a section config object:
+
+```js
+{
+  id: 'section-id',        // unique key — matches conductor section key
+  title: 'Section Title',  // optional display title
+  dataApi: '/api/data.json',
+  cacheKey: 'section-id',
+  cacheTtl: 300,           // seconds
+  config: { /* baseConfig */ },
+  anime: 'fade-up',        // optional animation class
+}
+```
+
+## Basic Example: Two Sections
+
+```astro
+---
+const sections = [
+  {
+    id: 'featured',
+    title: 'Featured Products',
+    dataApi: '/api/featured.json',
+    cacheKey: 'featured',
+    cacheTtl: 600,
+    config: {
+      tiers: [{ cols: 1, minWidth: 0 }, { cols: 3, minWidth: 1024 }],
+      makes: [
+        { opt: 'image', val: 'image' },
+        { opt: 'text',  val: 'name' },
+        { opt: 'price', val: 'price' },
+      ],
+    },
+  },
+  {
+    id: 'new-arrivals',
+    title: 'New Arrivals',
+    dataApi: '/api/new.json',
+    cacheKey: 'new-arrivals',
+    cacheTtl: 300,
+    config: {
+      tiers: [{ cols: 2, minWidth: 0 }, { cols: 4, minWidth: 1024 }],
+      makes: [
+        { opt: 'image', val: 'thumbnail' },
+        { opt: 'text',  val: 'title' },
+        { opt: 'badge', val: 'tag' },
+      ],
+    },
+  },
+];
+---
+
+<web-board
+  sections={JSON.stringify(sections)}
+  container
+></web-board>
+
+<script type="module" src="/src/webs/apex/web-board.js"></script>
+```
+
+## Draggable Board
+
+Enable section drag-and-drop with the `draggable` prop:
+
+```html
+<web-board
+  sections="..."
+  draggable
+  ui="spatial"
+></web-board>
+```
+
+When `draggable` is enabled, `web-board` fires a `web-board-reorder` event whenever sections are rearranged:
+
+```js
+document.querySelector('web-board').addEventListener('web-board-reorder', e => {
+  console.log('New order:', e.detail.order); // array of section ids
+});
+```
+
+## Light DOM vs Shadow DOM
+
+`web-board` deliberately uses the light DOM so that:
+
+- Astro global styles (Tailwind, typography) apply to section titles
+- Server-rendered HTML is accessible for SEO
+- Section slots can be targeted by page-level CSS
+
+Child `web-boxs` instances still use Shadow DOM for encapsulation.
+
+## Events
+
+| Event | When | Detail |
+|---|---|---|
+| `web-board-reorder` | Sections drag-reordered | `{ order: string[] }` — array of section ids in new order |
+
+## Next Steps
+
+- [Web Boxs](/doc/en/web-boxs) — single section card-grid reference
+- [Section Config](/doc/en/section-config) — organizing config files per domain
+- [Conductor](/doc/en/conductor) — how sections fetch and cache data

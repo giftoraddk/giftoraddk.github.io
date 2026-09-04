@@ -1,7 +1,7 @@
 export const hashtags = ['faq', 'modern', 'accordion', 'expansion', 'questions'];
 
 // Section này CHỈ có 1 record editable (svc-admin dùng mode `single`, xem svc-bay-sections.js)
-// — data luôn `data[0]` duy nhất: subtitle/meta.heroTitle là field top-level, còn danh sách
+// — data luôn `data[0]` duy nhất: subtitle/title là field top-level, còn danh sách
 // câu hỏi FAQ (nhiều item, độ dài co giãn) nằm NESTED trong `expansion` (tên field khớp tên
 // tier marker `expansion` mà web-board dùng, xem Tier 1's `dataKey: 'expansion'` bên dưới).
 // Mỗi phần tử `expansion[i]` là `{title, content}` — không phải 1 record thật nên tự do đặt
@@ -9,7 +9,7 @@ export const hashtags = ['faq', 'modern', 'accordion', 'expansion', 'questions']
 export const data = [
 	{
 		subtitle: 'FAQ',
-		meta: { heroTitle: 'Frequently\nasked questions' },
+		title: 'Frequently\nasked questions',
 		expansion: [
 			{
 				title: 'What is Nexons?',
@@ -60,7 +60,7 @@ const baseConfig = {
 						},
 					},
 					{
-						bit: 'meta.heroTitle',
+						bit: 'title',
 						opt: {
 							mode: 'h3',
               motion: true,

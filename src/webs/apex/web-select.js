@@ -337,7 +337,7 @@ export class WebSelect extends LitElement {
                       class="option-item ${this._isSelected(opt) ? 'selected' : ''}"
                       @click=${() => this._selectOption(opt)}
                     >
-                      <span>${opt.label || opt.name}</span>
+                      <span class="option-label">${opt.label || opt.name}</span>
                       <svg
                         class="checkmark"
                         viewBox="0 0 24 24"

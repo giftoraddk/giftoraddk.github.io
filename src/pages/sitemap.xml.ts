@@ -4,12 +4,14 @@
 // URL cố định + 2 collection, viết tay rẻ hơn thêm 1 integration mới.
 import { fetchCollection } from '@/services/firestore.server.ts';
 import { site } from '@/services/constants/site.js';
-import { occasions } from '@/services/constants/tags.js';
+import { corporateGiftCategories } from '@/services/constants/tags.js';
+import { budgetTiers } from '@/modules/gift-budget.js';
+import { services as giftServices } from '@/modules/gift-services.js';
 import { productSlug, postSlug, tagSlugMap } from '@/services/helper.js';
 
-// Cùng slice(0, 5) mà src/pages/gift/[occasions].astro dùng cho getStaticPaths() — chỉ 5 dịp
-// đầu tiên thực sự được build ra trang tĩnh, không phải toàn bộ danh mục occasions.
-const OCCASION_KEYS = Object.keys(occasions.vi).slice(0, 5);
+// Cùng nguồn mà src/pages/gift/[occasions].astro / [budget].astro / service/[slug].astro dùng
+// cho getStaticPaths(), đảm bảo URL trong sitemap luôn khớp URL thật đã build.
+const CATEGORY_KEYS = Object.keys(corporateGiftCategories.vi);
 
 const escapeXml = (s: string) =>
     s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
@@ -49,7 +51,9 @@ export async function GET() {
         urlEntry(`${base}/gift/shop`, null, 'daily', '0.9'),
         urlEntry(`${base}/post/`, null, 'daily', '0.7'),
         urlEntry(`${base}/product/`, null, 'daily', '0.8'),
-        ...OCCASION_KEYS.map((key) => urlEntry(`${base}/gift/${key}`, null, 'weekly', '0.8')),
+        ...CATEGORY_KEYS.map((key) => urlEntry(`${base}/gift/${key}`, null, 'weekly', '0.8')),
+        ...budgetTiers.map((tier) => urlEntry(`${base}/gift/${tier.key}`, null, 'weekly', '0.7')),
+        ...giftServices.map((svc) => urlEntry(`${base}/gift/service/${svc.slug}`, null, 'weekly', '0.6')),
         ...posts.map((p: any) => urlEntry(`${base}/post/${postSlug(p)}/`, toIso(p.updated_at ?? p.created_at), 'weekly', '0.6')),
         ...products.map((p: any) => urlEntry(`${base}/product/${productSlug(p)}/`, toIso(p.updated_at ?? p.created_at), 'weekly', '0.7')),
         ...productTagSlugs.map((slug) => urlEntry(`${base}/product/tag/${slug}/`, null, 'weekly', '0.5')),

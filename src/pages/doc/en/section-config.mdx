@@ -1,0 +1,171 @@
+---
+layout: '../../../layouts/LayoutDoc.astro'
+title: 'Section Config'
+description: 'How to create and organize section config files in src/sections/'
+---
+
+# Section Config
+
+<div class="doc-intro">
+  <p>Section configs are the source of truth for how a domain's data is fetched and displayed. They live in <code>src/sections/&lt;domain&gt;/</code> and are imported by Astro pages.</p>
+</div>
+
+## Location
+
+```
+src/
+└── sections/
+    ├── shop/
+    │   ├── config.js       # Product section configs
+    │   └── featured.js     # Featured items section config
+    ├── blog/
+    │   └── config.js
+    └── home/
+        └── config.js
+```
+
+Each domain has its own subdirectory. A domain can have multiple config files — one per logical section.
+
+## Config Keys
+
+A complete section config object:
+
+```js
+{
+  id: 'shop-products',          // string — unique id, used as conductor section key and cacheKey
+  title: 'Products',            // string — display title (optional)
+  dataApi: '/api/products.json',// string — API endpoint for Conductor to fetch
+  cacheKey: 'shop-products',    // string — IndexedDB cache key
+  cacheTtl: 300,                // number — cache lifetime in seconds
+  config: { /* baseConfig */ }, // object — layout and cell config for web-boxs
+  anime: 'fade-up',             // string — entrance animation class (optional)
+}
+```
+
+### Key Reference
+
+| Key | Type | Required | Description |
+|---|---|---|---|
+| `id` | string | Yes | Unique identifier. Must match the conductor section key. |
+| `title` | string | No | Human-readable title for the section. |
+| `dataApi` | string | No | URL Conductor fetches data from. |
+| `cacheKey` | string | No | IndexedDB key for caching responses. Omit to disable cache. |
+| `cacheTtl` | number | No | Cache lifetime in seconds. `0` or omitted = no TTL. |
+| `config` | object | Yes | The `baseConfig` object passed to `web-boxs`. |
+| `anime` | string | No | Entrance animation class for cards. |
+
+## Full Example
+
+```js
+// src/sections/shop/config.js
+
+export const productConfig = {
+  id: 'shop-products',
+  title: 'Our Products',
+  dataApi: '/api/products.json',
+  cacheKey: 'shop-products',
+  cacheTtl: 300,
+  anime: 'fade-up',
+  config: {
+    tiers: [
+      { cols: 1, minWidth: 0 },
+      { cols: 2, minWidth: 640 },
+      { cols: 4, minWidth: 1024 },
+    ],
+    makes: [
+      { opt: 'image', val: 'thumbnail', stys: { aspectRatio: '4/3' } },
+      { opt: 'text',  val: 'name',      stys: { fontWeight: '600' } },
+      { opt: 'price', val: 'price',     stys: { color: 'var(--color-primary)' } },
+    ],
+    groupStyle: {
+      background: 'var(--color-base-100)',
+      borderRadius: 'var(--radius-box)',
+    },
+  },
+};
+
+export const featuredConfig = {
+  id: 'shop-featured',
+  title: 'Featured',
+  dataApi: '/api/featured.json',
+  cacheKey: 'shop-featured',
+  cacheTtl: 600,
+  config: {
+    tiers: [{ cols: 1, minWidth: 0 }, { cols: 3, minWidth: 1024 }],
+    makes: [
+      { opt: 'image', val: 'image', stys: { aspectRatio: '16/9' } },
+      { opt: 'text',  val: 'title' },
+    ],
+  },
+};
+```
+
+## Import Pattern
+
+Import the config in an Astro page and pass it as a serialized prop:
+
+```astro
+---
+// src/pages/shop.astro
+import Layout from '@/layouts/Layout.astro';
+import { productConfig } from '@/sections/shop/config.js';
+---
+
+<Layout title="Shop">
+  <web-boxs
+    config={JSON.stringify(productConfig.config)}
+    dataApi={productConfig.dataApi}
+    cacheKey={productConfig.cacheKey}
+    cacheTtl={String(productConfig.cacheTtl)}
+    ui="modern"
+  ></web-boxs>
+
+  <script type="module" src="/src/webs/apex/web-boxs.js"></script>
+</Layout>
+```
+
+Or pass the entire config to `web-board` as a sections array:
+
+```astro
+---
+import { productConfig, featuredConfig } from '@/sections/shop/config.js';
+const sections = [featuredConfig, productConfig];
+---
+
+<web-board sections={JSON.stringify(sections)} variant={{ ui: 'modern' }}></web-board>
+```
+
+## Grouping Multiple Configs
+
+For domains with many sections, export all from a single `index.js`:
+
+```js
+// src/sections/shop/index.js
+export { productConfig }  from './config.js';
+export { featuredConfig } from './featured.js';
+export { saleConfig }     from './sale.js';
+```
+
+Then import cleanly:
+
+```js
+import { productConfig, featuredConfig } from '@/sections/shop/index.js';
+```
+
+## Color Rule Reminder
+
+All `sty` values inside `config.makes` and `config.groupStyle` must use CSS variables only:
+
+```js
+// Correct
+{ stys: { color: 'var(--color-primary)' } }
+
+// Wrong
+{ stys: { color: '#3b82f6' } }
+```
+
+## Next Steps
+
+- [Web Boxs](/doc/en/web-boxs) — full `baseConfig` schema reference
+- [Conductor](/doc/en/conductor) — how `cacheKey` and `cacheTtl` are used
+- [Design Guide](/doc/en/design-guide) — building the `config` object from mockups

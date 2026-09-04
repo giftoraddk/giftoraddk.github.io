@@ -1,0 +1,92 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-tooltip'
+description: 'Tooltip shown on hover or focus with configurable placement, trigger, and delay'
+---
+
+# web-tooltip
+
+Displays a small informational label anchored to a trigger element. Appears on hover (or focus) and disappears when the pointer leaves. Designed for brief contextual hints — not rich content (use `web-popover` for that).
+
+## When to use
+
+- Explain the purpose of icon buttons that have no visible text label
+- Show the full text of truncated content
+- Provide supplemental hints for form fields or data values
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-tooltip.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `content` | string | `''` | Tooltip text to display |
+| `placement` | string | `'top'` | Where the tooltip appears: `top` \| `bottom` \| `left` \| `right` |
+| `trigger` | string | `'hover'` | What shows the tooltip: `hover` \| `focus` \| `both` |
+| `delay` | number | `200` | Delay in ms before the tooltip appears |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+
+## Basic Example
+
+```html
+<web-tooltip content="Delete this item">
+  <web-button type="ghost" color="error">🗑</web-button>
+</web-tooltip>
+
+<web-tooltip content="Required field" placement="right">
+  <span style="cursor: help;">ⓘ</span>
+</web-tooltip>
+
+<script type="module" src="/src/webs/apex/web-tooltip.js"></script>
+<script type="module" src="/src/webs/apex/web-button.js"></script>
+```
+
+## Advanced Examples
+
+Tooltip below an icon-only navigation item:
+
+```html
+<nav style="display: flex; gap: 0.5rem;">
+  <web-tooltip content="Home" placement="bottom">
+    <a href="/" aria-label="Home">🏠</a>
+  </web-tooltip>
+
+  <web-tooltip content="Settings" placement="bottom">
+    <a href="/settings" aria-label="Settings">⚙️</a>
+  </web-tooltip>
+
+  <web-tooltip content="Sign out" placement="bottom">
+    <a href="/logout" aria-label="Sign out">🚪</a>
+  </web-tooltip>
+</nav>
+```
+
+Focus-triggered tooltip for form field hint:
+
+```html
+<web-tooltip
+  content="Must be at least 8 characters with one uppercase letter"
+  placement="right"
+  trigger="focus"
+  delay="0"
+>
+  <web-text label="Password" type="password" name="password"></web-text>
+</web-tooltip>
+```
+
+Long-delay spatial tooltip:
+
+```html
+<web-tooltip
+  content="Click to copy the API key"
+  placement="top"
+  delay="600"
+  ui="spatial"
+>
+  <code>sk-••••••••••••</code>
+</web-tooltip>
+```

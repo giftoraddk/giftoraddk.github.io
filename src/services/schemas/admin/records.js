@@ -1,7 +1,7 @@
 import { humanizeLocation } from '@/services/helper.js'
 
 // Schema chung cho MỌI section không phải products (hero/contact/... — xem
-// docs/CHANNEL.rst § Section — multi-section) — field theo chuẩn docs/SCHEMA.rst `records`
+// hook/CHANNEL.rst § Section — multi-section) — field theo chuẩn hook/SCHEMA.rst `records`
 // (title/subtitle/description/content/pics) thay vì 1 schema riêng/domain (label/address/... cũ).
 // Field không có sẵn trong records (subtitle, phone/email/address) lưu qua `meta` (đúng
 // convention "Dữ liệu phát sinh theo mode" của records) bằng field/key indirection sẵn có của
@@ -10,7 +10,7 @@ import { humanizeLocation } from '@/services/helper.js'
 //
 // `address` dùng type 'location' (web-table.js § _rfField) → form sửa hiện <web-location-map>
 // thay vì text input thường, lưu dạng street~ward~region~country~lat~lng (cùng format
-// rooms.location, xem docs/CHANNEL.rst § rooms Schema) — 1 field vừa cho địa chỉ hiển thị vừa
+// rooms.location, xem hook/CHANNEL.rst § rooms Schema) — 1 field vừa cho địa chỉ hiển thị vừa
 // cho toạ độ map thật (contact/modernHoriGoogleMap.js). Áp dụng cho MỌI domain dùng schema
 // này (không chỉ contact) vì đây là schema chung — domain không dùng field address không bị
 // ảnh hưởng gì (field chỉ hiện khi mở form sửa, không ai gọi tới nếu template không có bit
@@ -34,7 +34,7 @@ export default (lang = 'vi') => {
         { label: t.subtitle, field: 'subtitle', type: 'text', width: '160px' },
         { label: t.description, field: 'description', type: 'textarea', width: '220px' },
         { label: t.content, field: 'content', type: 'textarea', width: '220px' },
-        { label: t.pics, field: 'pics', type: 'photor-upload' },
+        { label: t.pics, field: 'pics', type: 'photor' },
         { label: t.address, field: 'address', key: 'meta.address', type: 'location', width: '220px', render: (v) => humanizeLocation(v) || '—' },
         { label: t.phone, field: 'phone', key: 'meta.phone', type: 'text', width: '140px' },
         { label: t.email, field: 'email', key: 'meta.email', type: 'text', width: '160px' },

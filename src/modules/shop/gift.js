@@ -1,9 +1,12 @@
-import { occasions } from '@/services/constants/tags.js';
+import { corporateGiftCategories } from '@/services/constants/tags.js';
 import { policies as policyDocs } from '@/modules/policies';
+import { budgetTiers } from '@/modules/gift-budget.js';
+import { services as giftServices } from '@/modules/gift-services.js';
 
-// 5 dịp đầu tiên đã build static tại src/pages/gift/[occasions].astro — dùng chung nguồn để menu
-// và route static luôn khớp nhau.
-const OCCASION_KEYS = Object.keys(occasions.vi).slice(0, 5);
+// Nguồn chung cho menu & getStaticPaths của từng route tĩnh — luôn khớp nhau:
+// [occasions].astro ↔ corporateGiftCategories, [budget].astro ↔ budgetTiers,
+// service/[slug].astro ↔ giftServices.
+const CATEGORY_KEYS = Object.keys(corporateGiftCategories.vi);
 
 // ── Shop identity ─────────────────────────────────────────────────────────────────
 export const shop = {
@@ -64,7 +67,7 @@ export const views = [
 				data: [
 					{
 						title: { vi: 'Giftora DDK', en: 'Giftora DDK' },
-						slider: [{ pics: '/images/common/gift-banner.webp' }, { pics: '/images/common/gift-light.webp' }, { pics: '/images/common/gift-dark.webp' }],
+						slider: [{ pics: '/images/common/gift-main.webp' }, { pics: '/images/common/gift-banner.webp' }, { pics: '/images/common/gift-light.webp' }, { pics: '/images/common/gift-dark.webp' }],
 					},
 				],
 				config: (await import('@/sections/showcase/modernSlideNeat.js')).config,
@@ -164,37 +167,29 @@ export const menuSpecials = [
 ]
 
 export const menuItems = [
+	{ iconMobile: 'ri:home-line', text: { vi: 'Trang chủ', en: 'Home' }, href: '/gift/' },
 	{
-		iconMobile: 'ri:home-line',
-		text: { vi: 'Tổng quan', en: 'Overview' },
-		items: [
-			{ text: { vi: 'Giới thiệu', en: 'Introduction' }, href: '/gift#showcaseModernSlideNeat' },
-			{ text: { vi: 'Bộ sưu tập', en: 'Collection' }, href: '/gift#giftsModernStatsIntro' },
-		],
+		iconMobile: 'ri:building-4-line',
+		text: { vi: 'Quà tặng doanh nghiệp', en: 'Corporate Gifts' },
+		items: CATEGORY_KEYS.map((key) => ({
+			text: { vi: corporateGiftCategories.vi[key], en: corporateGiftCategories.en[key] },
+			href: `/gift/${key}`,
+		})),
+	},
+	{
+		iconMobile: 'ri:price-tag-3-line',
+		text: { vi: 'Theo ngân sách', en: 'By Budget' },
+		items: budgetTiers.map((tier) => ({
+			text: tier.label,
+			href: `/gift/${tier.key}`,
+		})),
 	},
 	{
 		iconMobile: 'ri:gift-2-line',
 		text: { vi: 'Dịch vụ', en: 'Services' },
-		items: [
-			{ text: { vi: 'Dịch vụ', en: 'Services' }, href: '/gift#giftsModernServiceGrid' },
-			{ text: { vi: 'Bán chạy nhất', en: 'Best sellers' }, href: '/gift#giftsModernSlideBestSeller' },
-			{ text: { vi: 'Hình ảnh nổi bật', en: 'Featured gallery' }, href: '/gift#giftsModernGalleryStrip' },
-		],
-	},
-	{
-		iconMobile: 'ri:chat-quote-line',
-		text: { vi: 'Khách hàng', en: 'Customers' },
-		items: [
-			{ text: { vi: 'Khách hàng nói gì', en: 'What customers say' }, href: '/gift#giftsModernSlideTestimonials' },
-			{ text: { vi: 'Thương hiệu đối tác', en: 'Partner brands' }, href: '/gift#giftsModernSlideBrands' },
-		],
-	},
-	{
-		iconMobile: 'ri:shopping-bag-4-line',
-		text: { vi: 'Sản phẩm', en: 'Products' },
-		items: OCCASION_KEYS.map((key) => ({
-			text: { vi: occasions.vi[key], en: occasions.en[key] },
-			href: `/gift/${key}`,
+		items: giftServices.map((svc) => ({
+			text: svc.title,
+			href: `/gift/service/${svc.slug}`,
 		})),
 	},
 ];

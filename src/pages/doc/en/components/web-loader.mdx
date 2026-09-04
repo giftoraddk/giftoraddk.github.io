@@ -1,0 +1,70 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-loader'
+description: 'Skeleton loading placeholder with configurable dimensions and shape'
+---
+
+# web-loader
+
+A skeleton placeholder shown while content is loading. Renders an animated shimmer block with configurable width, height, and border-radius — giving users an immediate sense of the layout before data arrives.
+
+## When to use
+
+- While async data is being fetched (replace with real content when ready)
+- Placeholder cards in a grid while images and text load
+- Content-aware skeletons that match the shape of the eventual content
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-loader.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `width` | string | `'100%'` | Width of the skeleton block (any CSS value) |
+| `height` | string | `'1rem'` | Height of the skeleton block |
+| `rounded` | boolean | `false` | Apply full pill rounding (`border-radius: 9999px`) |
+| `circle` | boolean | `false` | Render as a circle (useful for avatar placeholders) |
+| `count` | number | `1` | Repeat the skeleton N times stacked vertically |
+| `gap` | string | `'0.5rem'` | Gap between repeated skeletons when `count > 1` |
+
+## Basic Example
+
+```html
+<!-- Text line placeholder -->
+<web-loader width="60%" height="1rem"></web-loader>
+
+<!-- Card image placeholder -->
+<web-loader width="100%" height="200px"></web-loader>
+
+<!-- Avatar circle placeholder -->
+<web-loader circle width="3rem" height="3rem"></web-loader>
+
+<script type="module" src="/src/webs/apex/web-loader.js"></script>
+```
+
+## Advanced Examples
+
+Card skeleton layout — matching a product card:
+
+```html
+<div style="width: 240px; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem;">
+  <!-- Image -->
+  <web-loader width="100%" height="160px" rounded></web-loader>
+  <!-- Title -->
+  <web-loader width="80%" height="1rem"></web-loader>
+  <!-- Subtitle -->
+  <web-loader width="50%" height="0.875rem"></web-loader>
+  <!-- Price -->
+  <web-loader width="30%" height="1.25rem"></web-loader>
+</div>
+```
+
+Multiple text lines using `count`:
+
+```html
+<web-loader width="100%" height="0.875rem" count="4" gap="0.6rem"></web-loader>
+```

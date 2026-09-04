@@ -30,7 +30,7 @@
 
 .breadcrumb-item.link:hover {
 	opacity: 1;
-	color: var(--color-primary, #2ebd85);
+	color: var(--color-primary, #34ace0);
 	transform: translateY(-1px);
 }
 

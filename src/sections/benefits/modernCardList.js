@@ -2,7 +2,7 @@ export const hashtags = ['benefits', 'modern', 'checklist', 'list', 'features'];
 
 // Section này CHỈ có 1 record editable (svc-admin dùng mode `single`, xem svc-bay-sections.js)
 // — data luôn `data[0]` duy nhất: subtitle/title/description là field top-level theo chuẩn
-// docs/SCHEMA.rst `records`, còn danh sách checklist (nhiều item, độ dài co giãn) nằm NESTED
+// hook/SCHEMA.rst `records`, còn danh sách checklist (nhiều item, độ dài co giãn) nằm NESTED
 // trong `cards` (tên field khớp tên tier marker `cards`/`masonry`/`slider`/`steps`/`tabs`/
 // `expansion` mà web-board dùng, xem Tier 1's `dataKey: 'cards'` bên dưới — quy ước: field nào
 // là mảng object thì đặt tên theo đúng render mode dùng để hiển thị nó, giúp nhìn `data` là biết

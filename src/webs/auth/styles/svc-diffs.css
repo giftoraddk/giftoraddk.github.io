@@ -13,9 +13,9 @@ svc-diffs {
     gap: 6px;
     padding: 9px 16px;
     border-radius: 999px;
-    border: 1px solid var(--color-primary, #2ebd85);
-    background: color-mix(in oklab, var(--color-primary, #2ebd85) 12%, var(--color-base-100, #1a1a1a));
-    color: var(--color-primary, #2ebd85);
+    border: 1px solid var(--color-primary, #34ace0);
+    background: color-mix(in oklab, var(--color-primary, #34ace0) 12%, var(--color-base-100, #1a1a1a));
+    color: var(--color-primary, #34ace0);
     font-size: .8rem;
     font-family: var(--font-sans, system-ui);
     font-weight: 600;
@@ -25,7 +25,7 @@ svc-diffs {
     transition: background .2s, box-shadow .2s;
 }
 .sdiff-fab:hover {
-    background: color-mix(in oklab, var(--color-primary, #2ebd85) 22%, var(--color-base-100, #1a1a1a));
+    background: color-mix(in oklab, var(--color-primary, #34ace0) 22%, var(--color-base-100, #1a1a1a));
     box-shadow: 0 6px 20px rgba(0,0,0,.45);
 }
 
@@ -78,9 +78,9 @@ svc-diffs {
     border-radius: 999px;
     font-size: .7rem;
     font-weight: 700;
-    background: color-mix(in oklab, var(--color-primary, #2ebd85) 18%, transparent);
-    color: var(--color-primary, #2ebd85);
-    border: 1px solid color-mix(in oklab, var(--color-primary, #2ebd85) 40%, transparent);
+    background: color-mix(in oklab, var(--color-primary, #34ace0) 18%, transparent);
+    color: var(--color-primary, #34ace0);
+    border: 1px solid color-mix(in oklab, var(--color-primary, #34ace0) 40%, transparent);
 }
 .sdiff-close-btn {
     margin-left: auto;
@@ -162,11 +162,11 @@ svc-diffs {
     background: var(--color-base-200, #1e1e1e);
 }
 .sdiff-item-active {
-    background: color-mix(in oklab, var(--color-primary, #2ebd85) 7%, var(--color-base-100, #131313));
-    border-left-color: var(--color-primary, #2ebd85);
+    background: color-mix(in oklab, var(--color-primary, #34ace0) 7%, var(--color-base-100, #131313));
+    border-left-color: var(--color-primary, #34ace0);
 }
 .sdiff-item-active:hover {
-    background: color-mix(in oklab, var(--color-primary, #2ebd85) 10%, var(--color-base-100, #131313));
+    background: color-mix(in oklab, var(--color-primary, #34ace0) 10%, var(--color-base-100, #131313));
 }
 
 .sdiff-avatar {

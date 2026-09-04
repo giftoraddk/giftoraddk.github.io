@@ -9,16 +9,17 @@ import '@/webs/apex/web-pagination.js';
 // Field components — registered globally, available inside Shadow DOM
 import '@/webs/apex/web-select.js';
 import '@/webs/apex/web-currency.js';
+import '@/webs/apex/web-button.js';
 import '@/webs/apex/web-texts.js';
 import '@/webs/apex/web-textarea.js';
-import '@/webs/apex/web-photor-upload.js';
 import '@/webs/apex/web-datetime.js';
 import '@/webs/apex/web-location-map.js';
+import '@/webs/media/svc-photor.js';
 import '@/webs/media/svc-editor.js';
 
 const TXT_STD = {
-	vi: { empty: 'Không có dữ liệu', save: 'Lưu', cancel: 'Huỷ', required: 'là bắt buộc', confirmDel: 'Xoá dòng này?', yes: 'Xoá', no: 'Huỷ', history: 'Lịch sử', aiFilling: 'AI đang điền dữ liệu…', addRow: 'Thêm dòng' },
-	en: { empty: 'No data', save: 'Save', cancel: 'Cancel', required: 'is required', confirmDel: 'Delete this row?', yes: 'Delete', no: 'Cancel', history: 'History', aiFilling: 'AI is filling in data…', addRow: 'Add row' },
+	vi: { empty: 'Không có dữ liệu', save: 'Lưu', cancel: 'Huỷ', required: 'là bắt buộc', confirmDel: 'Xoá dòng này?', yes: 'Xoá', no: 'Huỷ', history: 'Lịch sử', marketing: 'Marketing', aiFilling: 'AI đang điền dữ liệu…', addRow: 'Thêm dòng' },
+	en: { empty: 'No data', save: 'Save', cancel: 'Cancel', required: 'is required', confirmDel: 'Delete this row?', yes: 'Delete', no: 'Cancel', history: 'History', marketing: 'Marketing', aiFilling: 'AI is filling in data…', addRow: 'Add row' },
 };
 
 export class WebTable extends LitElement {
@@ -32,6 +33,7 @@ export class WebTable extends LitElement {
 		editable:    { type: Boolean },
 		deletable:   { type: Boolean },
 		history:     { type: Boolean },
+		marketing:   { type: Boolean },
 		// `data` luôn tối đa 1 bản ghi (vd sectionItems của 1 section hero/contact) — bỏ hẳn
 		// grid/list/pagination, luôn hiện ĐÚNG 1 form edit mở sẵn (data[0] nếu có, "Thêm mới"
 		// nếu chưa) — không cần bấm dòng/nút "+" nào, xem render()/_rfSingle()/willUpdate().
@@ -55,7 +57,7 @@ export class WebTable extends LitElement {
 		// Gợi ý mặc định cho field type 'location' khi đang rỗng (vd room.location của channel
 		// — xem svc-channel-sections.js) — không ép giá trị nếu field đã có sẵn dữ liệu.
 		locationSuggest: { type: String },
-		// Passthrough cho field type 'photor-upload' — ẩn nút chọn ảnh, xem web-photor-upload.js prop cùng tên.
+		// Passthrough cho field type 'photor' — ẩn nút chọn ảnh, xem svc-photor.js prop cùng tên.
 		hideUpload: { type: Boolean },
 		// State
 		_editId:     { state: true },
@@ -84,6 +86,7 @@ export class WebTable extends LitElement {
 		this.editable = false;
 		this.deletable = false;
 		this.history = false;
+		this.marketing = false;
 		this.single = false;
 		this.aiLoading = false;
 		this.ui = 'modern';
@@ -437,9 +440,9 @@ export class WebTable extends LitElement {
 				${this._preview ? html`
 					<div class="wt-preview-backdrop" @click=${() => this._preview = null}>
 						<div class="wt-preview-panel" @click=${(e) => e.stopPropagation()}>
-							<button class="wt-preview-close" @click=${() => this._preview = null}>
-								<iconify-icon icon="ri:close-line"></iconify-icon>
-							</button>
+							<web-button class="wt-preview-close" square height="26px" type="soft"
+								ui=${this.ui} theme=${this.theme} prefix="ri:close-line"
+								@clicked=${() => this._preview = null}></web-button>
 							<div class="Editor">${unsafeHTML(this._preview)}</div>
 						</div>
 					</div>
@@ -507,16 +510,14 @@ export class WebTable extends LitElement {
 					<span>${col.label || ''}</span>
 					${col.sortable ? html`
 						<div class="wt-head-sort">
-							<button class="wt-btn-sort-col ${isAsc ? 'active' : ''} ${!this._perms.sort ? 'wt-locked' : ''}"
+							<web-button square height="18px" type=${isAsc ? 'soft' : 'ghost'} color=${isAsc ? 'primary' : ''}
+								ui=${this.ui} theme=${this.theme} prefix="ri:sort-asc"
 								title=${this._perms.sort ? 'A→Z' : 'Không có quyền'} ?disabled=${!this._perms.sort}
-								@click=${() => this._dhColSort(col.field, 'asc')}>
-								<iconify-icon icon="ri:sort-asc"></iconify-icon>
-							</button>
-							<button class="wt-btn-sort-col ${isDesc ? 'active' : ''} ${!this._perms.sort ? 'wt-locked' : ''}"
+								@clicked=${() => this._dhColSort(col.field, 'asc')}></web-button>
+							<web-button square height="18px" type=${isDesc ? 'soft' : 'ghost'} color=${isDesc ? 'primary' : ''}
+								ui=${this.ui} theme=${this.theme} prefix="ri:sort-desc"
 								title=${this._perms.sort ? 'Z→A' : 'Không có quyền'} ?disabled=${!this._perms.sort}
-								@click=${() => this._dhColSort(col.field, 'desc')}>
-								<iconify-icon icon="ri:sort-desc"></iconify-icon>
-							</button>
+								@clicked=${() => this._dhColSort(col.field, 'desc')}></web-button>
 						</div>
 					` : ''}
 				</div>
@@ -561,31 +562,27 @@ export class WebTable extends LitElement {
 			<div class="grid-cell wt-ctrl-cell">
 				<div class="wt-act-row">
 					${this.editable ? html`
-						<button class="wt-btn-act ${isOpen ? 'active' : ''} ${!canEdit ? 'wt-locked' : ''}"
+						<web-button square height="22px" type=${isOpen ? 'fill' : 'ghost'} color=${isOpen ? 'primary' : ''}
+							ui=${this.ui} theme=${this.theme} prefix=${canEdit ? 'ri:edit-line' : 'ri:lock-line'}
 							title=${canEdit ? 'Edit' : 'Không có quyền'} ?disabled=${!canEdit}
-							@click=${() => { this._editId = isOpen ? null : row.id; this._deleteId = null; this._repeaterState = {}; }}>
-							<iconify-icon icon=${canEdit ? 'ri:edit-line' : 'ri:lock-line'}></iconify-icon>
-						</button>` : ''}
+							@clicked=${() => { this._editId = isOpen ? null : row.id; this._deleteId = null; this._repeaterState = {}; }}></web-button>` : ''}
 					${this.deletable ? html`
-						<button class="wt-btn-act wt-act-del ${isDel ? 'active' : ''} ${!canDelete ? 'wt-locked' : ''}"
+						<web-button square height="22px" type=${isDel ? 'fill' : 'ghost'} color="error"
+							ui=${this.ui} theme=${this.theme} prefix=${canDelete ? 'ri:delete-bin-line' : 'ri:lock-line'}
 							title=${canDelete ? 'Delete' : 'Không có quyền'} ?disabled=${!canDelete}
-							@click=${() => { this._deleteId = isDel ? null : row.id; this._editId = null; }}>
-							<iconify-icon icon=${canDelete ? 'ri:delete-bin-line' : 'ri:lock-line'}></iconify-icon>
-						</button>` : ''}
+							@clicked=${() => { this._deleteId = isDel ? null : row.id; this._editId = null; }}></web-button>` : ''}
 				</div>
 				${this.orderable ? html`
-					<div class="wt-sort-col ${!canSort ? 'wt-locked' : ''}">
+					<div class="wt-sort-col">
 						<div class="wt-sort-row">
 							${MOVE_BTNS.slice(0, 2).map(({ dir, title, icon }) => html`
-								<button class="wt-btn-sort" title=${title} ?disabled=${!canSort} @click=${() => this._doMove(row.id, dir)}>
-									<iconify-icon icon=${icon}></iconify-icon>
-								</button>`)}
+								<web-button square height="22px" type="ghost" ui=${this.ui} theme=${this.theme} prefix=${icon}
+									title=${title} ?disabled=${!canSort} @clicked=${() => this._doMove(row.id, dir)}></web-button>`)}
 						</div>
 						<div class="wt-sort-row">
 							${MOVE_BTNS.slice(2).map(({ dir, title, icon }) => html`
-								<button class="wt-btn-sort" title=${title} ?disabled=${!canSort} @click=${() => this._doMove(row.id, dir)}>
-									<iconify-icon icon=${icon}></iconify-icon>
-								</button>`)}
+								<web-button square height="22px" type="ghost" ui=${this.ui} theme=${this.theme} prefix=${icon}
+									title=${title} ?disabled=${!canSort} @clicked=${() => this._doMove(row.id, dir)}></web-button>`)}
 						</div>
 					</div>` : ''}
 			</div>
@@ -605,10 +602,9 @@ export class WebTable extends LitElement {
 			return html`
 				<div class="grid-cell wt-cell-editor" style="${style}">
 					${plain.length ? html`
-						<button class="wt-btn-preview" title="Xem nội dung"
-							@click=${(e) => { e.stopPropagation(); this._preview = String(v); }}>
-							<iconify-icon icon="ri:file-text-line"></iconify-icon>
-						</button>
+						<web-button square height="26px" type="ghost" ui=${this.ui} theme=${this.theme} prefix="ri:file-text-line"
+							title="Xem nội dung" @click=${e => e.stopPropagation()}
+							@clicked=${() => { this._preview = String(v); }}></web-button>
 					` : ''}
 				</div>
 			`;
@@ -624,8 +620,10 @@ export class WebTable extends LitElement {
 			<div class="wt-del-confirm">
 				<iconify-icon icon="ri:error-warning-line"></iconify-icon>
 				<span>${this._txt.confirmDel}</span>
-				<button class="wt-btn-yes" @click=${() => this._doDelete(row.id)}>${this._txt.yes}</button>
-				<button class="wt-btn-no"  @click=${() => this._deleteId = null}>${this._txt.no}</button>
+				<web-button height="28px" type="fill" color="error" ui=${this.ui} theme=${this.theme}
+					@clicked=${() => this._doDelete(row.id)}>${this._txt.yes}</web-button>
+				<web-button height="28px" type="soft" ui=${this.ui} theme=${this.theme}
+					@clicked=${() => this._deleteId = null}>${this._txt.no}</web-button>
 			</div>
 		`;
 	}
@@ -647,17 +645,23 @@ export class WebTable extends LitElement {
 				</div>
 				<div class="wt-edit-actions">
 					${!this.single ? html`
-						<button class="wt-btn-cancel" @click=${() => this._editId = null}>
-							${this._txt.cancel}
-						</button>
+						<web-button type="soft" ui=${this.ui} theme=${this.theme}
+							@clicked=${() => this._editId = null}>${this._txt.cancel}</web-button>
 					` : ''}
-					<button class="wt-btn-save ${!canEdit ? 'wt-locked' : ''}" ?disabled=${!canEdit} @click=${() => this._doSave()}>
-						<iconify-icon icon=${canEdit ? 'ri:save-line' : 'ri:lock-line'}></iconify-icon> ${this._txt.save}
-					</button>
-					${row?.id && this.history ? html`
-						<button class="wt-btn-history" @click=${() => this._emit('wt-open-history', { id: row.id })}>
-							<iconify-icon icon="ri:history-line"></iconify-icon> ${this._txt.history}
-						</button>
+					<web-button type="fill" color="primary" ui=${this.ui} theme=${this.theme}
+						prefix=${canEdit ? 'ri:save-line' : 'ri:lock-line'} ?disabled=${!canEdit}
+						@clicked=${() => this._doSave()}>${this._txt.save}</web-button>
+					${row?.id && (this.history || this.marketing) ? html`
+						<div class="wt-trailing-actions">
+							${this.history ? html`
+								<web-button type="soft" ui=${this.ui} theme=${this.theme} prefix="ri:history-line"
+									@clicked=${() => this._emit('wt-open-history', { id: row.id })}>${this._txt.history}</web-button>
+							` : ''}
+							${this.marketing ? html`
+								<web-button type="soft" ui=${this.ui} theme=${this.theme} prefix="ri:magic-line"
+									@clicked=${() => this._emit('wt-open-marketing', { id: row.id })}>${this._txt.marketing}</web-button>
+							` : ''}
+						</div>
 					` : ''}
 				</div>
 			</div>
@@ -668,7 +672,7 @@ export class WebTable extends LitElement {
 		const storageKey = col.key || col.field;
 		const val        = row ? (getPath(row, storageKey) ?? '') : '';
 		const opts       = (col.opts ?? []).map(o => typeof o === 'string' ? { value: o, label: o } : o);
-		const fullRow    = ['textarea', 'photor-upload', 'editor', 'location', 'repeater'].includes(col.type);
+		const fullRow    = ['textarea', 'photor', 'editor', 'location', 'repeater'].includes(col.type);
 
 		let input;
 		switch (col.type) {
@@ -690,11 +694,11 @@ export class WebTable extends LitElement {
 				break;
 			case 'editor':
 				input = html`<svc-editor data-field=${storageKey} .value=${String(val??'')} .ui=${this.ui} .theme=${this.theme}
-					ai=${this.ai || [import.meta.env.PUBLIC_GROQ, import.meta.env.PUBLIC_OPER].filter(Boolean).join('|')} placeholder="Nhập nội dung…"></svc-editor>`;
+					ai=${this.ai || [import.meta.env.PUBLIC_NVID, import.meta.env.PUBLIC_GROQ, import.meta.env.PUBLIC_OPER].filter(Boolean).join('|')} placeholder="Nhập nội dung…"></svc-editor>`;
 				break;
-			case 'photor-upload':
-				input = html`<web-photor-upload data-field=${storageKey} .value=${String(val??'')} .ui=${this.ui} ?hideUpload=${this.hideUpload}
-					?multiple=${col.multiple ?? false} .limit=${col.limit ?? 0}></web-photor-upload>`;
+			case 'photor':
+				input = html`<svc-photor data-field=${storageKey} .value=${String(val??'')} .ui=${this.ui} ?hideUpload=${this.hideUpload}
+					?multiple=${col.multiple ?? false} .limit=${col.limit ?? 0}></svc-photor>`;
 				break;
 			case 'location':
 				// Rỗng → gợi ý sẵn locationSuggest (vd room.location của channel) làm điểm bắt
@@ -722,15 +726,13 @@ export class WebTable extends LitElement {
 										.value=${String(r[sub.field] ?? '')}
 										@input=${e => this._dhRepeaterInput(storageKey, idx, sub.field, e.target.value)} />
 								`)}
-								<button class="wt-btn-repeater-del" title=${this._txt.yes}
-									@click=${() => this._dhRepeaterRemove(storageKey, idx)}>
-									<iconify-icon icon="ri:delete-bin-line"></iconify-icon>
-								</button>
+								<web-button square height="32px" type="soft" ui=${this.ui} theme=${this.theme}
+									prefix="ri:delete-bin-line" title=${this._txt.yes}
+									@clicked=${() => this._dhRepeaterRemove(storageKey, idx)}></web-button>
 							</div>
 						`)}
-						<button class="wt-btn-repeater-add" @click=${() => this._dhRepeaterAdd(storageKey, itemSchema)}>
-							<iconify-icon icon="ri:add-line"></iconify-icon> ${this._txt.addRow}
-						</button>
+						<web-button class="wt-btn-repeater-add" type="dash" color="primary" ui=${this.ui} theme=${this.theme}
+							prefix="ri:add-line" @clicked=${() => this._dhRepeaterAdd(storageKey, itemSchema)}>${this._txt.addRow}</web-button>
 					</div>
 				`;
 				break;

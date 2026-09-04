@@ -1,0 +1,114 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-text'
+description: 'Text input and textarea form controls with label, validation error, and disabled state'
+---
+
+# web-text
+
+A styled text input or textarea. Supports a floating or top label, placeholder, disabled state, and inline error message. `web-textarea` is the multi-line variant sharing the same API.
+
+## When to use
+
+- Single-line text fields: name, email, search, password
+- Multi-line text areas: comments, descriptions, bios (`web-textarea`)
+- Form fields that need consistent theming and built-in error display
+
+## Loading
+
+```html
+<!-- Text input -->
+<script type="module" src="/src/webs/apex/web-text.js"></script>
+
+<!-- Textarea (multi-line) -->
+<script type="module" src="/src/webs/apex/web-textarea.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `label` | string | `''` | Label text displayed above or inside the field |
+| `placeholder` | string | `''` | Placeholder text when the field is empty |
+| `value` | string | `''` | Current field value |
+| `type` | string | `'text'` | Input type: `text` \| `email` \| `password` \| `number` \| `search` \| `url` |
+| `disabled` | boolean | `false` | Disable the field |
+| `readonly` | boolean | `false` | Make the field read-only |
+| `error` | string | `''` | Error message shown below the field; empty = no error |
+| `required` | boolean | `false` | Mark the field as required |
+| `name` | string | `''` | Input name attribute for form submission |
+| `rows` | number | `4` | Number of visible rows (textarea only) |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+
+## Basic Example
+
+```html
+<web-text
+  label="Full Name"
+  placeholder="Enter your full name"
+  name="fullname"
+  required
+></web-text>
+
+<web-text
+  label="Email"
+  type="email"
+  placeholder="you@example.com"
+  name="email"
+></web-text>
+
+<web-text
+  label="Password"
+  type="password"
+  name="password"
+  required
+></web-text>
+
+<script type="module" src="/src/webs/apex/web-text.js"></script>
+```
+
+## Advanced Examples
+
+Field with validation error:
+
+```html
+<web-text
+  label="Email"
+  type="email"
+  value="notanemail"
+  error="Please enter a valid email address."
+  id="email-field"
+></web-text>
+```
+
+Textarea for comments:
+
+```html
+<web-textarea
+  label="Your Message"
+  placeholder="Write your message here…"
+  rows="6"
+  name="message"
+  required
+></web-textarea>
+
+<script type="module" src="/src/webs/apex/web-textarea.js"></script>
+```
+
+Read-only display field with spatial UI:
+
+```html
+<web-text
+  label="Account ID"
+  value="USR-00142"
+  readonly
+  ui="spatial"
+></web-text>
+```
+
+## Events
+
+| Event | When | Detail |
+|---|---|---|
+| `web-text-input` | User types in the field | `{ value: string, name: string }` |
+| `web-text-change` | Field loses focus after value change | `{ value: string, name: string }` |

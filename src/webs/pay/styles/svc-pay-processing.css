@@ -15,7 +15,7 @@
 
 /* ── 2 form <svc-pay-reason> cạnh nhau (panel 'preparing': hoàn thành xử lý | huỷ đơn) — chi tiết
    lý do dùng grid 2 cột + custom property `--reason-title-min-height` xuyên Shadow DOM: xem
-   docs/PAY.rst §3.12. ────────────────────────────────────────────────────────────────────────── */
+   hook/PAY.rst §3.12. ────────────────────────────────────────────────────────────────────────── */
 .order-panel.reason-columns {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -34,7 +34,7 @@
     border-top: 1px dashed var(--color-base-300);
 }
 /* .cancel-block ở đây LUÔN là cột phải của .reason-columns — bỏ margin/border-top (là 1 CỘT đứng
-   CẠNH svc-pay-reason chứ không phải khối xếp CHỒNG bên dưới nó, xem docs/PAY.rst §3.12). */
+   CẠNH svc-pay-reason chứ không phải khối xếp CHỒNG bên dưới nó, xem hook/PAY.rst §3.12). */
 .reason-columns > .cancel-block {
     margin-top: 0;
     padding-top: 0;

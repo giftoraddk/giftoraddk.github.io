@@ -1,0 +1,106 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-select'
+description: 'Dropdown select với search và multi-select'
+---
+
+# web-select
+
+Dropdown chọn giá trị với hỗ trợ tìm kiếm nhanh và chọn nhiều mục. Nhận danh sách tùy chọn qua JSON array.
+
+## Khi nào dùng
+
+- Chọn một hoặc nhiều giá trị từ danh sách dài (quốc gia, danh mục, tag, v.v.)
+- Khi cần tìm kiếm để lọc nhanh trong danh sách nhiều mục
+- Thay thế cho `<select>` HTML khi cần giao diện đồng nhất với hệ thống thiết kế
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-select.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `options` | array JSON | `[]` | Danh sách tùy chọn: `[{"value":"...", "label":"..."}]` |
+| `value` | string | `''` | Giá trị đang được chọn (hoặc JSON array nếu `multiple`) |
+| `placeholder` | string | `'Chọn...'` | Text hiển thị khi chưa chọn |
+| `multiple` | boolean | `false` | Cho phép chọn nhiều mục cùng lúc |
+| `searchable` | boolean | `false` | Hiển thị ô tìm kiếm để lọc danh sách |
+| `disabled` | boolean | `false` | Vô hiệu hóa, không thể mở dropdown |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Ví dụ cơ bản
+
+```html
+<web-select
+  options='[{"value":"vn","label":"Việt Nam"},{"value":"us","label":"United States"},{"value":"jp","label":"Nhật Bản"}]'
+  placeholder="Chọn quốc gia"
+  searchable>
+</web-select>
+```
+
+## Ví dụ nâng cao
+
+Chọn nhiều tag với tìm kiếm:
+
+```html
+<web-select
+  id="tag-select"
+  options='[
+    {"value":"tech","label":"Công nghệ"},
+    {"value":"design","label":"Thiết kế"},
+    {"value":"marketing","label":"Marketing"},
+    {"value":"finance","label":"Tài chính"},
+    {"value":"hr","label":"Nhân sự"}
+  ]'
+  placeholder="Chọn chủ đề..."
+  multiple
+  searchable>
+</web-select>
+```
+
+Đặt giá trị mặc định và lắng nghe thay đổi:
+
+```html
+<web-select
+  id="status-select"
+  options='[{"value":"active","label":"Đang hoạt động"},{"value":"inactive","label":"Tạm dừng"},{"value":"deleted","label":"Đã xóa"}]'
+  value="active">
+</web-select>
+
+<script>
+  document.getElementById('status-select').addEventListener('web-select-change', (e) => {
+    console.log('Trạng thái mới:', e.detail.value);
+  });
+</script>
+```
+
+Tải tùy chọn động từ API:
+
+```html
+<web-select id="city-select" placeholder="Chọn thành phố..." searchable></web-select>
+<script>
+  async function loadCities() {
+    const res = await fetch('/api/cities');
+    const cities = await res.json();
+    const options = cities.map(c => ({ value: c.id, label: c.name }));
+    document.getElementById('city-select').setAttribute('options', JSON.stringify(options));
+  }
+  loadCities();
+</script>
+```
+
+## Sự kiện
+
+| Sự kiện | Khi nào | Chi tiết |
+|---------|---------|---------|
+| `web-select-change` | Người dùng chọn hoặc bỏ chọn một mục | `{ value }` — giá trị được chọn (string hoặc array nếu `multiple`) |
+
+```js
+document.querySelector('web-select').addEventListener('web-select-change', (e) => {
+  console.log('Giá trị đã chọn:', e.detail.value);
+});
+```

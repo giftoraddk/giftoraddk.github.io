@@ -1,6 +1,6 @@
 // src/webs/talent/tools/categories.js
 //
-// Registry tĩnh danh mục ngành nghề (MVP, xem docs/new_feature.md §1.10) — data-driven ở tầng UI
+// Registry tĩnh danh mục ngành nghề (MVP, xem hook/new_feature.md §1.10) — data-driven ở tầng UI
 // (không hard-code chuỗi rải rác), chưa cần CRUD admin. Migrate sang `records mode: 'category'`
 // ở Phase 2 nếu cần đổi danh mục qua UI mà không deploy lại.
 

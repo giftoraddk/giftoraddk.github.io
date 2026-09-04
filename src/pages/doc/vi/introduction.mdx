@@ -1,0 +1,67 @@
+---
+layout: '../../../layouts/LayoutDoc.astro'
+title: 'Tổng quan'
+description: 'Giới thiệu về dự án Astro Micro — stack, triết lý, và các hệ thống cốt lõi'
+---
+
+# Tổng quan
+
+<div class="doc-intro">
+  <p>Astro Micro là một static site framework kết hợp Astro 6, Lit 3 Web Components, Tailwind CSS 4 và ApexUI — được thiết kế cho tốc độ, khả năng mở rộng và cấu hình khai báo.</p>
+</div>
+
+## Đây là gì?
+
+Astro Micro là một nền tảng xây dựng trang web tĩnh (static site) hiện đại, được cấu trúc quanh triết lý **"khai báo trước, logic sau"**. Thay vì viết lại HTML cho từng trang, bạn mô tả layout và dữ liệu qua các config object — hệ thống tự động render thành UI.
+
+Stack công nghệ cốt lõi:
+
+- **Astro 6** — framework tạo trang tĩnh (`output: 'static'`), zero-JS by default, hỗ trợ partial hydration
+- **Lit 3 Web Components** — các component độc lập, đóng gói Shadow DOM, có thể nhúng vào bất kỳ framework nào
+- **Tailwind CSS 4** — utility-first CSS với cú pháp mới dựa trên CSS variables
+- **ApexUI** — bộ theme system qua thuộc tính `data-theme="dark|light"` trên thẻ `<html>`
+
+## Tại sao dùng Astro Micro?
+
+**Tốc độ**: Astro xuất ra HTML tĩnh hoàn toàn — không có JavaScript overhead khi tải trang. Web Components chỉ hydrate khi cần thiết.
+
+**Componentization**: Lit Web Components là các phần tử DOM chuẩn — không phụ thuộc vào framework, có thể tái sử dụng trong bất kỳ dự án nào, kể cả plain HTML.
+
+**Theming nhất quán**: Toàn bộ màu sắc đi qua CSS variables của ApexUI. Chuyển dark/light mode chỉ cần thay đổi một thuộc tính HTML.
+
+**Cấu hình khai báo**: Một card grid phức tạp được mô tả qua một `baseConfig` object thay vì hàng trăm dòng template.
+
+## Ba hệ thống cốt lõi
+
+| Hệ thống | File nguồn | Vai trò |
+|---|---|---|
+| **Conductor** | `src/services/conductor.js` | Shared nanostores atom + IndexedDB cache. Tất cả services chia sẻ một store; mỗi service sở hữu một `section` trong `state.sections[]` được đánh key theo id. |
+| **Web Boxs** | `src/webs/apex/web-boxs.js` | Declarative card-grid renderer. Nhận `data[]` + `config` object. Config files nằm trong `src/sections/<domain>/`. |
+| **Micro Services** | `src/webs/<domain>/svc-*.js` | Self-contained Lit custom elements. Mỗi element đọc/ghi section riêng trong conductor và dispatch events xuyên qua Shadow DOM. |
+
+### Conductor — Trung tâm dữ liệu
+
+Conductor là một nanostores atom đơn lẻ được chia sẻ bởi toàn bộ ứng dụng. Nó đảm nhiệm việc fetch dữ liệu từ API, cache kết quả vào IndexedDB với TTL tùy chỉnh, và retry tự động khi gặp lỗi mạng.
+
+### Web Boxs — Grid renderer
+
+`web-boxs` là engine render chính. Bạn truyền vào một mảng `data` và một `config` object mô tả cách render từng card — số cột, các cell bên trong, style, animation. Component tự xử lý phần còn lại.
+
+### Micro Services — Domain logic
+
+Các file `svc-*.js` đóng gói toàn bộ business logic của một tính năng: fetch dữ liệu qua conductor, lắng nghe sự kiện người dùng, cập nhật store, và trigger re-render. Mỗi micro service hoàn toàn độc lập.
+
+## Công nghệ sử dụng
+
+| Thư viện | Phiên bản | Mục đích |
+|---|---|---|
+| Astro | 6.x | Static site generation, page routing |
+| Lit | 3.x | Web Components với reactive properties |
+| Tailwind CSS | 4.x | Utility CSS, CSS variables-based |
+| ApexUI | 5.x | Theme system (dark/light và custom themes) |
+| nanostores | latest | Lightweight reactive state management |
+| IndexedDB | Web API | Client-side cache với TTL |
+
+## Tiếp theo
+
+Tiếp tục với [Bắt đầu nhanh](/doc/vi/quickstart) để cài đặt và chạy dự án trong vài phút.

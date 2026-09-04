@@ -12,7 +12,7 @@ const _BLANK = { name: '', phone: '', note: '' };
 
 /**
  * <svc-pay-processing> — panel LIVE của major "Xử lý đơn hàng" (subId
- * 'preparing'|'cancelled'|'done') — xem docs/PAY.rst §3.1/§3.12. Thuần presentational, mọi form
+ * 'preparing'|'cancelled'|'done') — xem hook/PAY.rst §3.1/§3.12. Thuần presentational, mọi form
  * nhập (complete-processing/seller self-cancel/accept-reject) là state NỘI BỘ; chỉ bắn event
  * `processing:*` kèm payload đầy đủ khi bấm action. Bước hoàn tiền (refund, dùng chung với major
  * "delivery"'s "returned") vẫn do <svc-pay> tự render — KHÔNG thuộc component này, xem svc-pay.js's

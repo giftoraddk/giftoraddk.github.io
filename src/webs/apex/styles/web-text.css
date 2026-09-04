@@ -24,13 +24,13 @@
 }
 
 .web-text:hover {
-  border-color: var(--color-primary, #2ebd85);
+  border-color: var(--color-primary, #34ace0);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .web-text:focus-within {
-  border-color: var(--color-primary, #2ebd85);
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary, #2ebd85) 15%, transparent);
+  border-color: var(--color-primary, #34ace0);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary, #34ace0) 15%, transparent);
 }
 
 .text-input {
@@ -119,5 +119,5 @@
 
 .spatial.web-text:focus-within {
     background: rgba(255, 255, 255, 0.08);
-    border-color: var(--color-primary, #2ebd85);
+    border-color: var(--color-primary, #34ace0);
 }

@@ -23,7 +23,7 @@ const TXT_STD = {
 };
 
 /**
- * <svc-review> — form submit review (docs/new_feature.md §1.5), chỉ hiện khi cha (`<svc-proposal>`)
+ * <svc-review> — form submit review (hook/new_feature.md §1.5), chỉ hiện khi cha (`<svc-proposal>`)
  * xác nhận `proposal.meta.stage === 'completed'` và người xem là đúng employer của deal đó — điều
  * kiện hợp lệ THẬT vẫn được `submitReview()` check lại ở tools/service.js.
  */

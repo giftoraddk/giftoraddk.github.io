@@ -2,7 +2,7 @@ import { getStyleOpts } from '@/services/helper';
 
 export const hashtags = ['benefits', 'modern', 'compare', 'features', 'vs'];
 
-// subtitle/title/description theo chuẩn docs/SCHEMA.rst `records` — sửa qua svc-admin
+// subtitle/title/description theo chuẩn hook/SCHEMA.rst `records` — sửa qua svc-admin
 // (dataTable="sectionItems", schema chung records.js) sẽ đổi trực tiếp nội dung dưới đây.
 // Heading (Tier 0) + 2 nhãn panel + badge VS (meta.leftPanelTitle/leftPanelLabel/vsBadge/
 // rightPanelTitle/rightPanelLabel) vẫn data-bound vào data[0] — cố định, không phải danh sách.

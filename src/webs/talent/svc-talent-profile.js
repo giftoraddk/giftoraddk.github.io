@@ -50,7 +50,7 @@ const TXT_STD = {
 };
 
 /**
- * <svc-talent-profile> — Profile Detail (docs/new_feature.md §7/§23): hero + tabs (Overview/
+ * <svc-talent-profile> — Profile Detail (hook/new_feature.md §7/§23): hero + tabs (Overview/
  * Verification/Experience/Reviews/Hire) + hành động "Đề nghị thuê"/"Mở contact". KHÔNG qua
  * web-boxs (mask contact + badge theo điều kiện data cần logic thật, không phải config khai báo).
  */

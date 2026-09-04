@@ -1,0 +1,70 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-avatar'
+description: 'User avatar with image, fallback initials, size, shape, and online status'
+---
+
+# web-avatar
+
+Displays a user avatar with an image source or fallback initials. Supports multiple sizes, circle and square shapes, and an online status indicator.
+
+## When to use
+
+- Show user profile pictures in nav bars, comment threads, or user lists
+- Display initials when no profile image is available
+- Indicate user presence status (online, away, busy)
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-avatar.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `src` | string | `''` | Image URL. If empty, shows initials fallback |
+| `name` | string | `''` | User's name — used to generate initials when `src` is empty |
+| `size` | string | `'md'` | Avatar size: `xs` \| `sm` \| `md` \| `lg` \| `xl` |
+| `shape` | string | `'circle'` | Avatar shape: `circle` \| `square` |
+| `status` | string | `''` | Presence indicator: `online` \| `away` \| `busy` — empty hides the dot |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+
+## Basic Example
+
+```html
+<!-- With image -->
+<web-avatar src="/images/user.jpg" name="Jane Doe" size="md"></web-avatar>
+
+<!-- Initials fallback -->
+<web-avatar name="John Smith" size="lg" shape="square"></web-avatar>
+
+<!-- With status indicator -->
+<web-avatar src="/images/alice.jpg" name="Alice" status="online"></web-avatar>
+```
+
+## Advanced Examples
+
+Avatar group (overlapping row):
+
+```html
+<div style="display: flex; gap: -0.5rem;">
+  <web-avatar src="/img/user1.jpg" name="User 1" size="sm" status="online"></web-avatar>
+  <web-avatar src="/img/user2.jpg" name="User 2" size="sm" status="away"></web-avatar>
+  <web-avatar name="User 3" size="sm"></web-avatar>
+</div>
+```
+
+Large avatar in a profile header:
+
+```html
+<web-avatar
+  src="/images/profile.jpg"
+  name="Alexandra Chen"
+  size="xl"
+  shape="circle"
+  status="online"
+  ui="spatial"
+></web-avatar>
+```

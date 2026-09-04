@@ -2,7 +2,7 @@
 //
 // Voice-message recorder. Same pattern as svc-emoji.js: self-contained Lit component
 // wrapping its own <web-popover>, emits one semantic event up (`voice-send`) instead of
-// exposing recording internals to the caller. See docs/superpowers/specs/2026-07-30-
+// exposing recording internals to the caller. See hook/superpowers/specs/2026-07-30-
 // voice-message-design.md for the full state-machine rationale.
 //
 // IMPORTANT — the trigger button doubles as the record/stop toggle (per the product

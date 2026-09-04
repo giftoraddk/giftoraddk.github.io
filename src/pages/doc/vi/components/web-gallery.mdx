@@ -1,0 +1,71 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-gallery'
+description: 'Hiển thị một hoặc nhiều ảnh với lightbox'
+---
+
+# web-gallery
+
+Hiển thị ảnh đơn lẻ hoặc bộ sưu tập nhiều ảnh với hỗ trợ lightbox xem ảnh phóng to. Nhiều ảnh được truyền qua chuỗi URL phân cách bằng ký tự `|`.
+
+## Khi nào dùng
+
+- Hiển thị ảnh sản phẩm, ảnh bài viết hoặc ảnh minh họa trong nội dung
+- Tạo bộ sưu tập ảnh có thể duyệt qua lightbox
+- Ảnh nổi bên trái/phải trong bố cục bài viết kiểu editorial
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-gallery.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `src` | string | `''` | URL ảnh đơn hoặc nhiều URL phân cách bằng `\|`, ví dụ: `url1\|url2\|url3` |
+| `alt` | string | `''` | Văn bản thay thế (alt text) cho ảnh |
+| `loading` | string | `'lazy'` | Chiến lược tải ảnh: `lazy` \| `eager` |
+| `rounded` | string | `'md'` | Độ bo góc: `none` \| `sm` \| `md` \| `lg` \| `full` |
+| `float` | string | `''` | Ảnh nổi trong bố cục: `left` \| `right` |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Ví dụ cơ bản
+
+```html
+<!-- Ảnh đơn -->
+<web-gallery src="/images/product.jpg" alt="Sản phẩm" rounded="lg"></web-gallery>
+
+<!-- Nhiều ảnh -->
+<web-gallery src="/img/1.jpg|/img/2.jpg|/img/3.jpg" alt="Gallery" rounded="md"></web-gallery>
+```
+
+## Ví dụ nâng cao
+
+Ảnh nổi trong bài viết:
+
+```html
+<article>
+  <web-gallery
+    src="/images/cover.jpg"
+    alt="Ảnh bìa"
+    float="left"
+    rounded="lg"
+    loading="eager"
+  ></web-gallery>
+  <p>Nội dung bài viết sẽ chảy quanh ảnh bìa nổi bên trái...</p>
+</article>
+```
+
+Gallery sản phẩm với nhiều ảnh và lazy loading:
+
+```html
+<web-gallery
+  src="/products/p1-front.jpg|/products/p1-back.jpg|/products/p1-detail.jpg|/products/p1-pack.jpg"
+  alt="Ảnh sản phẩm"
+  rounded="md"
+  loading="lazy"
+  ui="spatial"
+></web-gallery>
+```

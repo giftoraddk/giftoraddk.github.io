@@ -7,7 +7,7 @@
     width: 48px; height: 48px;
     border-radius: 50%;
     border: none; cursor: pointer;
-    background: var(--color-primary, #2ebd85);
+    background: var(--color-primary, #34ace0);
     color: #fff;
     display: flex; align-items: center; justify-content: center;
     box-shadow: 0 4px 16px rgba(0,0,0,.35);
@@ -48,9 +48,9 @@
 }
 .sr-badge-admin {
     padding: 2px 10px; border-radius: 20px; font-size: .7rem; font-weight: 700;
-    background: color-mix(in oklab, var(--color-primary, #2ebd85) 15%, transparent);
-    color: var(--color-primary, #2ebd85);
-    border: 1px solid color-mix(in oklab, var(--color-primary, #2ebd85) 35%, transparent);
+    background: color-mix(in oklab, var(--color-primary, #34ace0) 15%, transparent);
+    color: var(--color-primary, #34ace0);
+    border: 1px solid color-mix(in oklab, var(--color-primary, #34ace0) 35%, transparent);
     letter-spacing: .04em;
 }
 .sr-btn-close {
@@ -104,15 +104,15 @@
 .sr-badge-super {
     font-size: .65rem; font-weight: 700; padding: 1px 7px;
     border-radius: 10px;
-    background: color-mix(in oklab, var(--color-primary, #2ebd85) 15%, transparent);
-    color: var(--color-primary, #2ebd85);
-    border: 1px solid color-mix(in oklab, var(--color-primary, #2ebd85) 30%, transparent);
+    background: color-mix(in oklab, var(--color-primary, #34ace0) 15%, transparent);
+    color: var(--color-primary, #34ace0);
+    border: 1px solid color-mix(in oklab, var(--color-primary, #34ace0) 30%, transparent);
 }
 
 /* ── Saving indicator ─────────────────────────────────────────────────────── */
 .sr-saving-dot {
     display: inline-block; width: 6px; height: 6px; border-radius: 50%;
-    background: var(--color-primary, #2ebd85);
+    background: var(--color-primary, #34ace0);
     animation: sr-pulse .8s ease infinite;
 }
 @keyframes sr-pulse {

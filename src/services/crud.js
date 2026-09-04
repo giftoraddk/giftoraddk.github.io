@@ -156,10 +156,10 @@ export const loadKey = (dataSrc, dataTable, server) => {
 
 /**
  * On-demand revalidation cho tầng cache runtime (IndexedDB, xem withCache/loadData) — thay cho
- * việc chờ hết TTL (mặc định 5 phút, xem docs/SERVICES.rst). Gọi ngay sau khi 1 record của
+ * việc chờ hết TTL (mặc định 5 phút, xem hook/SERVICES.rst). Gọi ngay sau khi 1 record của
  * (dataTable, server) này được ghi (create/update/delete) để lần load TIẾP THEO (reload trang,
  * tab mới) lấy dữ liệu mới ngay — KHÔNG đẩy dữ liệu mới vào các tab đang mở sẵn (section đã có
- * data trong RAM của conductor sẽ không tự re-fetch, xem docs/SERVICES.rst "state RAM đã có data
+ * data trong RAM của conductor sẽ không tự re-fetch, xem hook/SERVICES.rst "state RAM đã có data
  * thì return ngay"), chỉ ảnh hưởng cache IndexedDB dùng cho lần load kế tiếp.
  * @param {{ dataTable?:string, dataSrc?:string, server?:string }} opts — cùng opts đã dùng để load
  */

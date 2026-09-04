@@ -1,9 +1,9 @@
 // src/webs/talent/tools/constant.js
 //
-// Domain `talent` độc lập hoàn toàn (leaf domain, xem docs/new_feature.md §0) — không import từ
+// Domain `talent` độc lập hoàn toàn (leaf domain, xem hook/new_feature.md §0) — không import từ
 // domain nào khác (`bay`/`pay`/`socials`).
 
-// `proposal.meta.stage` — negotiation + deal + execution gộp 1 record, xem docs/new_feature.md §2.2.
+// `proposal.meta.stage` — negotiation + deal + execution gộp 1 record, xem hook/new_feature.md §2.2.
 export const STAGE = ['proposed', 'negotiating', 'accepted', 'declined', 'in_progress', 'submitted', 'completed', 'reviewed'];
 
 // `proposal.meta.subStatus` — song song với STAGE, không thay thế. `null` = không có ngoại lệ nào.
@@ -12,10 +12,10 @@ export const SUB_STATUS = ['cancel_requested', 'cancelled', 'disputed', 'refunde
 // `proposal.meta.escrow` — trạng thái vận hành của tiền giữ (KHÁC `invoice.status`, xem §1.8/§2.3).
 export const ESCROW = ['held', 'released', 'refunded'];
 
-// Không phản hồi trong 48h ở stage 'proposed'/'negotiating' -> tự expire, xem docs/new_feature.md §2.2.
+// Không phản hồi trong 48h ở stage 'proposed'/'negotiating' -> tự expire, xem hook/new_feature.md §2.2.
 export const PROPOSAL_EXPIRE_WINDOW_MS = 48 * 60 * 60 * 1000;
 
-// Bảng giá Xu — giả định, cần A/B test sau (xem docs/new_feature.md §3.3/§13.5).
+// Bảng giá Xu — giả định, cần A/B test sau (xem hook/new_feature.md §3.3/§13.5).
 export const XU_COSTS = {
     send_proposal: 50,
     hire_request: 100,

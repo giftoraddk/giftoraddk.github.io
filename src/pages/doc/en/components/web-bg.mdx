@@ -1,0 +1,73 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-bg'
+description: 'Animated decorative background with shapes, tints, motion styles, and overlay patterns'
+---
+
+# web-bg
+
+Renders animated decorative shapes as a background layer. Place it inside a `position: relative` container and it fills the space behind your content.
+
+## When to use
+
+- Add visual depth to hero sections, call-to-action areas, or feature cards
+- Create a living background without using video or heavy images
+- Apply the `spatial` glassmorphism aesthetic to a page section
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-bg.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `type` | string | `'circle'` | Shape type: `circle` \| `square` \| `blob` \| `circleOverlap` |
+| `total` | number | `4` | Number of shapes to render |
+| `tint` | string | `'primary'` | ApexUI color name for shape tint (e.g. `primary`, `secondary`, `accent`) |
+| `move` | string | `'float'` | Motion style: `swap` \| `float` \| `pulse` |
+| `pattern` | string | `''` | Overlay pattern: `dots` \| `grid` \| `lines` — empty = no pattern |
+| `opacity` | number | `0.15` | Shape fill opacity (0–1) |
+| `blur` | number | `80` | Gaussian blur radius in px applied to shapes |
+
+## Basic Example
+
+```html
+<section style="position: relative; min-height: 400px; padding: 4rem 2rem;">
+  <web-bg type="circle" total="5" move="float" tint="primary"></web-bg>
+  <h1>Hero Title</h1>
+  <p>Content sits above the animated background.</p>
+</section>
+
+<script type="module" src="/src/webs/apex/web-bg.js"></script>
+```
+
+## Advanced Examples
+
+Blob shapes with a dot pattern and pulse motion:
+
+```html
+<section style="position: relative; padding: 6rem 0;">
+  <web-bg
+    type="blob"
+    total="4"
+    tint="secondary"
+    move="pulse"
+    pattern="dots"
+    opacity="0.12"
+    blur="60"
+  ></web-bg>
+  <!-- content -->
+</section>
+```
+
+Overlapping circles for a deep spatial effect:
+
+```html
+<div style="position: relative; border-radius: 1rem; overflow: hidden;">
+  <web-bg type="circleOverlap" total="6" move="swap" tint="accent" blur="100"></web-bg>
+  <web-boxs config="..." dataApi="/api/items.json" ui="spatial"></web-boxs>
+</div>
+```

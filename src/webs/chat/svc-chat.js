@@ -13,7 +13,7 @@
 // import hàm lọc theo domain. Ngoại lệ duy nhất: widget tạo voucher riêng trong tab DM
 // (owner, xem _dhVoucherCreated) dùng <svc-pay-promo> (webs/pay) — component THUẦN
 // presentational (không kéo theo tools/service.js của pay), chấp nhận được vì nơi duy nhất
-// hiện import svc-chat.js là webs/bay (đã phụ thuộc pay sẵn, xem docs/PAY.rst).
+// hiện import svc-chat.js là webs/bay (đã phụ thuộc pay sẵn, xem hook/PAY.rst).
 import { LitElement, html, unsafeCSS } from 'lit'
 import 'iconify-icon'
 import '@/webs/apex/web-text.js'
@@ -320,7 +320,7 @@ export class SvcChat extends LitElement {
 
     // blobUrls[blob_id] là objectURL do nơi gọi tự tạo/revoke (vd svc-channel.js._resolveBlobUrl) —
     // truyền qua `src`, KHÔNG qua `blob`, để svc-media không tự revoke nhầm URL đó.
-    // svc-media chỉ hiểu image/video (xem docs/superpowers/specs/2026-07-30-voice-message-
+    // svc-media chỉ hiểu image/video (xem hook/superpowers/specs/2026-07-30-voice-message-
     // design.md) — voice message rẽ sang <svc-audio> thay vì mở rộng svc-media.
     _rfAttachment(m) {
         const url = this.blobUrls?.[m.blob_id]
@@ -394,7 +394,7 @@ export class SvcChat extends LitElement {
         // `online` giữ nguyên ý nghĩa cũ (tổng số đang online, TÍNH CẢ mình) cho dòng chữ
         // hiển thị — `others` là danh sách loại trừ bản thân, dùng cho nút gọi (không thể tự
         // gọi mình). Gộp chung 1 biến từng vô tình đổi luôn ý nghĩa số hiển thị — tách riêng
-        // để không lặp lại lỗi đó (xem docs/superpowers/specs/2026-07-15-channel-chat-composer-call-lock-design.md).
+        // để không lặp lại lỗi đó (xem hook/superpowers/specs/2026-07-15-channel-chat-composer-call-lock-design.md).
         const online = this.online || []
         const others = online.filter(d => d.device_id !== this.deviceId)
         const callTarget = this._comCallTarget(others)

@@ -1,6 +1,6 @@
 // src/webs/pay/tools/constant.js
 //
-// Domain `pay` độc lập hoàn toàn (xem docs/PAY.rst §1) — mọi hằng số dưới đây
+// Domain `pay` độc lập hoàn toàn (xem hook/PAY.rst §1) — mọi hằng số dưới đây
 // (PAY_METHODS/PROMO_CODES/NOTES...) không import từ domain nào khác.
 export const MAJOR_STEPS = ['order', 'processing', 'delivery'];
 

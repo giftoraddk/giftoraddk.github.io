@@ -125,7 +125,7 @@ export default (lang = 'vi') => {
 		{
 			label: t.pics,
 			field: 'pics',
-			type: 'photor-upload',
+			type: 'photor',
 		},
 		{
 			label: t.order,

@@ -1,0 +1,77 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-popover'
+description: 'Floating popover panel with configurable trigger, placement, and content'
+---
+
+# web-popover
+
+A floating content panel anchored to a trigger element. Supports hover and click triggers, four placement directions, and slotted content for rich layouts.
+
+## When to use
+
+- Show additional detail or help text without leaving the current context
+- Rich hover cards for user profiles, product previews, or data points
+- Action menus that need more content than a simple dropdown
+
+## Loading
+
+```html
+<script type="module" src="/src/webs/apex/web-popover.js"></script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `trigger` | string | `'hover'` | What opens the popover: `hover` \| `click` |
+| `placement` | string | `'top'` | Where the panel appears: `top` \| `bottom` \| `left` \| `right` |
+| `content` | string | `''` | Plain text content. Use the `content` slot for rich HTML. |
+| `offset` | number | `8` | Distance in px between the trigger and the panel |
+| `open` | boolean | `false` | Force the popover open (controlled mode) |
+| `ui` | string | `'modern'` | UI variant: `modern` \| `spatial` |
+
+## Basic Example
+
+```html
+<!-- Hover popover with plain text -->
+<web-popover content="This feature requires a Pro plan.">
+  <web-button type="ghost">Upgrade Info</web-button>
+</web-popover>
+
+<script type="module" src="/src/webs/apex/web-popover.js"></script>
+<script type="module" src="/src/webs/apex/web-button.js"></script>
+```
+
+## Advanced Examples
+
+Click-triggered popover with rich slotted content:
+
+```html
+<web-popover trigger="click" placement="bottom">
+  <web-button type="fill">User Info</web-button>
+
+  <div slot="content" style="display: flex; gap: 0.75rem; align-items: center;">
+    <web-avatar src="/img/user.jpg" name="Jane Doe" size="md" status="online"></web-avatar>
+    <div>
+      <strong>Jane Doe</strong>
+      <p style="margin:0; font-size: 0.875rem;">Product Manager</p>
+    </div>
+  </div>
+</web-popover>
+```
+
+Right-placement popover with spatial UI:
+
+```html
+<web-popover placement="right" content="Analytics are updated every 5 minutes." ui="spatial">
+  <span style="cursor: help;">ⓘ</span>
+</web-popover>
+```
+
+## Events
+
+| Event | When | Detail |
+|---|---|---|
+| `web-popover-open` | Popover becomes visible | None |
+| `web-popover-close` | Popover becomes hidden | None |

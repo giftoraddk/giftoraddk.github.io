@@ -37,7 +37,7 @@
 
 .upload-btn:hover {
   opacity: 1;
-  border-color: var(--color-primary, #2ebd85);
+  border-color: var(--color-primary, #34ace0);
   background: var(--color-base-200, #232323);
   transform: translateY(-4px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
@@ -96,7 +96,7 @@
 }
 
 .remove-btn:hover {
-  background: var(--color-secondary, #f5465c);
+  background: var(--color-secondary, #706fd3);
   transform: scale(1.1) rotate(90deg);
 }
 
@@ -228,7 +228,7 @@ web-cropper {
 }
 
 .btn-apply {
-  background: var(--color-primary, #2ebd85);
+  background: var(--color-primary, #34ace0);
   color: #fff;
 }
 

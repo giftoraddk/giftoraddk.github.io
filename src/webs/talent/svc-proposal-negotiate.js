@@ -23,7 +23,7 @@ const TXT_STD = {
 };
 
 /**
- * <svc-proposal-negotiate> — panel thuần render cho stage 'proposed'/'negotiating' (docs/new_feature.md
+ * <svc-proposal-negotiate> — panel thuần render cho stage 'proposed'/'negotiating' (hook/new_feature.md
  * §2.2). Chỉ emit `negotiate:*`, KHÔNG tự gọi tools/service.js — cha (`<svc-proposal>`) mới gọi.
  */
 export class SvcProposalNegotiate extends LitElement {

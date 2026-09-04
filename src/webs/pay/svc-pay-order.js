@@ -12,7 +12,7 @@ import { orderItemsBlock } from './tools/render.js';
 
 /**
  * <svc-pay-order> — panel LIVE của major "Đặt hàng" (subId 'placing'|'paying'), tách khỏi
- * <svc-pay> để component cha chỉ còn giữ flow/state toàn cục — xem docs/PAY.rst §3.1/§3.12.
+ * <svc-pay> để component cha chỉ còn giữ flow/state toàn cục — xem hook/PAY.rst §3.1/§3.12.
  * KHÔNG tự gọi tools/service.js — thuần presentational, mọi hành động chỉ bắn event `order:*` lên
  * cho <svc-pay> xử lý (gọi service.js tương ứng). Form "ai xác nhận đã nhận thanh toán" (subId
  * 'paying', role seller) là state NỘI BỘ của component này — parent không cần biết tới lúc bấm
@@ -42,7 +42,7 @@ export class SvcPayOrder extends LitElement {
         paymentRef: { type: String },
         payExpired: { type: Boolean }, payRemainingLabel: { type: String },
 
-        hasInvoice: { type: Boolean }, // !!_invoice ở <svc-pay> — KHÁC invoiceId (set sớm hơn, xem docs/PAY.rst §3.12)
+        hasInvoice: { type: Boolean }, // !!_invoice ở <svc-pay> — KHÁC invoiceId (set sớm hơn, xem hook/PAY.rst §3.12)
         invoiceId: { type: String }, invoiceUrl: { type: String }, invoiceQrSrc: { type: String },
         sellerPrefill: { type: Object }, // {name, phone} — nguồn nút "gán nhanh" ở form 'paying', xem svc-pay.js's _comSellerPrefill
 
@@ -141,7 +141,7 @@ export class SvcPayOrder extends LitElement {
             </div>`;
 
         // invoice đã tồn tại (buyer đã xác nhận) — seller xác nhận đã nhận tiền + QR/mã đơn tra
-        // cứu lại sau, xem docs/PAY.rst §2.
+        // cứu lại sau, xem hook/PAY.rst §2.
         const h = this._form;
         return html`
             <div class="order-panel">

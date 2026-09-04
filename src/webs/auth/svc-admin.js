@@ -12,6 +12,7 @@ import '@/webs/apex/web-table.js';
 import '@/webs/apex/web-toast.js';
 import '@/webs/auth/svc-diffs.js';
 import '@/webs/auth/svc-assist.js';
+import '@/webs/marketing/svc-marketing.js';
 
 const TXT_STD = {
     vi: { loading: 'Đang tải…', add: '+ Thêm', error: 'Lỗi', records: 'bản ghi', export: 'Xuất CSV', import: 'Nhập CSV', importDone: 'Kết quả nhập CSV', importOk: 'bản ghi đã nhập thành công', importSkip: 'bản ghi bị bỏ qua', importRow: 'Dòng', required: 'là bắt buộc', saveOk: 'Đã lưu thành công', saveFail: 'Lưu thất bại' },
@@ -100,15 +101,16 @@ export class SvcAdmin extends LitElement {
         // (deployHook.js) để kích hoạt rebuild site, vì HTML SSG không tự cập nhật khi Firestore
         // đổi. Không bật cho bảng chỉ có consumer client-side (orders/inventory/staff/users) —
         // rebuild toàn site cho những bảng đó là lãng phí, IndexedDB cache đã đủ (xem
-        // docs/geo-platform-plan.md §B).
+        // hook/geo-platform-plan.md §B).
         revalidate:     { type: Boolean },
         diffsTable:     { type: String  },
+        marketingTable: { type: String  },
         perms:          { type: Object  }, // { edit, delete, sort } — false disables the action
         // Passthrough cho field type 'location' của web-table.js — gợi ý mặc định khi field
         // đang rỗng (vd room.location, xem svc-channel-sections.js).
         locationSuggest: { type: String },
-        // Passthrough cho field type 'photor-upload' của web-table.js — ẩn nút chọn ảnh, xem
-        // web-photor-upload.js prop cùng tên. Không gộp vào `perms` vì đây là quyết định của
+        // Passthrough cho field type 'photor' của web-table.js — ẩn nút chọn ảnh, xem
+        // svc-photor.js prop cùng tên. Không gộp vào `perms` vì đây là quyết định của
         // nơi gọi (context-specific), không phải quyền hạn theo role như edit/delete/sort.
         hideUpload:     { type: Boolean },
         // `dataTable` này luôn tối đa 1 bản ghi (vd sectionItems của 1 section hero/contact) —
@@ -127,7 +129,7 @@ export class SvcAdmin extends LitElement {
         assistMultiple: { type: Boolean },
         assistCount:    { type: Number  },
         // Field mặc định ghép vào MỖI record AI sinh khi assistMultiple — bù cho field AI luôn bỏ
-        // qua (vd products.pics type 'photor-upload' nằm trong SKIP_TYPES của svc-assist.js, AI
+        // qua (vd products.pics type 'photor' nằm trong SKIP_TYPES của svc-assist.js, AI
         // không bao giờ tự sinh URL ảnh) — không gộp vào schema vì đây là giá trị fallback tĩnh,
         // không phải cột cho AI điền. rows[i] (AI trả) luôn ưu tiên hơn — xem _dhAssistRecords().
         assistSeed:     { type: Object },
@@ -164,6 +166,7 @@ export class SvcAdmin extends LitElement {
         this.orderable      = false;
         this.revalidate     = false;
         this.diffsTable        = 'revisions';
+        this.marketingTable = '';
         this.perms          = {};
         this.locationSuggest = '';
         this.hideUpload      = false;
@@ -279,7 +282,7 @@ export class SvcAdmin extends LitElement {
     /**
      * Flow revalidate sau khi ghi (Layer A luôn chạy, Layer B chỉ khi prop `revalidate` bật):
      * write thành công -> purge cache runtime của (dataTable, server) + (nếu cần) trigger rebuild
-     * cho các trang SSG phụ thuộc — xem chi tiết ở khai báo prop `revalidate` + docs/geo-platform-plan.md §B.
+     * cho các trang SSG phụ thuộc — xem chi tiết ở khai báo prop `revalidate` + hook/geo-platform-plan.md §B.
      */
     _dfRevalidate() {
         cacheInvalidate({ dataTable: this._table, server: this.server });
@@ -395,9 +398,9 @@ export class SvcAdmin extends LitElement {
         // columns) keep using render, since there is no separate raw value to fall back to.
         const tableEl = this.querySelector('#sad-table');
         const data    = tableEl?.filteredData ?? this._data;
-        const allCols = this.schema.filter(c => c.type !== 'photor-upload' && c.type !== 'password' && c.width);
+        const allCols = this.schema.filter(c => c.type !== 'photor' && c.type !== 'password' && c.width);
 
-        // `meta` is ONE JSONB column in the DB (xem docs/SCHEMA.rst / data/products.csv) — schemas
+        // `meta` is ONE JSONB column in the DB (xem hook/SCHEMA.rst / data/products.csv) — schemas
         // just split it into per-sub-field editors for the grid (vd products.js sku/unit/stockMeta
         // dùng key: 'meta.sku'/'meta.unit'/'meta.stock'). Exporting each of those as its own CSV
         // column ("meta.sku","meta.unit",...) leaks the split and no longer matches the raw row
@@ -573,6 +576,23 @@ export class SvcAdmin extends LitElement {
         this.querySelector('svc-diffs')?.open(id);
     }
 
+    _dhOpenMarketing(e) {
+        const { id } = e.detail ?? {};
+        if (!id) return;
+        this.querySelector('svc-marketing')?.open(id);
+    }
+
+    // 'marketing:saved' từ <svc-marketing> sau khi ghi title/description/content(/pics) vào
+    // Firestore — patch thẳng vào _data (cùng cách _dfSave() merge sau khi sửa 1 row qua form
+    // thường) để bảng hiện đúng dữ liệu mới ngay, không cần đọc lại Firestore.
+    _dhMarketingSaved(e) {
+        const { id, ...fields } = e.detail ?? {};
+        if (!id) return;
+        this._data = this._data.map(r => r.id === id ? deepMerge(r, buildNested(fields)) : r);
+        this._syncConductor();
+        this._dfRevalidate();
+    }
+
     _dhReset() {
         const sectionId = `admin__${this._table}`;
         conductorMake(sectionId, { data: [], _cursor: null, _hasMore: null, _page: 0 });
@@ -608,7 +628,7 @@ export class SvcAdmin extends LitElement {
 
     get _svc()    { return createService(this._table, '', this.server || 'firestore'); }
 
-    get _comAiConfig() { return [import.meta.env.PUBLIC_GROQ, import.meta.env.PUBLIC_OPER].filter(Boolean).join('|'); }
+    get _comAiConfig() { return [import.meta.env.PUBLIC_NVID, import.meta.env.PUBLIC_GROQ, import.meta.env.PUBLIC_OPER].filter(Boolean).join('|'); }
 
     _comActors(existing, action) {
         const entry   = `${this._comUserId()}~${new Date().toISOString()}~${action}`;
@@ -731,12 +751,14 @@ export class SvcAdmin extends LitElement {
                     editable
                     deletable
                     ?history=${!!this.diffsTable}
+                    ?marketing=${!!this.marketingTable}
                     ai=${this._comAiConfig}
                     height="auto"
                     @wt-save=${this._dfSave}
                     @wt-delete=${this._dfDeleteExec}
                     @wt-move=${this._dfMove}
                     @wt-open-history=${this._dhOpenHistory}
+                    @wt-open-marketing=${this._dhOpenMarketing}
                     @wt-query-change=${this._dhQueryChange}
                 ></web-table>
             </div>
@@ -749,6 +771,18 @@ export class SvcAdmin extends LitElement {
                     lang=${this.lang}
                     .ui=${this.ui}
                 ></svc-diffs>
+            ` : ''}
+
+            ${this.marketingTable ? html`
+                <svc-marketing
+                    table=${this._table}
+                    mktTable=${this.marketingTable}
+                    ai=${this._comAiConfig}
+                    lang=${this.lang}
+                    .ui=${this.ui}
+                    .theme=${this.theme}
+                    @marketing:saved=${this._dhMarketingSaved}
+                ></svc-marketing>
             ` : ''}
 
             <web-dialog

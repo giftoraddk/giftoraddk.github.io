@@ -1,7 +1,7 @@
 // src/webs/bay/svc-bay-login.js
 // UI đăng nhập (email/password + Google popup) — viết mới, KHÔNG import svc-channel-login.js.
 // Dùng chung bảng `users` với mọi domain khác (server 'auth' — project Firebase riêng cho
-// đăng nhập, xem docs/CRUD.rst § Nhiều kết nối Firestore) vì đây là infra chung, không phải
+// đăng nhập, xem hook/CRUD.rst § Nhiều kết nối Firestore) vì đây là infra chung, không phải
 // dữ liệu riêng của channel.
 import { LitElement, html, unsafeCSS, nothing } from 'lit'
 import 'iconify-icon'

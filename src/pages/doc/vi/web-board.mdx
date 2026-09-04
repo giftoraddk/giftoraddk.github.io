@@ -1,0 +1,170 @@
+---
+layout: '../../../layouts/LayoutDoc.astro'
+title: 'Web Board'
+description: 'Quản lý nhiều section cùng lúc với web-board — sections schema và drag-drop'
+---
+
+# Web Board
+
+<div class="doc-intro">
+  <p><code>web-board</code> là orchestrator quản lý nhiều <code>web-boxs</code> sections trên một trang — hỗ trợ layout linh hoạt, drag-drop reorder và đọc state từ conductor.</p>
+</div>
+
+## Web Board là gì?
+
+`web-board` là một Lit Web Component đặc biệt — nó **không dùng Shadow DOM** mà render trực tiếp vào light DOM. Điều này cho phép:
+- Style từ stylesheet toàn cục tác động trực tiếp
+- Dễ dàng tích hợp với CSS layout của trang
+- `<slot>` và nesting hoạt động tự nhiên
+
+Nhiệm vụ chính của `web-board`:
+- Nhận mảng `sections` configs
+- Tạo và quản lý một `<web-boxs>` cho mỗi section
+- Đồng bộ state từ conductor cho mỗi section
+- Hỗ trợ drag-drop reorder (khi `draggable` được bật)
+
+## Props
+
+| Prop | Kiểu | Mô tả |
+|---|---|---|
+| `sections` | `Array\|String` | Mảng section config objects hoặc JSON string |
+| `ui` | `String` | UI variant: `modern` hoặc `spatial` |
+| `theme` | `String` | ApexUI theme name |
+| `mainColors` | `String` | 5 màu pipe-separated |
+| `container` | `String` | CSS class cho wrapper container |
+| `draggable` | `Boolean` | Bật drag-drop để reorder sections |
+| `resizable` | `Boolean` | Bật resize handle cho sections |
+
+## Sections Schema
+
+Mỗi phần tử trong mảng `sections` là một object với cấu trúc:
+
+```js
+{
+  // Định danh duy nhất — dùng làm key trong conductor store
+  id: 'featured-products',
+
+  // baseConfig mô tả cách render (tiers, makes, groups)
+  config: {
+    tiers: { base: 1, lg: 3 },
+    makes: [
+      { opt: 'img', val: 'image' },
+      { opt: 'text', val: 'name' },
+      { opt: 'price', val: 'price' },
+    ],
+  },
+
+  // Một trong ba nguồn dữ liệu:
+  data: [...],             // Option 1: data trực tiếp
+  dataApi: '/api/...',     // Option 2: fetch từ URL
+  dataStore: 'store-key',  // Option 3: từ conductor store key
+
+  // Tùy chọn thêm
+  title: 'Sản phẩm nổi bật',
+  cacheKey: 'featured-v1',
+  cacheTtl: 120000,        // 2 phút
+  anime: 'fade-up',
+}
+```
+
+## Ví dụ: web-board với 2 sections
+
+```js
+// src/sections/homepage.js
+import { featuredConfig } from './shop/featured.config.js';
+import { blogConfig } from './blog/recent.config.js';
+
+export const homepageSections = [
+  {
+    id: 'featured-products',
+    title: 'Sản phẩm nổi bật',
+    config: featuredConfig,
+    dataApi: '/api/featured.json',
+    cacheKey: 'featured',
+    cacheTtl: 60000,
+    anime: 'fade-up',
+  },
+  {
+    id: 'recent-posts',
+    title: 'Bài viết mới nhất',
+    config: blogConfig,
+    dataApi: '/api/posts.json',
+    cacheKey: 'posts',
+    cacheTtl: 300000,
+    anime: 'fade-left',
+  },
+];
+```
+
+```astro
+---
+// src/pages/index.astro
+import Layout from '@/layouts/Layout.astro';
+import { homepageSections } from '@/sections/homepage.js';
+---
+
+<Layout title="Trang chủ">
+  <web-board
+    sections={JSON.stringify(homepageSections)}
+    variant={{ ui: 'modern' }}
+    container="max-w-7xl mx-auto px-4"
+  ></web-board>
+
+  <script type="module" src="/src/webs/apex/web-board.js"></script>
+</Layout>
+```
+
+## Drag-Drop Reorder
+
+Khi `draggable="true"`, user có thể kéo thả để thay đổi thứ tự các sections:
+
+```html
+<web-board
+  sections="..."
+  draggable="true"
+></web-board>
+```
+
+Thứ tự mới được lưu vào `localStorage` và phục hồi khi reload trang. Web-board dispatch event `sections-reordered` khi thứ tự thay đổi:
+
+```js
+document.querySelector('web-board').addEventListener('sections-reordered', (e) => {
+  console.log('Thứ tự mới:', e.detail.order);
+  // Lưu lên server nếu cần
+});
+```
+
+## Conductor Integration
+
+`web-board` tự động đọc state từ conductor cho mỗi section có `id` khớp:
+
+```js
+// web-board nội bộ subscribe vào conductor
+conductor.subscribe(state => {
+  this._sections.forEach(section => {
+    const sectionState = state.sections[section.id];
+    if (sectionState) {
+      // Cập nhật data cho web-boxs tương ứng
+      this._updateSection(section.id, sectionState.data);
+    }
+  });
+});
+```
+
+Điều này có nghĩa là: khi bất kỳ `svc-*` component nào cập nhật một section trong conductor, `web-board` tự động re-render section đó mà không cần thêm code.
+
+## Khác biệt với web-boxs
+
+| Tính năng | `web-board` | `web-boxs` |
+|---|---|---|
+| Shadow DOM | Không (light DOM) | Có |
+| Quản lý nhiều sections | Có | Không |
+| Drag-drop | Có | Không |
+| Nguồn dữ liệu | Qua section config | Props trực tiếp |
+| Styling từ global CSS | Dễ dàng | Cần CSS parts |
+
+## Tiếp theo
+
+- [Conductor](/doc/vi/conductor) — state management chi tiết
+- [Section Config](/doc/vi/section-config) — tổ chức config files
+- [Web Boxs](/doc/vi/web-boxs) — API của từng section renderer

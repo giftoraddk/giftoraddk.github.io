@@ -1,7 +1,7 @@
 // src/services/modules/landing/channel.js
 //
 // Nội dung cho src/pages/channel/home.astro — trang giới thiệu tính năng "Kênh" (gian hàng kết
-// nối trực tiếp, xem docs/CHANNEL.rst), KHÔNG phải app thật (đó là src/pages/channel/index.astro
+// nối trực tiếp, xem hook/CHANNEL.rst), KHÔNG phải app thật (đó là src/pages/channel/index.astro
 // → <svc-bay>). Cùng khuôn mọi module khác trong thư mục này (landing-home.js, landing-page.js...):
 // mỗi section tái dùng `config` (layout/animation/bg) từ 1 file src/sections/<domain>/<configKey>.js
 // có sẵn, chỉ `data` là nội dung mới viết riêng cho trang này.
@@ -89,7 +89,7 @@ export const views = [
 				sort: 0, col: '12', container: true,
 			},
 
-			// ── 3. Tính năng nổi bật — 9/13 tính năng nêu ở docs/CHANNEL.rst § 3 ──────────
+			// ── 3. Tính năng nổi bật — 9/13 tính năng nêu ở hook/CHANNEL.rst § 3 ──────────
 			{
 				id: 'featuresSpatialCardWebApex',
 				data: [{
@@ -112,12 +112,12 @@ export const views = [
 				sort: 0, col: '12', container: true,
 			},
 
-			// ── 4. Quy trình — flow tổng quát thật (docs/CHANNEL.rst § 2), diễn giải đời thường ──
+			// ── 4. Quy trình — flow tổng quát thật (hook/CHANNEL.rst § 2), diễn giải đời thường ──
 			{
 				id: 'processModernStepTimeline',
 				data: [{
 					subtitle: 'QUY TRÌNH',
-					meta: { heroTitle: 'Từ đăng nhập tới trò chuyện\ntrực tiếp, tất cả tự động' },
+					title: 'Từ đăng nhập tới trò chuyện\ntrực tiếp, tất cả tự động',
 					steps: [
 						{ id: 'login', title: 'Đăng nhập', icon: 'ri:door-open-line', content: 'Bằng email hoặc tài khoản Google — nếu đã đăng nhập sẵn thì bỏ qua bước này, vào thẳng danh sách gian hàng.' },
 						{ id: 'list', title: 'Danh sách gian hàng', icon: 'ri:list-check-2', content: 'Cập nhật tức thời, ưu tiên hiện gian hàng của bạn trước, rồi tới các gian hàng đang có chủ hoạt động.' },
@@ -165,7 +165,7 @@ export const views = [
 			},
 
 			// ── 6. Hoá đơn & thanh toán — tính năng thật của <svc-pay>, kể lại bằng lợi ích
-			// (xem src/webs/pay/svc-pay.js + docs/PAY.rst § 2/3.3/3.4/3.6) ────────────────
+			// (xem src/webs/pay/svc-pay.js + hook/PAY.rst § 2/3.3/3.4/3.6) ────────────────
 			{
 				id: 'featuresModernHoriIntro',
 				data: [{
@@ -184,7 +184,7 @@ export const views = [
 			},
 
 			// ── 7. Nỗ lực của chúng tôi — TÁI DÙNG layout testimonial nhưng KHÔNG bịa review/
-			// khách hàng giả, đóng khung rõ là cam kết thật (docs/CHANNEL.rst § 1) ──────────
+			// khách hàng giả, đóng khung rõ là cam kết thật (hook/CHANNEL.rst § 1) ──────────
 			{
 				id: 'testimonialsSpatialMasonryNeatApex',
 				data: [{
@@ -207,13 +207,13 @@ export const views = [
 				sort: 0, col: '12', container: true,
 			},
 
-			// ── 8. FAQ trung thực — dựng từ chính docs/CHANNEL.rst § 5 "Giới hạn & đánh đổi" ──
+			// ── 8. FAQ trung thực — dựng từ chính hook/CHANNEL.rst § 5 "Giới hạn & đánh đổi" ──
 			{
 				id: 'faqSpatialExpansionApex',
 				data: [{
 					subtitle: 'HỎI THẲNG, ĐÁP THẬT',
 					description: 'Kể cả những giới hạn hiện tại — vì một gian hàng đáng tin là một gian hàng không giấu nhược điểm.',
-					meta: { heroTitle: 'Câu hỏi thường gặp' },
+					title: 'Câu hỏi thường gặp',
 					expansion: [
 						{ title: 'Tôi có thể tạo bao nhiêu gian hàng?', content: 'Hiện tại mỗi tài khoản chỉ tạo tối đa 1 gian hàng. Giới hạn này có thể tăng thêm sau này mà không ảnh hưởng tới gian hàng bạn đã tạo.' },
 						{ title: 'Đơn hàng có tự đồng bộ giữa nhiều thiết bị của tôi không?', content: 'Chưa — đơn hàng, hoá đơn hiện chỉ nằm trên thiết bị bạn dùng để đặt hàng, chưa tự đồng bộ sang thiết bị khác. Cũng chưa có màn hình riêng để xem lại lịch sử đơn hàng.' },

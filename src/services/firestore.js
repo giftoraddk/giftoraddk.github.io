@@ -30,7 +30,7 @@
 
 import { initializeApp, getApps } from 'firebase/app';
 
-const ENV_KEYS = { firestore: 'PUBLIC_DB_INVO', auth: 'PUBLIC_DB_AUTH', invoices: 'PUBLIC_DB_INVO' };
+const ENV_KEYS = { firestore: 'PUBLIC_DB', auth: 'PUBLIC_DB_AUTH', invoices: 'PUBLIC_DB_INVO' };
 
 // Masking marker: `~k!t@d~` can be spliced anywhere into the env value (e.g.
 // into the middle of apiKey) to defeat plaintext greps in a shipped bundle —

@@ -82,7 +82,7 @@
 }
 
 /* cases special */
-.web-alert.primary { border-left: 4px solid var(--color-primary, #2ebd85); }
+.web-alert.primary { border-left: 4px solid var(--color-primary, #34ace0); }
 .web-alert.success { border-left: 4px solid var(--color-success, #45da7f); }
 .web-alert.info { border-left: 4px solid var(--color-info, #00c7d4); }
 .web-alert.warning { border-left: 4px solid var(--color-warning, #fbbf24); }

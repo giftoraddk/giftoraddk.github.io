@@ -15,7 +15,7 @@ import '@/webs/apex/web-checkbox.js';
 const TABLES_STD = [
     'posts', 'products', 'orders', 'comments',
     'reviews', 'events', 'faqs', 'users', 'invoice',
-    'talents', 'jobs', 'proposals', // talent marketplace — xem docs/new_feature.md §6.2
+    'talents', 'jobs', 'proposals', // talent marketplace — xem hook/new_feature.md §6.2
 ];
 
 // ── i18n ──────────────────────────────────────────────────────────────────

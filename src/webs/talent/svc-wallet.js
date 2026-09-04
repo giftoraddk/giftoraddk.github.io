@@ -25,7 +25,7 @@ const TXT_STD = {
 };
 
 /**
- * <svc-wallet> — số dư Xu + lịch sử + yêu cầu nạp (docs/new_feature.md §3, §9 item 9). MVP: chỉ
+ * <svc-wallet> — số dư Xu + lịch sử + yêu cầu nạp (hook/new_feature.md §3, §9 item 9). MVP: chỉ
  * tạo yêu cầu (`requestTopUp`, status 'pending') — KHÔNG tự cộng balance ngay (bảo mật, xem
  * tools/service.js's `approveTopUp` — admin duyệt thủ công sau khi xác nhận đã nhận chuyển khoản).
  */

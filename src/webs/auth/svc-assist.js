@@ -37,7 +37,7 @@ import styles from './styles/svc-assist.css?inline'
 // text (dài, hay lệch định dạng ProseMirror), mật khẩu (không bao giờ AI sinh hộ). `repeater`
 // (mảng object nested, xem web-table.js) KHÔNG nằm trong danh sách này — AI vẫn điền được, xem
 // _promptSchema()/_coerceFields() xử lý riêng dựa vào `col.itemSchema`.
-const SKIP_TYPES = new Set(['photor-upload', 'editor', 'location', 'password'])
+const SKIP_TYPES = new Set(['photor', 'editor', 'location', 'password'])
 
 // Field hệ thống theo tên (không tin `write` khai báo đúng cho mọi schema — 1 số cột như
 // products.js's `index` không set write:false dù rõ ràng do code quản lý, không phải content).

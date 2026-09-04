@@ -1,0 +1,68 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-radio'
+description: 'Radio button để chọn một trong nhiều tùy chọn'
+---
+
+# web-radio
+
+Radio button cho phép người dùng chọn một trong nhiều tùy chọn loại trừ nhau. Các `web-radio` có cùng thuộc tính `name` tự động tạo thành một nhóm.
+
+## Khi nào dùng
+
+- Khi người dùng chỉ được phép chọn **một** lựa chọn trong danh sách cố định
+- Số lượng tùy chọn nhỏ (2–6 mục) và cần hiển thị tất cả cùng lúc
+- Thay thế cho dropdown khi muốn người dùng thấy ngay toàn bộ lựa chọn
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-radio.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `name` | string | `''` | Tên nhóm radio — các radio cùng `name` là một nhóm loại trừ nhau |
+| `value` | string | `''` | Giá trị của radio button này |
+| `label` | string | `''` | Nhãn text hiển thị bên cạnh radio |
+| `checked` | boolean | `false` | Trạng thái được chọn mặc định |
+| `disabled` | boolean | `false` | Vô hiệu hóa, không thể chọn |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Ví dụ cơ bản
+
+```html
+<web-radio name="delivery" value="home" label="Giao tận nhà" checked></web-radio>
+<web-radio name="delivery" value="pickup" label="Lấy tại cửa hàng"></web-radio>
+<web-radio name="delivery" value="express" label="Giao nhanh" disabled></web-radio>
+```
+
+## Ví dụ nâng cao
+
+Nhóm radio chọn phương thức thanh toán:
+
+```html
+<p>Phương thức thanh toán:</p>
+<web-radio name="payment" value="card" label="Thẻ tín dụng / ghi nợ" checked></web-radio>
+<web-radio name="payment" value="banking" label="Chuyển khoản ngân hàng"></web-radio>
+<web-radio name="payment" value="cod" label="Thanh toán khi nhận hàng (COD)"></web-radio>
+```
+
+Đọc giá trị được chọn qua JavaScript:
+
+```html
+<web-radio name="size" value="s" label="S"></web-radio>
+<web-radio name="size" value="m" label="M" checked></web-radio>
+<web-radio name="size" value="l" label="L"></web-radio>
+
+<script>
+  document.querySelectorAll('web-radio[name="size"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      const selected = document.querySelector('web-radio[name="size"][checked]');
+      console.log('Kích thước đã chọn:', selected?.getAttribute('value'));
+    });
+  });
+</script>
+```

@@ -41,7 +41,7 @@ import { ulid, txtLingo, emit } from '@/services/helper.js'
 import { setActiveSection } from './tools/baySectionAdapter.js'
 import { createPromosStore } from './tools/bayPromoAdapter.js'
 
-// Fallback ảnh cho product AI-generated — field `pics` type 'photor-upload' luôn bị svc-assist.js
+// Fallback ảnh cho product AI-generated — field `pics` type 'photor' luôn bị svc-assist.js
 // SKIP_TYPES bỏ qua (AI không tự sinh URL ảnh), dùng ở cả 2 luồng trợ lý AI products: bootstrap
 // lần đầu (_dhAssistCreate) lẫn thêm nhanh khi section đã có sẵn (assistSeed của <svc-admin>).
 const PICS_STD = 'https://i.ibb.co/1tB9JBBk/supplies.png'
@@ -477,7 +477,7 @@ export class SvcBaySections extends LitElement {
     }
 
     get _comAiConfig() {
-        return [import.meta.env.PUBLIC_GROQ, import.meta.env.PUBLIC_OPER].filter(Boolean).join('|')
+        return [import.meta.env.PUBLIC_NVID, import.meta.env.PUBLIC_GROQ, import.meta.env.PUBLIC_OPER].filter(Boolean).join('|')
     }
 
     // Tự động phát hiện field nested-array (`dataKey` trong tier config, xem web-boxs.js
@@ -586,10 +586,10 @@ export class SvcBaySections extends LitElement {
 
     // Lối tắt xem thống kê bán hàng (khách hàng, đơn hàng, doanh thu, top sản phẩm) — cùng điều
     // kiện với _rfPromoBtn (owner + đã có section products): thống kê chỉ có ý nghĩa khi bay đang
-    // bán hàng. <svc-pay-stats> (webs/pay, độc lập domain — xem docs/PAY.rst) đọc invoice thật qua
+    // bán hàng. <svc-pay-stats> (webs/pay, độc lập domain — xem hook/PAY.rst) đọc invoice thật qua
     // Firestore loadSellerInvoices(sellerId) — chỉ cần .sellerId=${bay.owner_id}, KHÔNG cần
     // truyền .bay như <svc-bay-stats> cũ (đã xoá, dữ liệu trước đây lệch: bay_id nằm ở top-level
-    // trong khi invoice của pay chỉ có meta.bay_id, xem docs/PAY.rst cuối §5).
+    // trong khi invoice của pay chỉ có meta.bay_id, xem hook/PAY.rst cuối §5).
     _rfStatsBtn() {
         if (!this._isOwner || !this.sections.some(s => s.sectionType === 'products')) return nothing
         return html`

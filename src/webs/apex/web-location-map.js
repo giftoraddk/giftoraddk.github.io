@@ -120,8 +120,8 @@ const DIALOG_CSS = `
 .wlmap-modal-confirm {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 0 18px; height: 34px; flex-shrink: 0;
-    color: var(--color-primary, #2ebd85);
-    border: 1px solid var(--color-primary, #2ebd85); border-radius: 8px;
+    color: var(--color-primary, #34ace0);
+    border: 1px solid var(--color-primary, #34ace0); border-radius: 8px;
     font-size: 13px; font-weight: 700; font-family: var(--font-sans, system-ui);
     cursor: pointer; transition: opacity .2s;
 }
@@ -129,7 +129,7 @@ const DIALOG_CSS = `
 .wlmap-modal-confirm svg { width: 14px; height: 14px; }
 .wlmap-pin {
     width: 18px; height: 18px; border-radius: 50%;
-    background: var(--color-primary, #2ebd85);
+    background: var(--color-primary, #34ace0);
     border: 2.5px solid #fff;
     box-shadow: 0 2px 8px rgba(0,0,0,.45);
 }

@@ -15,7 +15,7 @@ type BiLabel = string | { vi: string; en: string };
 
 interface NavItem {
   label: BiLabel;
-  slug?: string;    // docs-relative → /docs/{lang}/{slug}
+  slug?: string;    // docs-relative → /doc/{lang}/{slug}
   href?: string;    // absolute, used as-is
   external?: true;  // opens _blank
 }
@@ -120,21 +120,21 @@ const NAV_CONFIG: NavGroup[] = [
 // ─── Runtime ──────────────────────────────────────────────────────────────────
 
 const { frontmatter } = Astro.props;
-const title       = Astro.props.title       ?? frontmatter?.title       ?? 'Docs';
+const title       = Astro.props.title       ?? frontmatter?.title       ?? 'Document';
 const description = Astro.props.description ?? frontmatter?.description ?? '';
 const pathname    = Astro.url.pathname;
 
-const langMatch    = pathname.match(/^\/docs\/(vi|en)(\/|$)/);
+const langMatch    = pathname.match(/^\/doc\/(vi|en)(\/|$)/);
 const lang         = (langMatch?.[1] ?? 'vi') as 'vi' | 'en';
 const alternateLang = lang === 'vi' ? 'en' : 'vi';
-const alternatePath = pathname.replace(/^\/docs\/(vi|en)/, `/docs/${alternateLang}`);
+const alternatePath = pathname.replace(/^\/doc\/(vi|en)/, `/doc/${alternateLang}`);
 
 // Resolve bilingual label
 const L = (label: BiLabel) => typeof label === 'string' ? label : label[lang];
 
-// Resolve href: slug → /docs/{lang}/{slug}, or absolute href as-is
+// Resolve href: slug → /doc/{lang}/{slug}, or absolute href as-is
 const H = (item: NavItem) =>
-  item.href ? item.href : `/docs/${lang}/${item.slug}`;
+  item.href ? item.href : `/doc/${lang}/${item.slug}`;
 
 function isActive(item: NavItem) {
   const href   = H(item);

@@ -238,7 +238,7 @@ export class WebDropdown extends LitElement {
             ${this.items.map(item => html`
               <div class="${uiConfig.item} ${item.classes || ''}" @click=${() => this._selectItem(item)}>
                 ${item.icon ? html`<iconify-icon icon="${item.icon}"></iconify-icon>` : ''}
-                <span>${item.label || item.name || item.value}</span>
+                <span class="option-label">${item.label || item.name || item.value}</span>
               </div>
             `)}
             <slot name="menu"></slot>

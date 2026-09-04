@@ -7,6 +7,7 @@
  * Provider is auto-detected from the key prefix:
  *   gsk_*   → Groq        (OpenAI-compatible endpoint)
  *   sk-or-* → OpenRouter  (OpenAI-compatible endpoint)
+ *   nvapi-* → NVIDIA      (OpenAI-compatible endpoint, integrate.api.nvidia.com)
  *
  * The third tilde-segment optionally overrides the default model name.
  * Example:
@@ -52,14 +53,29 @@ import Storager from '@/services/storager.js'
 // Each value is a `|`-separated fallback chain, tried left-to-right when the
 // config string doesn't override the model (parts[2]). Ordered newest/best
 // free-tier model first, down to cheap/legacy models as a last resort.
-// Researched 2026-08: OpenRouter's genuinely-free (`:free` suffix) roster
-// rotates weekly as providers add/pull capacity — reverify at
-// openrouter.ai/models if the whole chain starts failing; Groq's catalog is
-// free, rate-limited only.
-
+// Re-researched 2026-09 (2nd pass — verified live against groq's own
+// console.groq.com/docs/models and openrouter.ai/collections/free-models pages,
+// exact IDs quoted directly from those pages, not guessed): OpenRouter's
+// genuinely-free (`:free` suffix) roster rotates weekly as providers add/pull
+// capacity — reverify there if the whole chain starts failing; Groq's catalog
+// is free, rate-limited only. Audio/TTS (whisper, orpheus), guard/classifier
+// (llama-prompt-guard), rerank (voyageai/rerank), and agentic tool-wrapper
+// (groq/compound*) models are deliberately excluded — not plain chat-completions
+// models, calling them the same way as the rest of this chain would misbehave.
 const DEFAULTS = {
-  groq:       'llama-3.3-70b-versatile|meta-llama/llama-4-scout-17b-16e-instruct|openai/gpt-oss-120b|llama-3.1-8b-instant',
-  openrouter: 'inclusionai/ling-3.0-flash:free|poolside/laguna-s-2.1:free|poolside/laguna-xs-2.1:free|nvidia/nemotron-3-ultra-550b-a55b:free|cohere/north-mini-code:free',
+  groq:       'llama-3.3-70b-versatile|meta-llama/llama-4-scout-17b-16e-instruct|openai/gpt-oss-120b|llama-3.1-8b-instant|openai/gpt-oss-20b|qwen/qwen3.6-27b|qwen/qwen3.8-27b|minimaxai/minimax-m2.7|openai/gpt-oss-safeguard-20b',
+  openrouter: 'minimax/minimax-m3:free|z-ai/glm-5.2:free|nvidia/nemotron-3-ultra-550b-a55b:free|nvidia/nemotron-3.5-lightning:free|minimax/minimax-m2.7:free|nvidia/nemotron-3-super-120b-a12b:free|inclusionai/ling-3.0-flash-fin:free|poolside/laguna-s-2.1:free|poolside/laguna-xs-2.1:free|cohere/north-mini-code:free|thinkingmachines/inkling:free|thinkingmachines/inkling-small:free|liquid/lfm-2.5-2.6b:free|nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+  // nvidia chain: nemotron-3.5-lightning first (general-purpose, NOT a reasoning model — safest
+  // default for strict-JSON callers). `-reasoning`-suffixed and vision/translation-only entries
+  // (riva-translate, llama-vision, paligemma) are kept further down the chain since they're either
+  // prone to emitting chain-of-thought text instead of direct answers, or aren't general text-chat
+  // models at all — a caller that specifically needs reliable JSON (e.g. svc-marketing.js) should
+  // pin nemotron-3.5-lightning-30b-a3b directly (model override, `KEY~label~model`) rather than
+  // relying on this whole chain. `google/gemma-4-31b-it` confirmed directly from its
+  // build.nvidia.com model page's own code sample; the rest were carried over from an earlier
+  // best-guess NVIDIA NIM catalog pass (2026-09) — verify against build.nvidia.com/models first
+  // if any of them 400 before assuming this whole chain is broken.
+  nvidia:     'nvidia/nemotron-3.5-lightning-30b-a3b|moonshotai/kimi-k3|google/gemma-4-31b-it|nvidia/nemotron-3-super-120b-a12b|nvidia/nemotron-3-ultra-550b-a55b|nvidia/nemotron-3-nano-omni-30b-a3b-reasoning|meta/llama-3.2-11b-vision-instruct|meta/llama-3.2-90b-vision-instruct|nvidia/riva-translate-4b-instruct-v2|nvidia/riva-translate-4b-instruct-v1_1|google/paligemma',
 }
 
 // ── Provider detection from key prefix ────────────────────────────────────
@@ -67,6 +83,7 @@ const DEFAULTS = {
 function detectProvider(key) {
   if (key.startsWith('gsk_'))   return 'groq'
   if (key.startsWith('sk-or-')) return 'openrouter'
+  if (key.startsWith('nvapi-')) return 'nvidia'
   return 'openrouter' // safe default
 }
 
@@ -100,11 +117,12 @@ export function parseModels(configStr = '') {
     .filter(Boolean)
 }
 
-// ── OpenAI-compatible SSE streaming (Groq / OpenRouter) ───────────────────
+// ── OpenAI-compatible SSE streaming (Groq / OpenRouter / NVIDIA) ──────────
 
 const _ENDPOINTS = {
-  groq:       { url: 'https://api.groq.com/openai/v1/chat/completions', label: 'Groq' },
-  openrouter: { url: 'https://openrouter.ai/api/v1/chat/completions',   label: 'OpenRouter' },
+  groq:       { url: 'https://api.groq.com/openai/v1/chat/completions',      label: 'Groq' },
+  openrouter: { url: 'https://openrouter.ai/api/v1/chat/completions',        label: 'OpenRouter' },
+  nvidia:     { url: 'https://integrate.api.nvidia.com/v1/chat/completions', label: 'NVIDIA' },
 }
 
 async function* _streamCompat(key, model, messages, opts = {}, provider) {
@@ -208,6 +226,25 @@ export async function rankModels(configStr) {
 
   await Storager.set(cacheKey, ranked) // 1-day default TTL
   return ranked
+}
+
+/**
+ * Force-demote whichever (key, model) is CURRENTLY ranked first for this configStr, without an
+ * HTTP failure to trigger it. For callers who detect a "soft" failure — the request succeeded
+ * and returned text, but the content itself was unusable (e.g. a caller expecting strict JSON
+ * got malformed/non-JSON text back) — createAIStream()'s own demotion never fires in that case
+ * (from its point of view the call succeeded), so a caller retrying with the same configStr would
+ * otherwise keep hitting the exact same model. Uses the identical demote-to-bottom mechanism
+ * createAIStream() applies on a hard fetch/parse error, so the NEXT createAIStream()/
+ * generateText() call for this configStr tries a different model.
+ */
+export async function demoteModel(configStr) {
+  const descriptors = parseModels(configStr)
+  if (!descriptors.length) return
+  const attempts = await _orderedAttempts(configStr, descriptors)
+  if (!attempts.length) return
+  const [head, ...rest] = attempts
+  await Storager.set(_rankKey(configStr), [...rest, { ...head, ms: null }])
 }
 
 // ── Public API ────────────────────────────────────────────────────────────

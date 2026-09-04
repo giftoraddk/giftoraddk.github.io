@@ -2,7 +2,7 @@ import { getStyleOpts } from '@/services/helper';
 
 export const hashtags = ['cta', 'modern', 'centered', 'buttons', 'image', 'neat'];
 
-// title/description/pics theo chuẩn docs/SCHEMA.rst `records` — sửa qua svc-admin
+// title/description/pics theo chuẩn hook/SCHEMA.rst `records` — sửa qua svc-admin
 // (dataTable="sectionItems", schema chung records.js) sẽ đổi trực tiếp nội dung dưới đây.
 export const data = [
 	{

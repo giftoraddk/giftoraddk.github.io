@@ -14,6 +14,10 @@ export class WebSteps extends LitElement {
         theme:      { type: String },
         size:       { type: String }, // sm | md | lg | xl
         isVertical: { type: Boolean }, // vertical timeline: circle+line left, label+content right, per step
+        // isVertical only: true → cho phép mở nhiều step cùng lúc, tự mở step ngay khi status rời
+        // 'pending' (xem `_isOpen()`/`_toggleVerticalOpen()`). false (mặc định) → vertical dùng lại
+        // đúng cơ chế 1-step-tại-1-thời-điểm của horizontal (`_viewId`/`_selectStep`).
+        multiple:   { type: Boolean },
         linear:     { type: Boolean }, // true → click chỉ đi tới step đã qua/đang active, chặn nhảy tới step 'pending'
         // true → cả quá trình đã KẾT THÚC ở đúng step active hiện tại (vd đơn hàng terminal: đã trả
         // hàng/đã huỷ/đã nhận hàng) — không còn gì "đang chạy" tiếp theo nữa, nên step active hiện
@@ -24,7 +28,12 @@ export class WebSteps extends LitElement {
         // linear mode: step đang được XEM LẠI (khác `active` thật) — '' nghĩa là đang xem đúng step
         // active. Tách riêng khỏi `active` để lùi lại xem step cũ KHÔNG hạ luôn mốc tiến độ thật
         // (nếu không, _activeIndex tụt xuống theo step vừa xem, chặn luôn việc tiến lại step hiện tại).
+        // Chỉ dùng ở chế độ horizontal (xem `_viewId`) — vertical dùng `_collapsed` bên dưới.
         _viewing:   { state: true },
+        // isVertical: id các step user đã BẤM ĐÓNG thủ công — mặc định (không có trong Set này)
+        // mọi step khác 'pending' đều tự mở ngay khi status đổi (vd request api vừa xong), cho phép
+        // mở xem nhiều step cùng lúc thay vì chỉ 1 step như chế độ horizontal (xem `_isOpen()`).
+        _collapsed: { state: true },
     }
 
     constructor() {
@@ -35,11 +44,13 @@ export class WebSteps extends LitElement {
         this.theme      = ''
         this.size       = 'md'
         this.isVertical = false
+        this.multiple   = false
         this.linear     = false
         this.ended      = false
         this.mainColors = ''
         this.textColor  = ''
         this._viewing   = ''
+        this._collapsed = new Set()
     }
 
     get _colors() {
@@ -150,6 +161,32 @@ export class WebSteps extends LitElement {
         }))
     }
 
+    // isVertical + multiple: bấm 1 step để đóng/mở lại tab của riêng nó — độc lập với mọi step
+    // khác, cho phép nhiều step mở cùng lúc (xem `_isOpen()`). Step 'pending' (chưa tới lượt/chưa
+    // có dữ liệu) thì bấm không có tác dụng gì.
+    _toggleVerticalOpen(step, status) {
+        if (status === 'pending') return
+        const next = new Set(this._collapsed)
+        next.has(step.id) ? next.delete(step.id) : next.add(step.id)
+        this._collapsed = next
+        this.dispatchEvent(new CustomEvent('change', { detail: { active: step.id }, bubbles: true, composed: true }))
+    }
+
+    // isVertical: multiple=true → TỰ MỞ ngay khi step rời trạng thái 'pending' (vd sub-step vừa
+    // nhận kết quả api xong), user có thể tự đóng lại (thêm vào `_collapsed`) rồi mở lại bất cứ lúc
+    // nào, độc lập với step khác đang mở/đóng. multiple=false (mặc định) → chỉ 1 step mở tại 1 thời
+    // điểm, dùng lại đúng `_viewId` của horizontal (bấm step khác để chuyển tab, xem `_selectStep`).
+    _isOpen(step, status) {
+        if (this.multiple) return status !== 'pending' && !this._collapsed.has(step.id)
+        return this._viewId === step.id
+    }
+
+    // isVertical: chọn handler theo `multiple` — multi-open dùng `_toggleVerticalOpen` (độc lập
+    // từng step), single-open dùng lại `_selectStep` chung với horizontal (tôn trọng `linear`).
+    _dhVerticalClick(step, status) {
+        return this.multiple ? this._toggleVerticalOpen(step, status) : this._selectStep(step.id)
+    }
+
     // ── Render helpers ────────────────────────────────────────────────────────
 
     _rbCircleContent(status, index) {
@@ -191,22 +228,23 @@ export class WebSteps extends LitElement {
     // Per-step cell markup for the vertical timeline (row i): marker (icon+circle+line) in column 1,
     // label+content in column 2 — both cells share the SAME grid row, so marker stretches to match
     // content's height and its line (flex:1) fills the gap down to the next circle with no seam.
-    // Only the active step's content expands (like a tab panel); every label stays visible.
+    // `multiple` bật thì nhiều step có thể mở cùng lúc, tự mở ngay khi xong (xem `_isOpen()`) —
+    // tắt (mặc định) thì chỉ 1 tab active tại 1 thời điểm, giống chế độ horizontal.
     _rfVerticalCells(step, i, n, status) {
-        const row      = i + 1
-        const isActive = this._viewId === step.id
+        const row    = i + 1
+        const isOpen = this._isOpen(step, status)
         return html`
             <div class="cell marker-cell" style="grid-column:1;grid-row:${row}">
                 ${step.icon ? html`<iconify-icon class="step-icon ${status}" icon=${step.icon}></iconify-icon>` : ''}
-                <button class="step-circle ${status}" @click=${() => this._selectStep(step.id)}>
+                <button class="step-circle ${status}" @click=${() => this._dhVerticalClick(step, status)}>
                     ${this._rbCircleContent(status, i)}
                 </button>
                 ${i < n - 1 ? html`<div class="step-line vertical ${this._lineStatus(i)}"></div>` : ''}
             </div>
 
             <div class="cell content-cell" style="grid-column:2;grid-row:${row}">
-                <span class="step-label ${status}" @click=${() => this._selectStep(step.id)}>${step.label}</span>
-                <div class="step-content ${isActive ? 'active' : ''}"><slot name="${step.id}"></slot></div>
+                <span class="step-label ${status}" @click=${() => this._dhVerticalClick(step, status)}>${step.label}</span>
+                <div class="step-content ${isOpen ? 'active' : ''}"><slot name="${step.id}"></slot></div>
             </div>
         `
     }

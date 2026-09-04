@@ -1,4 +1,4 @@
-// Nội dung 4 chính sách gốc: docs/superpowers/policy/cs1.md..cs4.md (thứ tự: thanh toán, vận
+// Nội dung 4 chính sách gốc: hook/superpowers/policy/cs1.md..cs4.md (thứ tự: thanh toán, vận
 // chuyển, đổi trả/hoàn tiền, bảo mật) — đã dịch song ngữ vi/en và bổ sung các điều khoản bảo vệ
 // người bán theo thông lệ (đặt cọc hàng tùy chỉnh, bất khả kháng, từ chối nhận hàng, bằng chứng
 // đổi trả, quyết định cuối cùng...). Dùng chung cho cả landing (modules/landing/gift.js) và shop

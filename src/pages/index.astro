@@ -12,7 +12,7 @@ import { site } from '@/services/constants/site.js';
 // quan trọng nhất site. Cách ở đây giữ '/' là 1 trang thật (Base.astro vẫn render đầy đủ
 // title/description/OG, canonical trỏ đúng sang đích redirect) + <meta http-equiv="refresh">
 // để chuyển hướng trình duyệt — hoạt động trên output:'static', không cần Astro.redirect()/
-// adapter (xem docs/geo-platform-plan.md §B1 — cùng nguyên tắc "không thêm hạ tầng mới"). Nhiều
+// adapter (xem hook/geo-platform-plan.md §B1 — cùng nguyên tắc "không thêm hạ tầng mới"). Nhiều
 // AI/search crawler chỉ đọc HTML 1 lần, không chạy JS/theo refresh, nên vẫn cần nội dung + link
 // nội bộ thật ở dưới, không chỉ mỗi thẻ redirect.
 const target = site.homeRedirect;

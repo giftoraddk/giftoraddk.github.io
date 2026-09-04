@@ -1,0 +1,79 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-progress'
+description: 'Thanh tiến trình với nhiều kiểu dáng và animation'
+---
+
+# web-progress
+
+Hiển thị tiến trình hoàn thành theo phần trăm với nhiều kiểu dáng: thanh ngang, hình tròn hoặc vòng tròn. Hỗ trợ sọc chuyển động và nhãn tùy chỉnh.
+
+## Khi nào dùng
+
+- Hiển thị tiến độ tải file, xử lý dữ liệu hoặc hoàn thành bước trong quy trình
+- Trực quan hóa mức độ hoàn thành hồ sơ người dùng hoặc nhiệm vụ
+- Thể hiện số liệu dạng phần trăm (dung lượng lưu trữ đã dùng, điểm đánh giá, v.v.)
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-progress.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `value` | number | `0` | Giá trị tiến trình từ `0` đến `100` |
+| `type` | string | `'bar'` | Kiểu hiển thị: `bar` \| `circle` \| `ring` |
+| `color` | string | `'primary'` | Màu sắc: `primary` \| `secondary` \| `success` \| `warning` \| `error` \| `info` |
+| `striped` | boolean | `false` | Hiển thị sọc chéo trên thanh tiến trình |
+| `animate` | boolean | `false` | Kích hoạt animation chạy cho các sọc (yêu cầu `striped`) |
+| `label` | string | `''` | Nhãn text hiển thị trên hoặc bên trong thanh tiến trình |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Ví dụ cơ bản
+
+```html
+<web-progress value="75" color="primary" label="75%"></web-progress>
+<web-progress value="45" type="circle" color="success"></web-progress>
+<web-progress value="60" striped animate color="info"></web-progress>
+```
+
+## Ví dụ nâng cao
+
+Thanh tiến trình dạng vòng tròn với nhãn:
+
+```html
+<web-progress type="ring" value="82" color="warning" label="82 / 100"></web-progress>
+```
+
+Cập nhật tiến trình động khi upload file:
+
+```html
+<web-progress id="upload-bar" value="0" color="primary" label="0%"></web-progress>
+<script>
+  const bar = document.getElementById('upload-bar');
+
+  function updateProgress(percent) {
+    bar.setAttribute('value', percent);
+    bar.setAttribute('label', `${percent}%`);
+  }
+
+  // Giả lập tiến trình upload
+  let progress = 0;
+  const interval = setInterval(() => {
+    progress += 5;
+    updateProgress(progress);
+    if (progress >= 100) clearInterval(interval);
+  }, 300);
+</script>
+```
+
+Nhiều thanh tiến trình theo màu:
+
+```html
+<web-progress value="90" color="success" label="Đã hoàn thành" striped></web-progress>
+<web-progress value="55" color="warning" label="Đang xử lý" striped animate></web-progress>
+<web-progress value="20" color="error" label="Thất bại" striped></web-progress>
+```

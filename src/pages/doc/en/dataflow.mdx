@@ -1,0 +1,156 @@
+---
+layout: '../../../layouts/LayoutDoc.astro'
+title: 'Data Flow'
+description: 'From config file to UI: build time, runtime load, render, events'
+---
+
+# Data Flow
+
+<div class="doc-intro">
+  <p>This page traces data from its origin in a config file all the way to a rendered card and back through user interaction events.</p>
+</div>
+
+## Overview
+
+Data in Astro Micro follows a unidirectional flow: config objects defined at build time are passed as props to Web Components at runtime, which then fetch live data through Conductor and render the result into the DOM.
+
+## Step-by-Step Flow
+
+### 1. Config file defines the layout
+
+A config file in `src/sections/<domain>/` exports a `baseConfig` object describing the grid layout, cell definitions, and styles:
+
+```js
+// src/sections/shop/config.js
+export const productConfig = {
+  id: 'shop-products',
+  tiers: [
+    { cols: 1, minWidth: 0 },
+    { cols: 2, minWidth: 640 },
+    { cols: 4, minWidth: 1024 },
+  ],
+  makes: [
+    { opt: 'image', val: 'thumbnail', stys: { aspectRatio: '4/3' } },
+    { opt: 'text',  val: 'name' },
+    { opt: 'price', val: 'price' },
+  ],
+};
+```
+
+### 2. Astro page imports the config
+
+The Astro page imports the config and serializes it as a prop:
+
+```astro
+---
+import { productConfig } from '@/sections/shop/config.js';
+---
+
+<web-boxs
+  config={JSON.stringify(productConfig)}
+  dataApi="/api/products.json"
+  cacheKey="shop-products"
+  cacheTtl="300"
+></web-boxs>
+```
+
+### 3. web-board or web-boxs initializes
+
+When the custom element connects to the DOM (`connectedCallback`), it parses the `config` prop and prepares the render context.
+
+### 4. web-boxs receives config + data props
+
+`web-boxs` validates the config structure: tiers for column breakpoints, makes for cell definitions, groups for layout sections.
+
+### 5. Conductor fetches and caches data
+
+If `dataApi` is provided, Conductor's `all()` is called:
+
+```js
+const data = await conductor.all({
+  url: '/api/products.json',
+  cacheKey: 'shop-products',
+  cacheTtl: 300,   // seconds
+});
+```
+
+Conductor checks IndexedDB first. On a cache miss (or expired TTL) it fetches from the network with automatic retries, then stores the result before returning it.
+
+### 6. web-box creates the CSS grid
+
+For each item in `data[]`, a `web-box` element is created. The active tier (based on current viewport width) determines the number of CSS grid columns.
+
+### 7. web-cell resolves values
+
+Each `web-cell` inside a `web-box` reads the `val` key from the data item and renders it with the style specified in the `sty` property:
+
+```js
+// makes entry:  { opt: 'text', val: 'name', stys: { fontWeight: 'bold' } }
+// data item:    { name: 'Wireless Headphones', price: 49.99, thumbnail: '...' }
+// result:       <web-cell opt="text">Wireless Headphones</web-cell>
+```
+
+### 8. User interaction dispatches an event
+
+When a user interacts with a cell (click, select, input), the component dispatches a composed event:
+
+```js
+this.dispatchEvent(new CustomEvent('web-item-select', {
+  detail: { id: item.id, value: item },
+  bubbles: true,
+  composed: true,
+}));
+```
+
+### 9. Conductor updates the store — re-render follows
+
+A micro service listening for the event calls a Conductor action that updates `state.sections[id]`. Any component subscribed to that section re-renders automatically:
+
+```js
+// In svc-*.js
+conductor.store.subscribe(state => {
+  const section = state.sections['shop-products'];
+  if (section) this._data = section.items;
+});
+```
+
+## Sequence Diagram
+
+```
+Astro page build
+      │
+      ├─ imports config ──────────────────► src/sections/shop/config.js
+      │
+      └─ renders HTML with props
+              │
+              ▼  (browser loads)
+        web-boxs.connectedCallback()
+              │
+              ├─ parses config prop
+              │
+              └─ calls conductor.all()
+                      │
+                      ├─ IndexedDB cache hit? ──► return cached data
+                      │
+                      └─ cache miss ──► fetch API ──► store in IndexedDB ──► return data
+                              │
+                              ▼
+                      web-box creates CSS grid
+                              │
+                              ▼
+                      web-cell resolves values ──► DOM rendered
+                              │
+                      user clicks card
+                              │
+                              ▼
+                      CustomEvent (bubbles + composed)
+                              │
+                              ▼
+                      svc-*.js listener ──► conductor action ──► store update ──► re-render
+```
+
+## Next Steps
+
+- [Conductor](/doc/en/conductor) — `all()` options, retry strategy, `sift()` filtering
+- [Web Boxs](/doc/en/web-boxs) — config structure reference
+- [Section Config](/doc/en/section-config) — how to organize config files

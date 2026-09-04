@@ -10,10 +10,10 @@ import '@/webs/apex/web-avatar.js'
 import '@/webs/apex/web-button.js'
 import '@/webs/apex/web-texts.js'
 import '@/webs/apex/web-dialog.js'
-import '@/webs/apex/web-photor-upload.js'
 import '@/webs/apex/web-location-map.js'
 import '@/webs/apex/web-select.js'
 import '@/webs/apex/web-checkbox.js'
+import '@/webs/media/svc-photor.js'
 import styles from './styles/svc-bay-list.css?inline'
 import { ulid, txtLingo, emit, toastEmit } from '@/services/helper.js'
 import { createService } from '@/services/crud.js'
@@ -462,7 +462,7 @@ export class SvcBayList extends LitElement {
         emit(this, 'bay-updated', { bay: updated })
     }
 
-    // saveLocal callback cho <web-photor-upload> — nhận Blob đã crop, lưu qua putBlob()
+    // saveLocal callback cho <svc-photor> — nhận Blob đã crop, lưu qua putBlob()
     // (baydb.js), trả về "blob:<id>" để gán vào `value`. Đánh dấu kind:'avatar' để
     // baydb.js.sweepExpired() không xoá sau 7 ngày như chat attachment.
     async _dfSaveAvatarBlob(blob, bayId) {
@@ -556,9 +556,9 @@ export class SvcBayList extends LitElement {
                     <web-texts single placeholder=${this._txt.fMomoName} .value=${this._formMomoName} height="38px"
                         @change=${e => { this._formMomoName = e.detail.value }}></web-texts>
                     <div class="byl-form-notice">${this._txt.momoNotice}</div>
-                    <web-photor-upload placeholder=${this._txt.fPics} .value=${this._formPics}
+                    <svc-photor placeholder=${this._txt.fPics} .value=${this._formPics}
                         .saveLocal=${blob => this._dfSaveAvatarBlob(blob, isEdit ? this._editingBay?.id : this._newBayId)}
-                        @change=${e => { this._formPics = e.detail.value }}></web-photor-upload>
+                        @change=${e => { this._formPics = e.detail.value }}></svc-photor>
                     <web-location-map geo ui=${this.ui} theme=${this.theme}
                         placeholder=${this._txt.fLocation} .value=${this._formLocation}
                         @change=${e => { this._formLocation = e.detail.value }}></web-location-map>

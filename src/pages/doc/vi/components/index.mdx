@@ -1,0 +1,182 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'Components'
+description: 'Tổng quan về tất cả web components trong apex/ và cách dùng chung'
+---
+
+# Components
+
+<div class="doc-intro">
+  <p>Thư viện Web Components của Astro Micro — các Lit 3 custom elements tái sử dụng được tổ chức trong <code>src/webs/apex/</code>, từ display primitives đến form controls và navigation.</p>
+</div>
+
+## Giới thiệu
+
+Tất cả components trong `apex/` là **Lit 3 Web Components** chuẩn — chúng sử dụng Shadow DOM để đóng gói styles và không phụ thuộc vào bất kỳ framework nào. Bạn có thể dùng chúng trong Astro, plain HTML, React, Vue, hoặc bất kỳ môi trường nào.
+
+**Ngoại lệ**: `web-board` không dùng Shadow DOM — nó render vào light DOM để dễ dàng tích hợp với CSS layout của trang.
+
+## Cách load component
+
+### Trong Astro page (script tag)
+
+```astro
+---
+// Component được load khi cần, không bundle vào page JS
+---
+
+<web-button variant="primary">Bấm tôi</web-button>
+<web-alert type="success">Thành công!</web-alert>
+
+<script type="module" src="/src/webs/apex/web-button.js"></script>
+<script type="module" src="/src/webs/apex/web-alert.js"></script>
+```
+
+### Trong Astro frontmatter (bundled)
+
+```astro
+---
+// Components được bundle cùng với trang
+import '@/webs/apex/web-button.js';
+import '@/webs/apex/web-alert.js';
+---
+
+<web-button>Bấm tôi</web-button>
+```
+
+### Trong Lit component khác
+
+```js
+// Import trong file JS/TS
+import '@/webs/apex/web-loader.js';
+import '@/webs/apex/web-toast.js';
+```
+
+## Props chung
+
+Hầu hết components trong `apex/` đều hỗ trợ các props cơ bản sau:
+
+| Prop | Kiểu | Mô tả |
+|---|---|---|
+| `ui` | `String` | UI variant: `modern` (mặc định) hoặc `spatial` (glassmorphism) |
+| `theme` | `String` | ApexUI theme name để override theme hiện tại |
+| `mainColors` | `String` | 5 màu pipe-separated: `c1\|c2\|c3\|c4\|c5` |
+| `textColor` | `String` | Text color CSS variable |
+
+## Events
+
+Tất cả custom events từ `apex/` components đều có:
+
+```js
+{
+  bubbles: true,   // lan lên qua DOM tree
+  composed: true,  // xuyên qua Shadow DOM boundary
+}
+```
+
+Điều này đảm bảo event từ deep nested component vẫn được component cha ngoài Shadow DOM nhận được.
+
+```js
+// Lắng nghe event từ web-button ở bất kỳ cấp nào
+document.addEventListener('button-click', (e) => {
+  console.log('Button clicked:', e.detail);
+});
+```
+
+## Danh sách components
+
+### Display
+
+| Component | Mô tả |
+|---|---|
+| `web-alert` | Thông báo với các loại: info, success, warning, error |
+| `web-avatar` | Avatar với fallback, badge trạng thái |
+| `web-bg` | Background animations (blob, circle, mesh) |
+| `web-breadcrumb` | Breadcrumb navigation |
+| `web-button` | Button với variants, loading state, icons |
+| `web-gallery` | Image gallery với lightbox |
+| `web-loader` | Loading spinners và skeleton screens |
+| `web-progress` | Progress bar và circular progress |
+| `web-toast` | Toast notifications với auto-dismiss |
+| `web-tooltip` | Tooltip popup khi hover |
+
+### Forms
+
+| Component | Mô tả |
+|---|---|
+| `web-checkbox` | Checkbox với label và validation |
+| `web-radio` | Radio button group |
+| `web-toggle` | Toggle switch (on/off) |
+| `web-select` | Dropdown select |
+| `web-text` | Text input với validation |
+| `web-textarea` | Textarea với auto-resize |
+| `web-rating` | Rating stars (đọc/ghi) |
+| `web-datetime` | Date và time picker |
+
+### Navigation
+
+| Component | Mô tả |
+|---|---|
+| `web-tabs` | Tab switcher với animation |
+| `web-steps` | Step progress indicator |
+| `web-expansion` | Accordion expand/collapse |
+| `web-dialog` | Modal dialog với trap focus |
+| `web-dropdown` | Dropdown menu |
+| `web-popover` | Floating popover |
+| `web-pagination` | Phân trang với page numbers |
+
+### Advanced
+
+| Component | Mô tả |
+|---|---|
+| `web-table` | Data table với sort và filter |
+| `web-pre` | Code block với syntax highlight |
+| `web-slider` | Carousel/slider với touch support |
+| `web-fab` | Floating action button |
+
+## Ví dụ nhanh: web-button
+
+```html
+<!-- Dùng trong HTML -->
+<web-button variant="primary" size="md">
+  Thêm vào giỏ
+</web-button>
+
+<web-button variant="outline" loading>
+  Đang xử lý...
+</web-button>
+
+<script type="module" src="/src/webs/apex/web-button.js"></script>
+```
+
+```js
+// Lắng nghe event
+document.querySelector('web-button').addEventListener('btn-click', (e) => {
+  console.log('Clicked!', e.detail);
+});
+```
+
+```astro
+---
+// Trong Astro với import
+import '@/webs/apex/web-button.js';
+---
+
+<web-button
+  variant="primary"
+  ui="spatial"
+  mainColors="var(--color-primary)|var(--color-secondary)|var(--color-accent)|var(--color-info)|var(--color-success)"
+>
+  Khám phá ngay
+</web-button>
+```
+
+## Xem chi tiết từng component
+
+Chọn component trong menu bên trái để xem API đầy đủ, props, events và ví dụ sử dụng.
+
+## Tiếp theo
+
+- [Web Boxs](/doc/vi/web-boxs) — render grid với các cells
+- [Theming](/doc/vi/theming) — props màu sắc chung
+- [Kiến trúc](/doc/vi/architecture) — vị trí apex components trong hệ thống

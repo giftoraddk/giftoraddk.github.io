@@ -1,0 +1,68 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-popover'
+description: 'Popover hiển thị nội dung chi tiết khi hover hoặc click'
+---
+
+# web-popover
+
+Hiển thị một lớp nổi chứa nội dung chi tiết khi người dùng hover hoặc click vào element kích hoạt. Hỗ trợ định vị linh hoạt theo 4 hướng.
+
+## Khi nào dùng
+
+- Giải thích thêm thông tin cho một thuật ngữ hoặc icon mà không làm rối giao diện chính
+- Hiển thị bản xem trước (preview) của một liên kết hoặc hình ảnh
+- Cung cấp ngữ cảnh bổ sung mà không cần mở dialog hay modal
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-popover.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `trigger` | string | `'hover'` | Cách kích hoạt: `hover` \| `click` |
+| `placement` | string | `'top'` | Vị trí hiển thị: `top` \| `bottom` \| `left` \| `right` |
+| `content` | string | `''` | Nội dung text hiển thị trong popover |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Slots
+
+| Slot | Mô tả |
+|------|-------|
+| _(mặc định)_ | Element kích hoạt popover (trigger element) |
+| `content` | Nội dung HTML tùy chỉnh bên trong popover (thay thế prop `content`) |
+
+## Ví dụ cơ bản
+
+```html
+<web-popover placement="top" trigger="hover" content="Thông tin chi tiết về mục này">
+  <web-button type="outline">Hover vào đây</web-button>
+</web-popover>
+```
+
+## Ví dụ nâng cao
+
+Popover kích hoạt bằng click với nội dung HTML phong phú:
+
+```html
+<web-popover placement="bottom" trigger="click">
+  <web-button type="primary">Xem thông tin</web-button>
+  <div slot="content">
+    <h4>Chi tiết sản phẩm</h4>
+    <p>Mã: SP-001</p>
+    <p>Tồn kho: 42 cái</p>
+  </div>
+</web-popover>
+```
+
+Popover bên trái với giao diện spatial:
+
+```html
+<web-popover placement="left" trigger="hover" ui="spatial" content="Trạng thái: Đang hoạt động">
+  <span class="status-dot"></span>
+</web-popover>
+```

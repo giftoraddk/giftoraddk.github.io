@@ -62,6 +62,7 @@ export class WebBoxs extends LitElement {
     _isVisible:       { state: true },
     _filterActive:    { state: true },
     _filterQuery:     { state: true },
+    _filterRange:     { state: true },
 
     // ── i18n ──────────────────────────────────────────────────────────────────
     txt:  { type: Object },
@@ -89,6 +90,7 @@ export class WebBoxs extends LitElement {
     this._isVisible       = false;
     this._filterActive    = [];
     this._filterQuery     = "";
+    this._filterRange     = null;
     // Chỉ tự suy ra từ <html data-theme> khi KHÔNG được truyền theme từ ngoài (dùng
     // độc lập, không nằm trong web-board). Nếu có, connectedCallback() dưới đây sẽ
     // không override — tôn trọng giá trị parent đã truyền (vd svc-channel → web-board).
@@ -162,6 +164,9 @@ export class WebBoxs extends LitElement {
     if (changed.has("filterState")) {
       this._filterActive = this.filterState?.active || [];
       this._filterQuery  = this.filterState?.query  || "";
+      const ranges = this.filterState?.ranges || [];
+      const rangeKey = this.filterState?.rangeKey || "";
+      this._filterRange = ranges.find(r => r.key === rangeKey) || null;
     }
   }
 
@@ -236,12 +241,13 @@ export class WebBoxs extends LitElement {
   // ── Filter ────────────────────────────────────────────────────────────────
 
   _onFilter(e) {
-    const { active, query, field } = e.detail;
+    const { active, query, field, range } = e.detail;
     this._filterActive = active || [];
     this._filterQuery  = query  || "";
+    this._filterRange  = range || null;
     // Bubble up with sectionId so web-board can persist the filter to the store
     this.dispatchEvent(new CustomEvent("filter", {
-      detail: { sectionId: this.filterState?.sectionId, active, query, field },
+      detail: { sectionId: this.filterState?.sectionId, active, query, field, range },
       bubbles: true, composed: true,
     }));
   }
@@ -250,6 +256,13 @@ export class WebBoxs extends LitElement {
   _tagsOf(item, field) {
     const val = item[field];
     return Array.isArray(val) ? val : typeof val === "string" ? val.split("|").filter(Boolean) : [];
+  }
+
+  // item[field] follows the "price~cost~unit" convention (see src/sections/products/cardBold.js) —
+  // only the price segment is used for range comparison.
+  _priceOf(item, field) {
+    const p = parseFloat(String(item[field] ?? "").split("~")[0]);
+    return Number.isFinite(p) ? p : NaN;
   }
 
   _applyFilter(data) {
@@ -267,6 +280,16 @@ export class WebBoxs extends LitElement {
         const q = normText(this._filterQuery);
         items = items.filter(item => normText(JSON.stringify(item)).includes(q));
       }
+    }
+    // Numeric price-range filter — a separate mechanism from the tag/text filter above, not
+    // string matching (see hook comment in [budget].astro for why it needs a real compare).
+    if (this._filterRange) {
+      const field = this.filterState?.rangeField || "pricing";
+      const { min, max } = this._filterRange;
+      items = items.filter(item => {
+        const p = this._priceOf(item, field);
+        return Number.isFinite(p) && p >= (min ?? 0) && p < (max ?? Infinity);
+      });
     }
     return items;
   }
@@ -313,6 +336,8 @@ export class WebBoxs extends LitElement {
           .tags=${fs.tags  || []}
           .field=${fs.field || "tags"}
           .color=${fs.color || "primary"}
+          .ranges=${fs.ranges || []}
+          .range=${this._filterRange?.key || ""}
           .ui=${this.ui}
           .lang=${this.lang}
           .active=${this._filterActive}
@@ -412,7 +437,7 @@ export class WebBoxs extends LitElement {
         // (danh sách record thật của section) mà là 1 field mảng NẰM TRONG record đầu tiên, vd
         // `dataKey: 'cards'` đọc `items[0].cards` — dùng khi section chỉ có ĐÚNG 1 record editable
         // (single mode ở svc-admin.js) nhưng tier vẫn cần hiển thị nhiều item cùng lúc (checklist/
-        // cards/slider…), xem docs/SCHEMA.rst — nested list nằm trong `meta.<key>` của record đó.
+        // cards/slider…), xem hook/SCHEMA.rst — nested list nằm trong `meta.<key>` của record đó.
         // Không set thì giữ nguyên hành vi cũ: `items` = top-level (mỗi item = 1 record riêng,
         // dùng cho section thật sự nhiều record như team/testimonials khi KHÔNG ở single mode).
         const tierItems = firstCfg.dataKey ? (items[0]?.[firstCfg.dataKey] ?? []) : items;
@@ -593,6 +618,15 @@ export class WebBoxs extends LitElement {
 
   // ── Nav helpers ───────────────────────────────────────────────────────────
 
+  // label có thể là { vi, en } (cùng convention với web-cell.js's _resolveLocale) thay vì string
+  // thường — web-steps/web-tabs/web-expansion chỉ interpolate label thẳng, không tự resolve i18n.
+  _navLabel(val) {
+    if (val && typeof val === "object" && !Array.isArray(val) && (val.vi !== undefined || val.en !== undefined)) {
+      return val[this.lang || "vi"] ?? val.vi ?? Object.values(val)[0];
+    }
+    return val;
+  }
+
   // Builds tab/step/panel descriptor array. Uses optional field-name mappings in cfg:
   //   cfg.idField / labelField / iconField / statusField → data field names
   //   cfg.pack > 1 → chunk items into groups; nav descriptor taken from first item of each chunk.
@@ -604,7 +638,7 @@ export class WebBoxs extends LitElement {
         const first = items[i];
         nav.push({
           id:     first[cfg.idField]    ?? `item-${nav.length}`,
-          label:  first[cfg.labelField] ?? `Item ${nav.length + 1}`,
+          label:  this._navLabel(first[cfg.labelField]) ?? `Item ${nav.length + 1}`,
           icon:   first[cfg.iconField],
           status: first[cfg.statusField],
         });
@@ -613,7 +647,7 @@ export class WebBoxs extends LitElement {
     }
     return items.map((item, i) => ({
       id:     item[cfg.idField]     ?? `item-${i}`,
-      label:  item[cfg.labelField]  ?? `Item ${i + 1}`,
+      label:  this._navLabel(item[cfg.labelField]) ?? `Item ${i + 1}`,
       icon:   item[cfg.iconField],
       status: item[cfg.statusField],
     }));

@@ -5,7 +5,7 @@ import { fetchCollection } from '@/services/firestore.server.ts';
 import { productSlug, pickLang } from '@/services/helper.js';
 import { menuItems, policies, socials } from '@/modules/landing/home.js';
 
-// Trang chi tiết sản phẩm CRAWLABLE — biến thể SSG (mặc định, xem docs/BUILD_MODES nếu thêm sau):
+// Trang chi tiết sản phẩm CRAWLABLE — biến thể SSG (mặc định, xem hook/BUILD_MODES nếu thêm sau):
 // build tĩnh, getStaticPaths + fetchCollection lúc build, nội dung thật bake vào HTML cho
 // AI/search crawler. Nội dung/markup thật sự nằm trong ProductDetailBody.astro (dùng chung với
 // biến thể ISR ở src/pages/product/_render-modes/[slug].isr.astro, xem astro.config.mjs

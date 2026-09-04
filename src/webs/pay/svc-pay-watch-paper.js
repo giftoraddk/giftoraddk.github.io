@@ -2,7 +2,7 @@
 //
 // Hiện lại invoice dạng "giấy hoá đơn" (thermal receipt) — mount phía TRÊN <svc-pay> trong
 // svc-pay-watch.js (channel/invoice.astro). Tự subscribe invoice qua listenInvoice() bằng prop
-// `invoiceId` (không đọc lại từ <svc-pay>, độc lập domain — xem docs/PAY.rst §1) — component con
+// `invoiceId` (không đọc lại từ <svc-pay>, độc lập domain — xem hook/PAY.rst §1) — component con
 // THUẦN đọc, không có action/nút bấm nào, chỉ để buyer/seller có 1 bản xem lại quen mắt kiểu hoá
 // đơn giấy thật, KHÁC panel thao tác chi tiết bên dưới (<svc-pay>).
 //

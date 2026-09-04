@@ -2,7 +2,7 @@ import { getStyleOpts } from '@/services/helper';
 
 export const hashtags = ['hero', 'spatial', 'horizontal', 'split', 'cta'];
 
-// subtitle/title/description/pics theo chuẩn docs/SCHEMA.rst `records` — sửa qua svc-admin
+// subtitle/title/description/pics theo chuẩn hook/SCHEMA.rst `records` — sửa qua svc-admin
 // (dataTable="sectionItems", schema chung records.js) sẽ đổi trực tiếp nội dung dưới đây.
 export const data = [
 	{
@@ -21,7 +21,7 @@ const baseConfig = {
 	tiers: [
 
 		// ── Tier 0: Image — data-bound `pics`, tier động (render đúng 1 lần vì `data`
-		// chỉ có 1 phần tử, xem docs/web-board.rst § Tiers mode) ──────────────────
+		// chỉ có 1 phần tử, xem hook/web-board.rst § Tiers mode) ──────────────────
 		[{
 			groupCol: [12],
 			groupRow: ['auto'],

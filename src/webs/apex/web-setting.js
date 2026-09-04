@@ -9,10 +9,10 @@
  *   ui      {String}  — 'modern' | 'spatial'
  *
  * Field schema (trong mỗi field của schema):
- *   { label, type: 'text'|'select'|'photor-upload', root: 'key' }         — root-level field
+ *   { label, type: 'text'|'select'|'photor', root: 'key' }         — root-level field
  *   { label, type, sec: { id, key } }                                      — section field
  *   { label, type, sec: { id, parent, key } }                              — nested section field
- *   opts (select), hint (placeholder), full (full-width), multiple/limit (photor-upload)
+ *   opts (select), hint (placeholder), full (full-width), multiple/limit (photor)
  *
  * Events (bubbles + composed):
  *   setting-save    — e.detail = draft object khi user nhấn Lưu
@@ -37,10 +37,10 @@ import './web-dialog.js'
 import './web-button.js'
 import './web-text.js'
 import './web-select.js'
-import './web-photor-upload.js'
 import './web-expansion.js'
 import './web-texts.js'
 import './web-colors.js'
+import '../media/svc-photor.js'
 
 export class WebSetting extends LitElement {
 
@@ -280,10 +280,10 @@ export class WebSetting extends LitElement {
             ? html`<web-select .options=${f.opts} .value=${val || null}
                        .ui=${this.ui} placeholder="—" height="36px"
                        @change=${onChange}></web-select>`
-            : f.type === 'photor-upload'
-            ? html`<web-photor-upload .value=${val}
+            : f.type === 'photor'
+            ? html`<svc-photor .value=${val}
                        .ui=${this.ui} height="36px" ?multiple=${f.multiple ?? false} .limit=${f.limit ?? 0}
-                       @change=${onChange}></web-photor-upload>`
+                       @change=${onChange}></svc-photor>`
             : f.type === 'texts'
             ? html`<web-texts .value=${val} .ui=${this.ui} .placeholder=${f.hint ?? ''}
                        @change=${onChange}></web-texts>`

@@ -16,7 +16,7 @@
  *     CÙNG URL build-hook này theo chu kỳ mong muốn (vd mỗi 6 giờ).
  *
  * Chưa cấu hình PUBLIC_DEPLOY_HOOK (chưa chọn host) → no-op im lặng, không phải lỗi — đúng tình
- * trạng hiện tại của repo (chưa có vercel.json/netlify.toml/CI nào, xem docs/geo-platform-plan.md).
+ * trạng hiện tại của repo (chưa có vercel.json/netlify.toml/CI nào, xem hook/geo-platform-plan.md).
  */
 
 const DEBOUNCE_MS = 30_000; // nhiều save liên tiếp trong admin chỉ nên trigger 1 lần rebuild

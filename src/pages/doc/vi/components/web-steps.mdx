@@ -1,0 +1,80 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-steps'
+description: 'Hiển thị các bước trong quy trình với trạng thái hoàn thành'
+---
+
+# web-steps
+
+Hiển thị trình tự các bước trong một quy trình nhiều giai đoạn, kèm trạng thái đã hoàn thành, đang thực hiện hoặc chưa bắt đầu. Hỗ trợ layout ngang và dọc.
+
+## Khi nào dùng
+
+- Quy trình đặt hàng, thanh toán hoặc đăng ký nhiều bước
+- Hướng dẫn cài đặt hoặc onboarding người dùng mới
+- Theo dõi tiến trình của một đơn hàng hoặc yêu cầu qua nhiều trạng thái
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-steps.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `steps` | array JSON | `[]` | Danh sách các bước: `[{"label":"...","description":"..."}]`. Trường `description` tùy chọn |
+| `current` | number | `0` | Index của bước đang active (bắt đầu từ `0`) |
+| `direction` | string | `'horizontal'` | Chiều hiển thị: `horizontal` \| `vertical` |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Ví dụ cơ bản
+
+```html
+<web-steps
+  steps='[{"label":"Chọn sản phẩm"},{"label":"Thông tin giao hàng"},{"label":"Thanh toán"},{"label":"Xác nhận"}]'
+  current="1">
+</web-steps>
+```
+
+## Ví dụ nâng cao
+
+Bước dọc với mô tả chi tiết:
+
+```html
+<web-steps
+  direction="vertical"
+  current="2"
+  steps='[
+    {"label":"Đặt hàng","description":"Đơn hàng đã được tiếp nhận lúc 14:30"},
+    {"label":"Xác nhận","description":"Cửa hàng đã xác nhận đơn hàng"},
+    {"label":"Đóng gói","description":"Đang chuẩn bị hàng"},
+    {"label":"Vận chuyển","description":"Chờ bàn giao đơn vị vận chuyển"},
+    {"label":"Giao hàng","description":""}
+  ]'>
+</web-steps>
+```
+
+Cập nhật bước động khi người dùng điền form:
+
+```html
+<web-steps id="checkout-steps"
+  steps='[{"label":"Giỏ hàng"},{"label":"Địa chỉ"},{"label":"Thanh toán"},{"label":"Hoàn tất"}]'
+  current="0">
+</web-steps>
+
+<script>
+  const steps = document.getElementById('checkout-steps');
+
+  function nextStep() {
+    const current = parseInt(steps.getAttribute('current') || '0');
+    steps.setAttribute('current', current + 1);
+  }
+
+  function prevStep() {
+    const current = parseInt(steps.getAttribute('current') || '0');
+    if (current > 0) steps.setAttribute('current', current - 1);
+  }
+</script>
+```

@@ -1,0 +1,73 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-dropdown'
+description: 'Menu dropdown với items tùy chỉnh'
+---
+
+# web-dropdown
+
+Menu thả xuống được kích hoạt bằng nút trigger. Hỗ trợ danh sách liên kết với icon tùy chọn và căn chỉnh trái/phải.
+
+## Khi nào dùng
+
+- Menu hành động theo ngữ cảnh (chỉnh sửa, xóa, chia sẻ) trên một mục dữ liệu
+- Menu điều hướng trong header hoặc sidebar
+- Nhóm các hành động ít dùng vào một nút để giảm tải giao diện
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-dropdown.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `label` | string | `'Menu'` | Văn bản hiển thị trên nút trigger |
+| `items` | array JSON | `[]` | Mảng mục menu: `[{ "label": "Tên", "href": "/link", "icon": "tên-icon" }]`. Trường `icon` là tùy chọn |
+| `align` | string | `'left'` | Căn chỉnh menu: `left` \| `right` |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Ví dụ cơ bản
+
+```html
+<web-dropdown label="Tùy chọn" items='[
+  {"label":"Chỉnh sửa","href":"#"},
+  {"label":"Xóa","href":"#"}
+]'></web-dropdown>
+```
+
+## Ví dụ nâng cao
+
+Dropdown với icon và căn phải:
+
+```html
+<web-dropdown
+  label="Tài khoản"
+  align="right"
+  ui="spatial"
+  items='[
+    {"label":"Hồ sơ cá nhân","href":"/profile","icon":"user"},
+    {"label":"Cài đặt","href":"/settings","icon":"settings"},
+    {"label":"Đăng xuất","href":"/logout","icon":"log-out"}
+  ]'
+></web-dropdown>
+```
+
+Dropdown menu điều hướng trong header:
+
+```html
+<nav style="display:flex; gap:16px; align-items:center;">
+  <web-dropdown label="Sản phẩm" items='[
+    {"label":"Phần mềm","href":"/products/software"},
+    {"label":"Dịch vụ","href":"/products/services"},
+    {"label":"Gói doanh nghiệp","href":"/products/enterprise"}
+  ]'></web-dropdown>
+
+  <web-dropdown label="Hỗ trợ" items='[
+    {"label":"Tài liệu","href":"/doc"},
+    {"label":"Liên hệ","href":"/contact"}
+  ]'></web-dropdown>
+</nav>
+```

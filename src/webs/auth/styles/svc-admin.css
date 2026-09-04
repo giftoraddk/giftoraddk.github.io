@@ -228,9 +228,9 @@ svc-admin {
 }
 
 .sad-edit-row.is-new .sad-edit-td {
-	background: color-mix(in oklab, var(--color-primary, #2ebd85) 6%, transparent) !important;
-	border-top: 1px solid color-mix(in oklab, var(--color-primary, #2ebd85) 20%, transparent);
-	border-bottom: 1px solid color-mix(in oklab, var(--color-primary, #2ebd85) 20%, transparent);
+	background: color-mix(in oklab, var(--color-primary, #34ace0) 6%, transparent) !important;
+	border-top: 1px solid color-mix(in oklab, var(--color-primary, #34ace0) 20%, transparent);
+	border-bottom: 1px solid color-mix(in oklab, var(--color-primary, #34ace0) 20%, transparent);
 }
 
 .sad-edit-inner {
@@ -271,7 +271,7 @@ svc-admin {
 	transition: border-color 0.15s;
 }
 
-.sad-input:focus    { border-color: var(--color-primary, #2ebd85); }
+.sad-input:focus    { border-color: var(--color-primary, #34ace0); }
 .sad-input:disabled { opacity: 0.3; cursor: not-allowed; }
 
 select.sad-input  { padding-right: 4px; cursor: pointer; }
@@ -294,7 +294,7 @@ select.sad-input  { padding-right: 4px; cursor: pointer; }
 	padding: 4px 14px;
 	border-radius: 6px;
 	border: none;
-	background: var(--color-primary, #2ebd85);
+	background: var(--color-primary, #34ace0);
 	color: #000;
 	font-size: 12px;
 	font-weight: 700;

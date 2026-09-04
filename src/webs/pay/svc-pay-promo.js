@@ -42,7 +42,7 @@ const TXT_STD = {
 const BLANK_FORM = { code: '', label: '', type: 'percent', discount: '', minOrder: '', maxDiscount: '' }
 
 /**
- * <svc-pay-promo> — áp/tạo/xoá mã khuyến mãi, độc lập domain `pay` (xem docs/PAY.rst §1). Dùng bởi
+ * <svc-pay-promo> — áp/tạo/xoá mã khuyến mãi, độc lập domain `pay` (xem hook/PAY.rst §1). Dùng bởi
  * cả <svc-cart> (bay-sections toolbox) lẫn <svc-chat> (widget tạo voucher riêng trong tab DM,
  * `special` mode) — 1 component chung cho mọi nơi cần UI promo trong domain này.
  *

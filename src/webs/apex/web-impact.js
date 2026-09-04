@@ -2,7 +2,7 @@
 //
 // Hiệu ứng pháo hoa/ăn mừng sinh nhật vẽ trực tiếp bằng <canvas> (2D context), viết tay hoàn
 // toàn — không dùng thư viện animation nào (không gsap, không tween-lib). Ý tưởng port lại từ
-// bản demo docs/hpbd.html, nhưng viết lại thành Lit component tái dùng được: vị trí nổ luôn NGẪU
+// bản demo hook/hpbd.html, nhưng viết lại thành Lit component tái dùng được: vị trí nổ luôn NGẪU
 // NHIÊN trong khung hình (không cố định vài góc như demo gốc), và có nhiều KIỂU pháo hoa khác
 // nhau được chọn ngẫu nhiên mỗi lần nổ thay vì chỉ 1 kiểu confetti+glitter duy nhất.
 //

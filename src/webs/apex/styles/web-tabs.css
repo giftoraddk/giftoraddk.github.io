@@ -72,14 +72,14 @@
 }
 
 .tab-item:hover  { opacity: 1; }
-.tab-item.active, .tab-item:hover { opacity: 1; color: var(--color-primary, #2ebd85); text-shadow: 0 0 16px #ffffff99; }
+.tab-item.active, .tab-item:hover { opacity: 1; color: var(--color-primary, #34ace0); text-shadow: 0 0 16px #ffffff99; }
 
 .tab-item::after {
 	content: '';
 	position: absolute;
 	bottom: -1px; left: 0;
 	width: 0; height: 2px;
-	background: var(--color-primary, #2ebd85);
+	background: var(--color-primary, #34ace0);
 	transition: width 0.3s ease;
 	border-radius: 999px;
 }
@@ -135,7 +135,7 @@
 }
 
 .spatial .tab-item.active {
-	background:  color-mix(in oklab, var(--color-primary, #2ebd85) 15%, rgba(255, 255, 255, 0.05));
+	background:  color-mix(in oklab, var(--color-primary, #34ace0) 15%, rgba(255, 255, 255, 0.05));
 	box-shadow:  0 0 6px rgba(0, 0, 0, 0.2);
 }
 

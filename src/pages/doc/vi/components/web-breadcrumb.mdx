@@ -1,0 +1,65 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-breadcrumb'
+description: 'Điều hướng breadcrumb để hiển thị vị trí hiện tại'
+---
+
+# web-breadcrumb
+
+Hiển thị đường dẫn điều hướng (breadcrumb trail) giúp người dùng biết vị trí hiện tại trong cấu trúc trang. Mục cuối cùng trong mảng thường là trang hiện tại và không có liên kết.
+
+## Khi nào dùng
+
+- Trang có cấu trúc phân cấp nhiều cấp (danh mục > sản phẩm > chi tiết)
+- Giúp người dùng điều hướng ngược về các cấp trên mà không cần dùng nút Back
+- Cải thiện SEO và trải nghiệm người dùng trên các trang nội dung sâu
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-breadcrumb.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `items` | array JSON | `[]` | Mảng các mục: `[{ "label": "Tên", "href": "/đường-dẫn" }]`. Mục không có `href` sẽ hiển thị là văn bản thuần |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Ví dụ cơ bản
+
+```html
+<web-breadcrumb items='[
+  {"label":"Trang chủ","href":"/"},
+  {"label":"Sản phẩm","href":"/products"},
+  {"label":"Chi tiết"}
+]'></web-breadcrumb>
+```
+
+## Ví dụ nâng cao
+
+Breadcrumb cho trang blog với nhiều cấp:
+
+```html
+<web-breadcrumb items='[
+  {"label":"Trang chủ","href":"/"},
+  {"label":"Blog","href":"/blog"},
+  {"label":"Công nghệ","href":"/blog/cong-nghe"},
+  {"label":"Giới thiệu Astro 6"}
+]' ui="spatial"></web-breadcrumb>
+```
+
+Tích hợp động từ JavaScript:
+
+```html
+<web-breadcrumb id="bc"></web-breadcrumb>
+<script>
+  const items = [
+    { label: 'Trang chủ', href: '/' },
+    { label: 'Quản lý', href: '/admin' },
+    { label: 'Người dùng' }
+  ];
+  document.getElementById('bc').setAttribute('items', JSON.stringify(items));
+</script>
+```

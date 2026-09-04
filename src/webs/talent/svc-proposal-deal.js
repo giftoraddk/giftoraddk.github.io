@@ -28,7 +28,7 @@ const TXT_STD = {
 };
 
 /**
- * <svc-proposal-deal> — panel thuần render cho stage 'accepted'..'reviewed' (docs/new_feature.md
+ * <svc-proposal-deal> — panel thuần render cho stage 'accepted'..'reviewed' (hook/new_feature.md
  * §2.2/§2.3). Chỉ emit `deal:*`, cha (`<svc-proposal>`) gọi tools/service.js tương ứng.
  */
 export class SvcProposalDeal extends LitElement {

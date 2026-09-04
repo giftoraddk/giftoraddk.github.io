@@ -2,7 +2,7 @@
 //
 // Generic Telegram Bot API client — pure transport, no knowledge of any domain (orders/invoices/
 // etc). Any domain that wants to push a Telegram message calls `sendTelegramMessage(text)`, same
-// tier as storager.js/helper.js (see docs/PAY.rst §1 — domains may only depend on this kind of
+// tier as storager.js/helper.js (see hook/PAY.rst §1 — domains may only depend on this kind of
 // shared pure infra, never on each other).
 
 const [BOT_TOKEN, CHAT_ID] = (import.meta.env.PUBLIC_TG ?? '~').split('~');

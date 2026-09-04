@@ -46,12 +46,12 @@ textarea {
 }
 
 textarea:hover:not(:disabled) {
-    border-color: var(--color-primary, #2ebd85);
+    border-color: var(--color-primary, #34ace0);
 }
 
 textarea:focus {
-    border-color: var(--color-primary, #2ebd85);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary, #2ebd85) 15%, transparent);
+    border-color: var(--color-primary, #34ace0);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary, #34ace0) 15%, transparent);
 }
 
 textarea:disabled {
@@ -82,5 +82,5 @@ textarea::placeholder {
 
 .spatial textarea:focus {
     background: rgba(255, 255, 255, 0.08);
-    border-color: var(--color-primary, #2ebd85);
+    border-color: var(--color-primary, #34ace0);
 }

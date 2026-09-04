@@ -1,5 +1,5 @@
 // src/webs/bay/tools/baySectionAdapter.js
-// DbAdapter (docs/CRUD.rst) backed bởi IndexedDB `sectionItems` — dùng cho svc-admin của các
+// DbAdapter (hook/CRUD.rst) backed bởi IndexedDB `sectionItems` — dùng cho svc-admin của các
 // section KHÔNG phải products (hero/contact/...). Products giờ lưu Firestore thật, xem
 // tools/bayAdapter.js (không còn dùng bayChannel.js — Firestore onSnapshot tự lo real-time).
 // Scaffolding _bayId/_listeners/notify dùng chung qua bayChannel.js — _sectionId là state RIÊNG

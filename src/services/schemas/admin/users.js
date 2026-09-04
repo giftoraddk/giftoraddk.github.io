@@ -94,7 +94,7 @@ export default (lang = 'vi') => {
 		{
 			label: t.avatar,
 			field: 'avatar',
-			type: 'photor-upload',
+			type: 'photor',
 		},
 		{
 			label: t.roles,

@@ -125,7 +125,7 @@ const baseConfig = {
 			{
 				// items — đọc từ data[0].slider (dataKey), KHÔNG phải top-level data (chỉ có 1 record)
 				dataKey: 'slider',
-				slider: { nav: true, loop: true, slides: 1, spacing: 0, dots: false },
+				slider: { nav: true, loop: true, slides: 1, spacing: 20, dots: false },
 				groupCol: ['12', '12', '2', '10'],
 				groupRow: ['auto', 'auto', 'auto', 'auto'],
 				groupJustify: ['none', 'none', 'center', 'left'],

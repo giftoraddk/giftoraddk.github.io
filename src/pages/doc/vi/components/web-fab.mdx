@@ -1,0 +1,68 @@
+---
+layout: '../../../../layouts/LayoutDoc.astro'
+title: 'web-fab'
+description: 'Floating Action Button — nút hành động nổi cố định trên màn hình'
+---
+
+# web-fab
+
+Nút hành động nổi (Floating Action Button) được đặt cố định ở một góc màn hình. Thường đại diện cho hành động chính của trang như tạo mới, cuộn lên đầu, hoặc mở chat.
+
+## Khi nào dùng
+
+- Hành động chính thường xuyên dùng cần luôn hiển thị (thêm mới, soạn tin nhắn)
+- Nút cuộn lên đầu trang trên các trang nội dung dài
+- Kích hoạt widget chat hoặc trợ giúp nhanh
+
+## Cách tải
+
+```html
+<script type="module" src="/src/webs/apex/web-fab.js"></script>
+```
+
+## Props
+
+| Prop | Kiểu | Mặc định | Mô tả |
+|------|------|----------|-------|
+| `icon` | string | `'plus'` | Tên icon hiển thị trong nút |
+| `position` | string | `'bottom-right'` | Vị trí cố định: `bottom-right` \| `bottom-left` \| `top-right` \| `top-left` |
+| `color` | string | `'primary'` | Màu nút — dùng tên màu hệ thống |
+| `size` | string | `'md'` | Kích thước: `sm` \| `md` \| `lg` |
+| `ui` | string | `'modern'` | Biến thể giao diện: `modern` \| `spatial` |
+
+## Ví dụ cơ bản
+
+```html
+<web-fab icon="plus" position="bottom-right" color="primary" size="lg"></web-fab>
+```
+
+## Ví dụ nâng cao
+
+FAB cuộn lên đầu trang:
+
+```html
+<web-fab id="scroll-top" icon="arrow-up" position="bottom-right" color="neutral" size="md"></web-fab>
+<script>
+  document.getElementById('scroll-top').addEventListener('web-fab-click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+</script>
+```
+
+FAB góc trái với giao diện spatial:
+
+```html
+<web-fab icon="message-circle" position="bottom-left" color="accent" size="lg" ui="spatial"></web-fab>
+```
+
+## Sự kiện
+
+| Sự kiện | Khi nào | Chi tiết |
+|---------|---------|---------|
+| `web-fab-click` | Người dùng nhấn vào FAB | Không có payload thêm |
+
+```js
+document.querySelector('web-fab').addEventListener('web-fab-click', () => {
+  console.log('FAB được nhấn');
+});
+```
