@@ -12,7 +12,7 @@ import '@/webs/apex/web-table.js';
 import '@/webs/apex/web-toast.js';
 import '@/webs/auth/svc-diffs.js';
 import '@/webs/auth/svc-assist.js';
-import '@/webs/marketing/svc-marketing.js';
+import '@/webs/division/svc-marketing.js';
 
 const TXT_STD = {
     vi: { loading: 'Đang tải…', add: '+ Thêm', error: 'Lỗi', records: 'bản ghi', export: 'Xuất CSV', import: 'Nhập CSV', importDone: 'Kết quả nhập CSV', importOk: 'bản ghi đã nhập thành công', importSkip: 'bản ghi bị bỏ qua', importRow: 'Dòng', required: 'là bắt buộc', saveOk: 'Đã lưu thành công', saveFail: 'Lưu thất bại' },

@@ -34,6 +34,9 @@ export class WebSteps extends LitElement {
         // mọi step khác 'pending' đều tự mở ngay khi status đổi (vd request api vừa xong), cho phép
         // mở xem nhiều step cùng lúc thay vì chỉ 1 step như chế độ horizontal (xem `_isOpen()`).
         _collapsed: { state: true },
+        // true khi viewport <= 1024px — ép layout horizontal sang vertical bất kể `isVertical`
+        // truyền vào từ ngoài (xem connectedCallback/_onViewportChange).
+        _forceVertical: { state: true },
     }
 
     constructor() {
@@ -51,6 +54,20 @@ export class WebSteps extends LitElement {
         this.textColor  = ''
         this._viewing   = ''
         this._collapsed = new Set()
+        this._forceVertical = false
+        this._onViewportChange = () => { this._forceVertical = this._mqVertical.matches }
+    }
+
+    connectedCallback() {
+        super.connectedCallback()
+        this._mqVertical = matchMedia('(max-width: 1024px)')
+        this._onViewportChange()
+        this._mqVertical.addEventListener('change', this._onViewportChange)
+    }
+
+    disconnectedCallback() {
+        this._mqVertical.removeEventListener('change', this._onViewportChange)
+        super.disconnectedCallback()
     }
 
     get _colors() {
@@ -253,7 +270,7 @@ export class WebSteps extends LitElement {
         const n = this.steps.length
         if (!n) return html``
 
-        const vertical  = this.isVertical
+        const vertical  = this.isVertical || this._forceVertical
         const hasIcons  = this.steps.some(s => s.icon)
         const size      = this.size || 'md'
 

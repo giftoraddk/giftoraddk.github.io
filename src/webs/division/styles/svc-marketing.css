@@ -1,0 +1,29 @@
+:host { display: block; }
+
+.smk-field { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1rem; }
+.smk-field label { font-size: 0.8rem; font-weight: 600; opacity: 0.7; color: var(--color-base-content); }
+
+.smk-error {
+    display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+    font-size: 0.8rem; color: var(--color-error, #f5465c);
+    padding: 0.5rem 0.75rem; margin-bottom: 0.75rem;
+    background: color-mix(in oklab, var(--color-error, #f5465c) 10%, transparent);
+    border-radius: 0.5rem;
+}
+
+/* Step/sub-step tree (icon, spinner, progress line, click-to-view) is now rendered by
+   <web-steps isVertical linear> (src/webs/apex/web-steps.js) — no .smk-step*/
+.smk-sub-content { display: flex; flex-direction: column; gap: 0.25rem; margin: 0.1rem 0 0.35rem; }
+.smk-sub-content .smk-mkt-value { font-size: 0.78rem; }
+.smk-pics-preview-sm { max-width: 140px; border-radius: 0.4rem; }
+
+/* Nút "Tạo lại ảnh" + 3 nút tròn mở prompt trên ChatGPT/Gemini/Claude (xem _dfOpenExternalAI) */
+.smk-generate-actions { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
+
+.smk-mkt-item { display: flex; flex-direction: column; gap: 0.15rem; }
+.smk-mkt-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.55; }
+.smk-mkt-value { font-size: 0.82rem; line-height: 1.5; color: var(--color-base-content); }
+
+.smk-review-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem; }
+
+.smk-pics-preview { display: block; max-width: 100%; border-radius: 0.5rem; }

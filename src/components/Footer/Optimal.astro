@@ -12,6 +12,7 @@ const {
 	socials = [], // [{ icon, href, text }] — icon là tên iconify (vd: ri:facebook-fill)
 	contact = null, // { name, taxNumber, address, hotline, email, info } — hiện dưới logo, xem svg mockup
 	bg = null,
+	grid = 'grid-cols-2 sm:grid-cols-4', // Tailwind grid-cols-* classes cho lưới columns bên dưới
 } = Astro.props
 ---
 
@@ -72,12 +73,13 @@ const {
 			</div>
 
 			{columns.length > 0 && (
-				<nav class='grid grid-cols-2 gap-x-10 gap-y-4 sm:grid-cols-4 flex-1' aria-label='Footer navigation'>
-					{columns.map((col: { text: string; items: { text: string; href: string }[]; full?: boolean }) => (
+				<nav class={`grid ${grid} gap-x-10 gap-y-4 flex-1`} aria-label='Footer navigation'>
+					{columns.filter((col: { items?: { text: string; href: string }[] }) => col.items && col.items.length > 0).map((col: { text: string; items: { text: string; href: string }[]; full?: boolean }) => (
+            // item nav
 						<div class:list={['flex flex-col gap-2', col.full && 'col-span-full order-first lg:order-none']}>
-							{col.items && col.items.length && <p class='text-xs font-semibold uppercase tracking-widest text-base-content/70'><I18nText text={col.text} /></p>}
+							<p class='text-xs font-semibold uppercase tracking-widest text-base-content/70'><I18nText text={col.text} /></p>
 							<ul class='flex flex-col gap-0.5'>
-								{col.items && col.items.map((link: { text: string; href: string }) => (
+								{col.items.map((link: { text: string; href: string }) => (
 									<li>
 										<a href={link.href} class='text-sm text-justify text-base-content/70 hover:text-base-content transition-colors no-underline'>
 											<I18nText text={link.text} />

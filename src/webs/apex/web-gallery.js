@@ -2,6 +2,7 @@ import { LitElement, html, nothing, unsafeCSS } from 'lit';
 import galleryStyles from './styles/web-gallery.css?inline';
 import { cssInline } from '@/services/helper.js';
 import './web-slider.js';
+import './web-glide.js';
 import './web-loader.js';
 
 /**
@@ -144,7 +145,7 @@ export class WebGallery extends LitElement {
             : inner;
     }
 
-    // [2] _rbStack — nhiều ảnh: web-slider (nav/dots tắt), click mở popup full-screen
+    // [2] _rbStack — nhiều ảnh: web-glide (autoplay + hiệu ứng 3D), click mở popup full-screen
     _rbStack(imgs) {
         return html`
             <div
@@ -152,18 +153,14 @@ export class WebGallery extends LitElement {
                 @click=${this._dhClickStack}
                 style="border-radius:${this.rounded || '4px'};${cssInline(this.stys || {})}"
             >
-                <web-slider
+                <web-glide
                     .images=${imgs}
-                    ?nav=${false}
-                    ?dots=${false}
-                    ?loop=${true}
+                    effect="flipX"
                     .autoplay=${3000}
+                    ?loop=${true}
                     ?reverse=${this.reverse}
-                    justify="end"
-                    placement="bottom"
-                    .ui=${this.ui || 'modern'}
                     ?blur=${this.blur}
-                ></web-slider>
+                ></web-glide>
             </div>`;
     }
 

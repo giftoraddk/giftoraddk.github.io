@@ -19,7 +19,7 @@ const baseConfig = {
 	groupRow: ['auto', 'auto', 'auto', 'auto'],
 	groupJustify: ['none', 'left', 'none', 'between'],
 	groupStyle: [
-		{ position: 'relative', margin: '0 0 1.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '160px' },
+		{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '160px' },
 		{ marginBottom: '0' },
 		{ marginBottom: '0.75rem', gap: '0.5rem' },
 		{ marginBottom: '0' },
@@ -49,7 +49,7 @@ const baseConfig = {
 				opt: {
 					mode: 'gallery',
 					stys: {
-						width: '62%', margin: '0 auto', objectFit: 'contain', position: 'relative', zIndex: '1',
+						width: '62%', margin: '0 auto', objectFit: 'contain', position: 'relative', zIndex: '1', aspectRatio: '1/1',
 						filter: 'drop-shadow(0 10px 14px color-mix(in oklab, var(--color-base-content) 25%, transparent))',
 					},
 				},

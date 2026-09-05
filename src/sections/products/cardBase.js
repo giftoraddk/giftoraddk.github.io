@@ -19,7 +19,7 @@ const baseConfig = {
 	groupRow: ['auto', 'auto', 'auto', 'auto'],
 	groupJustify: ['none', 'left', 'left', 'between'],
 	groupStyle: [
-		{ overflow: 'hidden', position: 'relative', margin: '0 0 1.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' },
+		{ overflow: 'hidden', position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' },
 		{ marginBottom: '0' },
 		{ marginBottom: '0.75rem', gap: '0.5rem' },
 		{ marginBottom: '0' },

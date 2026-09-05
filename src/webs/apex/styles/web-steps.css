@@ -141,7 +141,6 @@
 }
 
 .step-label {
-    line-height: 1;
     font-size: var(--step-label-font, clamp(0.75rem, 0.9vw, 0.875rem));
     font-weight: 500;
     color: var(--step-muted);

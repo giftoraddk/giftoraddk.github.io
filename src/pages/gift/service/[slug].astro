@@ -1,5 +1,5 @@
 ---
-import CoreShop from '@/layouts/CoreShop.astro';
+import Core from '@/layouts/Core.astro';
 import { variant, menuItems, footerMenuItems, policies, socials, shop, bar, contact } from '@/modules/shop/gift';
 import { services } from '@/modules/gift-services.js';
 
@@ -11,12 +11,12 @@ const { svc } = Astro.props;
 const bg = { blur: true }
 ---
 
-<CoreShop
+<Core
 	title={`${svc.seo.title} — Giftora DDK`}
   description={svc.seo.description}
   image="/images/common/gift-light.webp"
 	menu={{ type: 'top', position: 'prefix', menuItems: menuItems }}
-	footer={{ columns: footerMenuItems, policies, socials, contact, bg }}
+	footer={{ columns: footerMenuItems, policies, socials, contact, bg, grid: 'grid-cols-1 sm:grid-cols-3' }}
 	bg={variant.bg}
 	theme={variant.theme}
 	variant={variant}
@@ -30,4 +30,4 @@ const bg = { blur: true }
 			variant={JSON.stringify(variant)}
 		><script type="application/json" is:inline set:html={JSON.stringify(svc.sections)}></script></web-board>
 	</div>
-</CoreShop>
+</Core>

@@ -79,25 +79,15 @@ const baseConfig = {
 					active: 'plan',
 				},
 
-				// slot content: title + description hiển thị khi step được chọn
+				// slot content: chỉ description — title đã hiển thị qua step-label của <web-steps>
+				// (labelField: 'title' phía trên), lặp lại 'title' ở đây từng gây dư title khi
+				// web-steps chuyển vertical (label + slot đứng sát nhau, xem web-steps.js _forceVertical).
 				groupCol: [12],
 				groupRow: ['auto'],
 				groupJustify: ['none'],
-				groupStyle: [{ flexDirection: 'column', gap: '0.25rem', padding: '1.5rem 0 0.5rem' }],
+				groupStyle: [{ flexDirection: 'column', gap: '0.25rem', padding: '0.5rem 0' }],
 				makes: [
 					[
-						{
-							bit: 'title',
-							opt: {
-								mode: 'h4',
-								stys: {
-									fontSize: 'clamp(1rem, 1.5vw, 1.25rem)', // custom fontSize
-									fontWeight: '700', // custom fontWeight
-									lineHeight: '1.3', // custom lineHeight
-									margin: '0',
-								},
-							},
-						},
 						{
 							bit: 'content',
 							opt: {
