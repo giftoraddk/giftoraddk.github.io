@@ -45,7 +45,7 @@ const TXT_STD = {
         panelTitle: 'Hỗ trợ & tư vấn',
         placeholder: 'Hỏi gì đó về sản phẩm…',
         empty: 'Chào bạn! Có gì cần tư vấn cứ hỏi thoải mái nhé.',
-        thinking: '🕒 Đang xem giúp bạn…',
+        thinking: '🕒 Đang xử lý, đợi mình xíu nha!',
         errGeneric: 'Có lỗi xảy ra, thử lại giúp mình nhé',
         wantsHumanHint: '💬 Sẽ có nhân viên liên hệ thêm với bạn nhé',
         leadHotline: (hotline) => `Bạn có thể gọi ngay hotline ${hotline} để được tư vấn nhanh nhất, hoặc cứ yên tâm chờ nhé — bên mình sẽ liên hệ lại với bạn trong thời gian sớm nhất.`,
@@ -198,7 +198,7 @@ export class SvcSale extends LitElement {
                 const hotline = (this._division?.hotline || '').trim()
                 replyContent = `${replyContent}\n\n${hotline ? this._txt.leadHotline(hotline) : this._txt.leadNoHotline}`
                 this._dfSaveCustomer(phone, result.customerName, result.topic)
-                    .catch(err => console.error('[svc-sale] failed to save customer lead:', err.message))
+                    .catch(err => console.error('[svc-sale] failed to save customer lead:', err?.message ?? err))
             }
             const replyNow = await svc.now()
             const reply = await svc.create({
@@ -207,12 +207,25 @@ export class SvcSale extends LitElement {
             })
             this._log = [...this._log, reply]
         } catch (err) {
-            console.error('[svc-sale] reply failed:', err.message)
-            const errNow = await svc.now()
-            const reply = await svc.create({ visitorId: this._visitorId, from: 'sale', content: this._txt.errGeneric, created_at: errNow, updated_at: errNow })
-            this._log = [...this._log, reply]
+            // err?.message (không err.message trần) — lỗi tới đây có thể KHÔNG phải Error thật (vd
+            // 1 promise reject với giá trị khác), err.message trần sẽ tự throw TypeError NGAY TRONG
+            // catch này, nuốt mất cả nhánh fallback lẫn `this._busy = false` bên dưới — kẹt mãi ở
+            // trạng thái "đang gõ" và người dùng không bao giờ thấy bong bóng errGeneric.
+            console.error('[svc-sale] reply failed:', err?.message ?? err)
+            // Đẩy bong bóng lỗi vào _log NGAY (local, không chờ Firestore) — ghi DB là best-effort
+            // phía sau, lỗi ghi DB (network rớt đúng lúc) không được nuốt mất luôn cả bong bóng lỗi
+            // hiển thị cho khách.
+            const fallback = { id: `local-${this._log.length}`, visitorId: this._visitorId, from: 'sale', content: this._txt.errGeneric }
+            this._log = [...this._log, fallback]
+            try {
+                const errNow = await svc.now()
+                await svc.create({ visitorId: this._visitorId, from: 'sale', content: this._txt.errGeneric, created_at: errNow, updated_at: errNow })
+            } catch (persistErr) {
+                console.error('[svc-sale] failed to persist fallback reply:', persistErr?.message ?? persistErr)
+            }
+        } finally {
+            this._busy = false
         }
-        this._busy = false
     }
 
     // Lưu/gộp lead vào collection `customers` (server 'llm', cùng project với `mind` — xem
