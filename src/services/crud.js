@@ -49,7 +49,7 @@
  *             limit:number, totalPages:number }} PaginatedResult
  */
 
-import { firestoreAdapter, authFirestoreAdapter, invoicesFirestoreAdapter } from '@/services/firestore.js';
+import { firestoreAdapter, authFirestoreAdapter, invoicesFirestoreAdapter, llmFirestoreAdapter } from '@/services/firestore.js';
 import { requester } from '@/services/requester.js';
 import { isObject } from '@/services/helper.js';
 
@@ -203,7 +203,7 @@ export async function withCache(key, ttlMin, fetchFn) {
  * Concurrent calls for the same (dataSrc, dataTable, server) share one in-flight fetch.
  * @param {{ dataTable?:string, dataSrc?:string, cache?:number, server?:string }} opts
  *   server — chỉ áp dụng khi đọc Firestore (dataTable, không có dataSrc): 'firestore' (mặc
- *   định) | 'auth' | 'invoices' | tên adapter khác đã registerAdapter.
+ *   định) | 'auth' | 'invoices' | 'llm' | tên adapter khác đã registerAdapter.
  */
 export async function loadData({ dataTable = '', dataSrc = '', cache = 5, server = '' } = {}) {
     try {
@@ -237,7 +237,7 @@ function _unwrap(res, { page, limit }) {
 
 // ── Adapter registry ──────────────────────────────────────────────────────────
 
-const _registry = { firestore: firestoreAdapter, auth: authFirestoreAdapter, invoices: invoicesFirestoreAdapter };
+const _registry = { firestore: firestoreAdapter, auth: authFirestoreAdapter, invoices: invoicesFirestoreAdapter, llm: llmFirestoreAdapter };
 
 /**
  * Register a backend adapter under a name.

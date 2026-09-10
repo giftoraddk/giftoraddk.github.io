@@ -85,6 +85,31 @@ export class WebDateTime extends LitElement {
 			this.removeAttribute('data-theme');
 			if (this.calendar) this.calendar.set({ selectedTheme: 'default' });
 		}
+		// `value` đổi từ BÊN NGOÀI (vd parent set `.value` sau khi tải xong dữ liệu) sau khi calendar
+		// đã init 1 lần rồi (_initCalendar chỉ chạy đúng 1 lần, xem guard `this.calendar` ở đó) — phải
+		// tự đồng bộ lại `selectedDates`/`selectedMonth`/`selectedYear`, nếu không calendar mở lên vẫn
+		// hiện tháng/năm cũ + không tô đậm ngày đang chọn, dù trigger đã hiển thị đúng `value` mới.
+		if (changedProperties.has('value') && this.calendar) {
+			this.calendar.set(this._comCalendarSelection());
+		}
+	}
+
+	// Options seed cho vanilla-calendar-pro dựa theo `value` hiện tại — dùng CẢ lúc khởi tạo
+	// (_initCalendar) LẪN lúc đồng bộ lại (updated() ở trên). Không tách theo `type` xong bỏ qua khi
+	// rỗng — calendar phải mở đúng NGAY tháng/năm của `value`, không phải luôn mặc định tháng/năm
+	// hiện tại (đây chính là bug: filter mặc định đã set sẵn `_startDate`/`_endDate` nhưng calendar mở
+	// lên lại hiện tháng hiện tại + không tô đậm gì, vì trước đây `_initCalendar` bỏ qua `value` hoàn toàn).
+	_comCalendarSelection() {
+		if (this.type === 'month') {
+			const n = Number(this.value);
+			return n ? { selectedMonth: n - 1 } : {};
+		}
+		if (this.type === 'year') {
+			const n = Number(this.value);
+			return n ? { selectedYear: n } : {};
+		}
+		const [datePart] = (this.value || '').split(', '); // 'datetime' value có thể kèm ", HH:mm"
+		return { selectedDates: datePart ? [datePart] : [] };
 	}
 
 	_handleOutsideClick(e) {
@@ -211,6 +236,13 @@ export class WebDateTime extends LitElement {
 			dateMin: this.dateMin,
 			dateMax: this.dateMax,
 			selectionTimeMode: this.type === 'datetime' ? 24 : null,
+			// Mặc định thư viện KHÔNG tự nhảy tới tháng của ngày đang chọn (mở lên luôn ở tháng/năm
+			// HIỆN TẠI, chỉ tô đậm ngày đã chọn NẾU nó tình cờ nằm trong tháng đang hiện) — bật cờ này
+			// để lúc init, calendar tự nhảy đúng tới tháng/năm của `selectedDates[0]` (chỉ áp dụng khi
+			// `selectedMonth`/`selectedYear` chưa được set — đúng trường hợp type 'default' của ta, 2
+			// option đó chỉ dành cho type 'month'/'year').
+			enableJumpToSelectedDate: true,
+			...this._comCalendarSelection(),
 			onClickDate: (self, event) => {
 				this._handleSelection(self);
 				if (this.type !== 'datetime') {

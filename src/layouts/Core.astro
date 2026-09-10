@@ -29,7 +29,7 @@ const { ui } = variant[theme] ?? {}; // forwarded as data-ui on <html> (spatial 
 
 const isHorizontal = menu.type === "top" || menu.type === "bottom" || menu.type === "mobile";
 const wrapClass = (isHorizontal ? "flex-col" : "flex-row") + " flex bg-base-100";
-const screenClass = " h-screen overflow-y-auto overflow-x-hidden bg-wrap";
+const screenClass = " h-dvh overflow-y-auto overflow-x-hidden bg-wrap";
 
 const pipeVars = (value, keys) =>
 	value
@@ -174,6 +174,12 @@ const themeCSS = Object.entries(variant)
           />
         )}
 			</main>
+
+      <script src="@/webs/division/svc-sale.js"></script>
+      <svc-sale id="shop-sale" transition:persist="shop-sale"
+        x="99%" y="calc(100% - 18rem)"
+        ui={variant.ui} theme={variant.theme} lang="vi">
+      </svc-sale>
 		</div>
 	</body>
 	<style>

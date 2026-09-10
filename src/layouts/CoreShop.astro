@@ -34,7 +34,7 @@ const { ui, mainColors } = variant[theme] ?? {}; // forwarded as data-ui on <htm
 
 const isHorizontal = menu.type === "top" || menu.type === "bottom" || menu.type === "mobile";
 const wrapClass = (isHorizontal ? "flex-col" : "flex-row") + " flex bg-base-100";
-const screenClass = " h-screen overflow-y-auto overflow-x-hidden bg-wrap";
+const screenClass = " h-dvh overflow-y-auto overflow-x-hidden bg-wrap";
 
 const pipeVars = (value, keys) =>
 	value
@@ -180,7 +180,7 @@ const themeCSS = Object.entries(variant)
         )}
 			</main>
       	<script src="@/webs/pay/svc-pay.js"></script>
-        <svc-pay id="pay-factor" isCart position="fixed" role="buyer" transition:persist="pay-factor"
+        <svc-pay id="pay-factor" transition:persist="pay-factor" role="buyer" isCart position="fixed"
           onlyDelivery
           sellerId="01JUU9AA1EB3J1NRZEGPQXJY3B"
           seller={shop?.seller}
@@ -190,20 +190,25 @@ const themeCSS = Object.entries(variant)
         ></svc-pay>
 
         <script src="@/webs/pay/svc-pay-warden.js"></script>
-        <svc-pay-warden id="shop-orders-warden" position="fixed" x="99%" y="calc(100% - 13rem)"
-          transition:persist="shop-orders-warden"
+        <svc-pay-warden id="shop-orders-warden" transition:persist="shop-orders-warden"
+          position="fixed" x="99%" y="calc(100% - 11rem)"
           ui={ui} theme={theme} mainColors={mainColors} lang="vi">
         </svc-pay-warden>
 
         <script src="@/webs/pay/svc-pay-stats.js"></script>
-        <svc-pay-stats id="shop-stats" position="fixed" x="99%" y="calc(100% - 18.5rem)"
-          transition:persist="shop-stats" style="display:none"
+        <svc-pay-stats id="shop-stats" transition:persist="shop-stats" style="display:none"
+          position="fixed" x="99%" y="calc(100% - 14.5rem)"
           ui={ui} theme={theme} mainColors={mainColors} lang="vi">
         </svc-pay-stats>
 
+        <script src="@/webs/division/svc-sale.js"></script>
+        <svc-sale id="shop-sale" transition:persist="shop-sale"
+          x="99%" y="calc(100% - 18rem)"
+          ui={variant.ui} theme={variant.theme} lang="vi">
+        </svc-sale>
+
         <script src="@/webs/auth/svc-logged.js"></script>
         <svc-logged id="svc-logged" transition:persist="svc-logged" pathLink="/"></svc-logged>
-
 		</div>
 
     <script>

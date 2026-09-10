@@ -150,7 +150,7 @@ export class SvcBaySections extends LitElement {
         this._unsub?.(); this._unsub = null
         this._unsubPromos?.(); this._unsubPromos = null
         if (!this.bay) return
-        // [3] EXECUTE: Mở lại stream products qua Firestore (collection `products`, PUBLIC_DB) —
+        // [3] EXECUTE: Mở lại stream products qua Firestore (collection `products`, PUBLIC_DB_ALL) —
         // scoped theo bay đang active + sort theo index (thủ công ở client, xem tools/bayAdapter.js
         // — khỏi cần composite index Firestore) bởi bayProducts adapter + tải lại sectionItems +
         // owner user

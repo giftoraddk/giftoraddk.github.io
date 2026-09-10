@@ -152,7 +152,7 @@ export class WebDialog extends LitElement {
           ${isSheet ? html`<div class="dialog-handle"></div>` : ''}
           <div class="dialog-header">
             <slot name="header">
-              <div class="title">${this.title}</div>
+              <div class="title${!this.persistent ? ' truncate' : ''}">${this.title}</div>
               ${!this.persistent ? html`
                 <div class="close-btn" @click=${() => this.close()}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">

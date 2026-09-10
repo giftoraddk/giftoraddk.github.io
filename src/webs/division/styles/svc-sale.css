@@ -1,0 +1,36 @@
+:host { display: contents; }
+
+.sal-panel {
+    box-sizing: border-box;
+    width: 340px; height: min(500px, calc(100vh - 32px));
+    margin: -.5rem;
+    border-radius: .5rem; overflow: hidden;
+    display: flex; flex-direction: column;
+}
+
+.sal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .75rem 1rem; flex: 0 0 auto;
+    border-bottom: 1px solid var(--color-base-300);
+}
+.sal-head-id { display: flex; align-items: center; gap: .5rem; min-width: 0; }
+.sal-title { font-weight: 600; font-size: .9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sal-close {
+    background: none; border: none; cursor: pointer; color: inherit;
+    display: flex; align-items: center; font-size: 1.1rem; padding: .25rem;
+}
+
+.sal-messages { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: .6rem; padding: .75rem; }
+.sal-empty { opacity: .6; font-size: .8rem; text-align: center; margin: auto; }
+
+.sal-msg { display: flex; gap: .5rem; max-width: 85%; }
+.sal-msg.mine { margin-left: auto; flex-direction: row-reverse; }
+.sal-bubble { background: color-mix(in oklab, var(--color-base-300) 70%, transparent); border-radius: .75rem; padding: .5rem .75rem; min-width: 0; }
+.sal-msg.mine .sal-bubble { background: color-mix(in oklab, var(--color-primary) 25%, transparent); }
+.sal-content { margin: 0; font-size: .875rem; white-space: pre-wrap; word-break: break-word; }
+.sal-hint { margin: .25rem 0 0; font-size: .72rem; opacity: .7; }
+.sal-typing { letter-spacing: .02em; animation: sal-typing-pulse 1.2s ease-in-out infinite; }
+@keyframes sal-typing-pulse { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+
+.sal-composer { display: flex; gap: .5rem; padding: .5rem; flex: 0 0 auto; border-top: 1px solid var(--color-base-300); }
+.sal-composer web-text { flex: 1; min-width: 0; }

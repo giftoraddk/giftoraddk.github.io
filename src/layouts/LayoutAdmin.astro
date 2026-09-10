@@ -20,6 +20,10 @@ const allMenuItems = [
 	{ text: "Inventory", textIcon: "IN", href: root + "/inventory", require: "inventory" },
 	{ text: "Staff",     textIcon: "ST", href: root + "/staff",     require: "staff"     },
 	{ text: "Posts",     textIcon: "PO", href: root + "/posts",     require: "posts"    },
+	{ text: "Divisions", textIcon: "DV", href: root + "/divisions", require: "divisions" },
+	{ text: "Mind", textIcon: "MD", href: root + "/mind", require: "mind" },
+	{ text: "Customers", textIcon: "CU", href: root + "/customers", require: "customers" },
+	{ text: "Report", textIcon: "RP", href: root + "/report", require: "report" },
 ];
 const menusJson  = JSON.stringify(allMenuItems);
 const tablesJson = JSON.stringify(allMenuItems.map(m => m.require).filter(Boolean));
@@ -56,8 +60,8 @@ const bg = { blur: true, gradient: true, tint: "#34ace0", total: 4, blobType: "c
 		<script is:inline>document.documentElement.style.visibility='hidden'</script>
 	</head>
 
-	<body transition:animate={slide({ duration: "0.5s" })}>
-		<div class="min-h-screen h-screen flex flex-col text-base-content">
+	<body transition:animate={slide({ duration: "0.5s" })} class="overflow-hidden">
+		<div class="h-dvh flex flex-col text-base-content">
 
       <script src="@/webs/underlay/svc-underlay.js"></script>
       <svc-underlay id="main-bg" class="-mt-1" transition:persist="main-bg" {...bg}></svc-underlay>
@@ -81,6 +85,8 @@ const bg = { blur: true, gradient: true, tint: "#34ace0", total: 4, blobType: "c
 		<svc-logged id="svc-logged" transition:persist="svc-logged" pathLink="/admin/" menus={menusJson}></svc-logged>
 		<script src="@/webs/auth/svc-roles.js"></script>
 		<svc-roles id="svc-roles" transition:persist="svc-roles" tables={tablesJson}></svc-roles>
+		<script src="@/webs/division/svc-talk.js"></script>
+		<svc-talk id="svc-talk" transition:persist="svc-talk"></svc-talk>
 	</body>
 	<style>
 		[data-theme="light"] .bg-wrap{

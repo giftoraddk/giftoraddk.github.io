@@ -2,6 +2,8 @@ import { getStyleOpts } from '@/services/helper';
 
 export const hashtags = ['gifts', 'modern', 'slider', 'products', 'bestseller', 'cards'];
 
+// Data mẫu — CHỈ dùng khi chưa có đơn hàng thật nào trong invoices (xem
+// _fetchBestSellers() trong modules/landing/gift.js, nơi data thật được nạp và ghi đè mảng này).
 export const data = [
 	{ id: 1, title: 'RELAX & GLOW',   pics: '/images/common/gift-1.webp',  score: '5~124', pricing: '799000' },
 	{ id: 2, title: 'SCENT & SOUND',  pics: '/images/common/gift-2.webp',  score: '5~89',  pricing: '975000' },
@@ -101,7 +103,10 @@ const baseConfig = {
 					[
 						{
 							bit: 'title',
-							ext: { org: '/product/{id}' },
+							// 'meta.url' — field path tra cứu URL đã dựng sẵn (/product/{slug}-{id}/, xem
+							// productSlug() trong _fetchBestSellers()), KHÔNG phải template '/product/{id}'
+							// (id thô không khớp route thật /product/[slug].astro).
+							ext: { org: 'meta.url' },
 							opt: {
 								mode: 'a',
 								stys: {

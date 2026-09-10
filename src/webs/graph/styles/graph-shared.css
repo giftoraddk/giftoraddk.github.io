@@ -36,34 +36,6 @@ svc-pie {
 	line-height: 1.2;
 }
 
-/* ── Legend ──────────────────────────────────────────────────────────── */
-
-.graph-legend-row {
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: center;
-	align-items: center;
-	gap: 0.5rem 1.25rem;
-	margin-top: -1.25rem;
-}
-
-.graph-legend-item {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.4rem;
-	font-size: 0.8rem;
-	font-weight: 500;
-	color: var(--color-base-content);
-	opacity: 0.85;
-}
-
-.graph-legend-dot {
-	width: 10px;
-	height: 10px;
-	border-radius: 50%;
-	flex-shrink: 0;
-}
-
 /* ── Layout ──────────────────────────────────────────────────────────── */
 
 .graph-layout {

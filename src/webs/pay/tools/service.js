@@ -197,6 +197,34 @@ function _encodeItems(items) {
 
 function _invoiceSvc() { return createService('invoices', '', 'invoices'); }
 
+// ── Inventory (products.quantity) — trừ NGAY lúc invoice được tạo (buyer đã trả tiền thật, xem
+// promoteToInvoice()), cộng lại nếu đơn bị huỷ/trả SAU đó (requestReturn/acceptCancel/
+// sellerCancelOrder — 3 nhánh terminal có tiền đã thu nhưng hàng không giao thành). Best-effort,
+// từng item lỗi (product bị xoá, id rác từ item nhập tay không qua add-to-cart...) không được chặn
+// flow chính — tự log, bỏ qua item đó, tiếp tục các item còn lại.
+async function _adjustProductQty(id, delta) {
+    if (!id || !delta) return;
+    try {
+        const svc = createService('products');
+        const row = await svc.findById(id);
+        if (!row) return;
+        await svc.update(id, { quantity: Math.max(0, Number(row.quantity ?? 0) + delta) });
+    } catch (err) {
+        console.error('[pay] failed to adjust product quantity:', id, err.message);
+    }
+}
+
+function _decrementStock(items) {
+    (items ?? []).filter(i => i.id).forEach(i => _adjustProductQty(i.id, -Number(i.qty ?? 0)));
+}
+
+// `stockItems` — snapshot {id,qty} chụp lúc promoteToInvoice(), đọc lại từ invoice.meta lúc cần
+// hoàn kho (invoice.items pipe-string KHÔNG có productId — xem hook/SCHEMA.rst, không đủ để trỏ
+// lại đúng sản phẩm cần cộng trả).
+function _restoreStock(stockItems) {
+    (stockItems ?? []).forEach(i => _adjustProductQty(i.id, Number(i.qty ?? 0)));
+}
+
 // ── Đọc lại dữ liệu ĐÃ ĐÓNG BĂNG trên invoice (chuỗi pipe, encode lúc promoteToInvoice()) — dùng
 // chung bởi <svc-pay-warden> và <svc-pay>'s panel xem lại major 'order' đã qua. ─────────────────
 
@@ -301,6 +329,10 @@ export async function promoteToInvoice(name, paymentId, sellerSlot) {
             fulfillment: s.fulfillment === 'pickup' ? 'pickup' : 'delivery', // chốt tại bước "Đặt hàng", xem setFulfillment()
             promo: s.promo ?? null, // mã khuyến mãi buyer áp dụng lúc checkout, đóng băng tại đây (KHÁC promos catalog của seller)
             subStatus: null,
+            // Snapshot {id,qty} từng item — dùng để cộng trả kho nếu đơn bị huỷ/trả sau này (xem
+            // _restoreStock ở trên); items rời id một khi đã encode vào `items` pipe-string.
+            stockItems: (s.items ?? []).filter(i => i.id).map(i => ({ id: i.id, qty: Number(i.qty ?? 1) })),
+            stockRestored: false,
         },
     };
     try {
@@ -310,6 +342,7 @@ export async function promoteToInvoice(name, paymentId, sellerSlot) {
         return null;
     }
     make(name, { payment_id: paymentId, buyer_confirmed: true, updated_at: now }); // [3.a] mirror local order
+    _decrementStock(s.items); // [3.b] best-effort, không await — không chặn flow tạo invoice
     return invoice; // [4] RETURN
 }
 
@@ -518,28 +551,33 @@ export function requestCancel(invoiceId, reason, handler = {}) {
 }
 
 /** Flow acceptCancel: invoice (subStatus='pending') + handler -> invoice (cancelled,
- *  buyer_cancelled) terminal, stamp meta.sellerCancelled — xem hook/PAY.rst §3.4. */
-export function acceptCancel(invoiceId, handler = {}) {
-    return _patchInvoiceMeta(
+ *  buyer_cancelled) terminal, stamp meta.sellerCancelled — xem hook/PAY.rst §3.4. Tiền đã thu
+ *  nhưng hàng không giao thành -> cộng trả kho (meta.stockItems, xem promoteToInvoice()). */
+export async function acceptCancel(invoiceId, handler = {}) {
+    const result = await _patchInvoiceMeta(
         invoiceId,
         meta => meta.subStatus === 'pending', // [1] CHECK
-        { sub: 'cancelled', subStatus: 'buyer_cancelled', sellerCancelled: _encodeHandler(handler) }, // [3] EXECUTE
+        { sub: 'cancelled', subStatus: 'buyer_cancelled', sellerCancelled: _encodeHandler(handler), stockRestored: true }, // [3] EXECUTE
         { status: 'cancelled' },
     );
+    if (result) _restoreStock(result.meta.stockItems); // [3.a] best-effort
+    return result;
 }
 
 /** Flow sellerCancelOrder: invoice (preparing, không đang pending) + reason/handler -> invoice
  *  (cancelled, seller_cancelled) terminal NGAY (không qua accept), stamp meta.cancel — xem
- *  hook/PAY.rst §3.4. */
-export function sellerCancelOrder(invoiceId, reason, handler = {}) {
+ *  hook/PAY.rst §3.4. Cộng trả kho — cùng lý do với acceptCancel() ở trên. */
+export async function sellerCancelOrder(invoiceId, reason, handler = {}) {
     const trimmed = (reason ?? '').trim();
     if (!trimmed) return null; // [1] CHECK
-    return _patchInvoiceMeta(
+    const result = await _patchInvoiceMeta(
         invoiceId,
         meta => meta.sub === 'preparing' && meta.subStatus !== 'pending',
-        () => ({ sub: 'cancelled', subStatus: 'seller_cancelled', cancel: _encodeHandler({ ...handler, note: trimmed }) }), // [3] EXECUTE
+        () => ({ sub: 'cancelled', subStatus: 'seller_cancelled', cancel: _encodeHandler({ ...handler, note: trimmed }), stockRestored: true }), // [3] EXECUTE
         { status: 'cancelled' },
     );
+    if (result) _restoreStock(result.meta.stockItems); // [3.a] best-effort
+    return result;
 }
 
 /** Flow confirmRefund: invoice (cancelled|returned, chưa refunded) + handler -> invoice (stamp
@@ -566,15 +604,18 @@ export function rejectCancel(invoiceId, rejectReason, handler = {}) {
 }
 
 /** Flow requestReturn: invoice (delivery: delivered|received) + reason/handler -> invoice
- *  (returned) terminal NGAY, stamp meta.return (5 slot, kèm media) — xem hook/PAY.rst §3.5. */
-export function requestReturn(invoiceId, reason, handler = {}) {
+ *  (returned) terminal NGAY, stamp meta.return (5 slot, kèm media) — xem hook/PAY.rst §3.5. Hàng
+ *  trả lại -> cộng trả kho (meta.stockItems, xem promoteToInvoice()/acceptCancel()). */
+export async function requestReturn(invoiceId, reason, handler = {}) {
     const trimmed = (reason ?? '').trim();
     if (!trimmed) return null; // [1] CHECK
-    return _patchInvoiceMeta(
+    const result = await _patchInvoiceMeta(
         invoiceId,
         meta => meta.major === 'delivery' && (meta.sub === 'delivered' || meta.sub === 'received'),
-        () => ({ sub: 'returned', return: _encodeHandler({ ...handler, note: trimmed }, true) }), // [3] EXECUTE
+        () => ({ sub: 'returned', return: _encodeHandler({ ...handler, note: trimmed }, true), stockRestored: true }), // [3] EXECUTE
     );
+    if (result) _restoreStock(result.meta.stockItems); // [3.a] best-effort
+    return result;
 }
 
 // ════════════════════════════════════════════════════════════════════════════

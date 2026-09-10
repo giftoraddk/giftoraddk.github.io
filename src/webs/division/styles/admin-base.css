@@ -1,0 +1,12 @@
+:host { display: block; }
+
+.dva-field { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1rem; }
+.dva-field label { font-size: 0.8rem; font-weight: 600; opacity: 0.7; color: var(--color-base-content); }
+
+.dva-error {
+    display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+    font-size: 0.8rem; color: var(--color-error, #f5465c);
+    padding: 0.5rem 0.75rem; margin-bottom: 0.75rem;
+    background: color-mix(in oklab, var(--color-error, #f5465c) 10%, transparent);
+    border-radius: 0.5rem;
+}

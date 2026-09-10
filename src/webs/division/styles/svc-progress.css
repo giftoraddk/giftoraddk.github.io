@@ -1,0 +1,34 @@
+:host { display: block; }
+
+.prg-error {
+    display: flex; align-items: center; justify-content: space-between; gap: .5rem; flex-wrap: wrap;
+    font-size: .8rem; color: var(--color-error, #f5465c);
+    padding: .5rem .75rem; margin-bottom: 2rem; border-radius: .5rem;
+    background: color-mix(in oklab, var(--color-error, #f5465c) 10%, transparent);
+}
+
+.prg-sub { display: flex; flex-direction: column; gap: .25rem; margin: .1rem 0 .35rem; }
+.prg-sub web-textarea, .prg-sub svc-editor { width: 100%; }
+.prg-item { display: flex; flex-direction: column; gap: .15rem; }
+.prg-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; opacity: .55; }
+.prg-value { font-size: .8rem; line-height: 1.5; color: var(--color-base-content); white-space: pre-line; }
+
+/* Nút "Tạo lại ảnh" + 3 nút tròn mở prompt trên ChatGPT/Gemini/Claude */
+.prg-generate-actions { flex-direction: row; align-items: center; flex-wrap: wrap; gap: .5rem; }
+
+.prg-pics { display: block; max-width: 100%; border-radius: .5rem; }
+.prg-pics-sm { max-width: 140px; border-radius: .4rem; }
+
+.prg-approve { margin-top: 1rem; display: flex; justify-content: flex-end; }
+
+.prg-pause {
+    display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: .5rem; flex-wrap: wrap;
+    font-size: .85rem; color: var(--color-base-content);
+    padding: .75rem; margin-bottom: 2rem; border-radius: .5rem;
+    background: color-mix(in oklab, var(--color-primary, #ffbb24) 10%, transparent);
+}
+.prg-pause-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; }
+
+/* Ô nhập chỉ dẫn thêm + nút "Tạo lại" cấp sub-step (xem svc-progress.js's _rfRegenerateRow) */
+.prg-regen-row { display: flex; align-items: center; gap: .5rem; margin-top: .35rem; }
+.prg-regen-row web-texts { flex: 1; min-width: 0; }

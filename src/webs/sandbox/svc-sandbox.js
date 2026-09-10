@@ -120,7 +120,7 @@ export class SvcSandbox extends LitElement {
     render() {
         return html`
             ${this.showIntro ? this._rbIntro() : ''}
-            <div class="h-full max-h-screen flex flex-col overflow-hidden">
+            <div class="h-full max-h-dvh flex flex-col overflow-hidden">
                 <div class="flex-1 overflow-hidden min-h-0">
                     <web-split direction="horizontal" size="0.4" style="height:100%; display:block;">
 

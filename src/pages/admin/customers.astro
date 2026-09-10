@@ -1,0 +1,22 @@
+---
+import LayoutAdmin from '@/layouts/LayoutAdmin.astro';
+const pageTitle = 'Customers Admin';
+const pageDescription = 'Sale lead — khách vãng lai để lại số điện thoại qua chat AI';
+---
+
+<LayoutAdmin title={pageTitle} description={pageDescription}>
+	<div class='p-4'>
+		<h1 class='text-xl font-bold mb-5'>Khách để lại liên hệ</h1>
+		<svc-admin id='admin-customers' dataTable='customers' server='llm' lang='vi'></svc-admin>
+	</div>
+
+	<script>
+		import '@/webs/auth/svc-admin.js';
+		import schema from '@/services/schemas/admin/customers.js';
+
+		document.addEventListener('astro:page-load', () => {
+			const el = document.getElementById('admin-customers');
+			if (el) (el as any).schema = schema((el as any).lang || 'vi');
+		});
+	</script>
+</LayoutAdmin>

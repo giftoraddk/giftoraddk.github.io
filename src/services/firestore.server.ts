@@ -4,7 +4,7 @@
  * Dùng trong Astro frontmatter / getStaticPaths để fetch data lúc build.
  * KHÔNG import trong Lit components (client-side).
  *
- * Đọc config từ PUBLIC_DB/PUBLIC_DB_AUTH/PUBLIC_DB_INVO env (tuỳ opts.connection):
+ * Đọc config từ PUBLIC_DB_ALL/PUBLIC_DB_ACC/PUBLIC_DB_INVO env (tuỳ opts.connection):
  * apiKey~authDomain~projectId~… — khai lại literal (không import firestore.js, file đó là
  * client-side, còn file này build riêng cho server).
  * Raw fetch (headers, timeout, retry) đi qua requester.js — dùng chung với crud.js.
@@ -13,7 +13,7 @@
 import { requester } from '@/services/requester.js';
 
 // Cùng bảng ENV_KEYS như firestore.js (client) — giữ đồng bộ tên kết nối khi thêm/đổi.
-const ENV_KEYS: Record<string, string> = { firestore: 'PUBLIC_DB_INVO', auth: 'PUBLIC_DB_AUTH', invoices: 'PUBLIC_DB_INVO' };
+const ENV_KEYS: Record<string, string> = { firestore: 'PUBLIC_DB_INVO', auth: 'PUBLIC_DB_ACC', invoices: 'PUBLIC_DB_INVO' };
 
 // Cùng cơ chế mask như firestore.js (client) — `~k!t@d~` có thể chèn ở bất kỳ
 // đâu trong env value để né grep plaintext; bóc ra trước khi split('~').

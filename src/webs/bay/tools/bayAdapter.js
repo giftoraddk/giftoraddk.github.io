@@ -1,6 +1,6 @@
 // src/webs/bay/tools/bayAdapter.js
 // DbAdapter (hook/CRUD.rst) cho products — Firestore THẬT (collection `products`, project
-// PUBLIC_DB, xem services/firestore.js), KHÔNG còn IndexedDB + P2P mesh (PRODUCT_EVENT/
+// PUBLIC_DB_ALL, xem services/firestore.js), KHÔNG còn IndexedDB + P2P mesh (PRODUCT_EVENT/
 // SYNC_RESPONSE.products) như trước: Firestore onSnapshot đã tự lo real-time cho mọi thiết bị/
 // peer, khỏi cần tự dựng lại qua mesh. Field `bay_id` do adapter này tự thêm khi ghi + tự lọc khi
 // đọc theo bay đang active (setActiveBay(), gọi từ svc-bay.js._dhOpenBay/_dhLeaveBay) — để

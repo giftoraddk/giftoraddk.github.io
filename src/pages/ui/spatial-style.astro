@@ -2,7 +2,6 @@
 import LayoutUI from "@/layouts/LayoutUI.astro";
 const pageTitle = "Spatial UI";
 const pageDescription = "Phân loại theo config spatial";
-import "@/styles/global.css";
 import "@/styles/masonry.css";
 
 import * as boxs from "@/sections/spatial";
@@ -18,8 +17,11 @@ const allTags = [...new Set(
     <script src="@/webs/apex/web-boxs-search.js"></script>
     <script src="@/webs/apex/web-dialog.js"></script>
     <script src="@/webs/apex/web-pre.js"></script>
+    
+    <script src="@/webs/underlay/svc-underlay.js"></script>
+    <svc-underlay tint="#2ebd85" blobType="ellipse" total="1" deg="0" blur gradient></svc-underlay>
 
-    <div class="p-6">
+    <div class="relative p-6">
         <h1 class="text-3xl font-bold mb-8 text-center">{pageTitle}</h1>
 
         <web-boxs-search

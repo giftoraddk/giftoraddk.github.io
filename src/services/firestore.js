@@ -24,13 +24,14 @@
  *             maxCount?:   number }} QueryOpts
  */
 
-// ── Firebase apps — 3 kết nối độc lập (users / invoices / mọi bảng còn lại) ───
+// ── Firebase apps — 4 kết nối độc lập (users / invoices / knowledge base LLM / mọi bảng còn
+// lại) ───
 // Mỗi kết nối đọc 1 env var riêng (tilde-separated), tách bằng named app của Firebase
-// (initializeApp(config, name)) — 3 project cùng sống trong 1 client mà không đụng nhau.
+// (initializeApp(config, name)) — 4 project cùng sống trong 1 client mà không đụng nhau.
 
 import { initializeApp, getApps } from 'firebase/app';
 
-const ENV_KEYS = { firestore: 'PUBLIC_DB_INVO', auth: 'PUBLIC_DB_AUTH', invoices: 'PUBLIC_DB_INVO' };
+const ENV_KEYS = { firestore: 'PUBLIC_DB_INVO', auth: 'PUBLIC_DB_ACC', invoices: 'PUBLIC_DB_INVO', llm: 'PUBLIC_DB_LLM' };
 
 // Masking marker: `~k!t@d~` can be spliced anywhere into the env value (e.g.
 // into the middle of apiKey) to defeat plaintext greps in a shipped bundle —
@@ -41,7 +42,7 @@ const _unmask = (raw) => raw.includes(_MASK_MARKER) ? raw.split(_MASK_MARKER).jo
 
 const _apps = new Map();
 
-/** Firebase app cho 1 kết nối theo tên ('firestore' | 'auth' | 'invoices') — lazy + cached. */
+/** Firebase app cho 1 kết nối theo tên ('firestore' | 'auth' | 'invoices' | 'llm') — lazy + cached. */
 export function getFirebaseApp(name = 'firestore') {
     if (_apps.has(name)) return _apps.get(name);
     const envKey = ENV_KEYS[name] ?? ENV_KEYS.firestore;
@@ -109,7 +110,7 @@ function _stripUndefined(value) {
 // ── FirestoreAdapter ──────────────────────────────────────────────────────────
 
 export class FirestoreAdapter {
-    /** @param {string} connection — 'firestore' | 'auth' | 'invoices' (xem ENV_KEYS ở trên) */
+    /** @param {string} connection — 'firestore' | 'auth' | 'invoices' | 'llm' (xem ENV_KEYS ở trên) */
     constructor(connection = 'firestore') {
         this._connection = connection;
         this._db  = null;
@@ -239,7 +240,11 @@ export class FirestoreAdapter {
     }
 }
 
-/** 3 singleton — imported by crud.js and registered under 'firestore'/'auth'/'invoices'. */
+/** 4 singleton — imported by crud.js and registered under 'firestore'/'auth'/'invoices'/'llm'. */
 export const firestoreAdapter        = new FirestoreAdapter('firestore');
 export const authFirestoreAdapter    = new FirestoreAdapter('auth');
 export const invoicesFirestoreAdapter = new FirestoreAdapter('invoices');
+// Project riêng cho knowledge base (`mind`) — xem hook/SALE.rst — tách khỏi mọi bảng còn lại để
+// giảm blast-radius (spec hook/firebase-multidomain-ai-rag-spec.md §32/§33) dù vẫn cùng trust
+// model client-write (site static, không có backend).
+export const llmFirestoreAdapter     = new FirestoreAdapter('llm');

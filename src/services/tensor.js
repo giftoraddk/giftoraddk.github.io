@@ -53,18 +53,31 @@ import Storager from '@/services/storager.js'
 // Each value is a `|`-separated fallback chain, tried left-to-right when the
 // config string doesn't override the model (parts[2]). Ordered newest/best
 // free-tier model first, down to cheap/legacy models as a last resort.
-// Re-researched 2026-09 (2nd pass — verified live against groq's own
-// console.groq.com/docs/models and openrouter.ai/collections/free-models pages,
-// exact IDs quoted directly from those pages, not guessed): OpenRouter's
-// genuinely-free (`:free` suffix) roster rotates weekly as providers add/pull
-// capacity — reverify there if the whole chain starts failing; Groq's catalog
-// is free, rate-limited only. Audio/TTS (whisper, orpheus), guard/classifier
-// (llama-prompt-guard), rerank (voyageai/rerank), and agentic tool-wrapper
-// (groq/compound*) models are deliberately excluded — not plain chat-completions
-// models, calling them the same way as the rest of this chain would misbehave.
+// `openrouter` re-verified 2026-09-09 (3rd pass) — NOT by reading a rendered
+// webpage (unreliable, a page-summarizing fetch of openrouter.ai/models missed
+// 18 of 21 actually-free entries in this same pass), but by pulling OpenRouter's
+// own public `GET /api/v1/models` JSON directly and filtering for
+// `pricing.prompt === "0" && pricing.completion === "0"` — the same 2 entries
+// that were topping this chain before (`minimax/minimax-m3:free`,
+// `z-ai/glm-5.2:free`) are GONE from that live response (pulled/renamed) and
+// would 400/404 on every real call, forcing an extra fallback hop before
+// reaching a working model on every single request. Excluded from the rebuilt
+// list: safety/moderation classifiers (`nvidia/nemotron-3.5-content-safety`),
+// audio-output TTS previews (`google/lyria-3-*-preview`), and `-preview`-tagged
+// entries (unstable). OpenRouter's genuinely-free roster still rotates as
+// providers add/pull capacity — reverify via that same endpoint (no auth
+// needed) if this whole chain starts failing again, don't re-guess from a
+// rendered-page summary. `groq`/`nvidia` chains were NOT re-verified this pass
+// (no working key configured for either right now — see PUBLIC_GROQ/PUBLIC_NVID
+// in .env — so they're currently unused dead code paths); re-verify those
+// against console.groq.com/docs/models / build.nvidia.com/models before relying
+// on them. Audio/TTS (whisper, orpheus), guard/classifier (llama-prompt-guard),
+// rerank (voyageai/rerank), and agentic tool-wrapper (groq/compound*) models are
+// deliberately excluded — not plain chat-completions models, calling them the
+// same way as the rest of this chain would misbehave.
 const DEFAULTS = {
   groq:       'llama-3.3-70b-versatile|meta-llama/llama-4-scout-17b-16e-instruct|openai/gpt-oss-120b|llama-3.1-8b-instant|openai/gpt-oss-20b|qwen/qwen3.6-27b|qwen/qwen3.8-27b|minimaxai/minimax-m2.7|openai/gpt-oss-safeguard-20b',
-  openrouter: 'minimax/minimax-m3:free|z-ai/glm-5.2:free|nvidia/nemotron-3-ultra-550b-a55b:free|nvidia/nemotron-3.5-lightning:free|minimax/minimax-m2.7:free|nvidia/nemotron-3-super-120b-a12b:free|inclusionai/ling-3.0-flash-fin:free|poolside/laguna-s-2.1:free|poolside/laguna-xs-2.1:free|cohere/north-mini-code:free|thinkingmachines/inkling:free|thinkingmachines/inkling-small:free|liquid/lfm-2.5-2.6b:free|nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+  openrouter: 'nvidia/nemotron-3.5-lightning:free|nvidia/nemotron-3-ultra-550b-a55b:free|nvidia/nemotron-3-super-120b-a12b:free|cohere/north-mini-code:free|google/gemma-4-31b-it:free|inclusionai/ling-3.0-flash-fin:free|inclusionai/ling-3.0-flash-sante:free|nex-agi/nex-n2.5-mini:free|poolside/laguna-s-2.1:free|liquid/lfm-2.5-2.6b:free|thinkingmachines/inkling-small:free|nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free|openrouter/free',
   // nvidia chain: nemotron-3.5-lightning first (general-purpose, NOT a reasoning model — safest
   // default for strict-JSON callers). `-reasoning`-suffixed and vision/translation-only entries
   // (riva-translate, llama-vision, paligemma) are kept further down the chain since they're either
@@ -125,37 +138,68 @@ const _ENDPOINTS = {
   nvidia:     { url: 'https://integrate.api.nvidia.com/v1/chat/completions', label: 'NVIDIA' },
 }
 
+// Free-tier providers occasionally accept a connection then stall — no more bytes ever arrive,
+// no HTTP error, nothing to catch. Without a deadline, `await reader.read()` below waits forever:
+// the caller's promise never settles, callers up the stack (generateJsonWithRetry, division/
+// engine.js's runTextStep) never get a chance to error out, and UI relying on that rejection (e.g.
+// svc-talk.js's job doc ending up in an error state with a retry button) never sees anything wrong
+// — it just hangs indefinitely with no visible error. `idleTimeoutMs` is an INACTIVITY deadline
+// (reset on every chunk of raw network activity via `_readSSE`'s `onActivity`), not a hard overall
+// cap — a slow-but-still-trickling generation (large maxTokens on a slow free model) keeps going
+// fine; only a connection that's gone completely silent gets aborted.
 async function* _streamCompat(key, model, messages, opts = {}, provider) {
-  const { system, maxTokens = 1024, temperature = 0.7 } = opts
+  const { system, maxTokens = 1024, temperature = 0.7, idleTimeoutMs = 30000 } = opts
   const msgs = system ? [{ role: 'system', content: system }, ...messages] : messages
   const { url, label } = _ENDPOINTS[provider]
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'authorization': `Bearer ${key}`,
-    },
-    body: JSON.stringify({ model, messages: msgs, stream: true, max_tokens: maxTokens, temperature }),
-  })
+  const controller = new AbortController()
+  let timer = setTimeout(() => controller.abort(), idleTimeoutMs)
+  const bump = () => { clearTimeout(timer); timer = setTimeout(() => controller.abort(), idleTimeoutMs) }
+
+  let res
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`,
+      },
+      body: JSON.stringify({ model, messages: msgs, stream: true, max_tokens: maxTokens, temperature }),
+      signal: controller.signal,
+    })
+  } catch (err) {
+    clearTimeout(timer)
+    throw err.name === 'AbortError' ? new Error(`${label} request timed out (no response after ${idleTimeoutMs}ms)`) : err
+  }
 
   if (!res.ok) {
+    clearTimeout(timer)
     const err = await res.json().catch(() => ({}))
     throw new Error(`${label} ${res.status}: ${err.error?.message || res.statusText}`)
   }
 
-  yield* _readSSE(res, raw => JSON.parse(raw)?.choices?.[0]?.delta?.content || null)
+  try {
+    yield* _readSSE(res, raw => JSON.parse(raw)?.choices?.[0]?.delta?.content || null, bump)
+  } catch (err) {
+    throw err.name === 'AbortError' ? new Error(`${label} stream stalled (no data for ${idleTimeoutMs}ms)`) : err
+  } finally {
+    clearTimeout(timer)
+  }
 }
 
 // ── Shared SSE reader ─────────────────────────────────────────────────────
 
-async function* _readSSE(res, extract) {
+// `onActivity` (optional) fires on every raw read — even keepalive/ping lines with no extractable
+// content — so the idle-timeout in `_streamCompat` resets on ANY sign of life from the connection,
+// not just on lines that parse into real content chunks.
+async function* _readSSE(res, extract, onActivity) {
   const reader  = res.body.getReader()
   const decoder = new TextDecoder()
   let buf = ''
 
   while (true) {
     const { done, value } = await reader.read()
+    onActivity?.()
     if (done) break
     buf += decoder.decode(value, { stream: true })
     const lines = buf.split('\n')
@@ -188,13 +232,24 @@ const _id      = a => `${a.key}::${a.model}` // identity of one (key, model) att
 const _flatten = descriptors => descriptors.flatMap(d => d.models.map(model => ({ ...d, model })))
 
 // Cached order, with any (key, model) pairs not in it yet appended at the end.
+//
+// Cached entries no longer present in `natural` (a model retired from DEFAULTS/config since this
+// browser last cached a ranking) are DROPPED, not kept — otherwise a model removed from the config
+// (e.g. pulled from OpenRouter's free tier, 404ing every call) keeps getting tried FOREVER in any
+// browser that already has it cached, since it was never re-derived from the live config again.
+// Confirmed the same way live: a ghost entry like 'minimax/minimax-m2.7:free' (retired from every version
+// of DEFAULTS.openrouter this file has had) kept being attempted first purely because a past session
+// had once cached it, burning through a retry attempt on a guaranteed-404 before reaching a model
+// that's actually still offered.
 async function _orderedAttempts(configStr, descriptors) {
   const natural = _flatten(descriptors)
   const cached  = await Storager.get(_rankKey(configStr))
   if (!cached?.length) return natural
 
-  const seen = new Set(cached.map(_id))
-  return [...cached, ...natural.filter(a => !seen.has(_id(a)))]
+  const naturalIds   = new Set(natural.map(_id))
+  const validCached  = cached.filter(a => naturalIds.has(_id(a)))
+  const seen = new Set(validCached.map(_id))
+  return [...validCached, ...natural.filter(a => !seen.has(_id(a)))]
 }
 
 // Probe a model with a 1-token request. ms-to-first-chunk, or null if it errors.

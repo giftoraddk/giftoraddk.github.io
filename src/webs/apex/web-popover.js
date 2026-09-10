@@ -14,6 +14,7 @@ export class WebPopover extends LitElement {
 		placementGap: { type: Number }, // gap between trigger and content (px)
 		stys: { type: Object }, // style for content
 		persistent: { type: Boolean }, // true → outside-click does NOT auto-close (caller must close explicitly, e.g. an unsent voice recording)
+		manualClose: { type: Boolean }, // true → CHỈ đóng khi cha tự set open=false (vd 1 nút "Đóng" riêng bên trong) — chặn CẢ outside-click LẪN bấm lại trigger để đóng (persistent chỉ chặn outside-click, trigger bấm lại vẫn đóng bình thường)
 	};
 
 	static get uiConfigs() {
@@ -37,8 +38,16 @@ export class WebPopover extends LitElement {
 		this.placement = 'bottom-start';
 		this.placementGap = 4;
 		this.persistent = false;
+		this.manualClose = false;
 		this._handleOutsideClick = this._handleOutsideClick.bind(this);
 		this._updatePosition = this._updatePosition.bind(this);
+		this._markDragged = this._markDragged.bind(this);
+		// true trong khoảng giữa lượt kéo (trigger, vd <web-fab movable>, tự phát event 'drag' —
+		// xem web-fab.js's _handleMouseMove) và cú click "thả tay" ngay sau đó — trình duyệt vẫn tự
+		// phát 1 click synthetic lên đúng phần tử đang ở dưới con trỏ lúc thả ra dù đã kéo đi rất xa,
+		// nên _toggle() dưới đây không thể chỉ dựa vào "click có đúng target hay không" để phân biệt
+		// kéo-thả với bấm thật — phải tự đánh dấu qua chính event 'drag' đã có sẵn.
+		this._suppressNextToggle = false;
 	}
 
 	connectedCallback() {
@@ -47,6 +56,7 @@ export class WebPopover extends LitElement {
 		window.addEventListener('scroll', this._updatePosition, true);
 		window.addEventListener('resize', this._updatePosition);
 		this.addEventListener('drag', this._updatePosition);
+		this.addEventListener('drag', this._markDragged);
 	}
 
 	disconnectedCallback() {
@@ -55,6 +65,11 @@ export class WebPopover extends LitElement {
 		window.removeEventListener('scroll', this._updatePosition, true);
 		window.removeEventListener('resize', this._updatePosition);
 		this.removeEventListener('drag', this._updatePosition);
+		this.removeEventListener('drag', this._markDragged);
+	}
+
+	_markDragged() {
+		this._suppressNextToggle = true;
 	}
 
 	updated(changedProperties) {
@@ -75,11 +90,20 @@ export class WebPopover extends LitElement {
 
 	_toggle(e) {
 		e.stopPropagation();
+		// Vừa kéo trigger xong (xem _markDragged) — bỏ qua đúng 1 click "thả tay" này, không toggle,
+		// rồi xoá cờ ngay để lần bấm THẬT kế tiếp vẫn hoạt động bình thường.
+		if (this._suppressNextToggle) {
+			this._suppressNextToggle = false;
+			return;
+		}
+		// manualClose — đang mở thì bấm lại trigger KHÔNG đóng (chỉ đóng qua cha tự set open=false,
+		// vd 1 nút "Đóng" riêng) — vẫn cho mở bình thường lúc đang đóng.
+		if (this.open && this.manualClose) return;
 		this.open = !this.open;
 	}
 
 	_handleOutsideClick(e) {
-		if (!this.open || this.persistent) return;
+		if (!this.open || this.persistent || this.manualClose) return;
 		const path = e.composedPath();
 		if (!path.includes(this)) {
 			this.open = false;

@@ -86,6 +86,17 @@ dialog.web-dialog-overlay::backdrop {
 	font-weight: 700;
 	color: var(--color-base-content, #ffffff);
 	letter-spacing: -0.02em;
+	flex: 1;
+	min-width: 0; /* required for text-overflow:ellipsis to actually kick in on a flex child */
+}
+
+/* Non-persistent only (has a close-btn sharing the row, xem web-dialog.js's render()) — 1 dòng,
+   cắt bớt + "…" thay vì đẩy lệch/đụng nút đóng khi title dài (vd svc-talk.js's preview dialog dùng
+   thẳng topic AI rút ra làm title, độ dài bất định). */
+.title.truncate {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .close-btn {

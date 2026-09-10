@@ -96,6 +96,29 @@ export const parseJson = (value, fallback = {}) => {
     try { return JSON.parse(value); } catch { return fallback; }
 };
 
+// Tokenizes the WHOLE CSV text char-by-char (not line-by-line first) so a quoted cell containing a
+// real newline (vd textarea multi-line xuất từ svc-admin.js's _dfExportCsv) không bị tách nhầm
+// thành nhiều "dòng" — quote state phải sống xuyên suốt qua ký tự \n/\r\n. Dùng chung bởi
+// svc-admin.js (import CSV header-matched) và bất kỳ importer CSV vị trí cột cố định nào khác (vd
+// /admin/mind's external CSV import — xem svc-sale's hook/SALE.rst).
+export const parseCsvRows = (text) => {
+    const rows = []; let row = [], cur = '', inQ = false;
+    for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (inQ) {
+            if (ch === '"' && text[i + 1] === '"') { cur += '"'; i++; }
+            else if (ch === '"') inQ = false;
+            else cur += ch;
+        } else if (ch === '"') inQ = true;
+        else if (ch === ',') { row.push(cur); cur = ''; }
+        else if (ch === '\r') { /* skip — \n (below) closes the row */ }
+        else if (ch === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; }
+        else cur += ch;
+    }
+    if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+    return rows;
+};
+
 // Badge nhỏ (cart count, unread DM…) chỉ có chỗ cho ~2 ký tự — quá 99 hiện "9+" thay vì
 // "99+" (không vừa trong badge tròn nhỏ ~1rem, xem web-fab.js `badge` / svc-chat.js chc-tab-badge).
 export const fmtBadgeCount = (n, max = 99) => {

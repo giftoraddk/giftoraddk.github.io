@@ -1,4 +1,5 @@
 import { LitElement, html, unsafeCSS } from 'lit'
+import 'iconify-icon'
 import styles from './styles/web-avatar.css?inline'
 
 export class WebAvatar extends LitElement {
@@ -7,6 +8,7 @@ export class WebAvatar extends LitElement {
 
     static properties = {
         src: { type: String },
+        icon: { type: String }, // iconify name (vd 'ri:chat-smile-ai-3-line') — fallback khi KHÔNG có src, ưu tiên hơn initials
         name: { type: String },
         size: { type: String }, // CSS value
         shape: { type: String }, // 'circle', 'square'
@@ -29,6 +31,7 @@ export class WebAvatar extends LitElement {
     constructor() {
         super()
         this.src = ''
+        this.icon = ''
         this.name = ''
         this.size = '40px'
         this.shape = 'circle'
@@ -59,7 +62,9 @@ export class WebAvatar extends LitElement {
       <div class="${uiConfig.wrap} ${this.shape}" title="${this.name}">
         ${this.src
                 ? html`<img src="${this.src}" alt="${this.name}" @error=${() => this.src = ''}>`
-                : html`<span class="initials">${this._getInitials()}</span>`
+                : this.icon
+                    ? html`<iconify-icon icon="${this.icon}"></iconify-icon>`
+                    : html`<span class="initials">${this._getInitials()}</span>`
             }
         ${this.status ? html`<div class="status-dot ${this.status}"></div>` : ''}
       </div>

@@ -2,6 +2,53 @@
 // (hrefs tuyệt đối '/gift/...' — dùng được cho mọi trang /gift/*, kể cả index.astro này) — xem
 // src/pages/gift/index.astro. File này chỉ còn giữ nội dung riêng của trang landing (variant/views).
 
+import { fetchCollection } from '@/services/firestore.server.ts';
+import { productSlug } from '@/services/helper.js';
+
+// ── Best-selling gifts (data thật từ database) ─────────────────────────────────
+// "Bán chạy nhất" = xếp theo SỐ LƯỢNG bán thực tế trong invoices (cùng tiêu chí getTopProducts()
+// của revenue-helper.js/svc-finance-report — KHÔNG dùng rating/score làm proxy), build-time fetch
+// giống product/index.astro (bake data thật vào HTML, không qua conductor vì trang này prerender
+// tĩnh). Item hủy/trả (meta.sub) không tính vào số lượng bán, khớp _isLost() của revenue-helper.js.
+function _parseInvoiceItems(itemsStr) {
+	return (itemsStr || '').split('|').filter(Boolean).map((p) => {
+		const [name, price, unit, qty] = p.split('~');
+		return { name, price: Number(price) || 0, unit, qty: Number(qty) || 0 };
+	});
+}
+
+async function _fetchBestSellers(limit = 4) {
+	const [products, invoices] = await Promise.all([
+		fetchCollection('products'),
+		fetchCollection('invoices', { connection: 'invoices', activeOnly: false }),
+	]);
+
+	const soldByName = new Map();
+	for (const inv of invoices) {
+		if (['cancelled', 'returned'].includes(inv.meta?.sub)) continue;
+		for (const item of _parseInvoiceItems(inv.items)) {
+			if (!item.name || item.qty <= 0) continue;
+			const key = item.name.trim().toLowerCase();
+			soldByName.set(key, (soldByName.get(key) || 0) + item.qty);
+		}
+	}
+
+	// Không filter bỏ sản phẩm _sold === 0 — slider cần đủ `limit` item để loop mượt (slides: 3),
+	// nên sản phẩm chưa có đơn hàng vẫn được xếp vào cuối (tiebreak theo số lượt đánh giá) để lấp đầy
+	// thay vì để section trống/thiếu item khi shop mới mở, ít đơn hàng.
+	return products
+		.map((p) => ({
+			...p,
+			_sold: soldByName.get((p.title || '').trim().toLowerCase()) || 0,
+			_reviews: Number(String(p.score || '0~0').split('~')[1]) || 0,
+		}))
+		.sort((a, b) => b._sold - a._sold || b._reviews - a._reviews)
+		.slice(0, limit)
+		.map((p) => ({ ...p, meta: { ...(p.meta ?? {}), url: `/product/${productSlug(p)}/` } }));
+}
+
+const bestSellers = await _fetchBestSellers(4);
+
 // ── UI Common ─────────────────────────────────────────────────────────────────
 export const variant = {
 	theme: 'light', // set default
@@ -19,7 +66,7 @@ export const variant = {
 		textColor: '#d4af37', // --color-base-content
 		bgImage: '/images/common/gift-dark-blur.webp', // bgImage ex: /images/common/bg-light.jpg
 	},
-	bg:   { blur: true, quality: 'medium', concept: 'bubbles', tint: '#ff8fa3', deg: 180, speed: 0.9, size: '2~5', push: true, pushRadius: 180, pushStrength: 60 },
+	bg:   { blur: true, quality: 'low', concept: 'bubbles', tint: '#ff8fa3', deg: 180, speed: 0.9, size: '2~5', push: true, pushRadius: 180, pushStrength: 60 },
 };
 
 // ── Views ─────────────────────────────────────────────────────────────────────
@@ -62,7 +109,8 @@ export const views = [
 			{
 				id: 'giftsModernSlideBestSeller',
 				zoom: true, // hiện nút zoom góc trái dưới trên ảnh sản phẩm (web-gallery)
-				data: (await import('@/sections/products/modernSlideBestSeller.js')).data,
+				// data thật (bestSellers) — fallback về data mẫu của section nếu chưa có đơn hàng nào.
+				data: bestSellers.length ? bestSellers : (await import('@/sections/products/modernSlideBestSeller.js')).data,
 				config: (await import('@/sections/products/modernSlideBestSeller.js')).config,
 				sort: 3,
 				col: '12',

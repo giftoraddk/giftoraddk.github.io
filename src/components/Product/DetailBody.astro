@@ -265,9 +265,11 @@ const jsonLd = {
 		const caption = btn.dataset.caption || '';
 		try {
 			await navigator.clipboard.writeText(caption);
-			const original = btn.textContent;
+			// innerHTML (không phải textContent) — nút chứa <I18nText> render CẢ HAI span vi/en (CSS
+			// ẩn/hiện theo [lang], xem I18nText.astro), textContent gộp luôn text của span đang ẩn.
+			const original = btn.innerHTML;
 			btn.textContent = document.documentElement.lang === 'vi' ? 'Đã copy!' : 'Copied!';
-			setTimeout(() => { btn.textContent = original; }, 1500);
+			setTimeout(() => { btn.innerHTML = original; }, 1500);
 		} catch {
 			// Clipboard API không khả dụng (vd http không secure context) — bỏ qua im lặng.
 		}

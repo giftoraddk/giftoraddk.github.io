@@ -18,8 +18,8 @@ import '@/webs/media/svc-photor.js';
 import '@/webs/media/svc-editor.js';
 
 const TXT_STD = {
-	vi: { empty: 'Không có dữ liệu', save: 'Lưu', cancel: 'Huỷ', required: 'là bắt buộc', confirmDel: 'Xoá dòng này?', yes: 'Xoá', no: 'Huỷ', history: 'Lịch sử', marketing: 'Marketing', aiFilling: 'AI đang điền dữ liệu…', addRow: 'Thêm dòng' },
-	en: { empty: 'No data', save: 'Save', cancel: 'Cancel', required: 'is required', confirmDel: 'Delete this row?', yes: 'Delete', no: 'Cancel', history: 'History', marketing: 'Marketing', aiFilling: 'AI is filling in data…', addRow: 'Add row' },
+	vi: { empty: 'Không có dữ liệu', save: 'Lưu', cancel: 'Huỷ', required: 'là bắt buộc', confirmDel: 'Xoá dòng này?', yes: 'Xoá', no: 'Huỷ', history: 'Lịch sử', marketing: 'Marketing', production: 'Sản phẩm', aiFilling: 'AI đang điền dữ liệu…', addRow: 'Thêm dòng' },
+	en: { empty: 'No data', save: 'Save', cancel: 'Cancel', required: 'is required', confirmDel: 'Delete this row?', yes: 'Delete', no: 'Cancel', history: 'History', marketing: 'Marketing', production: 'Product', aiFilling: 'AI is filling in data…', addRow: 'Add row' },
 };
 
 export class WebTable extends LitElement {
@@ -34,6 +34,7 @@ export class WebTable extends LitElement {
 		deletable:   { type: Boolean },
 		history:     { type: Boolean },
 		marketing:   { type: Boolean },
+		production:  { type: Boolean },
 		// `data` luôn tối đa 1 bản ghi (vd sectionItems của 1 section hero/contact) — bỏ hẳn
 		// grid/list/pagination, luôn hiện ĐÚNG 1 form edit mở sẵn (data[0] nếu có, "Thêm mới"
 		// nếu chưa) — không cần bấm dòng/nút "+" nào, xem render()/_rfSingle()/willUpdate().
@@ -87,6 +88,7 @@ export class WebTable extends LitElement {
 		this.deletable = false;
 		this.history = false;
 		this.marketing = false;
+		this.production = false;
 		this.single = false;
 		this.aiLoading = false;
 		this.ui = 'modern';
@@ -651,7 +653,7 @@ export class WebTable extends LitElement {
 					<web-button type="fill" color="primary" ui=${this.ui} theme=${this.theme}
 						prefix=${canEdit ? 'ri:save-line' : 'ri:lock-line'} ?disabled=${!canEdit}
 						@clicked=${() => this._doSave()}>${this._txt.save}</web-button>
-					${row?.id && (this.history || this.marketing) ? html`
+					${row?.id && (this.history || this.marketing || this.production) ? html`
 						<div class="wt-trailing-actions">
 							${this.history ? html`
 								<web-button type="soft" ui=${this.ui} theme=${this.theme} prefix="ri:history-line"
@@ -660,6 +662,10 @@ export class WebTable extends LitElement {
 							${this.marketing ? html`
 								<web-button type="soft" ui=${this.ui} theme=${this.theme} prefix="ri:magic-line"
 									@clicked=${() => this._emit('wt-open-marketing', { id: row.id })}>${this._txt.marketing}</web-button>
+							` : ''}
+							${this.production ? html`
+								<web-button type="soft" ui=${this.ui} theme=${this.theme} prefix="ri:magic-line"
+									@clicked=${() => this._emit('wt-open-production', { id: row.id })}>${this._txt.production}</web-button>
 							` : ''}
 						</div>
 					` : ''}
@@ -683,7 +689,11 @@ export class WebTable extends LitElement {
 				input = html`<web-currency data-field=${storageKey} .value=${Number(val||0)} .ui=${this.ui} height="32px" suffix=${col.suffix??''}></web-currency>`;
 				break;
 			case 'datetime':
-				input = html`<web-datetime data-field=${storageKey} .value=${String(val??'')} .ui=${this.ui} height="32px"></web-datetime>`;
+				// type="datetime" bật luôn time-of-day picker (web-datetime mặc định 'default' =
+				// chỉ chọn ngày, luôn ra 00:00) — cần cho field cửa sổ hiệu lực kiểu mind.js's
+				// effectiveFrom/effectiveTo, nơi "hiệu lực đến hết ngày X" khác hẳn "hiệu lực đến
+				// đúng 00:00 ngày X".
+				input = html`<web-datetime type="datetime" data-field=${storageKey} .value=${String(val??'')} .ui=${this.ui} height="32px"></web-datetime>`;
 				break;
 			case 'password':
 				input = html`<input type="password" class="wt-input" data-field=${storageKey}

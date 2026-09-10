@@ -29,6 +29,7 @@ export class WebFab extends LitElement {
         y: { type: String },
         size: { type: String }, // 'sm', 'md', 'lg'
         variant: { type: String }, // 'primary', 'secondary', 'base'
+        rounded: { type: String }, // passed straight through to inner web-button, default '50%' (circle)
         ui: { type: String }, // modern, spatial
         // Named `movable`, not `draggable` — that name shadows the native HTML
         // draggable attribute/property, which turns on the browser's own HTML5
@@ -48,6 +49,7 @@ export class WebFab extends LitElement {
         this.y = '1%'
         this.size = 'md'
         this.variant = 'primary'
+        this.rounded = '50%'
         this.ui = 'modern'
         this.movable = false
 
@@ -211,7 +213,7 @@ export class WebFab extends LitElement {
                     color=${color}
                     height="calc(var(--height-selector, 2.25rem) * ${scale})"
                     fontSize="calc(1rem * ${scale})"
-                    rounded="50%"
+                    rounded=${this.rounded}
                     square
                     ui=${this.ui}
                     theme=${this.theme}

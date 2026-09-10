@@ -75,6 +75,7 @@ svc-admin {
 	display: flex;
 	gap: 6px;
 	align-items: center;
+	flex-wrap: wrap;
 }
 
 /* ── Import report list ──────────────────────────────────────────────────────── */

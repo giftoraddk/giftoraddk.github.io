@@ -67,13 +67,23 @@ export class GraphChartBase extends LitElement {
 		this._chart = null;
 	}
 
+	// `createRenderRoot()` renders into light DOM (see top), so this element's own children never
+	// get a scoped stylesheet — they need `css` injected into whichever root they actually live in.
+	// That root is `document` when used at page level (see src/pages/ui/spatial.astro), but when
+	// nested inside ANOTHER component's Shadow DOM (e.g. <svc-graph> inside <svc-finance-report>,
+	// which uses Lit's default shadow root), `document.head`'s stylesheet never crosses that shadow
+	// boundary — the chart rendered with zero styling (no card background/padding, unstyled table).
+	// `getRootNode()` returns the actual root (the ShadowRoot itself has no <head>, so the <style>
+	// goes directly on it) — fixes both cases with 1 code path instead of assuming top-level only.
 	_injectStyles() {
 		const id = 'svc-graph-styles';
-		if (document.getElementById(id)) return;
+		const root = this.getRootNode();
+		const target = root instanceof ShadowRoot ? root : document.head;
+		if (target.querySelector(`#${id}`)) return;
 		const s = document.createElement('style');
 		s.id = id;
 		s.textContent = css;
-		document.head.appendChild(s);
+		target.appendChild(s);
 	}
 
 	firstUpdated() {
@@ -185,7 +195,6 @@ export class GraphChartBase extends LitElement {
 				<div class="graph-layout">
 					<div class="graph-pane">
 						<div class="graph-canvas" style="height:${this.height}" ${ref(this._canvasRef)}></div>
-						${this._rbLegend()}
 					</div>
 					${this._tableVisible ? this._rbTable() : nothing}
 				</div>
@@ -196,26 +205,6 @@ export class GraphChartBase extends LitElement {
 	// ==========================================
 	// RENDER BLOCKS
 	// ==========================================
-
-	// Legend labels come from the same `dataset.source` used by the table, but which part depends on
-	// the dataset's shape:
-	// - bar/line/polar-bar (label column + N series columns): legend = header row's series names.
-	// - pie/doughnut (label + single value column): legend = each row's own label, not the header.
-	_rbLegend() {
-		const table = this._comTable;
-		if (!table) return nothing;
-		const colors = this._comColors;
-		const names = table.header.length === 2 ? table.rows.map((r) => r[0]) : table.header.slice(1);
-		return html`
-			<div class="graph-legend-row">
-				${names.map((name, i) => html`
-					<span class="graph-legend-item">
-						<i class="graph-legend-dot" style="background:${colors[i % colors.length]}"></i>${name}
-					</span>
-				`)}
-			</div>
-		`;
-	}
 
 	_rbTable() {
 		const table = this._comTable;

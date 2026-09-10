@@ -1,0 +1,27 @@
+---
+import LayoutAdmin from '@/layouts/LayoutAdmin.astro';
+const pageTitle = 'Product Revenue Dashboard';
+const pageDescription = 'Product revenue & profit dashboard — KPI, monthly trend, top sellers, revenue by product';
+---
+
+<LayoutAdmin title={pageTitle} description={pageDescription}>
+	<div class='p-4'>
+		<h1 id='report-title' class='text-xl font-bold mb-5'>Dashboard Phân Tích Doanh Thu Sản Phẩm</h1>
+		<svc-finance-report id='finance-report' lang='vi' ui="spatial" theme="dark"></svc-finance-report>
+	</div>
+
+	<script>
+		import '@/webs/division/svc-finance-report.js';
+		import { watchHtmlAttr } from '@/services/helper.js';
+
+		const TITLE_TXT = { vi: 'Dashboard Phân Tích Doanh Thu Sản Phẩm', en: 'Product Revenue Dashboard' };
+
+		document.addEventListener('astro:page-load', () => {
+			const h1 = document.getElementById('report-title');
+			const unwatch = watchHtmlAttr('lang', (lang) => {
+				if (h1) h1.textContent = TITLE_TXT[lang] ?? TITLE_TXT.vi;
+			});
+			document.addEventListener('astro:before-swap', () => unwatch(), { once: true });
+		});
+	</script>
+</LayoutAdmin>

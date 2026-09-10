@@ -207,6 +207,7 @@
 }
 
 .steps-vertical .step-label {
+    line-height: 1.1;
     white-space: normal;
     text-align: left;
     font-size: clamp(1rem, 1.5vw, 1.2rem);

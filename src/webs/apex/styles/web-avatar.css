@@ -52,6 +52,11 @@ img {
     opacity: 0.9;
 }
 
+iconify-icon {
+    font-size: calc(var(--avatar-size) * 0.55);
+    opacity: 0.9;
+}
+
 .status-dot {
     position: absolute;
     bottom: -2px;

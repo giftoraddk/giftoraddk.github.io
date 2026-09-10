@@ -2,7 +2,7 @@ import { LitElement, html } from 'lit';
 import 'iconify-icon';
 import css from './styles/svc-admin.css?inline';
 import { auth, parseRoles } from '@/webs/auth/tools/service.js';
-import { ulid, buildNested, injectStyles, txtLingo, getPath, toastEmit } from '@/services/helper.js';
+import { ulid, buildNested, injectStyles, txtLingo, getPath, toastEmit, parseCsvRows } from '@/services/helper.js';
 import { createService, invalidate as cacheInvalidate } from '@/services/crud.js';
 import { triggerRebuild } from '@/webs/auth/tools/helper.js';
 import { all as conductorAll, more as conductorMore, get as conductorGet, subscribe as conductorSubscribe, make as conductorMake } from '@/services/conductor.js';
@@ -13,6 +13,8 @@ import '@/webs/apex/web-toast.js';
 import '@/webs/auth/svc-diffs.js';
 import '@/webs/auth/svc-assist.js';
 import '@/webs/division/svc-marketing.js';
+import '@/webs/division/svc-production.js';
+import { syncMindFromOutputTable } from '@/webs/division/tools/mind-sync.js';
 
 const TXT_STD = {
     vi: { loading: 'Đang tải…', add: '+ Thêm', error: 'Lỗi', records: 'bản ghi', export: 'Xuất CSV', import: 'Nhập CSV', importDone: 'Kết quả nhập CSV', importOk: 'bản ghi đã nhập thành công', importSkip: 'bản ghi bị bỏ qua', importRow: 'Dòng', required: 'là bắt buộc', saveOk: 'Đã lưu thành công', saveFail: 'Lưu thất bại' },
@@ -32,29 +34,8 @@ function deepMerge(target, source) {
 
 // ── CSV helpers ───────────────────────────────────────────────────────────────
 
-// Tokenizes the WHOLE text char-by-char (not line-by-line first) so a quoted cell containing
-// a real newline (vd textarea `description`/`content` xuất từ _dfExportCsv) không bị tách
-// nhầm thành nhiều "dòng" — quote state phải sống xuyên suốt qua ký tự \n/\r\n.
-function _parseCsvRows(text) {
-    const rows = []; let row = [], cur = '', inQ = false;
-    for (let i = 0; i < text.length; i++) {
-        const ch = text[i];
-        if (inQ) {
-            if (ch === '"' && text[i + 1] === '"') { cur += '"'; i++; }
-            else if (ch === '"') inQ = false;
-            else cur += ch;
-        } else if (ch === '"') inQ = true;
-        else if (ch === ',') { row.push(cur); cur = ''; }
-        else if (ch === '\r') { /* skip — \n (below) closes the row */ }
-        else if (ch === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; }
-        else cur += ch;
-    }
-    if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
-    return rows;
-}
-
 function _parseCsvText(text) {
-    const rows = _parseCsvRows(text.replace(/^﻿/, '')).filter(r => r.some(c => c.trim() !== ''));
+    const rows = parseCsvRows(text.replace(/^﻿/, '')).filter(r => r.some(c => c.trim() !== ''));
     if (rows.length < 2) return [];
     const headers = rows[0].map(h => h.trim());
     return rows.slice(1).map(vals => Object.fromEntries(headers.map((h, i) => [h, (vals[i] ?? '').trim()])));
@@ -105,6 +86,7 @@ export class SvcAdmin extends LitElement {
         revalidate:     { type: Boolean },
         diffsTable:     { type: String  },
         marketingTable: { type: String  },
+        productionTable: { type: String  },
         perms:          { type: Object  }, // { edit, delete, sort } — false disables the action
         // Passthrough cho field type 'location' của web-table.js — gợi ý mặc định khi field
         // đang rỗng (vd room.location, xem svc-channel-sections.js).
@@ -167,6 +149,7 @@ export class SvcAdmin extends LitElement {
         this.revalidate     = false;
         this.diffsTable        = 'revisions';
         this.marketingTable = '';
+        this.productionTable = '';
         this.perms          = {};
         this.locationSuggest = '';
         this.hideUpload      = false;
@@ -319,6 +302,7 @@ export class SvcAdmin extends LitElement {
                 this._data = [deepMerge({ id: newId }, buildNested(flat)), ...this._data];
                 this._syncConductor();
                 this._dfRevalidate();
+                this._dfSyncMind({ id: newId, ...docData });
             } else {
                 //   [3.b] UPDATE: Ghi đè field thay đổi + actors, merge vào đúng row trong _data
                 const existing = this._data.find(r => r.id === id);
@@ -330,6 +314,7 @@ export class SvcAdmin extends LitElement {
                 this._data = this._data.map(r => r.id === id ? deepMerge(r, buildNested(flat)) : r);
                 this._syncConductor();
                 this._dfRevalidate();
+                this._dfSyncMind(this._data.find(r => r.id === id));
             }
             this.querySelector('#sad-table')?.closeEdit(id);
             toastEmit(this._txt.saveOk, 'success');
@@ -338,6 +323,11 @@ export class SvcAdmin extends LitElement {
             toastEmit(`${this._txt.saveFail}: ${err.message}`, 'error');
         }
     }
+
+    // Đồng bộ NGAY vào `mind` mỗi khi admin tự tạo/sửa tay 1 record thuộc bảng 'products'/'posts'
+    // (kể cả giá/tồn kho mà pipeline AI của svc-talk.js không tự set — xem tools/mind-sync.js) —
+    // best-effort, tự no-op với bảng khác (syncMindFromOutputTable tự kiểm tra this._table).
+    _dfSyncMind(record) { if (record) syncMindFromOutputTable(record, this._table); }
 
     /**
      * Flow soft-delete 1 record: wt-delete event -> set deleted_at, gỡ khỏi _data/conductor
@@ -593,6 +583,21 @@ export class SvcAdmin extends LitElement {
         this._dfRevalidate();
     }
 
+    _dhOpenProduction(e) {
+        const { id } = e.detail ?? {};
+        if (!id) return;
+        this.querySelector('svc-production')?.open(id);
+    }
+
+    // 'production:saved' từ <svc-production> — cùng cách _dhMarketingSaved() xử lý.
+    _dhProductionSaved(e) {
+        const { id, ...fields } = e.detail ?? {};
+        if (!id) return;
+        this._data = this._data.map(r => r.id === id ? deepMerge(r, buildNested(fields)) : r);
+        this._syncConductor();
+        this._dfRevalidate();
+    }
+
     _dhReset() {
         const sectionId = `admin__${this._table}`;
         conductorMake(sectionId, { data: [], _cursor: null, _hasMore: null, _page: 0 });
@@ -676,6 +681,15 @@ export class SvcAdmin extends LitElement {
 
     _buildNewDoc(flat, insertIndex, now) {
         const data = buildNested(flat);
+        // Schema column `default` — stamp khi field chưa có giá trị (form "+ Thêm"/CSV import
+        // CHUNG không điền, vd mind.js's `domain`/`version` — hằng field mà chỉ path chuyên biệt
+        // (tools/mind-sync.js) mới tự set, path chung ở đây thì không, nếu bỏ trống thì record tạo
+        // qua nút chung sẽ thiếu field lọc quan trọng). Áp dụng bất kể `col.write` — đây là field
+        // hệ thống tự quản, không phải input user gõ.
+        for (const col of this.schema) {
+            if (col.default === undefined) continue;
+            if (data[col.field] == null || data[col.field] === '') data[col.field] = col.default;
+        }
         return {
             ...data,
             created_at: now, updated_at: now, deleted_at: null,
@@ -718,6 +732,7 @@ export class SvcAdmin extends LitElement {
                         </span>
                         <div class="sad-toolbar-btns">
                             <input class="sad-csv-input" type="file" accept=".csv" hidden @change=${this._dfImportCsv}>
+                            <slot name="toolbar-start"></slot>
                             <web-button type="fill" color="primary" height="28px" ?disabled=${!this._perms.edit} @clicked=${this._dhOpenNew}>${this._txt.add}</web-button>
                             <web-button type="soft" height="28px" ?disabled=${this._importing || !this._perms.edit} ?loading=${this._importing} @clicked=${this._dhImportClick}>
                                 <iconify-icon slot="prefix" icon=${!this._perms.edit ? 'ri:lock-line' : 'ri:upload-2-line'}></iconify-icon>
@@ -752,6 +767,7 @@ export class SvcAdmin extends LitElement {
                     deletable
                     ?history=${!!this.diffsTable}
                     ?marketing=${!!this.marketingTable}
+                    ?production=${!!this.productionTable}
                     ai=${this._comAiConfig}
                     height="auto"
                     @wt-save=${this._dfSave}
@@ -759,6 +775,7 @@ export class SvcAdmin extends LitElement {
                     @wt-move=${this._dfMove}
                     @wt-open-history=${this._dhOpenHistory}
                     @wt-open-marketing=${this._dhOpenMarketing}
+                    @wt-open-production=${this._dhOpenProduction}
                     @wt-query-change=${this._dhQueryChange}
                 ></web-table>
             </div>
@@ -776,13 +793,25 @@ export class SvcAdmin extends LitElement {
             ${this.marketingTable ? html`
                 <svc-marketing
                     table=${this._table}
-                    mktTable=${this.marketingTable}
+                    processTable=${this.marketingTable}
                     ai=${this._comAiConfig}
                     lang=${this.lang}
                     .ui=${this.ui}
                     .theme=${this.theme}
                     @marketing:saved=${this._dhMarketingSaved}
                 ></svc-marketing>
+            ` : ''}
+
+            ${this.productionTable ? html`
+                <svc-production
+                    table=${this._table}
+                    processTable=${this.productionTable}
+                    ai=${this._comAiConfig}
+                    lang=${this.lang}
+                    .ui=${this.ui}
+                    .theme=${this.theme}
+                    @production:saved=${this._dhProductionSaved}
+                ></svc-production>
             ` : ''}
 
             <web-dialog
