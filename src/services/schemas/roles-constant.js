@@ -63,3 +63,15 @@ export const ROLE_PRESETS = {
 
 /** `{table}.{capability}` tokens for a preset — e.g. roleCaps('editor', 'posts') → ['posts.read', ...]. */
 export const roleCaps = (preset, table) => ROLE_PRESETS[preset].map(c => `${table}.${c}`);
+
+/**
+ * Auxiliary admin tools tied to a primary table — toggling a preset for the KEY table in
+ * svc-roles.js mirrors the same preset onto each bundled table too, so a user granted product
+ * management access gets Mind (AI knowledge base)/Customers (sale leads)/Report (revenue
+ * dashboard) opened by default instead of needing a separate manual grant per table. One-way only
+ * (bundled tables can still be toggled independently in the UI — that does not feed back into
+ * `products`).
+ */
+export const TABLE_BUNDLES = {
+    products: ['mind', 'customers', 'report'],
+};

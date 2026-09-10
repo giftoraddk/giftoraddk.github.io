@@ -4,7 +4,7 @@ import css from './styles/svc-roles.css?inline';
 import { auth, parseRoles } from '@/webs/auth/tools/service.js';
 import { createService } from '@/services/crud.js';
 import { injectStyles, txtLingo } from '@/services/helper.js';
-import { ORDER_PRESETS, roleCaps } from '@/services/schemas/roles-constant.js';
+import { ORDER_PRESETS, roleCaps, TABLE_BUNDLES } from '@/services/schemas/roles-constant.js';
 import '@/webs/apex/web-select.js';
 import '@/webs/apex/web-table.js';
 import '@/webs/apex/web-checkbox.js';
@@ -142,11 +142,17 @@ export class SvcRoles extends LitElement {
         const user = this._users.find(u => u.id === userId);
         if (!user || this._comIsSuper(user)) return;
 
-        // [2] PROCESS: Tính tập preset đang check + build lại roles string cho đúng table
-        const checkedNow = new Set(this._comCheckedPresets(user.roles, this._table));
-        if (checked) checkedNow.add(preset);
-        else         checkedNow.delete(preset);
-        const newRoles = this._comNewRoles(user.roles, this._table, checkedNow);
+        // [2] PROCESS: Tính tập preset đang check + build lại roles string cho đúng table — bảng
+        // nào nằm trong TABLE_BUNDLES (vd 'products' → mind/customers/report) thì áp CÙNG preset
+        // luôn cho các bảng phụ trợ đó, khỏi phải gán tay từng bảng riêng.
+        const tables = [this._table, ...(TABLE_BUNDLES[this._table] ?? [])];
+        let newRoles = user.roles;
+        for (const table of tables) {
+            const checkedNow = new Set(this._comCheckedPresets(newRoles, table));
+            if (checked) checkedNow.add(preset);
+            else         checkedNow.delete(preset);
+            newRoles = this._comNewRoles(newRoles, table, checkedNow);
+        }
 
         // [3] EXECUTE: Optimistic update UI trước, ghi DB sau — rollback nếu ghi lỗi
         //   [3.a] OPTIMISTIC: Cập nhật UI ngay + đánh dấu đang lưu (disable checkbox)
