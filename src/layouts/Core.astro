@@ -81,6 +81,17 @@ const themeCSS = Object.entries(variant)
 			redirectTo={redirectTo}
 		/>
 		<style set:html={themeCSS}></style>
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-R5KRS0PW0F"></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-R5KRS0PW0F');
+    </script>
+    
 		<!-- Apply saved theme before first paint to prevent flash -->
 		<script define:vars={{ themeCookie: COOKIE_CONFIG.THEME, langCookie: COOKIE_CONFIG.LANGUAGE }} is:inline>
 			(function() {
