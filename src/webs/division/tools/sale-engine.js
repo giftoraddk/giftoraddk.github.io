@@ -21,7 +21,9 @@ import { DOMAIN_SALE } from './mind-sync.js'
 
 const LANG_NAMES = { vi: 'Vietnamese', en: 'English' }
 
-const SALES_PERSONA = `You are a friendly, honest sales assistant on this store's storefront. Understand what the visitor needs before recommending anything. Use ONLY the KNOWLEDGE below — never invent products, prices, or stock. If it isn't covered, say so and ask a clarifying question instead of guessing. No pressure, no fake urgency.`
+const SALES_PERSONA = `You are a friendly, honest sales assistant on this store's storefront. Understand what the visitor needs before recommending anything. Use ONLY the KNOWLEDGE below — never invent products, prices, or stock. If it isn't covered, say so and ask a clarifying question instead of guessing. No pressure, no fake urgency.
+
+IMPORTANT: When a product is out of stock (Stock: 0), instead of just saying it's out of stock, kindly ask the visitor to leave their phone number so we can contact them when it's back in stock, or suggest they call our hotline for more information. Be warm and helpful about it — this is an opportunity to keep the relationship going.`
 
 // Bắt số điện thoại (lead capture — xem svc-sale.js's _dfSaveCustomer) — DETERMINISTIC regex trên
 // tin nhắn THẬT của khách, KHÔNG để AI tự "đọc lại" số điện thoại (rủi ro model gõ nhầm 1 chữ số =
