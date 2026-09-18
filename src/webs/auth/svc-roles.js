@@ -141,8 +141,8 @@ export class SvcRoles extends LitElement {
         if (!user || this._comIsSuper(user)) return;
 
         // [2] PROCESS: Tính tập preset đang check + build lại roles string cho đúng table — bảng
-        // nào nằm trong TABLE_BUNDLES (vd 'products' → mind/customers/report) thì áp CÙNG preset
-        // luôn cho các bảng phụ trợ đó, khỏi phải gán tay từng bảng riêng.
+        // nào nằm trong TABLE_BUNDLES (vd 'products' → customers/report/talks/know/rel) thì áp
+        // CÙNG preset luôn cho các bảng phụ trợ đó, khỏi phải gán tay từng bảng riêng.
         const tables = [this._table, ...(TABLE_BUNDLES[this._table] ?? [])];
         let newRoles = user.roles;
         for (const table of tables) {
@@ -151,6 +151,10 @@ export class SvcRoles extends LitElement {
             else         checkedNow.delete(preset);
             newRoles = this._comNewRoles(newRoles, table, checkedNow);
         }
+        // Dọn rác token của bảng đã bị RETIRED khỏi hệ thống (vd 'mind' cũ — không còn trong _tables
+        // lẫn TABLE_BUNDLES nữa) — UI không còn cách nào để uncheck nó, nên tự strip mỗi lần lưu,
+        // thay vì để kẹt vĩnh viễn trong `roles` string.
+        newRoles = this._comPruneStaleTables(newRoles);
 
         // [3] EXECUTE: Optimistic update UI trước, ghi DB sau — rollback nếu ghi lỗi
         //   [3.a] OPTIMISTIC: Cập nhật UI ngay + đánh dấu đang lưu (disable checkbox)
@@ -193,6 +197,22 @@ export class SvcRoles extends LitElement {
     /** True for the built-in "admin" global role — bypasses all table-level checks. */
     _comIsSuper(user) {
         return parseRoles(user).isAdmin;
+    }
+
+    /**
+     * Strips `{table}.capability` tokens whose table is no longer known to this UI (dropdown list
+     * `_tables` ∪ every TABLE_BUNDLES target) — leftover from a table that got retired from the
+     * system entirely (e.g. the old 'mind', replaced by 'know'/'rel'). Once retired, svc-roles.js
+     * has no checkbox left to uncheck it with, so without this the tokens would sit dead in `roles`
+     * forever. Bare tokens with no table prefix ('admin', 'user', ...) are always kept.
+     */
+    _comPruneStaleTables(rolesStr) {
+        const known = new Set([...this._tables, ...Object.values(TABLE_BUNDLES).flat()]);
+        const { roles } = parseRoles(rolesStr);
+        return roles.filter(r => {
+            const dot = r.indexOf('.');
+            return dot === -1 || known.has(r.slice(0, dot));
+        }).join('|');
     }
 
     /**

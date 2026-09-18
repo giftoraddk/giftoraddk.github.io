@@ -5,18 +5,7 @@
    is just normal content projected into its default slot, sized/laid out here. */
 .tlk-panel {
     box-sizing: border-box;
-    /* height:100% — fills whatever height <web-popover> assigns .web-popover-content (it clamps
-       to real available viewport space around the trigger). Letting .tlk-panel track that exactly,
-       rather than sizing itself independently off 100vh, is what keeps .tlk-composer-wrap pinned:
-       the shrinkage lands on .tlk-messages (flex:1, its own overflow-y:auto) instead of pushing the
-       whole panel past the popover's box, which would otherwise force an outer scrollbar over the
-       entire panel — burying the composer behind a second, uncoordinated scroll region. */
-    width: 380px; height: calc(100% + 1rem);
-    /* height:100% alone resolves against the parent's content-box (inside padding+border) — the
-       negative top margin below bleeds the top edge past that padding, but a negative bottom
-       margin does NOT stretch this box's own height to bleed the bottom edge too (margin never
-       adds to an element's own box size). +1rem = the two .5rem bleeds (top+bottom) restores the
-       full padding-box height so both edges actually reach the popover's border. */
+    width: 380px; height: calc(100% + 1rem); min-height: 380px;
     margin: -.5rem; /* bleed past web-popover's own .5rem content padding — edge-to-edge head/composer */
     border-radius: .5rem; overflow: hidden; /* own rounding — .web-popover-content itself doesn't clip */
     display: flex; flex-direction: column;
