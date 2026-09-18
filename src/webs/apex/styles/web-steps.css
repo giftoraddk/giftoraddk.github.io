@@ -106,7 +106,7 @@
     color: #fff;
 }
 
-.step-circle iconify-icon { display: flex; }
+.step-circle iconify-icon { display: flex;font-size: calc(var(--step-icon-size) * 0.7); }
 
 /* linear mode: step 'pending' chưa tới lượt — không cho bấm tới, đổi con trỏ để phản ánh đúng */
 .web-steps.steps-linear .step-circle:not(.done):not(.active):not(.error),
@@ -167,16 +167,10 @@
    khai báo riêng — svg mặc định `color: inherit`, và stroke="currentColor" (đặt thẳng trong markup,
    xem web-steps.js) ăn theo đúng color:#fff có sẵn của .step-circle.active. */
 .loader {
-    width: 1.15em;
-    height: 1.15em;
+    overflow: visible;
+    width: 1.13em;
+    height: 1.13em;
     animation: spin 1s linear infinite;
-}
-
-/* size-sm's --step-num-font (0.75rem) làm .loader (1.15em) chỉ ~13.8px trong vòng tròn 20px —
-   khó thấy cung xoay. Bump riêng size-sm, không đụng md/lg/xl (đã đủ lớn). */
-.web-steps.size-sm .loader {
-    width: 1.4em;
-    height: 1.4em;
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
