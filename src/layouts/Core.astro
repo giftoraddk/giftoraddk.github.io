@@ -83,6 +83,17 @@ const themeCSS = Object.entries(variant)
 			noindex={noindex}
 		/>
 		<style set:html={themeCSS}></style>
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-R5KRS0PW0F"></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-R5KRS0PW0F');
+    </script>
+    
 		<!-- Apply saved theme before first paint to prevent flash -->
 		<script define:vars={{ themeCookie: COOKIE_CONFIG.THEME, langCookie: COOKIE_CONFIG.LANGUAGE }} is:inline>
 			(function() {
@@ -176,6 +187,12 @@ const themeCSS = Object.entries(variant)
           />
         )}
 			</main>
+      
+      <script src="@/webs/llm/svc-aide.js"></script>
+      <svc-aide id="shop-sale" transition:persist="shop-sale" division="sale"
+        x="99%" y="calc(100% - 18rem)"
+        ui={variant.ui} theme={variant.theme} lang="vi">
+      </svc-aide>
 		</div>
 	</body>
 	<style>
