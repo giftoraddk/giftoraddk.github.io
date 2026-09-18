@@ -6,43 +6,20 @@ import { fetchCollection } from '@/services/firestore.server.ts';
 import { productSlug } from '@/services/helper.js';
 
 // ── Best-selling gifts (data thật từ database) ─────────────────────────────────
-// "Bán chạy nhất" = xếp theo SỐ LƯỢNG bán thực tế trong invoices (cùng tiêu chí getTopProducts()
-// của revenue-helper.js/svc-finance-report — KHÔNG dùng rating/score làm proxy), build-time fetch
-// giống product/index.astro (bake data thật vào HTML, không qua conductor vì trang này prerender
-// tĩnh). Item hủy/trả (meta.sub) không tính vào số lượng bán, khớp _isLost() của revenue-helper.js.
-function _parseInvoiceItems(itemsStr) {
-	return (itemsStr || '').split('|').filter(Boolean).map((p) => {
-		const [name, price, unit, qty] = p.split('~');
-		return { name, price: Number(price) || 0, unit, qty: Number(qty) || 0 };
-	});
-}
-
+// "Bán chạy nhất" = ưu tiên theo `index` (thứ tự thủ công admin đặt ở products, số nhỏ ưu tiên
+// hơn — xem schemas/admin/products.js's field 'index') rồi tiebreak theo `updated_at` (mới cập
+// nhật lên trước), build-time fetch giống product/index.astro (bake data thật vào HTML, không
+// qua conductor vì trang này prerender tĩnh).
 async function _fetchBestSellers(limit = 4) {
-	const [products, invoices] = await Promise.all([
-		fetchCollection('products'),
-		fetchCollection('invoices', { activeOnly: false }),
-	]);
+	const products = await fetchCollection('products');
 
-	const soldByName = new Map();
-	for (const inv of invoices) {
-		if (['cancelled', 'returned'].includes(inv.meta?.sub)) continue;
-		for (const item of _parseInvoiceItems(inv.items)) {
-			if (!item.name || item.qty <= 0) continue;
-			const key = item.name.trim().toLowerCase();
-			soldByName.set(key, (soldByName.get(key) || 0) + item.qty);
-		}
-	}
-
-	// Không filter bỏ sản phẩm _sold === 0 — slider cần đủ `limit` item để loop mượt (slides: 3),
-	// nên sản phẩm chưa có đơn hàng vẫn được xếp vào cuối (tiebreak theo số lượt đánh giá) để lấp đầy
-	// thay vì để section trống/thiếu item khi shop mới mở, ít đơn hàng.
 	return products
-		.map((p) => ({
-			...p,
-			_sold: soldByName.get((p.title || '').trim().toLowerCase()) || 0,
-			_reviews: Number(String(p.score || '0~0').split('~')[1]) || 0,
-		}))
-		.sort((a, b) => b._sold - a._sold || b._reviews - a._reviews)
+		.slice()
+		.sort((a, b) => {
+			const byIndex = (a.index ?? Infinity) - (b.index ?? Infinity);
+			if (byIndex) return byIndex;
+			return new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
+		})
 		.slice(0, limit)
 		.map((p) => ({ ...p, meta: { ...(p.meta ?? {}), url: `/product/${productSlug(p)}/` } }));
 }
