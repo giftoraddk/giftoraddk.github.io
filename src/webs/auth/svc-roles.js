@@ -4,7 +4,7 @@ import css from './styles/svc-roles.css?inline';
 import { auth, parseRoles } from '@/webs/auth/tools/service.js';
 import { createService } from '@/services/crud.js';
 import { injectStyles, txtLingo } from '@/services/helper.js';
-import { ORDER_PRESETS, roleCaps, TABLE_BUNDLES } from '@/services/schemas/roles-constant.js';
+import { ORDER_PRESETS, roleCaps, TABLE_BUNDLES, RETIRED_TABLES } from '@/services/schemas/roles-constant.js';
 import '@/webs/apex/web-select.js';
 import '@/webs/apex/web-table.js';
 import '@/webs/apex/web-checkbox.js';
@@ -207,11 +207,17 @@ export class SvcRoles extends LitElement {
      * forever. Bare tokens with no table prefix ('admin', 'user', ...) are always kept.
      */
     _comPruneStaleTables(rolesStr) {
-        const known = new Set([...this._tables, ...Object.values(TABLE_BUNDLES).flat()]);
+        const known   = new Set([...this._tables, ...Object.values(TABLE_BUNDLES).flat()]);
+        const retired = new Set(RETIRED_TABLES);
         const { roles } = parseRoles(rolesStr);
         return roles.filter(r => {
             const dot = r.indexOf('.');
-            return dot === -1 || known.has(r.slice(0, dot));
+            if (dot === -1) return true;
+            const table = r.slice(0, dot);
+            // RETIRED_TABLES always strips regardless of `known` — `_tables` (nav-derived) can be
+            // stale (see roles-constant.js's RETIRED_TABLES comment), `known` alone can't be trusted
+            // to catch a table that's gone for good.
+            return !retired.has(table) && known.has(table);
         }).join('|');
     }
 

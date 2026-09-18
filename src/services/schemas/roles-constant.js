@@ -85,3 +85,14 @@ export const roleCaps = (preset, table) => preset === 'admin' ? [`${table}.admin
 export const TABLE_BUNDLES = {
     products: ['customers', 'report', 'talks', 'know', 'rel'],
 };
+
+/**
+ * Tables permanently removed from the system — 'mind' (old Firestore DB_LLM knowledge base,
+ * replaced by D1 'know'/'rel'). Explicit blocklist rather than inferring "unknown" from whichever
+ * table list svc-roles.js's `tables` prop happens to hold at the moment: that prop can be stale
+ * (e.g. `<svc-roles transition:persist>` keeps its old attribute value across an Astro ClientRouter
+ * soft-nav from before this table was retired), so a leftover `mind.*` capability token would never
+ * get pruned until a hard reload. Listing it here strips it unconditionally, independent of prop
+ * freshness — see svc-roles.js's _comPruneStaleTables().
+ */
+export const RETIRED_TABLES = ['mind'];
