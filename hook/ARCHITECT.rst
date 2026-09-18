@@ -75,7 +75,8 @@ Cấu trúc thư mục
    │   └── landing/*.js       # 1 file/page — home.js, gift.js, spatial.js, ... cho /landing/* + /gift/
    ├── services/
    │   ├── conductor.js      # atom store + IndexedDB + fetch
-   │   ├── firestore.js      # Firebase app + FirestoreAdapter (tất cả Firebase specifics)
+   │   ├── firestore.js      # Firebase app init only (getFirebaseApp)
+   │   ├── firestore.worker.js # WorkerAdapter/D1WorkerAdapter — Cloudflare Worker-proxied CRUD
    │   ├── crud.js           # utilities + loadData + createService (FirestoreService / SqlService)
    │   ├── auth.js           # localStorage auth
    │   └── helper.js         # getStyleOpts, utilities
@@ -152,10 +153,10 @@ Service Layer
                                    │  registerAdapter / db()            │
                                    └────────────────────────────────────┘
                                              ↓
-                                   ┌─ firestore.js ──────────────────────┐
-                                   │  firebaseApp (merged từ firebase.js) │
-                                   │  FirestoreAdapter + firestoreAdapter │
-                                   └────────────────────────────────────┘
+                                   ┌─ firestore.worker.js (Cloudflare Worker proxy) ─┐
+                                   │  WorkerAdapter + repoWorkerAdapter/llmWorkerAdapter │
+                                   │  D1WorkerAdapter + llmD1Adapter                 │
+                                   └──────────────────────────────────────────────────┘
 
 ----
 
@@ -207,7 +208,7 @@ Luồng dữ liệu tổng quan
 .. code-block:: text
 
    1. BUILD TIME
-      Astro page import '@/modules/shop-page.js' hoặc '@/modules/landing/<name>.js'
+      Astro page import '@/modules/<name>.js' hoặc '@/modules/landing/<name>.js'
         → variant (ui/theme/colors)
         → views[i].sections[] (id, dataSrc|dataTable|data, config, col, sort)
 
@@ -241,7 +242,7 @@ Luồng dữ liệu tổng quan
         → service.js lắng nghe, gọi conductor.patch / conductor.all
         → subscribe(sectionId, fn) → Lit re-render
 
-Xem chi tiết từng bước trong ``docs/DATAFLOW.rst``.
+Xem chi tiết từng bước trong ``hook/DATAFLOW.rst``.
 
 ----
 
@@ -372,9 +373,9 @@ Tài liệu liên quan
 +-------------------------------+----------------------------------------------+
 | File                          | Nội dung                                     |
 +===============================+==============================================+
-| ``docs/DATAFLOW.rst``         | Chi tiết từng bước luồng dữ liệu            |
+| ``hook/DATAFLOW.rst``         | Chi tiết từng bước luồng dữ liệu            |
 +-------------------------------+----------------------------------------------+
-| ``docs/web-apex.rst``         | API reference tất cả component apex/        |
+| ``hook/web-apex.rst``         | API reference tất cả component apex/        |
 +-------------------------------+----------------------------------------------+
 | ``guide/fetch-store-overview``| ``all()`` opts, retry, cache, response shape |
 +-------------------------------+----------------------------------------------+

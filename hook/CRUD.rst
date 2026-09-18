@@ -4,11 +4,14 @@
 
 .. code-block:: text
 
-   src/services/firestore.js   Firebase app init + FirestoreAdapter
-   src/services/crud.js        Utilities, loadData, services, adapter registry
+   src/services/firestore.js        Firebase app init only (getFirebaseApp) — xem hook/WORKER.rst
+   src/services/firestore.worker.js Cloudflare Worker-proxied adapters (WorkerAdapter/D1WorkerAdapter)
+   src/services/crud.js             Utilities, loadData, services, adapter registry
 
-Mọi chi tiết Firebase/Firestore được cô lập trong ``firestore.js``.
-``crud.js`` không import trực tiếp từ ``firebase/*`` — chỉ import ``firestoreAdapter`` từ ``firestore.js``.
+``crud.js`` không import trực tiếp từ ``firebase/*`` — chỉ import các adapter Worker-proxied
+(``repoWorkerAdapter``/``llmWorkerAdapter``/``authWorkerAdapter``/``llmD1Adapter``) từ
+``firestore.worker.js``. ``firestore.js`` chỉ còn ``getFirebaseApp()`` — dùng trực tiếp bởi ngoại lệ
+duy nhất ``webs/bay/tools/service.js`` (xem hook/WORKER.rst).
 
 ---
 
@@ -34,7 +37,7 @@ Chữ ký:
    createService(table, dataSrc?, server?)
      table    — tên Firestore collection hoặc REST resource
      dataSrc  — base REST API URL; khi có → trả về SqlService
-     server   — tên adapter đã register (mặc định: 'firestore')
+     server   — tên adapter đã register (mặc định: 'DB_ALL')
 
 ---
 
@@ -230,7 +233,7 @@ Cho phép đăng ký backend mới mà không sửa component nào:
    registerAdapter('myapi', new MyApiAdapter())
 
    // Lấy adapter trực tiếp
-   const adapter = db()           // → firestoreAdapter
+   const adapter = db()           // → repoWorkerAdapter (đăng ký dưới tên 'DB_ALL', Worker-proxied)
    const adapter = db('myapi')    // → MyApiAdapter
 
    // Dùng với createService
@@ -253,37 +256,45 @@ Cho phép đăng ký backend mới mà không sửa component nào:
 
 ---
 
-## Nhiều kết nối Firestore (users / invoices / còn lại)
+## Nhiều kết nối (users/profiles / knowledge base / còn lại)
 
-3 project Firebase độc lập, chọn qua ``server`` name — cô lập rủi ro/quyền truy cập giữa dữ
-liệu đăng nhập (``users``), hoá đơn (``invoices``) và mọi bảng còn lại:
+Mọi ``createService(table, '', server)`` đều đi qua Cloudflare Worker gateway (xem
+``hook/WORKER.rst``) — ``server`` chọn 1 trong 3 connection đăng ký sẵn trong ``crud.js``'s
+``_registry``, mỗi tên trỏ 1 ``WorkerAdapter`` khác nhau (``src/services/firestore.worker.js``),
+KHÔNG còn phải Firebase project độc lập cho tất cả:
 
-- ``server: 'firestore'`` (mặc định) — env ``PUBLIC_DB`` — adapter ``firestoreAdapter`` — mọi
-  bảng còn lại.
-- ``server: 'auth'`` — env ``PUBLIC_DB_AUTH`` — adapter ``authFirestoreAdapter`` — bảng
-  ``users`` (đăng nhập).
-- ``server: 'invoices'`` — env ``PUBLIC_DB_INVO`` — adapter ``invoicesFirestoreAdapter`` —
-  bảng ``invoices``.
+- ``server: 'DB_ALL'`` (mặc định) — adapter ``repoWorkerAdapter`` — legacy Firestore project
+  (env ``PUBLIC_DB_ALL`` phía Worker), mọi bảng còn lại kể cả ``invoices``.
+- ``server: 'DB_ACC'`` — adapter ``authWorkerAdapter`` — **Supabase Postgres**, bảng ``profiles``
+  (đăng nhập/roles — xem ``worker/supabase/schema.sql``). Không còn là project Firestore riêng
+  nữa (``PUBLIC_DB_ACC`` đã bị xoá khỏi codebase) — Worker xác thực JWT rồi ghi thẳng Postgres qua
+  service-role key, xem ``worker/packages/db-worker/src/db.ts`` + ``worker/packages/shared/src/supabaseTable.ts``.
+- ``server: 'DB_LLM'`` — adapter ``llmWorkerAdapter`` — project Firestore riêng cho knowledge base
+  (``mind``, xem ``hook/SALE.rst``).
 
-``src/services/firestore.js`` khởi 1 Firebase app riêng/kết nối qua named app
-(``initializeApp(config, name)``) — 3 project cùng sống 1 client không đụng nhau. Cả 3 adapter
-đã đăng ký sẵn trong ``crud.js`` — chỉ cần truyền đúng ``server`` name, không cần
-``registerAdapter`` gì thêm:
+``invoices`` từng là 1 project riêng (``server: 'invoices'``, env ``PUBLIC_DB_INVO``) — đã gộp vào
+``DB_ALL`` để bớt 1 kết nối riêng lẻ. Data cũ trong project ``PUBLIC_DB_INVO`` cần tự migrate thủ
+công nếu còn cần giữ.
+
+``src/services/firestore.js`` (client-side Firebase SDK, KHÔNG import bởi crud.js nữa) chỉ còn giữ
+2 kết nối trực tiếp (``DB_ALL``/``DB_LLM``) — dùng bởi vài chỗ đọc Firestore client SDK trực tiếp
+ngoài luồng Worker (vd ``svc-bay-login.js``'s ``getFirebaseApp('DB_ALL')``), không liên quan gì đến
+``DB_ACC``/Supabase nữa.
 
 .. code-block:: js
 
-   createService('users', '', 'auth')       // → authFirestoreAdapter
-   createService('invoices', '', 'invoices') // → invoicesFirestoreAdapter
-   createService('products')                 // → firestoreAdapter (mặc định)
+   createService('profiles', '', 'DB_ACC')   // → authWorkerAdapter (Supabase Postgres)
+   createService('invoices')                 // → repoWorkerAdapter (bảng invoices, gộp vào DB_ALL)
+   createService('products')                 // → repoWorkerAdapter (mặc định)
 
 ``conductor.all()``/``more()`` (đọc phân trang, vd ``svc-admin`` dùng cho bảng lớn) và
 ``loadData()`` (đọc 1 lần) đều nhận thêm ``opts.server`` cùng ý nghĩa, forward xuống
 ``createService``/``db(server)``. ``svc-admin`` có prop ``server`` sẵn — set
-``server="auth"`` khi ``dataTable="users"`` để cả đường đọc realtime (``listen``) VÀ đường đọc
-phân trang qua conductor đều trỏ đúng project.
+``server="DB_ACC"`` khi ``dataTable="profiles"`` để cả đường đọc realtime (``listen``) VÀ đường đọc
+phân trang qua conductor đều trỏ đúng backend.
 
-Phía server (build-time, ``firestore.server.ts``) tương ứng có ``opts.connection`` trên
-``fetchCollection()`` — cùng 3 tên trên.
+Phía server (build-time, ``firestore.server.ts``) chỉ còn ``opts.connection: 'DB_ALL'`` (mặc
+định, không có lựa chọn nào khác) — build-time SSG chưa từng cần đọc ``profiles``/Supabase.
 
 ---
 
@@ -304,7 +315,7 @@ Thay thế cho ``createService`` khi chỉ cần 1 thao tác đơn lẻ:
    await dbBatch('posts', [{ id: 'a', data: { index: 0 } }])
    const unsub = await dbListen('posts', opts, rows => {}, err => {})
 
-   // Dùng adapter khác (server param — optional, default 'firestore')
+   // Dùng adapter khác (server param — optional, default 'DB_ALL')
    const rows = await dbFind('users', {}, 'myapi')
 
 ---
@@ -359,7 +370,7 @@ Mỗi pipe-segment fail độc lập — lỗi 1 collection không chặn các c
    // Cache wrapper tổng quát — dùng cho bất kỳ fetchFn nào, không chỉ loadData
    const data = await withCache(key, 5, () => fetchSomething())
 
-``conductor.all(sectionId, opts)`` (``@/services/conductor.js``) là nơi nên dùng cho mọi component runtime cần load dữ liệu theo ``dataSrc``/``dataTable`` — flow: state trong RAM (nanostores) → ``loadData`` → cache IndexedDB. Chỉ dùng ``loadData`` trực tiếp khi chạy ở build-time (Astro frontmatter) — xem ``docs/SERVICES.rst``.
+``conductor.all(sectionId, opts)`` (``@/services/conductor.js``) là nơi nên dùng cho mọi component runtime cần load dữ liệu theo ``dataSrc``/``dataTable`` — flow: state trong RAM (nanostores) → ``loadData`` → cache IndexedDB. Chỉ dùng ``loadData`` trực tiếp khi chạy ở build-time (Astro frontmatter) — xem ``hook/SERVICES.rst``.
 
 ---
 
@@ -376,19 +387,15 @@ Firestore dùng field ``deleted_at``:
 
 ---
 
-## firestore.js — Internals
+## firestore.js / firestore.worker.js — Internals
 
 .. code-block:: text
 
-   firebaseApp          Firebase app singleton (merged từ firebase.js cũ)
-   FirestoreAdapter     Class thực thi toàn bộ Firestore logic
-   firestoreAdapter     Singleton instance — import bởi crud.js
-
-Private (không export):
-
-.. code-block:: text
-
-   _getDb()             Lazy Firestore db singleton
+   getFirebaseApp()               firestore.js — Firebase app singleton, dùng trực tiếp CHỈ bởi
+                                   webs/bay/tools/service.js's listenBayPings (xem hook/WORKER.rst)
+   WorkerAdapter/D1WorkerAdapter  firestore.worker.js — class thực thi CRUD qua Cloudflare Worker
+   repoWorkerAdapter/llmWorkerAdapter/authWorkerAdapter/llmD1Adapter
+                                  firestore.worker.js — singleton instance, import bởi crud.js
    _getFs()             Lazy firebase/firestore module cache + { db }
    _buildConstraints()  Chuyển QueryOpts → Firestore constraint array
    _toRows()            Map snapshot → rows, loại bỏ soft-deleted

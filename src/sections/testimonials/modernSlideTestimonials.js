@@ -12,32 +12,46 @@ export const data = [
 		description: { vi: '"Trải nghiệm mua quà thật dễ dàng và tiện lợi tại Teamo"', en: '"Buying gifts at Teamo is such an easy and convenient experience"' },
 		slider: [
 			{
-				title: 'Tô Nguyễn',
+				title: 'Ngọc Hân',
 				content: { vi: 'Nhân viên tư vấn rất nhiệt tình, người yêu mình thích quà kiểu này cực.', en: 'The staff were super helpful, and my partner loved this kind of gift.' },
-				pics: 'https://i.pravatar.cc/160?img=51',
+				pics: 'https://i.ibb.co/Wp7x49ZS/nu-1.webp',
 				score: '5~20',
 				meta: { role: { vi: 'NV Văn phòng', en: 'Office worker' } },
 			},
 			{
 				title: 'Tiến Đạt',
 				content: { vi: 'Nhân viên tư vấn rất nhiệt tình, người yêu mình thích quà kiểu này cực.', en: 'The staff were super helpful, and my partner loved this kind of gift.' },
-				pics: 'https://i.pravatar.cc/160?img=12',
+				pics: 'https://i.ibb.co/GQSxs1fk/nam-1.webp',
 				score: '5~15',
-				meta: { role: { vi: 'Sinh viên', en: 'Student' } },
+				meta: { role: { vi: 'Kinh doanh tự do', en: 'Freelance business owner' } },
+			},
+			{
+				title: 'Thanh Mai',
+				content: { vi: 'Mua ở shop lần thứ 4 rồi, quà đẹp mà rất tiện. Chắc chắn sẽ còn quay lại nhiều lần nữa.', en: 'This is my 4th time buying here — beautiful gifts and very convenient. I will definitely come back again.' },
+				pics: 'https://i.ibb.co/1tfRPZzD/nu-2.webp',
+				score: '5~41',
+				meta: { role: { vi: 'Giáo viên', en: 'Teacher' } },
 			},
 			{
 				title: 'Trần Minh Hiếu',
 				content: { vi: 'Quà đóng gói siêu cẩn thận, ship xa cũng không sợ móp nát gì bên trong luôn ý.', en: 'The gift was packed with great care — even shipped far away, nothing inside got damaged.' },
-				pics: 'https://i.pravatar.cc/160?img=53',
+				pics: 'https://i.ibb.co/xKYcbhWk/nam-2.webp',
 				score: '5~32',
-				meta: { role: { vi: 'NV Văn phòng', en: 'Office worker' } },
+				meta: { role: { vi: 'Giám đốc', en: 'Director' } },
 			},
 			{
-				title: 'Dũng Bùi',
-				content: { vi: 'Mua ở shop lần thứ 4 rồi, quà đẹp mà rất tiện. Chắc chắn sẽ còn quay lại nhiều lần nữa.', en: 'This is my 4th time buying here — beautiful gifts and very convenient. I will definitely come back again.' },
-				pics: 'https://i.pravatar.cc/160?img=14',
-				score: '5~41',
-				meta: { role: { vi: 'Sinh viên', en: 'Student' } },
+				title: 'Bảo Trân',
+				content: { vi: 'Giao hàng nhanh, đóng gói đẹp mắt, rất đáng tiền.', en: 'Fast delivery, beautifully packaged, totally worth it.' },
+				pics: 'https://i.ibb.co/0pW6xdx3/nu-3.webp',
+				score: '5~27',
+				meta: { role: { vi: 'NV Marketing', en: 'Marketing staff' } },
+			},
+			{
+				title: 'Hoàng Việt',
+				content: { vi: 'Giá cả hợp lý, chất lượng vượt mong đợi, chắc chắn sẽ ủng hộ tiếp.', en: 'Reasonable price, quality exceeded expectations — will definitely support again.' },
+				pics: 'https://i.ibb.co/zh95hSQC/nam-3.webp',
+				score: '5~24',
+				meta: { role: { vi: 'Kỹ sư', en: 'Engineer' } },
 			},
 		],
 	},
@@ -159,6 +173,7 @@ const baseConfig = {
 							opt: {
 								mode: 'p',
 								stys: {
+                  minHeight: '98px', // custom minHeight để card có chiều cao đồng đều, tránh nhảy nhót khi slide
 									fontSize: 'clamp(0.85rem, 1.05vw, 0.95rem)', // custom fontSize
 									lineHeight: '1.6', // custom lineHeight
 									color: 'color-mix(in oklab, var(--color-base-content) 65%, transparent)',

@@ -1,0 +1,32 @@
+:host { display: contents; }
+
+.aid-panel {
+    box-sizing: border-box;
+    width: 380px; height: calc(100% + 1rem);
+    margin: -.5rem;
+    border-radius: .5rem; overflow: hidden;
+    display: flex; flex-direction: column;
+}
+
+.aid-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .75rem 1rem; flex: 0 0 auto;
+    border-bottom: 1px solid var(--color-base-300);
+}
+.aid-head-id { display: flex; align-items: center; gap: .5rem; min-width: 0; }
+.aid-title { font-weight: 600; font-size: .9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.aid-messages { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: .6rem; padding: .75rem; }
+.aid-empty { opacity: .6; font-size: .8rem; text-align: center; margin: auto; }
+
+.aid-msg { display: flex; gap: .5rem; max-width: 85%; }
+.aid-msg.mine { margin-left: auto; flex-direction: row-reverse; }
+.aid-bubble { background: color-mix(in oklab, var(--color-base-300) 70%, transparent); border-radius: .75rem; padding: .5rem .75rem; min-width: 0; }
+.aid-msg.mine .aid-bubble { background: color-mix(in oklab, var(--color-primary) 25%, transparent); }
+.aid-content { margin: 0; font-size: .875rem; white-space: pre-wrap; word-break: break-word; }
+.aid-sources { margin: .3rem 0 0; font-size: .68rem; opacity: .6; }
+.aid-typing { letter-spacing: .02em; animation: aid-typing-pulse 1.2s ease-in-out infinite; }
+@keyframes aid-typing-pulse { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+
+.aid-composer { display: flex; gap: .5rem; padding: .5rem; flex: 0 0 auto; border-top: 1px solid var(--color-base-300); }
+.aid-composer web-text { flex: 1; min-width: 0; }

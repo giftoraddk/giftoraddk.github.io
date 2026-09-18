@@ -608,7 +608,7 @@ Animation text (qua ``opt``):
    { bit: 'content', opt: { mode: 'popover', placement: 'top' } }
 
    // Upload
-   { bit: 'pics', opt: { mode: 'photor-upload', multiple: false, placeholder: 'Upload ảnh...' } }
+   { bit: 'pics', opt: { mode: 'photor', multiple: false, placeholder: 'Upload ảnh...' } }
 
 ----
 
@@ -686,7 +686,7 @@ Conductor API
 
 **``all()`` response shape (khi không dùng ``limit``):**
 
-``dataSrc``/``dataTable`` trả về array trực tiếp hoặc 1 object (được bọc thành mảng 1 phần tử) — xem ``crud.js loadData()`` trong ``docs/CRUD.rst``. Không có tham số ``transform`` — xử lý dữ liệu sau khi đọc qua ``get(sectionId)?.data``.
+``dataSrc``/``dataTable`` trả về array trực tiếp hoặc 1 object (được bọc thành mảng 1 phần tử) — xem ``crud.js loadData()`` trong ``hook/CRUD.rst``. Không có tham số ``transform`` — xử lý dữ liệu sau khi đọc qua ``get(sectionId)?.data``.
 
 ----
 
@@ -793,7 +793,7 @@ Background Helper
 ==================
 
 ``bg`` render qua ``<svc-underlay>`` (WebGL particle background + gradient-blob layer) —
-xem ``docs/web-board.rst`` § ``bg`` và component tại ``src/webs/underlay/svc-underlay.js``.
+xem ``hook/web-board.rst`` § ``bg`` và component tại ``src/webs/underlay/svc-underlay.js``.
 ``web-bg.js`` (cũ) không còn được dùng cho ``bg``, chỉ còn tồn tại như file tham khảo.
 
 .. code-block:: js
@@ -875,17 +875,17 @@ Tài liệu liên quan
 +-------------------------------+----------------------------------------------+
 | File                          | Nội dung                                     |
 +===============================+==============================================+
-| ``docs/ARCHITECT.rst``        | Tổng quan kiến trúc + layer diagram          |
+| ``hook/ARCHITECT.rst``        | Tổng quan kiến trúc + layer diagram          |
 +-------------------------------+----------------------------------------------+
-| ``docs/DESIGN.rst``           | Cú pháp baseConfig — tiers, makes, bg, anime |
+| ``hook/DESIGN.rst``           | Cú pháp baseConfig — tiers, makes, bg, anime |
 +-------------------------------+----------------------------------------------+
-| ``docs/SECTIONS.rst``         | Catalog section configs — layout diagrams    |
+| ``hook/SECTIONS.rst``         | Catalog section configs — layout diagrams    |
 +-------------------------------+----------------------------------------------+
-| ``docs/web-board.rst``        | web-board → web-boxs → web-box → web-cell    |
+| ``hook/web-board.rst``        | web-board → web-boxs → web-box → web-cell    |
 +-------------------------------+----------------------------------------------+
-| ``docs/web-apex.rst``         | API reference tất cả component apex/        |
+| ``hook/web-apex.rst``         | API reference tất cả component apex/        |
 +-------------------------------+----------------------------------------------+
-| ``docs/SERVICES.rst``         | Conductor ``all()`` opts, retry, cache       |
+| ``hook/SERVICES.rst``         | Conductor ``all()`` opts, retry, cache       |
 +-------------------------------+----------------------------------------------+
-| ``docs/SCHEMA.rst``           | Database DDL — CREATE TABLE, Field Reference |
+| ``hook/SCHEMA.rst``           | Database DDL — CREATE TABLE, Field Reference |
 +-------------------------------+----------------------------------------------+

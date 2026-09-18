@@ -85,17 +85,6 @@ const themeCSS = Object.entries(variant)
 			articleDate={articleDate}
 		/>
 		<style set:html={themeCSS}></style>
-    
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-R5KRS0PW0F"></script>
-    <script is:inline>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-R5KRS0PW0F');
-    </script>
-    
 		<!-- Apply saved theme before first paint to prevent flash -->
 		<script define:vars={{ themeCookie: COOKIE_CONFIG.THEME, langCookie: COOKIE_CONFIG.LANGUAGE }} is:inline>
 			(function() {
@@ -212,11 +201,11 @@ const themeCSS = Object.entries(variant)
           ui={ui} theme={theme} mainColors={mainColors} lang="vi">
         </svc-pay-stats>
 
-        <script src="@/webs/division/svc-sale.js"></script>
-        <svc-sale id="shop-sale" transition:persist="shop-sale"
+        <script src="@/webs/llm/svc-aide.js"></script>
+        <svc-aide id="shop-sale" transition:persist="shop-sale" division="sale"
           x="99%" y="calc(100% - 18rem)"
           ui={variant.ui} theme={variant.theme} lang="vi">
-        </svc-sale>
+        </svc-aide>
 
         <script src="@/webs/auth/svc-logged.js"></script>
         <svc-logged id="svc-logged" transition:persist="svc-logged" pathLink="/"></svc-logged>

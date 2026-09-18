@@ -66,7 +66,7 @@ bay. **Không dữ liệu nội dung nào chạy qua server của chúng ta** �
    │  1. Nạp cache cục bộ: devices / lịch sử chat / sections / promo đã lưu │
    │     — mở lại vẫn thấy đủ nội dung dù chưa có ai online. Products KHÔNG │
    │     nằm trong bước này — lưu Firestore thật (collection ``products``, │
-   │     PUBLIC_DB), tự stream real-time riêng qua onSnapshot, xem § 4.3.5  │
+   │     PUBLIC_DB_ALL), tự stream real-time riêng qua onSnapshot, xem § 4.3.5  │
    │  2. Sinh ``_peerId`` ephemeral mới, dựng mesh session (PeerJS) + đăng   │
    │     ký handler cho từng loại message                                   │
    │  3. Mở listener Firestore realtime (nghe thay đổi doc bay + ``peer_id``)│
@@ -201,12 +201,13 @@ lỡ cuộc trò chuyện nào dù đang làm việc khác.
 
 ``devices`` (presence + thiết bị) · ``chats`` (tin nhắn, TTL 7 ngày) · ``blobs`` (file đính
 kèm/ảnh, TTL 7 ngày) · ``sections`` · ``sectionItems`` · ``orders`` · ``invoices`` (ghi thêm
-Firestore project riêng) · ``promos`` (keyPath ``[bay_id, code]``). Store ``products`` vẫn khai
+Firestore, connection ``DB_ALL`` — chung project với mọi bảng còn lại) · ``promos`` (keyPath
+``[bay_id, code]``). Store ``products`` vẫn khai
 báo cho tương thích DB_VERSION cũ nhưng không còn accessor nào ghi/đọc — xem § 4.3.5.
-Cùng nguyên lý field/format với bảng ``records`` chuẩn (xem ``docs/SCHEMA.rst``) để tái dùng
+Cùng nguyên lý field/format với bảng ``records`` chuẩn (xem ``hook/SCHEMA.rst``) để tái dùng
 được thẳng schema cột của ``svc-admin``.
 
-4.3.5 ``products`` — Firestore thật (env ``PUBLIC_DB``)
+4.3.5 ``products`` — Firestore thật (env ``PUBLIC_DB_ALL``)
 -----------------------------------------------------------
 
 Khác mọi bảng commerce còn lại của bay (sections/sectionItems/promos — IndexedDB + P2P mesh),
@@ -298,7 +299,7 @@ mọi peer đang nối — tự vá nếu 1 relay hop bị lỡ nhịp giữa ph
 Toàn bộ hàm có side-effect thật trong ``src/webs/bay/*.js`` theo khuôn "2-Level Comment Flow":
 docstring ``/** Flow <tên>: Input -> Output */`` + bước đánh số ``[1] CHECK`` / ``[2] PROCESS``
 / ``[3] EXECUTE`` / ``[4] RETURN`` (bỏ bước không áp dụng), có thể thêm bước con ``[N.a]``/
-``[N.b]`` khi 1 bước có ≥2 nhánh đáng kể. Quy tắc đầy đủ + ví dụ: ``docs/ARCHITECT.rst`` §
+``[N.b]`` khi 1 bước có ≥2 nhánh đáng kể. Quy tắc đầy đủ + ví dụ: ``hook/ARCHITECT.rst`` §
 Comment Convention — 2-Level Flow.
 
 ----

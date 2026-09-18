@@ -4,6 +4,7 @@ import css from './styles/svc-admin.css?inline';
 import { auth, parseRoles } from '@/webs/auth/tools/service.js';
 import { ulid, buildNested, injectStyles, txtLingo, getPath, toastEmit, parseCsvRows } from '@/services/helper.js';
 import { createService, invalidate as cacheInvalidate } from '@/services/crud.js';
+import { DEFAULT_CHAIN } from '@/services/tensor.js';
 import { triggerRebuild } from '@/webs/auth/tools/helper.js';
 import { all as conductorAll, more as conductorMore, get as conductorGet, subscribe as conductorSubscribe, make as conductorMake } from '@/services/conductor.js';
 import '@/webs/apex/web-button.js';
@@ -11,10 +12,9 @@ import '@/webs/apex/web-dialog.js';
 import '@/webs/apex/web-table.js';
 import '@/webs/apex/web-toast.js';
 import '@/webs/auth/svc-diffs.js';
-import '@/webs/auth/svc-assist.js';
-import '@/webs/division/svc-marketing.js';
-import '@/webs/division/svc-production.js';
-import { syncMindFromOutputTable } from '@/webs/division/tools/mind-sync.js';
+import '@/webs/llm/svc-marketing.js';
+import '@/webs/llm/svc-production.js';
+import { syncKnowFromOutputTable } from '@/webs/llm/tools/know-sync.js';
 
 const TXT_STD = {
     vi: { loading: 'Đang tải…', add: '+ Thêm', error: 'Lỗi', records: 'bản ghi', export: 'Xuất CSV', import: 'Nhập CSV', importDone: 'Kết quả nhập CSV', importOk: 'bản ghi đã nhập thành công', importSkip: 'bản ghi bị bỏ qua', importRow: 'Dòng', required: 'là bắt buộc', saveOk: 'Đã lưu thành công', saveFail: 'Lưu thất bại' },
@@ -302,7 +302,7 @@ export class SvcAdmin extends LitElement {
                 this._data = [deepMerge({ id: newId }, buildNested(flat)), ...this._data];
                 this._syncConductor();
                 this._dfRevalidate();
-                this._dfSyncMind({ id: newId, ...docData });
+                this._dfSyncKnow({ id: newId, ...docData });
             } else {
                 //   [3.b] UPDATE: Ghi đè field thay đổi + actors, merge vào đúng row trong _data
                 const existing = this._data.find(r => r.id === id);
@@ -314,7 +314,7 @@ export class SvcAdmin extends LitElement {
                 this._data = this._data.map(r => r.id === id ? deepMerge(r, buildNested(flat)) : r);
                 this._syncConductor();
                 this._dfRevalidate();
-                this._dfSyncMind(this._data.find(r => r.id === id));
+                this._dfSyncKnow(this._data.find(r => r.id === id));
             }
             this.querySelector('#sad-table')?.closeEdit(id);
             toastEmit(this._txt.saveOk, 'success');
@@ -324,10 +324,12 @@ export class SvcAdmin extends LitElement {
         }
     }
 
-    // Đồng bộ NGAY vào `mind` mỗi khi admin tự tạo/sửa tay 1 record thuộc bảng 'products'/'posts'
-    // (kể cả giá/tồn kho mà pipeline AI của svc-talk.js không tự set — xem tools/mind-sync.js) —
-    // best-effort, tự no-op với bảng khác (syncMindFromOutputTable tự kiểm tra this._table).
-    _dfSyncMind(record) { if (record) syncMindFromOutputTable(record, this._table); }
+    // Đồng bộ NGAY vào `know` (D1, LLM_DB) mỗi khi admin tự tạo/sửa tay 1 record thuộc bảng
+    // 'products'/'posts'/'finance_reports' (kể cả giá/tồn kho mà pipeline AI của svc-talk.js không
+    // tự set — xem webs/llm/tools/know-sync.js) — best-effort, tự no-op với bảng khác
+    // (syncKnowFromOutputTable tự kiểm tra this._table). Thay cho `mind`-sync cũ
+    // (division/tools/mind-sync.js, không còn gọi từ đây).
+    _dfSyncKnow(record) { if (record) syncKnowFromOutputTable(record, this._table); }
 
     /**
      * Flow soft-delete 1 record: wt-delete event -> set deleted_at, gỡ khỏi _data/conductor
@@ -631,9 +633,9 @@ export class SvcAdmin extends LitElement {
 
     _comUserId() { return this._authUser?.id ?? ''; }
 
-    get _svc()    { return createService(this._table, '', this.server || 'firestore'); }
+    get _svc()    { return createService(this._table, '', this.server || 'DB_ALL'); }
 
-    get _comAiConfig() { return [import.meta.env.PUBLIC_NVID, import.meta.env.PUBLIC_GROQ, import.meta.env.PUBLIC_OPER].filter(Boolean).join('|'); }
+    get _comAiConfig() { return DEFAULT_CHAIN; }
 
     _comActors(existing, action) {
         const entry   = `${this._comUserId()}~${new Date().toISOString()}~${action}`;
@@ -712,16 +714,6 @@ export class SvcAdmin extends LitElement {
 
             <div class="sad-wrap">
 
-                ${this._perms.edit ? html`
-                    <svc-assist ui=${this.ui} theme=${this.theme} lang=${this.lang}
-                        ai=${this._comAiConfig} .schema=${this.schema} hint=${this.assistHint}
-                        ?multiple=${this.assistMultiple} count=${this.assistCount}
-                        @assist:fields=${this._dhAssistFields}
-                        @assist:records=${this._dhAssistRecords}
-                        @assist:loading=${this._dhAssistLoading}
-                    ></svc-assist>
-                ` : ''}
-                
                 ${!this.single ? html`
                     <div class="sad-toolbar">
                         <span class="sad-count">

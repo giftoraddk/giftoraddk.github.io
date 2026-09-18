@@ -1,5 +1,5 @@
 import { LitElement, html, unsafeCSS } from "lit";
-import { isObject, dataInit, cssInline, injectStyles, normText } from "@/services/helper.js";
+import { isObject, dataInit, cssInline, injectStyles, normText, productSlug, postSlug } from "@/services/helper.js";
 import { loadKey } from "@/services/crud.js";
 import { all as conductorAll, more as conductorMore, get as conductorGet, subscribe as conductorSubscribe } from "@/services/conductor.js";
 import { bgTemplate } from "@/webs/underlay/svc-underlay.js";
@@ -15,6 +15,14 @@ const TXT_STD = {
   vi: { empty: 'Không có dữ liệu' },
   en: { empty: 'No data' }
 }
+
+// Card config của products/posts (xem sections/products/*.js, sections/another/_cardPost.js) trỏ
+// CTA/title qua field `meta.url` — route thật là /product|post/{slug}-{id}/ (xem
+// productSlug/postSlug, services/helper.js), KHÔNG phải id thô. Field này chỉ được page tự inject
+// lúc SSG cho vài trang (product/index.astro, post/tag/[tag].astro...) — record raw tải thẳng qua
+// `dataTable` (Shop, gift/[budget], gift/[occasions]...) không có sẵn. Bù chung 1 chỗ ở đây
+// (_withSlugUrl) thay vì từng page tự nhớ inject.
+const SLUG_ROUTES = { products: { prefix: '/product/', slug: productSlug }, posts: { prefix: '/post/', slug: postSlug } };
 
 export class WebBoxs extends LitElement {
   static properties = {
@@ -292,6 +300,23 @@ export class WebBoxs extends LitElement {
       });
     }
     return items;
+  }
+
+  // dataTable "table~nested" — chỉ khớp khi bảng CHÍNH đúng 'products'/'posts' (bỏ qua chuỗi
+  // multi-table "t1|t2~nested" như dataTable: 'products|orders|inventory|staff' của svc-stats —
+  // không phải shape card đơn bảng mà slug route áp dụng được).
+  get _comSlugRoute() {
+    const table = (this.dataTable || '').split('~')[0];
+    return table.includes('|') ? null : SLUG_ROUTES[table] || null;
+  }
+
+  // Bù `meta.url` (route slug thật) cho record chưa có sẵn field này — KHÔNG mutate resData/
+  // conductor cache gốc (map ra mảng mới), record nào page đã tự inject rồi (product/index.astro...)
+  // thì giữ nguyên, không tính lại.
+  _withSlugUrl(items) {
+    const route = this._comSlugRoute;
+    if (!route) return items;
+    return items.map(it => (it?.meta?.url ? it : { ...it, meta: { ...(it?.meta || {}), url: `${route.prefix}${route.slug(it)}/` } }));
   }
 
   // ── Shared micro-helpers ──────────────────────────────────────────────────
@@ -684,7 +709,7 @@ export class WebBoxs extends LitElement {
   render() {
     const config = this._config;
     const design = config?.ui || this.ui;
-    const items  = this._applyFilter(this.resData);
+    const items  = this._withSlugUrl(this._applyFilter(this.resData));
     const bg     = (this.bg && Object.keys(this.bg).length) ? this.bg : config.bg;
     const bgEl   = bg ? this._bgEl(bg) : '';
 

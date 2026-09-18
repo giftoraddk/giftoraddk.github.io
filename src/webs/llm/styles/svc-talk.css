@@ -1,0 +1,76 @@
+:host { display: contents; }
+
+/* Popover top-layer/positioning (Popover API, follows <web-fab> live while dragging via web-fab's
+   'drag' event) is entirely handled by <web-popover> itself (webs/apex/web-popover.js) — .tlk-panel
+   is just normal content projected into its default slot, sized/laid out here. */
+.tlk-panel {
+    box-sizing: border-box;
+    /* height:100% — fills whatever height <web-popover> assigns .web-popover-content (it clamps
+       to real available viewport space around the trigger). Letting .tlk-panel track that exactly,
+       rather than sizing itself independently off 100vh, is what keeps .tlk-composer-wrap pinned:
+       the shrinkage lands on .tlk-messages (flex:1, its own overflow-y:auto) instead of pushing the
+       whole panel past the popover's box, which would otherwise force an outer scrollbar over the
+       entire panel — burying the composer behind a second, uncoordinated scroll region. */
+    width: 380px; height: calc(100% + 1rem);
+    /* height:100% alone resolves against the parent's content-box (inside padding+border) — the
+       negative top margin below bleeds the top edge past that padding, but a negative bottom
+       margin does NOT stretch this box's own height to bleed the bottom edge too (margin never
+       adds to an element's own box size). +1rem = the two .5rem bleeds (top+bottom) restores the
+       full padding-box height so both edges actually reach the popover's border. */
+    margin: -.5rem; /* bleed past web-popover's own .5rem content padding — edge-to-edge head/composer */
+    border-radius: .5rem; overflow: hidden; /* own rounding — .web-popover-content itself doesn't clip */
+    display: flex; flex-direction: column;
+}
+
+.tlk-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .75rem 1rem; flex: 0 0 auto;
+    border-bottom: 1px solid var(--color-base-300);
+}
+.tlk-title { font-weight: 600; }
+
+.tlk-messages { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: .6rem; padding: .75rem; }
+.tlk-empty { opacity: .6; font-size: .8rem; text-align: center; margin: auto; }
+
+.tlk-msg { display: flex; gap: .5rem; max-width: 85%; }
+.tlk-msg.mine { margin-left: auto; flex-direction: row-reverse; }
+.tlk-bubble { background: color-mix(in oklab, var(--color-base-300) 70%, transparent); border-radius: .75rem; padding: .5rem .75rem; min-width: 0; }
+.tlk-msg.mine .tlk-bubble { background: color-mix(in oklab, var(--color-primary) 25%, transparent); }
+.tlk-author { font-size: .72rem; opacity: .7; display: block; margin-bottom: .1rem; }
+.tlk-content { margin: 0; font-size: .875rem; white-space: pre-wrap; word-break: break-word; }
+.tlk-typing { letter-spacing: .15em; animation: tlk-typing-pulse 1.2s ease-in-out infinite; }
+@keyframes tlk-typing-pulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+
+.tlk-actions { display: flex; gap: .4rem; margin-top: .4rem; flex-wrap: wrap; }
+
+.tlk-composer-wrap { position: relative; flex: 0 0 auto; border-top: 1px solid var(--color-base-300); }
+.tlk-composer { display: flex; gap: .5rem; padding: .5rem; }
+.tlk-composer web-text { flex: 1; min-width: 0; }
+
+/* Menu "/" chọn đích danh 1 phòng ban (xem svc-talk.js's _rfMentionMenu) — nổi TRÊN composer */
+.tlk-mention-menu {
+    position: absolute; left: .5rem; right: .5rem; bottom: 100%; margin-bottom: .25rem;
+    border-radius: .5rem; overflow-y: auto; max-height: 200px;
+    background: var(--color-base-200); border: 1px solid var(--color-base-300);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .2); z-index: 1;
+}
+.tlk-mention-item {
+    display: flex; align-items: center; gap: .5rem; width: 100%;
+    padding: .5rem .75rem; background: none; border: none; cursor: pointer;
+    color: inherit; font-size: .85rem; text-align: left;
+}
+.tlk-mention-item:hover { background: color-mix(in oklab, var(--color-primary) 12%, transparent); }
+.tlk-mention-empty { padding: .5rem .75rem; font-size: .8rem; opacity: .6; }
+
+/* Chip "Đang nhắn riêng: ..." khi đã chọn đích danh 1 phòng ban (xem _rfTargetChip) */
+.tlk-target {
+    display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+    padding: .35rem .75rem; font-size: .78rem;
+    background: color-mix(in oklab, var(--color-primary) 12%, transparent);
+}
+.tlk-target-clear { background: none; border: none; cursor: pointer; color: inherit; display: flex; align-items: center; padding: .15rem; }
+
+/* Popup "Xem chi tiết" (_rfPreviewDialog) — nội dung cây macro/sub-step giờ render bởi
+   <svc-progress> (component riêng, tự có shadow root + CSS .prg-* của chính nó), ở đây chỉ còn
+   layout của phần header (topic) bọc ngoài. */
+.tlk-preview { display: flex; flex-direction: column; gap: .75rem; }

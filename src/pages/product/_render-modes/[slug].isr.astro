@@ -2,7 +2,7 @@
 export const prerender = false;
 
 import Core from '@/layouts/Core.astro';
-import ProductDetailBody from '@/components/Product/DetailBody.astro';
+import ProductDetailBody from '@/components/Common/ProductDetail.astro';
 import { fetchCollection, fetchDoc } from '@/services/firestore.server.ts';
 import { pickLang } from '@/services/helper.js';
 import { menuItems, policies, socials } from '@/modules/landing/home.js';
@@ -36,7 +36,7 @@ const pageTitle = product?.title || pickLang({ en: 'Product', vi: 'Sản phẩm'
 const bg = { blur: true, gradient: true, tint: '#2ebd85', total: 3, blobType: 'circleOverlap', blobMove: 'swap', deg: 180 };
 ---
 
-<Core title={pageTitle} description={description} image={heroImg} footer={{ columns: menuItems, policies, socials, bg }}>
+<Core title={pageTitle} description={description} image={heroImg} articleDate={product?.created_at} noindex={!product} footer={{ columns: menuItems, policies, socials, bg }}>
 	{product ? (
 		<ProductDetailBody product={product} allProducts={allProducts} />
 	) : (

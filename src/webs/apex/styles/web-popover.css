@@ -25,17 +25,24 @@
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
     padding: .5rem;
     z-index: 101;
-    
+    box-sizing: border-box;
+    /* height is always set inline by _updatePosition(), clamped to whatever's actually
+       available on the resolved side — this overflow-y is a fallback for plain slotted
+       content that doesn't manage its own internal scroll region (a panel that fills this
+       box with height:100% and scrolls internally, e.g. svc-talk.css's .tlk-panel, will
+       already fit exactly and never trigger it). */
+    overflow-y: auto;
+
     /* Animation Properties */
     visibility: hidden;
     pointer-events: none;
     opacity: 0;
     transform: scale(0.92) translateY(10px);
-    transition: 
-        opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
-        transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+    transition:
+        opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
         visibility 0.4s;
-    
+
     min-width: 200px;
     will-change: transform, opacity;
 }
@@ -45,6 +52,57 @@
     pointer-events: auto;
     opacity: 1;
     transform: scale(1) translateY(0);
+}
+
+/* Nhóm nút góc content — fullscreen kế closeable, cả 2 đều opt-in qua props riêng (xem
+   web-popover.js). Vị trí đặt trên NHÓM này, không đặt trên từng nút, để 1-nút hay 2-nút đều tự
+   xếp cạnh nhau đúng góc mà không cần biết trước tổ hợp nào đang bật. */
+.web-popover-actions {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1;
+    display: flex;
+    gap: .25rem;
+}
+
+.web-popover-fullscreen-btn,
+.web-popover-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: var(--color-base-content, #ffffff);
+    background: color-mix(in oklab, var(--color-base-300, #393939) 60%, transparent);
+    opacity: .75;
+    transition: opacity .2s ease;
+}
+.web-popover-fullscreen-btn:hover, .web-popover-fullscreen-btn:focus-visible,
+.web-popover-close-btn:hover, .web-popover-close-btn:focus-visible { opacity: 1; }
+.web-popover-fullscreen-btn:focus-visible,
+.web-popover-close-btn:focus-visible { outline: 2px solid var(--color-primary, #3b82f6); outline-offset: 1px; }
+/* Đúng 1 SVG mũi tên chéo "phóng to" duy nhất (không đổi icon theo trạng thái) — xoay 180° khi
+   đang fullscreen để tự đảo nghĩa thị giác thành "thu nhỏ" (2 mũi tên hướng vào trong). */
+.web-popover-fullscreen-btn svg { transition: transform .2s ease; }
+.web-popover-fullscreen-btn.is-active svg { transform: rotate(180deg); }
+
+/* Fullscreen (_applyFullscreen() in JS gives .web-popover-content itself a definite width/height
+   near the full viewport) — a slotted panel's own width is normally left to size itself (e.g.
+   .tlk-panel/.aid-panel each declare a fixed px width, see their own CSS), which only ever bleeds
+   correctly edge-to-edge in NORMAL mode because .web-popover-content's width is auto there (it
+   shrink-to-fits around the child, so the child's `margin: -.5rem` bleed is naturally symmetric —
+   see web-popover.js's _updatePosition() comment for why height needs no such override there
+   either, in normal mode). Once the parent's width becomes definite (fullscreen), that symmetry
+   breaks the same way height's did — this forces the slotted root to track it, +1rem to match
+   each panel's own `height: calc(100% + 1rem)` compensation for the SAME `margin: -.5rem` bleed. */
+.web-popover-content.fullscreen ::slotted(*) {
+    width: calc(100% + 1rem) !important;
 }
 
 /* Popover elements start from display:none, so the entry transition above has no "from" frame

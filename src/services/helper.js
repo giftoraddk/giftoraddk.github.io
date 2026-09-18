@@ -269,49 +269,11 @@ export const getStyleOpts = ({
 
 // ── ENCODING ────────────────────────────────────────────────────────────────
 const LOCALE_MAP = { vi: 'vi-VN', en: 'en-US' };
-const SALT = import.meta.env.PUBLIC_SALT ?? '';
 
-// AES-256-GCM key từ PUBLIC_SALT (pad/trim về đúng 32 bytes)
-async function _apexKey() {
-    const raw = new TextEncoder().encode(SALT.padEnd(32, '0').slice(0, 32));
-    return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
-}
-
-/**
- * Mã hóa chuỗi bằng AES-256-GCM + PUBLIC_SALT.
- * IV ngẫu nhiên 12 bytes được gắn đầu output → mỗi lần encode ra kết quả khác nhau.
- * @param {string} value
- * @returns {Promise<string>} base64 (iv + ciphertext)
- */
-export const apexEncode = async (value) => {
-    const key = await _apexKey();
-    const iv  = crypto.getRandomValues(new Uint8Array(12));
-    const buf = await crypto.subtle.encrypt(
-        { name: 'AES-GCM', iv },
-        key,
-        new TextEncoder().encode(String(value)),
-    );
-    const out = new Uint8Array(12 + buf.byteLength);
-    out.set(iv);
-    out.set(new Uint8Array(buf), 12);
-    return btoa(String.fromCharCode(...out));
-};
-
-/**
- * Giải mã chuỗi đã encode bằng apexEncode.
- * @param {string} encoded — base64 trả về từ apexEncode
- * @returns {Promise<string>}
- */
-export const apexDecode = async (encoded) => {
-    const key  = await _apexKey();
-    const data = Uint8Array.from(atob(encoded), c => c.charCodeAt(0));
-    const buf  = await crypto.subtle.decrypt(
-        { name: 'AES-GCM', iv: data.slice(0, 12) },
-        key,
-        data.slice(12),
-    );
-    return new TextDecoder().decode(buf);
-};
+// apexEncode/apexDecode (AES-256-GCM keyed by PUBLIC_SALT) removed — that was the client-side
+// password encrypt/compare scheme for the old Firestore-based login (svc-login.js/
+// svc-bay-login.js), now replaced by Supabase Auth, which owns credential verification itself.
+// See hook/cloudflare-worker.md and worker/README.md.
 
 export class _Fusion {
 	static #_IS_EXP = false;

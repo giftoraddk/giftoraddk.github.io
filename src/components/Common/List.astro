@@ -1,0 +1,306 @@
+---
+// Giao diện danh sách dùng chung — search bar + sort dropdown + static crawlable <ul> + web-boxs
+// masonry + infinite scroll, y hệt UI product/index.astro trước đây. Dùng cho CẢ 4 trang:
+// product/index.astro, post/index.astro, product/tag/[tag].astro, post/tag/[tag].astro (+ 2 biến
+// thể ISR của 2 trang tag, xem astro.config.mjs renderModeIntegration) — sort/slug/table khác
+// nhau giữa product và post nên mọi thứ khác biệt được truyền vào qua props THUẦN DỮ LIỆU (không
+// truyền function qua props — define:vars bên dưới chỉ serialize được JSON).
+import { site } from '@/services/constants/site.js';
+import I18nText from '@/components/I18nText.astro';
+
+interface BreadcrumbItem {
+	label: string;
+	href?: string; // bỏ trống ở item cuối = trang hiện tại
+}
+
+interface SortOption {
+	label: string;
+	value: string;
+	field: string; // dot-path vào record, vd 'meta.views', 'pricing', 'created_at'
+	transform?: 'date' | 'int' | 'pipeFirstNum'; // 'pipeFirstNum' = parseFloat(String(v).split('~')[0]) — cho 'pricing'/'score' (format 'value~count'/'value~unit')
+	order?: 'asc' | 'desc'; // mặc định 'desc'
+}
+
+interface Props {
+	pageTitle: string;
+	pageDescription: string;
+	// Cung cấp để hiện breadcrumb (trang tag) — bỏ trống = ẩn (trang index, giữ đúng UI gốc).
+	// Item cuối (không href) cũng dùng làm "current" trong BreadcrumbList JSON-LD nếu canonicalUrl có.
+	breadcrumb?: BreadcrumbItem[];
+	canonicalUrl?: string; // URL tuyệt đối trang hiện tại — chỉ cần khi có breadcrumb (JSON-LD)
+	items: any[]; // record[] đã inject sẵn meta.url (xem cách 4 page gọi component này)
+	cardConfig: any; // config cho <web-boxs> (import từ src/sections/another/_card*.js)
+	dataTable: 'products' | 'posts'; // bảng conductor để serverExecutor refetch
+	urlPrefix: string; // '/product/' | '/post/' — dựng lại meta.url lúc refetch client-side
+	extraMeta?: Record<string, any>; // field thêm vào meta khi refetch (vd { ctaLabel: 'Xem chi tiết' } cho products)
+	searchPlaceholder: string;
+	sortOptions: SortOption[]; // sortOptions[0] = mặc định lúc load trang
+	emptyLabel?: string; // hiện thay vì list khi items rỗng (trang tag chưa có item nào)
+	bottomCta?: { href: string; label: string };
+	serverExecutor?: boolean; // true (mặc định) → search/sort gọi lại conductor, false → lọc trên data đã bake sẵn
+}
+
+const {
+	pageTitle,
+	pageDescription,
+	breadcrumb,
+	canonicalUrl,
+	items,
+	cardConfig,
+	dataTable,
+	urlPrefix,
+	extraMeta = {},
+	searchPlaceholder,
+	sortOptions,
+	emptyLabel,
+	bottomCta,
+	serverExecutor = true,
+} = Astro.props;
+
+const desStys = {
+	maxWidth: 'fit-content',
+	margin: '0 auto',
+	padding: '0 0.5rem',
+	borderRadius: '2rem',
+	border: '1px solid color-mix(in oklab, var(--color-base-content) 10%, transparent)',
+	background: 'color-mix(in oklab, var(--color-primary) 5%, transparent)',
+	fontSize: 'clamp(0.7rem, 0.9vw, 0.8rem)',
+	marginBottom: '0.5rem',
+};
+
+// BreadcrumbList JSON-LD — cùng cấu trúc @type mà Post/Product TagBody.astro cũ từng phát riêng lẻ.
+const breadcrumbLd = breadcrumb && canonicalUrl ? {
+	'@context': 'https://schema.org',
+	'@type': 'BreadcrumbList',
+	itemListElement: breadcrumb.map((b: BreadcrumbItem, i: number) => ({
+		'@type': 'ListItem',
+		position: i + 1,
+		name: b.label,
+		item: b.href ? `${site.domain.replace(/\/$/, '')}${b.href}` : canonicalUrl,
+	})),
+} : null;
+---
+
+{breadcrumbLd && <script type="application/ld+json" is:inline set:html={JSON.stringify(breadcrumbLd)} />}
+
+<div class="mx-auto max-w-6xl px-4 py-8">
+	<slot name="before" />
+
+	{breadcrumb && breadcrumb.length > 0 && (
+		<nav aria-label="breadcrumb" class="mb-6 text-sm opacity-60">
+			{breadcrumb.map((b: BreadcrumbItem, i: number) => (
+				<>
+					{i > 0 && <span> / </span>}
+					{b.href ? <a href={b.href} class="hover:text-primary">{b.label}</a> : <span>{b.label}</span>}
+				</>
+			))}
+		</nav>
+	)}
+
+	<script src="@/webs/apex/web-letters.js"></script>
+	<div class="mb-8 text-center">
+		<web-letters content={pageDescription} prefix="✦  " stys={JSON.stringify(desStys)}></web-letters>
+	</div>
+
+	<h1 class="text-4xl lg:text-5xl font-bold mb-6 text-center">{pageTitle}</h1>
+
+	{items.length === 0 ? (
+		<p class="text-center opacity-60">{emptyLabel}</p>
+	) : (
+		<>
+			<!-- Search + sort bar -->
+			<div class="flex flex-col sm:flex-row gap-3 mb-6">
+				<web-text id="list-search" placeholder={searchPlaceholder} clearable ui="modern" style="flex:1"></web-text>
+				<div style="width:200px">
+					<web-select id="list-sort" options={JSON.stringify(sortOptions.map(({ label, value }) => ({ label, value })))} lang={site.defaultLang} ui="modern"></web-select>
+				</div>
+			</div>
+
+			<!-- Static list — crawlable không cần JS -->
+			<ul class="sr-only" aria-hidden="true">
+				{items.map((it: any) => (
+					<li>
+						<h2><a href={it.meta.url}>{it.title}</a></h2>
+						{(it.description || it.content) && (
+							<p>{(it.description || String(it.content).replace(/<[^>]*>/g, '')).slice(0, 160)}</p>
+						)}
+					</li>
+				))}
+			</ul>
+
+			<!-- Masonry UI — data embed trong HTML (SEO-friendly) -->
+			<web-boxs id="list-boxs" data={JSON.stringify(items)} config={JSON.stringify(cardConfig)} masonry lang={site.defaultLang} ui="modern"></web-boxs>
+
+			<!-- Infinite scroll sentinel -->
+			<div id="scroll-sentinel" style="height:1px"></div>
+			<div id="scroll-loader" class="py-6 text-center text-sm opacity-40" style="display:none">
+				<I18nText text={{ en: 'Loading more...', vi: 'Đang tải thêm...' }} />
+			</div>
+		</>
+	)}
+
+	{bottomCta && (
+		<div class="mt-14 pt-8 border-t border-base-content/10 flex flex-col items-center gap-4">
+			<a href={bottomCta.href} class="group inline-flex items-center gap-3 px-7 py-3 rounded-2xl font-semibold
+				border border-primary bg-base-content/5
+				hover:bg-primary/10 hover:border-primary/30 hover:text-primary
+				transition-all duration-200 backdrop-blur-sm">
+				{bottomCta.label}
+			</a>
+		</div>
+	)}
+</div>
+
+{items.length > 0 && (
+	<>
+		<!-- Truyền data server-side xuống module script qua global -->
+		<script is:inline define:vars={{ items, sortOptions, dataTable, urlPrefix, extraMeta, serverExecutor }}>
+			window.__listPage = { items, sortOptions, dataTable, urlPrefix, extraMeta, serverExecutor };
+		</script>
+
+		<script>
+			// @ts-nocheck
+			import '@/webs/apex/web-boxs.js';
+			import '@/webs/apex/web-text.js';
+			import '@/webs/apex/web-select.js';
+			import { all as conductorAll, get as conductorGet } from '@/services/conductor.js';
+			import { productSlug as recordSlug } from '@/services/helper.js';
+
+			const { items: allItems, sortOptions, dataTable, urlPrefix, extraMeta, serverExecutor } = window.__listPage;
+
+			const boxs = document.getElementById('list-boxs');
+			const searchEl = document.getElementById('list-search');
+			const sortEl = document.getElementById('list-sort');
+
+			let currentSort = sortOptions[0]?.value;
+			let currentSearch = '';
+			let busy = false;
+
+			// ── Sort — thuần dữ liệu (field/transform/order), không cần function riêng theo domain ──
+
+			function extractValue(item, opt) {
+				const raw = (opt.field || '').split('.').reduce((o, k) => (o == null ? o : o[k]), item);
+				if (opt.transform === 'pipeFirstNum') return parseFloat(String(raw ?? '0').split('~')[0]) || 0;
+				if (opt.transform === 'int') return parseInt(raw ?? '0', 10) || 0;
+				if (opt.transform === 'date') return new Date(raw ?? 0).getTime();
+				return raw ?? 0;
+			}
+
+			function applySort(arr) {
+				const opt = sortOptions.find((o) => o.value === currentSort) || sortOptions[0];
+				const list = [...arr];
+				list.sort((a, b) => {
+					const va = extractValue(a, opt);
+					const vb = extractValue(b, opt);
+					return opt.order === 'asc' ? va - vb : vb - va;
+				});
+				return list;
+			}
+
+			// ── Firebase executor (serverExecutor = true) ───────────────────────────
+			// Routed through conductor — cùng section mà /shop dùng, nên đã sẵn IndexedDB cache/TTL
+			// (hook/SERVICES.rst) — không tạo section riêng cho trang này.
+			async function getFirebaseData() {
+				await conductorAll(dataTable, { dataTable });
+				const raw = conductorGet(dataTable)?.data ?? [];
+				return raw
+					.filter((p) => p.status === 'active')
+					.map((p) => ({
+						...p,
+						meta: { ...(p.meta ?? {}), ...extraMeta, url: `${urlPrefix}${recordSlug(p)}/` },
+					}));
+			}
+
+			// ── Pagination ──────────────────────────────────────────────────────────
+
+			const PAGE_SIZE = 12;
+			let _sorted = [];
+			let _page = 0;
+			const sentinel = document.getElementById('scroll-sentinel');
+			const loader = document.getElementById('scroll-loader');
+
+			function renderPage() {
+				const start = _page * PAGE_SIZE;
+				const slice = _sorted.slice(0, start + PAGE_SIZE);
+				boxs.data = slice;
+				boxs.search = currentSearch;
+				_page++;
+				const done = _page * PAGE_SIZE >= _sorted.length;
+				sentinel.style.display = done ? 'none' : 'block';
+				loader.style.display = 'none';
+			}
+
+			function resetPagination(sorted) {
+				_sorted = sorted;
+				_page = 0;
+				renderPage();
+			}
+
+			// ── IntersectionObserver ─────────────────────────────────────────────────
+
+			const observer = new IntersectionObserver(
+				(entries) => {
+					if (!entries[0].isIntersecting) return;
+					if (_page * PAGE_SIZE >= _sorted.length) return;
+					loader.style.display = 'block';
+					setTimeout(renderPage, 150);
+				},
+				{ rootMargin: '200px' }
+			);
+			observer.observe(sentinel);
+
+			// ── Update web-boxs ─────────────────────────────────────────────────────
+
+			async function update() {
+				if (busy) return;
+				busy = true;
+
+				let source;
+				if (serverExecutor) {
+					boxs.loader = 1;
+					try {
+						source = await getFirebaseData();
+					} catch {
+						source = allItems;
+					} finally {
+						boxs.loader = 0;
+					}
+				} else {
+					source = allItems;
+				}
+
+				resetPagination(applySort(source));
+				busy = false;
+			}
+
+			// ── Event listeners ─────────────────────────────────────────────────────
+
+			let debounce;
+			searchEl.addEventListener('input', (e) => {
+				if (!(e instanceof CustomEvent)) return;
+				clearTimeout(debounce);
+				debounce = setTimeout(() => {
+					currentSearch = e.detail?.value ?? '';
+					update();
+				}, 200);
+			});
+
+			searchEl.addEventListener('clear', () => {
+				currentSearch = '';
+				update();
+			});
+
+			sortEl.addEventListener('change', (e) => {
+				currentSort = e.detail?.value ?? sortOptions[0]?.value;
+				update();
+			});
+
+			// ── Init ────────────────────────────────────────────────────────────────
+
+			Promise.all([customElements.whenDefined('web-boxs'), customElements.whenDefined('web-select')]).then(() => {
+				sortEl.value = currentSort;
+				update();
+			});
+		</script>
+	</>
+)}

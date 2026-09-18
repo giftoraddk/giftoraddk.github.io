@@ -1,8 +1,8 @@
 // src/services/schemas/admin/customers.js
 //
-// Field phẳng cho <svc-admin dataTable='customers' server='llm'> — lead khách vãng lai để lại số
+// Field phẳng cho <svc-admin dataTable='customers' server='DB_LLM'> — lead khách vãng lai để lại số
 // điện thoại khi chat với <svc-sale> (xem hook/SALE.rst, tools/sale-engine.js's extractPhone,
-// svc-sale.js's _dfSaveCustomer). Sống CÙNG project Firestore với `mind` (server 'llm',
+// svc-sale.js's _dfSaveCustomer). Sống CÙNG project Firestore với `mind` (server 'DB_LLM',
 // PUBLIC_DB_LLM — xem hook/CRUD.rst), tách khỏi mọi bảng còn lại của app.
 //
 // Ghi tự động DUY NHẤT bởi svc-sale.js — admin ở đây CHỈ để xem/tra cứu lại + cập nhật `status`
@@ -64,8 +64,9 @@ export default (lang = 'vi') => {
             render: (v) => v || '—',
         },
         {
-            // visitorId — đối chiếu lại lịch sử chat thật trong `saleChats` (project CHÍNH, khác
-            // project 'llm' này) nếu cần xem lại toàn bộ hội thoại trước khi gọi lại cho khách.
+            // visitorId — định danh khách vãng lai; lịch sử chat thật KHÔNG còn ở Firestore (chỉ
+            // cache IndexedDB, TTL 1 ngày, phía trình duyệt của khách — xem svc-sale.js), nên
+            // không thể đối chiếu lại từ admin sau khi hết hạn/đổi máy.
             label: t.visitorId,
             field: 'visitorId',
             type: 'text',

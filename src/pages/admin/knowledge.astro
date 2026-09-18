@@ -1,0 +1,65 @@
+---
+import LayoutAdmin from '@/layouts/LayoutAdmin.astro';
+const pageTitle = 'Knowledge Admin';
+const pageDescription = 'Knowledge base (know/rel) admin page';
+---
+
+<LayoutAdmin title={pageTitle} description={pageDescription}>
+	<div class='p-4'>
+		<h1 class='text-xl font-bold mb-5'>Cơ sở tri thức (know)</h1>
+		<!-- server='DB_LLMD1' — know/rel sống trên Cloudflare D1 (worker/), tách khỏi Firestore
+		     DB_ALL/DB_LLM (mind cũ của division/svc-sale.js) — xem src/webs/llm/tools/server.js,
+		     worker/README.md, hook/knowledge_database_cloudflare_d1_vectorize.md (D1 + Cloudflare
+		     Vectorize + Workers AI embedding — semantic search thật, xem worker/packages/llm-worker/src/search.ts).
+		     Trang duy nhất quản lý tri thức — thay thế hẳn /admin/mind.astro cũ, đã xoá. -->
+		<!-- Nạp nhanh dữ liệu sản phẩm vào `know` (+ auto-link `rel` theo tag chung) để
+		     <svc-aide division="sale"> (tools/seed-sale.js) tư vấn chính xác giá/khuyến mãi/tồn kho —
+		     component tự chứa, xem src/webs/llm/svc-learn.js. Phát 'learn:done' sau mỗi lần nạp để
+		     reload 2 lưới know/rel bên dưới. -->
+		<svc-learn id='admin-learn' lang='vi' ui="spatial"></svc-learn>
+		<svc-admin id='admin-know' dataTable='know' server='DB_LLMD1' lang='vi' revalidate></svc-admin>
+
+		<h1 class='text-xl font-bold mb-5 mt-8'>Quan hệ (rel)</h1>
+		<svc-admin id='admin-rel' dataTable='rel' server='DB_LLMD1' lang='vi' revalidate></svc-admin>
+	</div>
+
+	<script>
+		import '@/webs/auth/svc-admin.js';
+		import '@/webs/llm/svc-learn.js';
+		import knowSchema from '@/services/schemas/admin/know.js';
+		import relSchema from '@/services/schemas/admin/rel.js';
+
+		// _dcLoad(true) KHÔNG đủ để thấy dữ liệu mới ngay trên tab đang mở — conductor's all()
+		// return sớm nếu section đã có data trong RAM (xem services/conductor.js's `all()`,
+		// hook/SERVICES.rst), bất kể IndexedDB cache đã invalidate hay chưa (invalidate() chỉ ảnh
+		// hưởng lần load kế tiếp/tab mới, không đẩy dữ liệu vào tab đang mở). Phải reset RAM section
+		// về rỗng TRƯỚC khi load lại — tái dùng đúng _dhReset() nút "🔄" sẵn có trong toolbar thay vì
+		// tự viết lại logic reset.
+		function reloadKnowGrid() {
+			(document.getElementById('admin-know') as any)?._dhReset?.();
+		}
+
+		function reloadRelGrid() {
+			(document.getElementById('admin-rel') as any)?._dhReset?.();
+		}
+
+		document.addEventListener('astro:page-load', () => {
+			const know = document.getElementById('admin-know');
+			if (know) (know as any).schema = knowSchema((know as any).lang || 'vi');
+
+			const rel = document.getElementById('admin-rel');
+			if (rel) (rel as any).schema = relSchema((rel as any).lang || 'vi');
+
+			// <svc-learn> tự đọc products + ghi know/rel (xem svc-learn.js) — trang chỉ cần reload
+			// 2 lưới bên dưới sau mỗi lần nạp.
+			const learn = document.getElementById('admin-learn') as any;
+			if (learn && !learn.dataset.wired) {
+				learn.dataset.wired = '1';
+				learn.addEventListener('learn:done', () => {
+					reloadKnowGrid();
+					reloadRelGrid();
+				});
+			}
+		});
+	</script>
+</LayoutAdmin>

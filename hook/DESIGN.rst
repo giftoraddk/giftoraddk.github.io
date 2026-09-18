@@ -990,7 +990,7 @@ Cell modes
 +----------------------+-------------------------------------------------------------------+
 | ``popover``          | Floating content khi hover/click                                  |
 +----------------------+-------------------------------------------------------------------+
-| ``photor-upload``    | Upload ảnh tới imgbb                                              |
+| ``photor``           | Upload ảnh tới imgbb                                              |
 +----------------------+-------------------------------------------------------------------+
 | ``iframe``           | Nhúng iframe ngoài (YouTube/Vimeo/map…). ``bit``/``bitLocal`` là  |
 |                       | embed URL. Mặc định full-bleed cover 16:9 (dùng cho video nền     |
@@ -1206,11 +1206,11 @@ Tài liệu liên quan
 +-------------------------------+----------------------------------------------+
 | File                          | Nội dung                                     |
 +===============================+==============================================+
-| ``docs/DATAFLOW.rst``         | Luồng dữ liệu chi tiết từng bước            |
+| ``hook/DATAFLOW.rst``         | Luồng dữ liệu chi tiết từng bước            |
 +-------------------------------+----------------------------------------------+
-| ``docs/ARCHITECT.rst``        | Tổng quan kiến trúc + layer diagram          |
+| ``hook/ARCHITECT.rst``        | Tổng quan kiến trúc + layer diagram          |
 +-------------------------------+----------------------------------------------+
-| ``docs/web-apex.rst``         | API reference tất cả component apex/        |
+| ``hook/web-apex.rst``         | API reference tất cả component apex/        |
 +-------------------------------+----------------------------------------------+
 | ``guide/webboxs-overview``    | Full props, cell modes, slider config        |
 +-------------------------------+----------------------------------------------+

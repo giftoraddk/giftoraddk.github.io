@@ -1,0 +1,29 @@
+---
+import LayoutAdmin from '@/layouts/LayoutAdmin.astro';
+const pageTitle = 'LLM Divisions Admin';
+const pageDescription = 'webs/llm divisions admin page (Cloudflare D1)';
+---
+
+<LayoutAdmin title={pageTitle} description={pageDescription}>
+	<div class='p-4'>
+		<h1 class='text-xl font-bold mb-5'>Quản lý phòng ban</h1>
+		<!-- server='DB_LLMD1' — divisions của domain webs/llm sống trên Cloudflare D1 (worker/).
+		     Trang duy nhất để xem/sửa các doc marketing/production/finance/aide — thay thế hẳn
+		     /admin/divisions.astro (Firestore DB_ALL) cũ, đã xoá — division/svc-talk.js cũ vẫn còn
+		     trong code nhưng không còn mount ở đâu (xem LayoutAdmin.astro), nên bảng `divisions` cũ
+		     trên Firestore không còn nơi nào đọc/ghi nữa. Schema tái dùng NGUYÊN VẸN
+		     services/schemas/admin/divisions.js (không giả định server nào). -->
+		<svc-admin id='admin-llm-divisions' dataTable='divisions' server='DB_LLMD1' lang='vi' orderable></svc-admin>
+	</div>
+
+	<script>
+		import '@/webs/auth/svc-admin.js';
+		import '@/webs/llm/tools/server.js';
+		import schema from '@/services/schemas/admin/divisions.js';
+
+		document.addEventListener('astro:page-load', () => {
+			const el = document.getElementById('admin-llm-divisions');
+			if (el) (el as any).schema = schema((el as any).lang || 'vi');
+		});
+	</script>
+</LayoutAdmin>

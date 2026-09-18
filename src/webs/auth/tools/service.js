@@ -1,4 +1,5 @@
 import Storager from '@/services/storager.js';
+import { supabase } from '@/services/supabase.js';
 
 const USER_KEY  = 'db_auth';
 const TOKEN_KEY = 'db_token';
@@ -39,6 +40,10 @@ export const auth = {
     async clear() {
         await Storager.remove(USER_KEY);
         await Storager.remove(TOKEN_KEY);
+        // Xoá cache local thôi chưa đủ — session Supabase thật vẫn sống trong localStorage
+        // (supabase-js tự persist), nên svc-login.js's getSession() sau đó vẫn thấy hợp lệ và tự
+        // đăng nhập lại ngay, làm "Đăng xuất" trông như không hoạt động (quay lại trang admin).
+        try { await supabase.auth.signOut(); } catch { /* best-effort — cache local đã xoá dù sao */ }
     },
 
     async isLoggedIn() { return !!(await this.get()); },

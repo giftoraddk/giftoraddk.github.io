@@ -43,7 +43,7 @@ const TXT_STD = {
  *   tables  — JSON array string or comma-separated table names.
  *             Derives the dropdown list and scope of role edits.
  *             Pass from the layout so it stays in sync with allMenuItems.
- *   dataTable — Firestore collection that holds user documents (default: "users").
+ *   dataTable — Supabase `profiles` table (via Worker, server='DB_ACC') that holds user rows (default: "profiles").
  *   lang    — "vi" | "en"
  *   ui      — "" | "spatial"
  *
@@ -58,7 +58,7 @@ export class SvcRoles extends LitElement {
         ui:       { type: String },
         theme:    { type: String },
         dataTable: { type: String },
-        server:   { type: String }, // adapter đã registerAdapter — mặc định 'auth'
+        server:   { type: String }, // adapter đã registerAdapter — mặc định 'DB_ACC'
         // JSON array string or comma-separated — e.g. '["posts","products","orders"]'
         tables:   { type: String },
         // ── Internal state ──────────────────────────────────────────────────
@@ -77,8 +77,8 @@ export class SvcRoles extends LitElement {
         this.txt      = null;
         this.ui       = '';
         this.theme    = 'dark';
-        this.dataTable = 'users';
-        this.server   = 'auth';
+        this.dataTable = 'profiles';
+        this.server   = 'DB_ACC';
         this.tables   = '';
         this._open    = false;
         this._table   = '';   // resolved in connectedCallback after `tables` prop is set
@@ -159,7 +159,7 @@ export class SvcRoles extends LitElement {
         this._users  = this._users.map(u => u.id === userId ? { ...u, roles: newRoles } : u);
         this._saving = new Set([...this._saving, userId]);
         try {
-            //   [3.b] SAVE_DB: Ghi roles mới vào Firestore
+            //   [3.b] SAVE_DB: Ghi roles mới vào Supabase `profiles`
             const now = await this._svc.now();
             await this._svc.update(userId, { roles: newRoles, updated_at: now });
         } catch (err) {
@@ -176,7 +176,7 @@ export class SvcRoles extends LitElement {
     // ── Computed ───────────────────────────────────────────────────────────────
 
     get _txt() { return txtLingo(this.txt, TXT_STD, this.lang); }
-    get _svc() { return createService((this.dataTable || 'users').split('~')[0], '', this.server); }
+    get _svc() { return createService((this.dataTable || 'profiles').split('~')[0], '', this.server); }
 
     /**
      * Resolved table list from the `tables` prop.

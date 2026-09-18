@@ -1,6 +1,6 @@
 // src/services/schemas/admin/mind.js
 //
-// Field phẳng cho <svc-admin dataTable='mind' server='llm'> — search index đa domain mà <svc-sale>
+// Field phẳng cho <svc-admin dataTable='mind' server='DB_LLM'> — search index đa domain mà <svc-sale>
 // đọc làm ngữ cảnh trả lời khách (xem hook/SALE.rst, hook/firebase-multidomain-ai-rag-spec.md,
 // tools/mind-sync.js, services/mind.js). Cấu trúc "index" gốc (refTable/refId thay product_id +
 // `text`) cộng thêm field lọc rút gọn từ spec (`domain`/`unitType`/`version`/`effectiveFrom`/

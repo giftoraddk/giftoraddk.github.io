@@ -37,6 +37,7 @@ import { templates as testimonialsTemplates } from '@/sections/testimonials/inde
 import { templates as trustedTemplates } from '@/sections/trusted/index.js'
 import { isOwner, loadSectionItems, loadDevices } from './tools/service.js'
 import { createService } from '@/services/crud.js'
+import { DEFAULT_CHAIN } from '@/services/tensor.js'
 import { ulid, txtLingo, emit } from '@/services/helper.js'
 import { setActiveSection } from './tools/baySectionAdapter.js'
 import { createPromosStore } from './tools/bayPromoAdapter.js'
@@ -170,7 +171,7 @@ export class SvcBaySections extends LitElement {
         // [1] CHECK: Dừng nếu bay chưa có owner_id
         if (!this.bay?.owner_id) return
         // [3] EXECUTE: Đọc devices cục bộ (IndexedDB, đã có `bay` mở gọi loadDevices() ở svc-bay.js) —
-        //     KHÔNG query Firestore project 'auth' cho hồ sơ NGƯỜI KHÁC (owner): trái nguyên tắc "P2P,
+        //     KHÔNG query Firestore project 'DB_ACC' cho hồ sơ NGƯỜI KHÁC (owner): trái nguyên tắc "P2P,
         //     Firestore chỉ làm directory" của domain này, và cũng không có quyền đọc hồ sơ người khác.
         //     display_name/email của owner đã tự P2P sync sẵn qua PRESENCE (user_name/user_email, xem
         //     makePresence() trong tools/service.js).
@@ -477,7 +478,7 @@ export class SvcBaySections extends LitElement {
     }
 
     get _comAiConfig() {
-        return [import.meta.env.PUBLIC_NVID, import.meta.env.PUBLIC_GROQ, import.meta.env.PUBLIC_OPER].filter(Boolean).join('|')
+        return DEFAULT_CHAIN
     }
 
     // Tự động phát hiện field nested-array (`dataKey` trong tier config, xem web-boxs.js

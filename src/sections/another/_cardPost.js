@@ -12,113 +12,102 @@ export const data = [
 			views: '27615',
 			likes: '217',
 			url: '#',
-			ctaLabel: 'Xem chi tiết',
 		},
 	},
 ];
 
 const baseConfig = {
-	groupCol: [12, 12, 12, 12],
-	groupRow: ['auto', 'auto', 'auto', 'auto'],
-	groupJustify: ['none', 'none', 'none', 'none'],
+	groupCol: [12, 12, 12],
+	groupRow: ['auto', 'auto', 'auto'],
+	groupJustify: ['none', 'left', 'none'],
 	groupStyle: [
-		{ position: 'relative', marginBottom: '1rem' }, // Image section
-		{ padding: '0 1rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }, // Tags section
-		{ padding: '0 1rem 1.25rem' }, // Title section
-    { }
+		{ position: 'relative', marginBottom: '1.75rem' },
+		{ marginBottom: '0.75rem' },
+		{
+			marginBottom: '0', gap: '0.35rem',
+			borderTop: '1px solid color-mix(in oklab, var(--color-base-content) 8%, transparent)',
+			paddingTop: '0.85rem',
+		},
 	],
 	makes: [
-		// Section 1: Image with Overlays
+		// Image — plain, generous whitespace, stats overlaid top-right / bottom-right
 		[
 			{
 				bit: 'pics',
-        ext: { org: 'meta.url' },
+				ext: { org: 'meta.url' },
 				opt: {
 					mode: 'gallery',
-          rounded: '1.25rem 1.25rem 0 0',
-					stys: {
-						width: '100%',
-						aspectRatio: '3/2',
-						objectFit: 'cover',
-						display: 'block',
-					}
-				}
+					rounded: '.75rem',
+					stys: { width: '100%', aspectRatio: '3/2', objectFit: 'cover', display: 'block' },
+				},
 			},
 			{
 				bit: 'meta.views',
 				opt: {
 					mode: 'p',
-					prefix: 'ri:eye-line', // icon iconify
-					iconSize: '1.25rem',
+					prefix: 'ri:eye-line',
+					iconSize: '1rem',
 					stys: {
-						position: 'absolute',
-						bottom: '1rem',
-						left: '1rem',
-						color: 'var(--color-primary)',
-						display: 'flex',
-						alignItems: 'center',
-						gap: '0.375rem',
-					}
-				}
+						position: 'absolute', top: '0.75rem', right: '0.75rem',
+						display: 'flex', alignItems: 'center', gap: '0.3rem',
+						padding: '0.25rem 0.6rem', borderRadius: '999px',
+						background: 'color-mix(in oklab, var(--color-base-100) 70%, transparent)',
+						color: 'var(--color-base-description)',
+						fontSize: '0.8rem',
+					},
+				},
 			},
 			{
 				bit: 'meta.likes',
 				opt: {
 					mode: 'p',
-					suffix: 'ri:heart-3-line', // icon iconify
-					iconSize: '1.25rem',
+					prefix: 'ri:heart-3-line',
+					iconSize: '1rem',
 					stys: {
-						position: 'absolute',
-						bottom: '1rem',
-						right: '1rem',
-						color: 'var(--color-primary)',
-						display: 'flex',
-						alignItems: 'center',
-						gap: '0.375rem',
-					}
-				}
+						position: 'absolute', top: '0.75rem', left: '0.75rem',
+						display: 'flex', alignItems: 'center', gap: '0.3rem',
+						padding: '0.25rem 0.6rem', borderRadius: '999px',
+						background: 'color-mix(in oklab, var(--color-base-100) 70%, transparent)',
+						color: 'var(--color-base-description)',
+						fontSize: '0.8rem',
+					},
+				},
 			},
 		],
-		// Section 2: Tags
-    [
-      { bit: 'tags', opt: { mode: 'tags', type: 'soft', color: 'primary' } },
-    ],
-		// Section 3: Title
+		// Tags
+		[
+			{ bit: 'tags', opt: { mode: 'tags' } },
+		],
+		// Title — clickable, links to detail (meta.url = '/post/{slug}-{id}/', xem postSlug()
+		// trong services/helper.js — id thô KHÔNG khớp route thật /post/[slug].astro)
 		[
 			{
 				bit: 'title',
-				opt: {
-					mode: 'p',
-					stys: {
-						color: 'var(--color-base-content)',
-						margin: '0',
-					}
-				}
-			},
-		],
-		// Section 4: Link to detail — bit resolves meta.url ('/post/{slug}', xem postSlug()) from data
-		[
-			{
-				bit: 'meta.ctaLabel',
 				ext: { org: 'meta.url' },
 				opt: {
 					mode: 'a',
 					stys: {
-						display: 'flex', alignItems: 'center', justifyContent: 'center',
-						width: '100%', height: '48px', borderRadius: '0 0 1.25rem 1.25rem',
-						background: 'color-mix(in oklab, var(--color-primary) 10%, transparent)',
-						color: 'var(--color-base-content)',
+						display: 'block',
+						fontSize: 'clamp(1.125rem, 1.8vw, 1.375rem)',
+						fontWeight: '400',
+						letterSpacing: '0.01em',
+						color: 'var(--color-base-description)',
+						lineHeight: '1.2',
+						margin: '0',
 					},
 				},
 			},
 		],
 	],
-	stys: {},
-	bg: {
-		...getStyleOpts({ rounded: '1.25rem', tint: '#34ace0', total: 2, deg: 225 })
+	stys: {
+		padding: '1rem', height: '100%',
+		border: '1px solid color-mix(in oklab, var(--color-base-content) 12%, transparent)',
+    borderRadius: '.5rem',
 	},
+	bg: {
+		...getStyleOpts({ rounded: '0', hueCustom: 1 })
+	},
+	anime: 'fade-in',
 };
-
-// Removed manual overrides
 
 export const config = { ...baseConfig };

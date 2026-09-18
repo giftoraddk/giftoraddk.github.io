@@ -153,7 +153,7 @@
 }
 
 /* Loading Spinner */
-.loading-spinner {
+.loader {
 	position: absolute;
 	left: 50%;
 	top: 50%;
@@ -163,27 +163,19 @@
 	justify-content: center;
 }
 
-.loading-spinner svg {
+.loader svg {
 	width: 20px;
 	height: 20px;
-	animation: spinner-rotate 0.8s linear infinite;
-	color: currentColor;
+	animation: spin 1s linear infinite;
 }
 
-@keyframes spinner-rotate {
-	from {
-		transform: rotate(0deg);
-	}
-	to {
-		transform: rotate(360deg);
-	}
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-.web-button.type-fill.loading .loading-spinner svg {
+.web-button.type-fill.loading .loader svg {
 	color: #ffffff;
 }
 
-.web-button:not(.type-fill).loading .loading-spinner svg {
+.web-button:not(.type-fill).loading .loader svg {
 	color: var(--btn-color, #ffffff);
 }
 

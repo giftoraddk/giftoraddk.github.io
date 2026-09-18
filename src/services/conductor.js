@@ -83,7 +83,7 @@ function _normalizeOpts(opts) {
  * @param {{ url?:string, dataSrc?:string, dataTable?:string, cache?:number, limit?:number, filters?:object, server?:string }} opts
  *   url/dataSrc — REST endpoint; dataTable — Firestore collection; cache — phút (0 = tắt, mặc định 5)
  *   limit — số item/trang; > 0 bật chế độ phân trang
- *   server — chỉ áp dụng khi đọc Firestore (không có dataSrc): 'firestore' (mặc định) | 'auth' | 'invoices'
+ *   server — chỉ áp dụng khi đọc Firestore (không có dataSrc): 'DB_ALL' (mặc định) | 'DB_ACC' | 'DB_LLM'
  */
 export async function all(sectionId, opts = {}) {
     const { src, dataTable, cache, limit, filters, server } = _normalizeOpts(opts)

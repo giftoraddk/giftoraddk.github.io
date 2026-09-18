@@ -19,8 +19,8 @@ const _jobSvc      = () => createService('jobs');
 const _proposalSvc = () => createService('proposals');
 const _walletSvc   = () => createService('walletTxns');
 const _reviewSvc   = () => createService('reviews');
-const _userSvc     = () => createService('users', '', 'auth');
-const _invoiceSvc  = () => createService('invoices', '', 'invoices');
+const _userSvc     = () => createService('profiles', '', 'DB_ACC');
+const _invoiceSvc  = () => createService('invoices');
 
 // ── Audit trail (actors) — bản sao _comActors() của src/webs/auth/svc-admin.js ─────────────────
 function _appendActor(existing, userId, action) {

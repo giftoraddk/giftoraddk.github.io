@@ -5,7 +5,7 @@ SECTIONS
 Catalog tất cả section configs sẵn có trong ``src/sections/``.
 Dùng file này để chọn nhanh layout phù hợp trước khi bắt tay viết ``baseConfig``.
 
-Đọc kèm ``docs/DESIGN.rst`` (cú pháp chi tiết) và ``src/sections/index.js`` (import catalog).
+Đọc kèm ``hook/DESIGN.rst`` (cú pháp chi tiết) và ``src/sections/index.js`` (import catalog).
 
 .. contents:: Mục lục
    :depth: 2
@@ -351,12 +351,12 @@ col ``['12','12']`` (cả 2 variant)  rows ``['auto','auto']``  real map, no ico
    └─────────────────────────────────────────┘
 
 - Đơn giản hơn ``contactModernHoriMap``/``contactSpatialHoriMap`` — KHÔNG có tier contact-info
-  (icon email/phone/address); map là ``<web-google-map>`` thật (xem ``docs/web-apex.rst``),
+  (icon email/phone/address); map là ``<web-google-map>`` thật (xem ``hook/web-apex.rst``),
   không còn placeholder ảnh tĩnh. ``bit: meta.address`` — 1 field DUY NHẤT vừa cho địa chỉ
-  hiển thị vừa cho toạ độ map (xem docs/web-apex.rst § web-google-map).
+  hiển thị vừa cho toạ độ map (xem hook/web-apex.rst § web-google-map).
 - ``modern``: intro (T0) → map (T1). ``spatial``: map (T0) → intro (T1) — đảo thứ tự.
 - Trong channel room: seed lúc tạo section tự lấy ``meta.address``/``meta.lat``/``meta.lng``
-  từ ``room.location`` nếu có (xem ``docs/CHANNEL.rst`` § Section — multi-section).
+  từ ``room.location`` nếu có (xem ``hook/CHANNEL.rst`` § Section — multi-section).
 
 ----
 
@@ -894,13 +894,13 @@ Tài liệu liên quan
 +-----------------------------------+----------------------------------------------+
 | File                              | Nội dung                                     |
 +===================================+==============================================+
-| ``docs/DESIGN.rst``               | Cú pháp đầy đủ — tiers, makes, bg, anime    |
+| ``hook/DESIGN.rst``               | Cú pháp đầy đủ — tiers, makes, bg, anime    |
 +-----------------------------------+----------------------------------------------+
-| ``docs/web-board.rst``            | web-board → web-boxs → web-box → web-cell   |
+| ``hook/web-board.rst``            | web-board → web-boxs → web-box → web-cell   |
 +-----------------------------------+----------------------------------------------+
-| ``docs/web-apex.rst``             | API apex components                          |
+| ``hook/web-apex.rst``             | API apex components                          |
 +-----------------------------------+----------------------------------------------+
 | ``src/sections/index.js``         | Import catalog tất cả sections              |
 +-----------------------------------+----------------------------------------------+
-| ``docs/ARCHITECT.rst``            | Tổng quan kiến trúc, layer diagram           |
+| ``hook/ARCHITECT.rst``            | Tổng quan kiến trúc, layer diagram           |
 +-----------------------------------+----------------------------------------------+

@@ -119,7 +119,7 @@ let _db = null
 async function _getDb() {
     if (_db) return _db
     const { getFirestore } = await import('firebase/firestore')
-    _db = getFirestore(getFirebaseApp('firestore'))
+    _db = getFirestore(getFirebaseApp('DB_ALL'))
     return _db
 }
 
@@ -148,7 +148,11 @@ export function writePing(bayId, toDeviceId, fromDeviceId, fromUser) {
 
 // 1 listener duy nhất cho NHIỀU bay (Firestore `in` tối đa 30 id) — hiệu quả hơn N listener
 // riêng lẻ theo từng doc. Dùng thẳng firebase/firestore (không qua crud.js) — where(documentId(),
-// 'in', ...) không nằm trong QueryOpts hiện có.
+// 'in', ...) không nằm trong QueryOpts hiện có. NGOẠI LỆ CỐ Ý duy nhất còn lại đọc thẳng Firestore
+// client SDK sau khi mọi thứ khác đã chuyển qua Worker (xem hook/WORKER.rst) — 2 lý do: (1) query
+// documentId() IN [...] không có trong QueryOpts/Worker's find(), (2) ping cần push tức thời qua
+// onSnapshot thật, còn WorkerAdapter.listen() chỉ polling ~5s/lần (đủ cho danh sách, KHÔNG đủ cho
+// ping). Không di chuyển call site này qua Worker trừ khi có WebSocket/Durable Object relay thật.
 export function listenBayPings(bayIds, onNext) {
     if (!bayIds.length) return () => {}
     let unsub = () => {}
@@ -179,7 +183,7 @@ function _deviceInfo() {
 // ── Presence + device info (1 bảng `devices`, IndexedDB db_bay) ──────────────
 
 // user_email denorm giống user_name — nguồn duy nhất để các peer khác biết email của nhau mà
-// KHÔNG cần query Firestore project 'auth' (không có quyền đọc hồ sơ người khác, và trái nguyên
+// KHÔNG cần query Firestore project 'DB_ACC' (không có quyền đọc hồ sơ người khác, và trái nguyên
 // tắc "P2P, Firestore chỉ làm directory" của domain này) — xem _comSellerSlot ở svc-bay-sections.js.
 export function makePresence(bayId, myDeviceId, user, status) {
     return {

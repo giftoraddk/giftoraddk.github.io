@@ -78,11 +78,13 @@ const baseConfig = {
 		[
 			{ bit: 'tags', opt: { mode: 'tags' } },
 		],
-		// Title & Rating — title link thẳng sang trang chi tiết /product/{id}
+		// Title & Rating — title link thẳng sang trang chi tiết. 'meta.url' = field path tra cứu
+		// URL đã dựng sẵn (/product/{slug}-{id}/, xem productSlug() trong services/helper.js) —
+		// KHÔNG dùng template '/product/{id}', id thô không khớp route thật /product/[slug].astro.
 		[
 			{
 				bit: 'title',
-				ext: { org: '/product/{id}' },
+				ext: { org: 'meta.url' },
 				opt: {
 					mode: 'a',
 					stys: {

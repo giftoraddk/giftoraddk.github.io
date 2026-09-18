@@ -1,6 +1,6 @@
 // src/services/mind.js
 //
-// Retrieval core DÙNG CHUNG cho collection `mind` (knowledge base, server:'llm' — xem
+// Retrieval core DÙNG CHUNG cho collection `mind` (knowledge base, server:'DB_LLM' — xem
 // tools/mind-sync.js, hook/CRUD.rst) — rút gọn hook/firebase-multidomain-ai-rag-spec.md xuống
 // những gì tính được THUẦN JS phía browser: KHÔNG embedding/vector search (site static, không
 // backend proxy — xem tools/mind-sync.js's ghi chú CORS), KHÔNG rule engine/knowledge graph (domain

@@ -316,12 +316,12 @@ function _applyToDom(cfg) {
     // bg không mutate DOM ở đây — svc-setting.js render <svc-underlay> trực tiếp, reactive theo _values
 }
 
-// Resolve user_id chủ sở hữu lúc tạo hub lần đầu — ưu tiên id thật, super admin không có id thật → query theo email → 0
+// Resolve user_id chủ sở hữu lúc tạo hub lần đầu — ưu tiên id thật, fallback query theo email → 0
 async function _resolveOwnerId(user) {
     if (!user) return 0;
-    if (user.id && user.id !== 'super') return user.id;
+    if (user.id) return user.id;
     try {
-        const found = (await createService('users', '', 'auth').findAll({ filters: { email: user.email } }))[0];
+        const found = (await createService('profiles', '', 'DB_ACC').findAll({ filters: { email: user.email } }))[0];
         if (found?.id) return found.id;
     } catch {}
     return 0;

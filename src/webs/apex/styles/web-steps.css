@@ -156,9 +156,28 @@
 
 .step-label.error { color: var(--step-error); }
 
-/* ── Spin ─────────────────────────────────────────────────────────────────── */
+/* ── Loader (step 'active') ───────────────────────────────────────────────── */
 
-.spin { animation: spin 1s linear infinite; display: inline-flex; }
+/* SVG stroke-arc thay cho iconify-icon "ri:refresh-line" xoay — 2 bản CSS border-spin trước đó
+   (border-radius + 1 cạnh transparent) đều vỡ hình ở size-sm/md: border là 4 cạnh THẲNG bị bo tròn
+   cưỡng bức qua border-radius, và ở tổng kích thước ~14-16px không đủ pixel để browser blend cong
+   mượt — luôn sụp thành khối lởm chởm dù tỉ lệ viền/kích thước đúng. SVG vẽ cung tròn THẬT (stroke
+   trên <circle>) nên luôn mượt ở mọi kích thước, kể cả rất nhỏ. Sized theo em (ăn theo
+   --step-num-font hiện có của .step-circle, tự scale đúng theo size-sm/md/lg/xl); color không cần
+   khai báo riêng — svg mặc định `color: inherit`, và stroke="currentColor" (đặt thẳng trong markup,
+   xem web-steps.js) ăn theo đúng color:#fff có sẵn của .step-circle.active. */
+.loader {
+    width: 1.15em;
+    height: 1.15em;
+    animation: spin 1s linear infinite;
+}
+
+/* size-sm's --step-num-font (0.75rem) làm .loader (1.15em) chỉ ~13.8px trong vòng tròn 20px —
+   khó thấy cung xoay. Bump riêng size-sm, không đụng md/lg/xl (đã đủ lớn). */
+.web-steps.size-sm .loader {
+    width: 1.4em;
+    height: 1.4em;
+}
 
 @keyframes spin { to { transform: rotate(360deg); } }
 

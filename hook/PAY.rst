@@ -157,9 +157,10 @@ không F5. ``svc-pay`` tự ``_dcReinit()`` khi ``service`` đổi lúc componen
 3.3 Invoice — Firestore, schema + ``meta``
 -----------------------------------------------
 
-Ghi qua ``createService('invoices', '', 'invoices')`` — project Firestore riêng (env
-``PUBLIC_DB_INVO``, xem ``docs/CRUD.rst`` § nhiều kết nối Firestore), đúng bảng ``invoice`` theo
-``docs/SCHEMA.rst``. ``invoice.status`` chỉ có ``draft|issued|cancelled`` (văn bản pháp lý) — mọi
+Ghi qua ``createService('invoices')`` — project Firestore chung (env ``PUBLIC_DB_ALL``, connection
+``DB_ALL`` — trước đây là project riêng ``PUBLIC_DB_INVO``/``invoices``, đã gộp vào ``DB_ALL``, xem
+``hook/CRUD.rst`` § nhiều kết nối Firestore), đúng bảng ``invoice`` theo
+``hook/SCHEMA.rst``. ``invoice.status`` chỉ có ``draft|issued|cancelled`` (văn bản pháp lý) — mọi
 state quy trình nằm trong ``meta`` (JSONB tự do):
 
 .. code-block:: js
@@ -236,7 +237,7 @@ state quy trình nằm trong ``meta`` (JSONB tự do):
 
 **Ghi (read-modify-write):** ``update()`` của ``crud.js`` không deep-merge JSONB, nên mọi hàm
 mutate invoice đều tự ``findById`` trước rồi merge tay ``{ ...meta, ...patch }`` trước khi ghi —
-cùng tradeoff với ``bumpMeta`` (``docs/SCHEMA.rst`` § meta.views/likes).
+cùng tradeoff với ``bumpMeta`` (``hook/SCHEMA.rst`` § meta.views/likes).
 
 3.4 State machine — Cancel
 ------------------------------
@@ -429,12 +430,12 @@ thứ 3 bất kỳ (set ``isCart=false`` + tự nghe 2 event này, giữ nguyên
 3.10 Comment convention
 --------------------------
 
-Theo đúng "2-Level Comment Flow" của ``docs/ARCHITECT.rst`` — hàm side-effect có docstring
+Theo đúng "2-Level Comment Flow" của ``hook/ARCHITECT.rst`` — hàm side-effect có docstring
 ``/** Flow <tên>: Input -> Output */``, bước đánh số ``[1] CHECK``/``[2] PROCESS``/``[3]
 EXECUTE``/``[4] RETURN`` khi cần (``[N.a]``/``[N.b]`` chỉ thêm khi 1 bước có ≥2 nhánh đáng kể).
 
 Đã áp dụng cho toàn bộ hàm side-effect trong ``tools/service.js`` — docstring giữ NGẮN (1 câu Flow
-+ con trỏ ``xem docs/PAY.rst §X.Y``), mọi rationale/lý do thiết kế/lịch sử bug-fix chi tiết đã
++ con trỏ ``xem hook/PAY.rst §X.Y``), mọi rationale/lý do thiết kế/lịch sử bug-fix chi tiết đã
 CHUYỂN HẲN vào các mục 3.2-3.6 và `5. Giới hạn & đánh đổi`_ ở trên — code không lặp lại nữa, chỉ
 trỏ ngược tới đây. Cũng đã áp dụng (nhẹ hơn — chỉ các hàm có side-effect thật, không đụng
 render/computed) cho ``svc-cart.js`` (``_dfCheckout``), ``svc-pay-valider.js`` (``_fetchQr``) và
@@ -550,7 +551,7 @@ khuôn với ``svc-pay-reason.js``) thành 3 file:
    ``.handled-by``/``.order-items*`` lặp lại y hệt ở nhiều file) — đây là chi phí BẮT BUỘC của
    việc tách component, không phải trùng lặp có thể gộp.
 9. **Ảnh minh chứng (media) dùng CHUNG qua ``<svc-pay-reason>``'s ``showMedia``** — thay vì mỗi nơi
-   cần đính ảnh (return, xác nhận đã giao) tự render riêng 1 ``<web-photor-upload>`` + tự quản lý
+   cần đính ảnh (return, xác nhận đã giao) tự render riêng 1 ``<svc-photor>`` + tự quản lý
    1 state ``media`` rời (như ``_returnMedia`` trước đây), giờ chỉ cần truyền
    ``showMedia media=${h.media} mediaPh=...`` — field ``media`` đổi giá trị cũng đi qua CHUNG event
    ``reason:input`` ({key:'media', value}) như name/phone/note, tự động gộp vào state form hiện có
@@ -672,7 +673,7 @@ vì file đó THUẦN business logic, không có Lit — giữ ranh giới rõ g
   ``<svc-pay-customer>``) — sửa cùng lúc bằng ``_buildBuyerSlot(buyerId)``, lấy từ entry
   ``isDefault``/entry đầu của section ``pay_customer``.
 - **``TypeError: this._unsubInvoice is not a function`` — ĐÃ SỬA** — ``crud.js``'s ``.listen()``
-  trả về ``Promise<unsubscribe>`` (không đồng bộ, xem docs/CRUD.rst), nhưng ``listenInvoice``/
+  trả về ``Promise<unsubscribe>`` (không đồng bộ, xem hook/CRUD.rst), nhưng ``listenInvoice``/
   ``listenSellerInvoices``/``listenBuyerInvoices`` từng trả thẳng Promise đó ra ngoài trong khi
   MỌI call site (``svc-pay.js``/``svc-pay-warden.js``) đều gán thẳng vào ``this._unsub*`` rồi gọi
   như 1 hàm đồng bộ (``this._unsub?.()`` lúc disconnect/reinit) — gọi TRƯỚC KHI Promise resolve sẽ

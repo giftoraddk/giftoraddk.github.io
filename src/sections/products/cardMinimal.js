@@ -55,7 +55,10 @@ const baseConfig = {
 		[
 			{
 				bit: 'title',
-				ext: { org: '/product/{id}' },
+				// 'meta.url' — field tra cứu URL đã dựng sẵn (/product/{slug}-{id}/, xem productSlug()
+				// trong services/helper.js), KHÔNG dùng template '/product/{id}' (id thô không khớp
+				// route thật /product/[slug].astro).
+				ext: { org: 'meta.url' },
 				opt: {
 					mode: 'a',
 					stys: {

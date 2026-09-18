@@ -20,7 +20,7 @@ function _parseInvoiceItems(itemsStr) {
 async function _fetchBestSellers(limit = 4) {
 	const [products, invoices] = await Promise.all([
 		fetchCollection('products'),
-		fetchCollection('invoices', { connection: 'invoices', activeOnly: false }),
+		fetchCollection('invoices', { activeOnly: false }),
 	]);
 
 	const soldByName = new Map();
@@ -66,7 +66,7 @@ export const variant = {
 		textColor: '#d4af37', // --color-base-content
 		bgImage: '/images/common/gift-dark-blur.webp', // bgImage ex: /images/common/bg-light.jpg
 	},
-	bg:   { blur: true, quality: 'low', concept: 'bubbles', tint: '#ff8fa3', deg: 180, speed: 0.9, size: '2~5', push: true, pushRadius: 180, pushStrength: 60 },
+	bg:   { blur: true, quality: 'medium', concept: 'bubbles', tint: '#ff8fa3', deg: 180, speed: 0.9, size: '2~5', push: true, pushRadius: 180, pushStrength: 60 },
 };
 
 // ── Views ─────────────────────────────────────────────────────────────────────

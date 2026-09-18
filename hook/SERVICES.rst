@@ -251,7 +251,7 @@ Usage Patterns
 Dùng cho ``svc-*`` component cần đọc/ghi thẳng từ Firestore hoặc API.
 Mọi chi tiết Firebase được cô lập trong ``src/services/firestore.js``.
 
-Chi tiết đầy đủ: ``docs/CRUD.rst``.
+Chi tiết đầy đủ: ``hook/CRUD.rst``.
 
 **Cách dùng cơ bản:**
 

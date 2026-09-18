@@ -14,6 +14,7 @@ const {
 	image,
 	articleDate,
 	redirectTo, // '/gift' — xem src/components/Head/Base.astro; forward tới <Head> bên dưới
+	noindex = false, // trang 404 thật (ISR not-found) — forward tới <Head>, xem Head/Base.astro
 	menu = {
     type: "top",
     position: "default", // default, prefix, suffix
@@ -79,19 +80,9 @@ const themeCSS = Object.entries(variant)
 			ogImage={image}
 			articleDate={articleDate}
 			redirectTo={redirectTo}
+			noindex={noindex}
 		/>
 		<style set:html={themeCSS}></style>
-    
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-R5KRS0PW0F"></script>
-    <script is:inline>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-R5KRS0PW0F');
-    </script>
-    
 		<!-- Apply saved theme before first paint to prevent flash -->
 		<script define:vars={{ themeCookie: COOKIE_CONFIG.THEME, langCookie: COOKIE_CONFIG.LANGUAGE }} is:inline>
 			(function() {
@@ -185,12 +176,6 @@ const themeCSS = Object.entries(variant)
           />
         )}
 			</main>
-
-      <script src="@/webs/division/svc-sale.js"></script>
-      <svc-sale id="shop-sale" transition:persist="shop-sale"
-        x="99%" y="calc(100% - 18rem)"
-        ui={variant.ui} theme={variant.theme} lang="vi">
-      </svc-sale>
 		</div>
 	</body>
 	<style>

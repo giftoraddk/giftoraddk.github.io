@@ -1,16 +1,19 @@
 import { getStyleOpts } from '@/services/helper';
 
 // Card config cho trang GEO/SEO của products (src/pages/product/index.astro,
-// src/pages/product/[slug].astro) — cùng khung với _cardPost.js (post pages) nhưng dùng field
-// products THẬT (pics/title/tags/score/pricing, xem hook/SCHEMA.rst) thay vì field bịa
-// (meta.badge/meta.oldPrice như _cardProductNeat.js) — trang này phải render đúng dữ liệu Firestore
-// thật, không phải mockup.
+// src/pages/product/[slug].astro) — style mượn từ products/cardBase.js (backdrop polygon sau ảnh,
+// popover mô tả, title+rating cùng hàng, giá+nút cùng hàng, ui:'spatial' + anime 'bounce-in-left')
+// nhưng field vẫn bám THẬT dữ liệu Firestore products (pics/title/tags/score/pricing/description,
+// xem hook/SCHEMA.rst), không phải field bịa như _cardProductNeat.js. Điều hướng dùng
+// meta.url/meta.ctaLabel (route GEO/SEO riêng của domain này) thay vì `/product/{id}` cứng của
+// cardBase (context menu quán) — vẫn giữ nguyên khác biệt này, chỉ đổi PHẦN NHÌN cho đồng bộ.
 export const hashtags = ['products', 'modern', 'seo', 'geo', 'card', 'ecommerce'];
 
 export const data = [
 	{
 		id: 1, status: 'active', mode: 'product',
 		title: 'Hộp quà tặng sinh nhật',
+		description: 'Set quà tặng trang trí sẵn, giao nhanh trong ngày.',
 		pics: 'https://i.ibb.co/21HNHKW8/shoes.jpg',
 		tags: 'gift|birthday',
 		score: '4.8~32',
@@ -22,67 +25,116 @@ export const data = [
 const baseConfig = {
 	groupCol: [12, 12, 12, 12],
 	groupRow: ['auto', 'auto', 'auto', 'auto'],
-	groupJustify: ['none', 'none', 'between', 'none'],
+	groupJustify: ['none', 'left', 'left', 'between'],
 	groupStyle: [
-		{ position: 'relative', marginBottom: '1rem' }, // Ảnh
-		{ padding: '0 1rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }, // Tags
-		{ padding: '0 1rem 0.5rem', display: 'flex', alignItems: 'center' }, // Title + giá
-		{}, // CTA
+		{ overflow: 'hidden', position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' },
+		{ marginBottom: '0' },
+		{ marginBottom: '0.75rem', gap: '0.5rem' },
+		{ marginBottom: '0' },
 	],
 	makes: [
-		// Ảnh — click thẳng vào detail page (meta.url = /product/{slug}, xem productSlug())
+		// Ảnh — backdrop polygon + ảnh contain giữa khung (giống cardBase), popover mô tả góc phải
 		[
+			{
+				bitLocal: '',
+				opt: {
+					mode: 'span',
+					stys: {
+						top: '50%',
+						left: '50%',
+						transform: 'translate(-50%, -50%)',
+						position: 'absolute',
+						width: '75%',
+						aspectRatio: '1/1',
+						background: 'var(--color-primary)',
+						clipPath: 'ellipse(50% 40% at 50% 100%)',
+						zIndex: '0',
+					},
+				},
+			},
 			{
 				bit: 'pics',
 				ext: { org: 'meta.url' },
 				opt: {
 					mode: 'gallery',
-					rounded: '1.25rem 1.25rem 0 0',
-					stys: { width: '100%', aspectRatio: '4/3', objectFit: 'cover', display: 'block' },
+					stys: { width: '60%', margin: '0 auto', objectFit: 'contain', position: 'relative', zIndex: '1' },
+				},
+			},
+			{
+				bit: 'description',
+				opt: {
+					mode: 'popover', icon: 'ri:information-line', ui: 'spatial',
+					placement: 'bottom-end', iconSize: '1.25rem',
+					stys: { position: 'absolute', top: '0', right: '0', zIndex: '2' },
+				},
+			},
+		],
+		// Title + rating — click title đi thẳng meta.url (KHÔNG phải /product/{id} như cardBase)
+		[
+			{
+				bit: 'title',
+				ext: { org: 'meta.url' },
+				opt: {
+					mode: 'a',
+					stys: {
+						display: 'block',
+						fontSize: 'clamp(1.25rem, 2vw, 1.5rem)',
+						fontWeight: '400',
+						color: 'var(--color-base-description)',
+						lineHeight: '1.1',
+						margin: '0',
+					},
 				},
 			},
 			{
 				bit: 'score',
-				opt: {
-					mode: 'rating', size: 'xs', disabled: true, color: 'warning', mask: 'mask-star-2',
-					stys: {
-						position: 'absolute', bottom: '0.75rem', left: '0.75rem',
-						background: 'color-mix(in oklab, var(--color-base-100) 80%, transparent)',
-						padding: '0.15rem 0.5rem 0.25rem', borderRadius: '999px',
-					},
-				},
+				opt: { mode: 'rating', size: 'xs', disabled: true, color: 'primary', mask: 'mask-star-2' },
 			},
 		],
 		// Tags
 		[
-			{ bit: 'tags', opt: { mode: 'tags', type: 'soft', color: 'primary' } },
+			{ bit: 'tags', opt: { mode: 'tags' } },
 		],
-		// Title + giá
+		// Giá + CTA — nút điều hướng meta.url/meta.ctaLabel (trang chỉ dẫn tới detail, KHÔNG phải
+		// add-to-cart như cardBase, trang GEO/SEO không có giỏ hàng).
 		[
-			{ bit: 'title', opt: { mode: 'p', stys: { color: 'var(--color-base-content)', margin: '0', fontWeight: '600' } } },
-			{ bit: 'pricing', ext: { currency: 'đ' }, opt: { mode: 'span', stys: { color: 'var(--color-primary)', fontWeight: '700' } } },
-		],
-		// CTA — link thẳng detail page
-		[
+			{
+				bit: 'pricing',
+				ext: { currency: 'đ' },
+				opt: {
+					mode: 'span',
+					stys: {
+						fontSize: 'clamp(1.25rem, 2vw, 1.625rem)',
+						fontWeight: '900',
+						color: 'var(--color-base-description)',
+					},
+				},
+			},
 			{
 				bit: 'meta.ctaLabel',
 				ext: { org: 'meta.url' },
 				opt: {
 					mode: 'a',
+					suffix: 'ri:arrow-right-s-line',
+					iconSize: '1rem',
 					stys: {
+						height: '40px',
 						display: 'flex', alignItems: 'center', justifyContent: 'center',
-						width: '100%', height: '48px', borderRadius: '0 0 1.25rem 1.25rem',
+						padding: '0 1rem', borderRadius: '12px',
 						background: 'color-mix(in oklab, var(--color-primary) 10%, transparent)',
-						color: 'var(--color-base-content)',
+						color: 'var(--color-primary)',
+						fontWeight: '600',
 					},
 				},
 			},
 		],
 	],
-	stys: {},
-  bg: {
-		...getStyleOpts({ rounded: '1.5rem', tint: '#e19d69', total: 2, gradient: true, blobType: 'ellipse', deg: 0 })
+	stys: { padding: '1.75rem', height: '100%' },
+	bg: {
+		...getStyleOpts({ rounded: '1.75rem', tint: 'var(--color-primary)', total: 1 })
 	},
+	anime: 'bounce-in-left',
+	ui: 'spatial',
 };
 
 export const config = { ...baseConfig };

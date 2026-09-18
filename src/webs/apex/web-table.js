@@ -1,6 +1,7 @@
 import { LitElement, html, unsafeCSS } from 'lit';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { dataInit, cssInline, txtLingo, emit, getPath } from '@/services/helper.js';
+import { DEFAULT_CHAIN } from '@/services/tensor.js';
 import css from './styles/web-table.css?inline';
 import pmCss from '@/webs/media/styles/prose-mirror.css?inline';
 import 'iconify-icon';
@@ -699,12 +700,18 @@ export class WebTable extends LitElement {
 				input = html`<input type="password" class="wt-input" data-field=${storageKey}
 					autocomplete="new-password" placeholder=${!row?.id ? '' : '(để trống = giữ nguyên)'} />`;
 				break;
-			case 'textarea':
-				input = html`<web-textarea data-field=${storageKey} .value=${String(val??'')} .ui=${this.ui} rows="3"></web-textarea>`;
+			case 'textarea': {
+				// Object/array value (vd know.js/rel.js's `meta` — cả field JSON thô, khác products.js's
+				// `meta.sku` từng leaf string) — String(obj) ra "[object Object]", phải JSON.stringify.
+				// Round-trip an toàn: _collectFlat() luôn đọc lại .value dưới dạng string thô rồi gửi
+				// thẳng đi (không JSON.parse ở đây) — server/D1 coerceIn() đã tự bỏ qua field đã là string.
+				const textVal = val && typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val ?? '');
+				input = html`<web-textarea data-field=${storageKey} .value=${textVal} .ui=${this.ui} rows="3"></web-textarea>`;
 				break;
+			}
 			case 'editor':
 				input = html`<svc-editor data-field=${storageKey} .value=${String(val??'')} .ui=${this.ui} .theme=${this.theme}
-					ai=${this.ai || [import.meta.env.PUBLIC_NVID, import.meta.env.PUBLIC_GROQ, import.meta.env.PUBLIC_OPER].filter(Boolean).join('|')} placeholder="Nhập nội dung…"></svc-editor>`;
+					ai=${this.ai || DEFAULT_CHAIN} placeholder="Nhập nội dung…"></svc-editor>`;
 				break;
 			case 'photor':
 				input = html`<svc-photor data-field=${storageKey} .value=${String(val??'')} .ui=${this.ui} ?hideUpload=${this.hideUpload}

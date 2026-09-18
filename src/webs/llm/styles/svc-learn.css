@@ -1,0 +1,28 @@
+:host { display: block; margin-bottom: .75rem; }
+
+.svl-panel {
+    border: 1px solid color-mix(in oklab, var(--color-base-content) 30%, transparent);
+    border-radius: 1rem;
+    margin: 0 0 1rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.svl-legend {
+    display: flex;
+    align-items: center;
+    
+    gap: 0.3rem;
+    margin: 0 auto;
+    padding: 0 0.4rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-base-content);
+}
+
+.svl-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; padding-bottom: 0.5rem }
+
+/* Cùng bố cục .sas-input-row của svc-assist.css — input co giãn (flex:1), nút giữ nguyên kích thước. */
+.svl-input-row { flex: 1; display: flex; gap: 0.5rem; align-items: center; justify-content: flex-end; min-width: 240px; }
+.svl-input-row web-text { flex: 1; min-width: 0; max-width: 400px;}

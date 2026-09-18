@@ -4,7 +4,7 @@
  * Dùng trong Astro frontmatter / getStaticPaths để fetch data lúc build.
  * KHÔNG import trong Lit components (client-side).
  *
- * Đọc config từ PUBLIC_DB_ALL/PUBLIC_DB_ACC/PUBLIC_DB_INVO env (tuỳ opts.connection):
+ * Đọc config từ PUBLIC_DB_ALL env (tuỳ opts.connection):
  * apiKey~authDomain~projectId~… — khai lại literal (không import firestore.js, file đó là
  * client-side, còn file này build riêng cho server).
  * Raw fetch (headers, timeout, retry) đi qua requester.js — dùng chung với crud.js.
@@ -13,7 +13,7 @@
 import { requester } from '@/services/requester.js';
 
 // Cùng bảng ENV_KEYS như firestore.js (client) — giữ đồng bộ tên kết nối khi thêm/đổi.
-const ENV_KEYS: Record<string, string> = { firestore: 'PUBLIC_DB_INVO', auth: 'PUBLIC_DB_ACC', invoices: 'PUBLIC_DB_INVO' };
+const ENV_KEYS: Record<string, string> = { DB_ALL: 'PUBLIC_DB_ALL' };
 
 // Cùng cơ chế mask như firestore.js (client) — `~k!t@d~` có thể chèn ở bất kỳ
 // đâu trong env value để né grep plaintext; bóc ra trước khi split('~').
@@ -64,13 +64,13 @@ const _buildCache = new Map<string, Promise<Record<string, any>[]>>();
  *
  * @param collectionName  Tên collection trong Firestore
  * @param opts.activeOnly  Lọc status='active' và deleted_at==null (mặc định: true)
- * @param opts.connection  'firestore' (mặc định) | 'auth' | 'invoices' — chọn env/project
+ * @param opts.connection  'DB_ALL' (mặc định) — chọn env/project
  */
 export function fetchCollection(
     collectionName: string,
     opts: { activeOnly?: boolean; connection?: string } = {}
 ): Promise<Record<string, any>[]> {
-    const key = `${collectionName}::${opts.connection ?? 'firestore'}::${opts.activeOnly ?? true}`;
+    const key = `${collectionName}::${opts.connection ?? 'DB_ALL'}::${opts.activeOnly ?? true}`;
     const cached = _buildCache.get(key);
     if (cached) return cached;
 
@@ -94,7 +94,7 @@ export async function fetchDoc(
 ): Promise<Record<string, any> | null> {
     if (!id) return null;
 
-    const envKey = ENV_KEYS[opts.connection ?? 'firestore'] ?? ENV_KEYS.firestore;
+    const envKey = ENV_KEYS[opts.connection ?? 'DB_ALL'] ?? ENV_KEYS.DB_ALL;
     const [apiKey, , projectId] = _unmask(import.meta.env[envKey] ?? '').split('~');
 
     if (!apiKey || !projectId) {
@@ -121,7 +121,7 @@ async function _fetchCollectionRaw(
     collectionName: string,
     opts: { activeOnly?: boolean; connection?: string } = {}
 ): Promise<Record<string, any>[]> {
-    const envKey = ENV_KEYS[opts.connection ?? 'firestore'] ?? ENV_KEYS.firestore;
+    const envKey = ENV_KEYS[opts.connection ?? 'DB_ALL'] ?? ENV_KEYS.DB_ALL;
     const [apiKey, , projectId] = _unmask(import.meta.env[envKey] ?? '').split('~');
 
     if (!apiKey || !projectId) {

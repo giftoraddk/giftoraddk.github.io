@@ -1,6 +1,6 @@
 ---
 import Core from '@/layouts/Core.astro';
-import ProductDetailBody from '@/components/Product/DetailBody.astro';
+import ProductDetailBody from '@/components/Common/ProductDetail.astro';
 import { fetchCollection } from '@/services/firestore.server.ts';
 import { productSlug, pickLang } from '@/services/helper.js';
 import { menuItems, policies, socials } from '@/modules/landing/home.js';
@@ -31,6 +31,6 @@ const pageTitle = product.title || pickLang({ en: 'Product', vi: 'Sản phẩm' 
 const bg = { blur: true, gradient: true, tint: '#2ebd85', total: 3, blobType: 'circleOverlap', blobMove: 'swap', deg: 180 };
 ---
 
-<Core title={pageTitle} description={description} image={heroImg} footer={{ columns: menuItems, policies, socials, bg }}>
+<Core title={pageTitle} description={description} image={heroImg} articleDate={product.created_at} footer={{ columns: menuItems, policies, socials, bg }}>
 	<ProductDetailBody product={product} allProducts={allProducts} />
 </Core>

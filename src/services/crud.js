@@ -49,7 +49,7 @@
  *             limit:number, totalPages:number }} PaginatedResult
  */
 
-import { firestoreAdapter, authFirestoreAdapter, invoicesFirestoreAdapter, llmFirestoreAdapter } from '@/services/firestore.js';
+import { authWorkerAdapter, repoWorkerAdapter, llmWorkerAdapter, llmD1Adapter } from '@/services/firestore.worker.js';
 import { requester } from '@/services/requester.js';
 import { isObject } from '@/services/helper.js';
 
@@ -150,7 +150,7 @@ const _joinUrl = (base, resource) =>
  */
 export const loadKey = (dataSrc, dataTable, server) => {
     if (dataSrc && dataTable) return _joinUrl(dataSrc, dataTable);
-    if (dataTable) return `_fs_:${server || 'firestore'}:${dataTable}`;
+    if (dataTable) return `_fs_:${server || 'DB_ALL'}:${dataTable}`;
     return dataSrc || '';
 };
 
@@ -202,8 +202,8 @@ export async function withCache(key, ttlMin, fetchFn) {
  * cache = minutes (default 5). Pass 0 to disable IndexedDB cache.
  * Concurrent calls for the same (dataSrc, dataTable, server) share one in-flight fetch.
  * @param {{ dataTable?:string, dataSrc?:string, cache?:number, server?:string }} opts
- *   server — chỉ áp dụng khi đọc Firestore (dataTable, không có dataSrc): 'firestore' (mặc
- *   định) | 'auth' | 'invoices' | 'llm' | tên adapter khác đã registerAdapter.
+ *   server — chỉ áp dụng khi đọc Firestore (dataTable, không có dataSrc): 'DB_ALL' (mặc
+ *   định) | 'DB_ACC' | 'DB_LLM' | tên adapter khác đã registerAdapter.
  */
 export async function loadData({ dataTable = '', dataSrc = '', cache = 5, server = '' } = {}) {
     try {
@@ -237,7 +237,22 @@ function _unwrap(res, { page, limit }) {
 
 // ── Adapter registry ──────────────────────────────────────────────────────────
 
-const _registry = { firestore: firestoreAdapter, auth: authFirestoreAdapter, invoices: invoicesFirestoreAdapter, llm: llmFirestoreAdapter };
+// Every connection now goes through a Cloudflare Worker gateway instead of talking to
+// Firebase/Supabase/D1 directly from the browser (see hook/WORKER.rst) — 'DB_ACC' used to be a 4th
+// direct Firestore project (now Supabase Postgres via the Worker); 'DB_ALL'/'DB_LLM' used to be
+// the direct client SDK (src/services/firestore.js) and are now Worker-proxied too. 'DB_ALL' is
+// the one shared project for every table that isn't DB_ACC/DB_LLM — invoices used to be its own
+// 'invoices' connection/project, now folded into 'DB_ALL'. 'DB_LLMD1' is the D1 backend (webs/llm
+// domain's divisions/talks/know/rel) — a DIFFERENT Worker deployment (llm-worker, /v1/data/*) than
+// every other connection here (db-worker, /v1/db/*) — same worker/ pnpm workspace source, 2
+// separate Cloudflare accounts (see hook/WORKER.rst) — see firestore.worker.js's D1WorkerAdapter.
+// Reads on the public-trust connections are allowed anonymously by the matching Worker
+// (worker/packages/db-worker/src/db.ts, worker/packages/llm-worker/src/tablePolicy.ts) — this is about centralizing where
+// secrets/config live, not about newly restricting public data.
+const _registry = {
+    DB_ALL: repoWorkerAdapter, DB_LLM: llmWorkerAdapter,
+    DB_ACC: authWorkerAdapter, DB_LLMD1: llmD1Adapter,
+};
 
 /**
  * Register a backend adapter under a name.
@@ -248,12 +263,12 @@ export function registerAdapter(name, adapter) {
 }
 
 /**
- * Get the adapter for a backend name (falls back to 'firestore').
- *   db()           → firestoreAdapter
+ * Get the adapter for a backend name (falls back to 'DB_ALL').
+ *   db()           → repoWorkerAdapter
  *   db('myapi')    → MyAdapter (after registerAdapter)
  */
-export function db(server = 'firestore') {
-    return _registry[server] ?? _registry.firestore;
+export function db(server = 'DB_ALL') {
+    return _registry[server] ?? _registry.DB_ALL;
 }
 
 // ── SqlService ────────────────────────────────────────────────────────────────
@@ -316,7 +331,7 @@ class SqlService {
  * Construct via createService(), not directly.
  */
 class FirestoreService {
-    constructor(table, server = 'firestore') {
+    constructor(table, server = 'DB_ALL') {
         this._table  = table;
         this._server = server;
     }
@@ -369,10 +384,10 @@ class FirestoreService {
  *
  * @param {string} table     Collection / resource name
  * @param {string} [dataSrc] Base REST API URL — when provided, returns SqlService
- * @param {string} [server]  Adapter name for Firestore-like adapters (default: 'firestore')
+ * @param {string} [server]  Adapter name for Firestore-like adapters (default: 'DB_ALL')
  * @returns {FirestoreService | SqlService}
  */
-export function createService(table, dataSrc = '', server = 'firestore') {
+export function createService(table, dataSrc = '', server = 'DB_ALL') {
     if (dataSrc) return new SqlService(dataSrc, table);
     return new FirestoreService(table, server);
 }

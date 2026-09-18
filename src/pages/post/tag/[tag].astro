@@ -1,14 +1,15 @@
 ---
 import Core from '@/layouts/Core.astro';
-import PostTagBody from '@/components/Post/TagBody.astro';
+import List from '@/components/Common/List.astro';
+import { config as cardConfig } from '@/sections/another/_cardPost.js';
 import { fetchCollection } from '@/services/firestore.server.ts';
 import { postSlug, tagSlugMap, pickLang } from '@/services/helper.js';
 import { site } from '@/services/constants/site.js';
 import { menuItems, policies, socials } from '@/modules/landing/home.js';
 
 // Trang danh mục bài viết theo tag — biến thể SSG (mặc định), song song với
-// src/pages/product/tag/[tag].astro. Nội dung thật nằm trong PostTagBody.astro (dùng chung với
-// biến thể ISR ở src/pages/post/tag/_render-modes/[tag].isr.astro).
+// src/pages/product/tag/[tag].astro. UI/hạ tầng danh sách (search+sort+masonry+infinite-scroll)
+// dùng chung qua Common/List.astro.
 
 export async function getStaticPaths() {
 	const posts = await fetchCollection('posts');
@@ -31,9 +32,33 @@ const pageDescription = pickLang({
 	en: `Explore posts in the "${tag}" category on ${site.subtitle}.`,
 	vi: `Khám phá các bài viết thuộc danh mục "${tag}" tại ${site.subtitle}.`,
 });
+const canonicalUrl = `${site.domain.replace(/\/$/, '')}/post/tag/${tagSlug}/`;
 const bg = { blur: true, gradient: true, tint: '#00c7d4', total: 3, blobType: 'circleOverlap', blobMove: 'swap', deg: 180 };
+
+const sortOptions = [
+	{ label: 'Mới nhất', value: 'newest', field: 'created_at', transform: 'date', order: 'desc' },
+	{ label: 'Nhiều xem nhất', value: 'views', field: 'meta.views', transform: 'int', order: 'desc' },
+	{ label: 'Nhiều like nhất', value: 'likes', field: 'meta.likes', transform: 'int', order: 'desc' },
+];
 ---
 
 <Core title={pageTitle} description={pageDescription} footer={{ columns: menuItems, policies, socials, bg }}>
-	<PostTagBody tag={tag} tagSlug={tagSlug} posts={posts} />
+	<List
+		pageTitle={pageTitle}
+		pageDescription={pageDescription}
+		breadcrumb={[
+			{ label: pickLang({ en: 'Home', vi: 'Trang chủ' }), href: '/' },
+			{ label: pickLang({ en: 'Posts', vi: 'Bài viết' }), href: '/post/' },
+			{ label: tag },
+		]}
+		canonicalUrl={canonicalUrl}
+		items={posts}
+		cardConfig={cardConfig}
+		dataTable="posts"
+		urlPrefix="/post/"
+		searchPlaceholder="Tìm kiếm bài viết..."
+		sortOptions={sortOptions}
+		emptyLabel={pickLang({ vi: 'Chưa có bài viết nào.', en: 'No posts yet.' })}
+		bottomCta={{ href: '/post/', label: pickLang({ vi: 'Xem tất cả bài viết', en: 'View all posts' }) }}
+	/>
 </Core>

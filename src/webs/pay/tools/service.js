@@ -195,7 +195,7 @@ function _encodeItems(items) {
     return (items ?? []).map(i => [i.name ?? '', Number(i.price ?? 0), i.unit ?? '', Number(i.qty ?? 1), 0, Number(i.price ?? 0) * Number(i.qty ?? 1), 0, 0].join('~')).join('|');
 }
 
-function _invoiceSvc() { return createService('invoices', '', 'invoices'); }
+function _invoiceSvc() { return createService('invoices'); }
 
 // ── Inventory (products.quantity) — trừ NGAY lúc invoice được tạo (buyer đã trả tiền thật, xem
 // promoteToInvoice()), cộng lại nếu đơn bị huỷ/trả SAU đó (requestReturn/acceptCancel/

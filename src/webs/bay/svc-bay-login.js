@@ -1,32 +1,17 @@
 // src/webs/bay/svc-bay-login.js
-// UI đăng nhập (email/password + Google popup) — viết mới, KHÔNG import svc-channel-login.js.
-// Dùng chung bảng `users` với mọi domain khác (server 'auth' — project Firebase riêng cho
-// đăng nhập, xem hook/CRUD.rst § Nhiều kết nối Firestore) vì đây là infra chung, không phải
-// dữ liệu riêng của channel.
+// UI đăng nhập (email/password + Google) — viết mới, KHÔNG import svc-channel-login.js.
+// Dùng chung bảng `users` với mọi domain khác (server 'DB_ACC' — nay là Supabase Postgres `profiles`
+// qua Cloudflare Worker, xem hook/cloudflare-worker.md) vì đây là infra chung, không phải dữ liệu
+// riêng của channel.
 import { LitElement, html, unsafeCSS, nothing } from 'lit'
 import 'iconify-icon'
 import '@/webs/apex/web-text.js'
 import '@/webs/apex/web-button.js'
 import styles from './styles/svc-bay-login.css?inline'
 import { createService } from '@/services/crud.js'
-import { ulid, apexDecode, txtLingo, emit } from '@/services/helper.js'
+import { txtLingo, emit } from '@/services/helper.js'
 import { auth } from './tools/service.js'
-
-// Preload sớm — Safari (và Safari-engine trên iOS) chỉ cho phép signInWithPopup() mở popup thật
-// nếu nó chạy gần như ngay trong lúc xử lý sự kiện click gốc; 1 `await import(...)` THẬT (chờ
-// tải chunk qua mạng) xen giữa lệnh gọi `signInWithPopup` là đủ để WebKit coi popup đó không còn
-// gắn với thao tác người dùng nữa và tự chặn — im lặng, không throw, không lỗi gì cả (đúng hiện
-// tượng "popup blocked" đang gặp). Gọi trước ở đây (connectedCallback, xem bên dưới) để lúc
-// _dhGoogle() thật sự chạy, import() đã nằm sẵn trong cache — chỉ còn resolve qua microtask,
-// Safari vẫn tính đó là "vừa mới người dùng bấm".
-let _firebaseAuthModules = null
-function _preloadFirebaseAuth() {
-    _firebaseAuthModules ??= Promise.all([
-        import('firebase/auth'),
-        import('@/services/firestore.js'),
-    ])
-    return _firebaseAuthModules
-}
+import { supabase } from '@/services/supabase.js'
 
 const TXT_STD = {
     vi: {
@@ -75,60 +60,65 @@ export class SvcBayLogin extends LitElement {
     }
 
     get _txt() { return txtLingo(this.txt, TXT_STD, this.lang) }
+    get _svc() { return createService('profiles', '', 'DB_ACC') }
 
     /**
-     * Flow dò phiên đăng nhập sẵn có: (none) -> bay-logged-in event nếu có, ngược lại hiện form
+     * Flow dò phiên đăng nhập sẵn có: (none) -> bay-logged-in event nếu có, ngược lại hiện form.
+     * Cũng dò luôn phiên Supabase (vd vừa quay lại sau redirect OAuth Google) nếu app-cache chưa
+     * có — xem _completeSession().
      */
     async connectedCallback() {
         super.connectedCallback()
-        _preloadFirebaseAuth() // fire-and-forget — nạp trước cho lúc bấm nút Google, xem comment đầu file
-        // [1] CHECK: dò session đã lưu (auth.set() ở lượt trước) — ngầm trong lúc layer loading
-        // còn che, tránh loé form ra rồi tắt ngay
         const user = await auth.get()
-        // [3] EXECUTE: có sẵn phiên hợp lệ thì bắn thẳng bay-logged-in cho svc-bay.js
         if (user) { this._emitLoggedIn(user); return }
-        // [4] RETURN: chưa có session thì tắt cờ checking, cho form hiện ra
+
+        const { data } = await supabase.auth.getSession()
+        if (data?.session) {
+            await this._completeSession(data.session)
+            if (!this._error) return
+        }
         this._checking = false
     }
 
     _emitLoggedIn(user) { emit(this, 'bay-logged-in', { user }) }
+
+    /** Find-or-create profile row, keyed by the Supabase auth user id, then save session + emit. */
+    async _completeSession(session) {
+        const existing = await this._svc.findById(session.user.id)
+        const user = existing ?? await (async () => {
+            const doc = {
+                status: 'active', email: session.user.email, username: null, password: null,
+                display_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email,
+                avatar: session.user.user_metadata?.avatar_url || '',
+                roles: 'user', connections: '',
+                meta: { provider: session.user.app_metadata?.provider || 'email' },
+            }
+            await this._svc.set(session.user.id, doc)
+            return { id: session.user.id, ...doc }
+        })()
+
+        if (user.status !== 'active') { this._error = this._txt.errNotActive; return }
+        await auth.set(user, session.access_token)
+        this._emitLoggedIn(user)
+    }
 
     /**
      * Flow đăng nhập email/password: {email, password} -> bay-logged-in event (hoặc lỗi hiển thị)
      */
     async _dhSubmit(e) {
         e.preventDefault()
-        // [1] CHECK: chặn double-submit khi đang xử lý
         if (this._loading) return
         const email = this._email.trim()
         const password = this._password
-        //   [1.a] IF_INVALID: bắt buộc nhập đủ email + password
         if (!email || !password) { this._error = this._txt.errRequired; return }
 
         this._loading = true
         this._error = ''
         try {
-            const svc  = createService('users', '', 'auth')
-            const user = (await svc.findAll({ filters: { email } }))[0]
-            //   [1.b] IF_NOT_FOUND: không tìm thấy user, hoặc user tồn tại nhưng không có password
-            // (tài khoản chỉ đăng ký qua Google, chưa có mật khẩu local)
-            if (!user || !user.password) { this._error = this._txt.errFailed; return }
-            //   [1.c] IF_NOT_ACTIVE: tài khoản chưa được kích hoạt
-            if (user.status !== 'active') { this._error = this._txt.errNotActive; return }
-
-            // [2] PROCESS: xác thực mật khẩu — apexDecode là mã hoá hiện hành, fallback so sánh
-            // chuỗi thô để tương thích ngược với user cũ tạo trước khi đổi sang apexDecode
-            let verified = false
-            try { verified = (await apexDecode(user.password)) === password }
-            catch { verified = user.password === password }
-            //   [2.a] IF_MISMATCH: sai mật khẩu thì báo lỗi, dừng flow
-            if (!verified) { this._error = this._txt.errFailed; return }
-
-            // [3] EXECUTE: lưu session (localStorage) + báo cho svc-bay.js đã đăng nhập thành công
-            await auth.set(user, '')
-            this._emitLoggedIn(user)
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+            if (error || !data?.session) { this._error = this._txt.errFailed; return }
+            await this._completeSession(data.session)
         } catch {
-            //   [3.a] HANDLE_ERR: lỗi bất kỳ (network, Firestore...) → báo lỗi chung, không throw ra ngoài
             this._error = this._txt.errFailed
         } finally {
             this._loading = false
@@ -136,45 +126,21 @@ export class SvcBayLogin extends LitElement {
     }
 
     /**
-     * Flow đăng nhập Google popup: (none) -> bay-logged-in event (hoặc lỗi hiển thị)
+     * Flow đăng nhập Google: (none) -> redirect sang Google (Supabase Auth) -> quay lại trang này,
+     * connectedCallback() phát hiện session và hoàn tất (không còn là popup như trước — Supabase's
+     * signInWithOAuth điều hướng cả trang, xem hook/cloudflare-worker.md §7-9).
      */
     async _dhGoogle() {
-        // [1] CHECK: chặn double-submit khi đang xử lý
         if (this._loading) return
         this._loading = true
         this._error = ''
         try {
-            // [3] EXECUTE: đăng nhập Google + đồng bộ user record trong Firestore + lưu session
-            //   [3.a] AUTH_POPUP: dùng _preloadFirebaseAuth() (đã kích hoạt từ connectedCallback)
-            //   thay vì await import() ngay tại đây, để lệnh mở popup chạy sát nhất có thể với
-            //   thao tác click gốc (xem comment đầu file — Safari chặn popup nếu có await
-            //   import() thật xen giữa) — mở popup Google lấy thông tin tài khoản thật
-            const [{ getAuth, GoogleAuthProvider, signInWithPopup }, { getFirebaseApp }] = await _preloadFirebaseAuth()
-            const { user: gUser } = await signInWithPopup(getAuth(getFirebaseApp('auth')), new GoogleAuthProvider())
-
-            //   [3.b] FIND_OR_CREATE: tìm user theo email trong bảng `users` (server 'auth'), chưa
-            //   có thì tạo mới với status active + meta đánh dấu provider google (không có password)
-            const svc = createService('users', '', 'auth')
-            const existing = (await svc.findAll({ filters: { email: gUser.email } }))[0]
-            const user = existing ?? await (async () => {
-                const id  = ulid()
-                const doc = {
-                    status: 'active', email: gUser.email, username: null, password: null,
-                    display_name: gUser.displayName || gUser.email, avatar: gUser.photoURL || '',
-                    roles: 'user', connections: '',
-                    meta: { provider: 'google', provider_id: gUser.uid },
-                }
-                await svc.set(id, doc)
-                return { id, ...doc }
-            })()
-
-            //   [3.c] IF_NOT_ACTIVE: tài khoản (kể cả vừa tạo) chưa được kích hoạt thì dừng, không lưu session
-            if (user.status !== 'active') { this._error = this._txt.errNotActive; return }
-            //   [3.d] SAVE_DB: lưu session (localStorage) + báo cho svc-bay.js đã đăng nhập thành công
-            await auth.set(user, '')
-            this._emitLoggedIn(user)
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: { redirectTo: window.location.href },
+            })
+            if (error) this._error = this._txt.errGoogle
         } catch (err) {
-            //   [3.e] HANDLE_ERR: lỗi bất kỳ (popup bị đóng, network, Firestore...) → log + báo lỗi chung
             console.error('[svc-bay-login] Google login failed:', err)
             this._error = this._txt.errGoogle
         } finally {

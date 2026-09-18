@@ -7,8 +7,9 @@
 node_modules/
 dist/
 dest/
-docs/
 logs/
+doc/
+docs/
 
 # Claude
 *.claude
@@ -62,5 +63,11 @@ Thumbs.db
 
 # ENV
 .env
+
+# Cloudflare Worker (worker/ — pnpm workspace, 2 deployable packages, see hook/WORKER.rst)
+worker/packages/*/.dev.vars
+worker/packages/*/.dev.vars.*
+worker/packages/*/.wrangler/
+worker/packages/*/.secrets-bulk.tmp.json
 
 .superpowers

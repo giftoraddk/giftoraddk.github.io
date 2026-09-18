@@ -46,41 +46,23 @@ const baseConfig = {
 					}
 				}
 			},
-			// Title — overlaid, bottom of image
+			// Title — overlaid, bottom-left of image
 			{
 				bit: 'title',
 				opt: {
 					mode: 'h3',
           stys: {
 						position: 'absolute',
-						bottom: '6.7rem',
+						bottom: '1.25rem',
 						left: '1.5rem',
 						right: '1.5rem',
 						color: 'white', // only for image bg
 						textShadow: '0 2px 12px rgba(0,0,0,0.6)',
-            fontSize: 'clamp(1.25rem, 2vw, 1.5rem)', // custom fontSize
+            fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', // custom fontSize
           },
 				}
 			},
-			// Content — below title, overlaid
-			{
-				bit: 'description',
-				opt: {
-					mode: 'p',
-          html: true,
-					cls: 'line-clamp-2',
-					stys: {
-						position: 'absolute',
-						bottom: '3.5rem',
-						left: '1.5rem',
-						right: '1.5rem',
-						color: 'color-mix(in oklab, white 85%, transparent)', // only for image bg
-						textShadow: '0 1px 6px rgba(0,0,0,0.5)',
-            lineHeight: '1'
-					}
-				}
-			},
-			// Tags — pill badges at bottom
+			// Tags — pill badges, top-right of image
 			{
 				bit: 'tags',
 				opt: {
@@ -89,8 +71,10 @@ const baseConfig = {
 					gap: '0.5rem',
 					stys: {
 						position: 'absolute',
-						bottom: '1.25rem',
-						left: '1.5rem',
+            maxWidth: '50%',
+            display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end',
+						top: '1.25rem',
+						right: '1.5rem',
 					}
 				}
 			},

@@ -2,7 +2,8 @@
 export const prerender = false;
 
 import Core from '@/layouts/Core.astro';
-import ProductTagBody from '@/components/Product/TagBody.astro';
+import List from '@/components/Common/List.astro';
+import { config as cardConfig } from '@/sections/another/_cardProductSeo.js';
 import { fetchCollection } from '@/services/firestore.server.ts';
 import { productSlug, tagSlugMap, pickLang } from '@/services/helper.js';
 import { site } from '@/services/constants/site.js';
@@ -33,12 +34,38 @@ const pageDescription = entry ? pickLang({
 	en: `Explore products in the "${tag}" category at ${site.subtitle}.`,
 	vi: `Khám phá các sản phẩm thuộc danh mục "${tag}" tại ${site.subtitle}.`,
 }) : '';
+const canonicalUrl = `${site.domain.replace(/\/$/, '')}/product/tag/${tagSlug}/`;
 const bg = { blur: true, gradient: true, tint: '#2ebd85', total: 3, blobType: 'circleOverlap', blobMove: 'swap', deg: 180 };
+
+const sortOptions = [
+	{ label: 'Mới nhất', value: 'newest', field: 'created_at', transform: 'date', order: 'desc' },
+	{ label: 'Giá tăng dần', value: 'price_asc', field: 'pricing', transform: 'pipeFirstNum', order: 'asc' },
+	{ label: 'Giá giảm dần', value: 'price_desc', field: 'pricing', transform: 'pipeFirstNum', order: 'desc' },
+	{ label: 'Đánh giá cao nhất', value: 'rating', field: 'score', transform: 'pipeFirstNum', order: 'desc' },
+];
 ---
 
-<Core title={pageTitle} description={pageDescription} footer={{ columns: menuItems, policies, socials, bg }}>
+<Core title={pageTitle} description={pageDescription} noindex={!entry} footer={{ columns: menuItems, policies, socials, bg }}>
 	{entry ? (
-		<ProductTagBody tag={tag} tagSlug={tagSlug} products={taggedProducts} />
+		<List
+			pageTitle={pageTitle}
+			pageDescription={pageDescription}
+			breadcrumb={[
+				{ label: pickLang({ en: 'Home', vi: 'Trang chủ' }), href: '/' },
+				{ label: pickLang({ en: 'Products', vi: 'Sản phẩm' }), href: '/product/' },
+				{ label: tag },
+			]}
+			canonicalUrl={canonicalUrl}
+			items={taggedProducts}
+			cardConfig={cardConfig}
+			dataTable="products"
+			urlPrefix="/product/"
+			extraMeta={{ ctaLabel: 'Xem chi tiết' }}
+			searchPlaceholder="Tìm kiếm sản phẩm..."
+			sortOptions={sortOptions}
+			emptyLabel={pickLang({ vi: 'Chưa có sản phẩm nào.', en: 'No products yet.' })}
+			bottomCta={{ href: '/product/', label: pickLang({ vi: 'Xem tất cả sản phẩm', en: 'View all products' }) }}
+		/>
 	) : (
 		<div class="mx-auto max-w-6xl px-4 py-24 text-center opacity-60">
 			<I18nText text={{ en: 'Category not found.', vi: 'Không tìm thấy danh mục này.' }} />

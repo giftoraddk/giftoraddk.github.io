@@ -8,7 +8,7 @@
 
 **Tech Stack:** Lit 3 (existing dependency), raw WebGL1/WebGL2 (no rendering library), vanilla DOM for the debug badge singleton.
 
-**Design doc:** `docs/superpowers/specs/2026-08-26-underlay-webgl-background-design.md`
+**Design doc:** `hook/superpowers/specs/2026-08-26-underlay-webgl-background-design.md`
 
 ---
 

@@ -64,7 +64,8 @@ Prop          Type / values               Mô tả
 web-avatar
 ----------
 
-Hiển thị ảnh đại diện hoặc initials chữ cái, kèm dot trạng thái.
+Hiển thị ảnh đại diện, iconify icon, hoặc initials chữ cái, kèm dot trạng thái. Ưu tiên hiển thị:
+``src`` (ảnh) > ``icon`` (iconify) > initials từ ``name``.
 
 **Props**
 
@@ -72,7 +73,8 @@ Hiển thị ảnh đại diện hoặc initials chữ cái, kèm dot trạng th
 Prop         Type / values                   Mô tả
 ===========  ==============================  ====================================
 ``src``      String (URL)                    Ảnh avatar
-``name``     String                          Tên — tạo initials khi không có src
+``icon``     String (iconify name)           Icon fallback khi KHÔNG có src (vd 'ri:customer-service-2-line')
+``name``     String                          Tên — tạo initials khi không có src/icon
 ``size``     ``xs`` ``sm`` ``md`` ``lg``     Kích thước
 ``shape``    ``circle`` ``square``           Hình dạng khung
 ``status``   ``online`` ``away`` ``busy``    Dot trạng thái góc phải dưới
@@ -85,6 +87,7 @@ Prop         Type / values                   Mô tả
 .. code-block:: html
 
    <web-avatar src="/img/user.jpg" name="Dung Pham" size="md" shape="circle" status="online"></web-avatar>
+   <web-avatar icon="ri:customer-service-2-line" name="Sale AI" size="md"></web-avatar>
 
 ----
 
@@ -269,7 +272,7 @@ Prop         Type / values               Mô tả
 
 Trong config ``bit``/``opt`` (xem ``src/sections/contact/modernHoriGoogleMap.js``): dùng
 ``mode: 'google-map'`` với ``bit`` trỏ 1 field location DUY NHẤT (vd ``meta.address``, format
-``street~ward~region~country~lat~lng`` — cùng chuẩn ``rooms.location``, xem docs/CHANNEL.rst §
+``street~ward~region~country~lat~lng`` — cùng chuẩn ``rooms.location``, xem hook/CHANNEL.rst §
 rooms Schema) — ``web-cell.js`` tự tách địa chỉ người-đọc-được + toạ độ từ field này
 (``humanizeLocation``/``locationLatLng`` trong ``@/services/helper.js``). Field không có ``~``
 (text thường) vẫn hoạt động, chỉ dùng được nhánh address. ``opt`` còn lại (``zoom``/
@@ -873,7 +876,7 @@ Prop       Type / values         Mô tả
 
 ----
 
-web-photor-upload
+svc-photor
 -----------------
 
 Upload ảnh lên imgbb + preview + cắt ảnh tuỳ chọn.
@@ -898,7 +901,7 @@ Prop             Type / values         Mô tả
 
 .. code-block:: html
 
-   <web-photor-upload placeholder="Tải ảnh lên" multiple></web-photor-upload>
+   <svc-photor placeholder="Tải ảnh lên" multiple></svc-photor>
 
 ----
 
@@ -1103,7 +1106,7 @@ Layout & Grid
 .. note::
 
    ``web-board``, ``web-boxs``, ``web-box``, ``web-cell`` được tách ra tài liệu riêng:
-   xem ``docs/web-board.rst``.
+   xem ``hook/web-board.rst``.
 
 web-boxs-search
 ---------------
@@ -1287,7 +1290,7 @@ chọn ``basic``/``map``) có thêm prop ``geo`` (Boolean, mặc định ``false
 ``value`` mã hoá thêm 2 field toạ độ: ``street~ward~region~country~lat~lng`` (thay vì 4 field
 thường). Khi load lại 1 ``value`` đã có toạ độ, component tự khôi phục pin trên map + trạng
 thái "đã xác nhận" — không cần chọn lại từ đầu. Dùng khi cần lưu toạ độ thật, không chỉ địa chỉ
-text — ví dụ ``svc-channel``'s room location, xem ``docs/CHANNEL.rst`` § Danh sách phòng.
+text — ví dụ ``svc-channel``'s room location, xem ``hook/CHANNEL.rst`` § Danh sách phòng.
 
 .. code-block:: html
 
@@ -1313,7 +1316,7 @@ Prop       Type / values                                                        
 ``ui``     ``modern`` ``spatial``
 =========  =====================================================================  ============================
 
-**Field types:** ``text`` ``select`` ``photor-upload`` ``checkbox`` ``toggle`` ``textarea`` ``colors`` ``texts``
+**Field types:** ``text`` ``select`` ``photor`` ``checkbox`` ``toggle`` ``textarea`` ``colors`` ``texts``
 
 **Events:** ``setting-save``, ``setting-preview``, ``setting-cancel``.
 

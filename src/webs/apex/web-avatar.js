@@ -8,7 +8,7 @@ export class WebAvatar extends LitElement {
 
     static properties = {
         src: { type: String },
-        icon: { type: String }, // iconify name (vd 'ri:chat-smile-ai-3-line') — fallback khi KHÔNG có src, ưu tiên hơn initials
+        icon: { type: String }, // iconify name (vd 'ri:customer-service-2-line') — fallback khi KHÔNG có src, ưu tiên hơn initials
         name: { type: String },
         size: { type: String }, // CSS value
         shape: { type: String }, // 'circle', 'square'

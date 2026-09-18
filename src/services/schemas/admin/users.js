@@ -1,17 +1,24 @@
-import { apexEncode } from '@/services/helper.js';
 import { ORDER_PRESETS, ROLE_PRESETS } from '@/services/schemas/roles-constant.js';
+
+// `password` field removed — user identity now lives in Supabase Auth (see
+// hook/cloudflare-worker.md, svc-login.js), which owns credential storage itself. There's no
+// longer a password value on the `profiles` row for this admin table to edit, and a `profiles`
+// row can't be pre-created for someone who doesn't have a Supabase Auth account yet anyway (its
+// `id` is a foreign key to `auth.users`, see worker/supabase/schema.sql). New staff accounts:
+// have them sign in once via the normal login page (self-registers their `profiles` row), then
+// grant roles here / via svc-roles.js as before.
 
 const TXT = {
 	vi: {
 		status: 'Trạng thái', email: 'Email', username: 'Username',
-		password: 'Mật khẩu', displayName: 'Tên hiển thị', bio: 'Bio',
+		displayName: 'Tên hiển thị', bio: 'Bio',
 		avatar: 'Avatar', roles: 'Roles', connections: 'Connections', order: 'Order',
 		pending: 'Chờ duyệt', active: 'Hoạt động', banned: 'Bị khóa', suspended: 'Tạm khóa',
 		connSuffix: 'kết nối', customRole: 'tuỳ chỉnh', noRole: '—',
 	},
 	en: {
 		status: 'Status', email: 'Email', username: 'Username',
-		password: 'Password', displayName: 'Display name', bio: 'Bio',
+		displayName: 'Display name', bio: 'Bio',
 		avatar: 'Avatar', roles: 'Roles', connections: 'Connections', order: 'Order',
 		pending: 'Pending', active: 'Active', banned: 'Banned', suspended: 'Suspended',
 		connSuffix: 'connections', customRole: 'custom', noRole: '—',
@@ -69,14 +76,6 @@ export default (lang = 'vi') => {
 			serverExecutor: true,
 			searchable: true,
 			sortable: true,
-		},
-		{
-			label: t.password,
-			field: 'password',
-			width: '120px',
-			type: 'password',
-			render: (v) => (v ? '●●●●●●' : '—'),
-			transform: apexEncode,
 		},
 		{
 			label: t.displayName,

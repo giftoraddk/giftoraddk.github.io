@@ -257,13 +257,13 @@ mode          Ý nghĩa
 ``order``     Đơn hàng
 ``invoice``   Hóa đơn VAT
 ``review``    Đánh giá — talent marketplace dùng thêm ``meta.proposalId``/
-              ``meta.talentId``/``meta.employerId``, xem ``docs/new_feature.md`` §1.5
+              ``meta.talentId``/``meta.employerId``, xem ``hook/new_feature.md`` §1.5
 ``event``     Sự kiện
 ``faq``       Câu hỏi thường gặp
-``talent``    Hồ sơ chuyên môn (talent marketplace) — xem ``docs/new_feature.md`` §1.2
-``job``       Tin đăng tuyển / đề nghị thuê trực tiếp — xem ``docs/new_feature.md`` §1.3
-``proposal``  Thương lượng + Deal (gộp 1 record) — xem ``docs/new_feature.md`` §1.4
-``wallet_txn``Giao dịch Xu (append-only) — xem ``docs/new_feature.md`` §1.6/§3
+``talent``    Hồ sơ chuyên môn (talent marketplace) — xem ``hook/new_feature.md`` §1.2
+``job``       Tin đăng tuyển / đề nghị thuê trực tiếp — xem ``hook/new_feature.md`` §1.3
+``proposal``  Thương lượng + Deal (gộp 1 record) — xem ``hook/new_feature.md`` §1.4
+``wallet_txn``Giao dịch Xu (append-only) — xem ``hook/new_feature.md`` §1.6/§3
 ============  ============================================================
 
 ``score`` format — ``avg~count``
@@ -924,14 +924,14 @@ Path nội bộ tới page đích, bắt đầu bằng ``/``:
 .. code-block:: js
 
    {
-     ui:         'spatial',        // ui variant — xem docs/ARCHITECT.rst
+     ui:         'spatial',        // ui variant — xem hook/ARCHITECT.rst
      theme:      'dark',           // 'dark' | 'light'
      mainColors: '#2ebd85|#f5465c|#a855f7|#00c7d4|#fbbf24', // 5 màu pipe-separated
      textColor:  'var(--color-base-content)',               // luôn dùng CSS var hệ thống
 
      bg: {
        // input params của helper getStyleOpts — không viết tay object bg đã build
-       // xem docs/DESIGN.rst § Bước 7 — Background. Render qua <svc-underlay>, không phải
+       // xem hook/DESIGN.rst § Bước 7 — Background. Render qua <svc-underlay>, không phải
        // <web-bg> (cũ) — không có pattern/pics/effectFx, blobType chỉ 'circleOverlap'|'ellipse'.
        // KHÔNG set hueCustom ở đây: getStyleOpts coi hueCustom (0|1) là kill-switch, hễ có giá
        // trị sẽ ép blur/gradient về false (chế độ flat-card, không blob động).
@@ -942,7 +942,7 @@ Path nội bộ tới page đích, bắt đầu bằng ``/``:
 
      sections: [
        // mảng các section descriptor — cùng shape với 1 phần tử views[].sections
-       // trong src/services/modules/<page>-page.js, xem docs/DATAFLOW.rst § Bước 1.
+       // trong src/services/modules/<page>-page.js, xem hook/DATAFLOW.rst § Bước 1.
        // Không chứa 'config' (object JS sống) hay 'data' — chỉ các field editable:
        { id: 'productsShopCard', dataTable: 'products', dataSrc: '',
          showSearch: true, emptyText: 'Không tìm thấy sản phẩm phù hợp',
@@ -960,8 +960,8 @@ Path nội bộ tới page đích, bắt đầu bằng ``/``:
 
 Được set **một lần duy nhất** lúc tạo hub (save đầu tiên khi chưa có row nào khớp ``link``):
 
-- Ưu tiên ``users.id`` thật của người tạo (query theo email nếu user hiện tại là super admin không có id thật — xem ``svc-login`` § tài khoản ``admin@apex``).
-- ``0`` nếu không tìm được user thật nào tương ứng (super admin thuần, không có row trong ``users``).
+- Ưu tiên ``id`` thật của người tạo (query theo email nếu ``user.id`` rỗng).
+- ``0`` nếu không tìm được user thật nào tương ứng.
 
 Các lần save sau **không** ghi đè ``user_id`` — chỉ admin (role ``admin``) hoặc user có ``id`` trùng ``hubs.user_id`` (chủ sở hữu) mới được phép sửa hub.
 
