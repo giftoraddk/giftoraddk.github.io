@@ -73,12 +73,14 @@ export const roleCaps = (preset, table) => preset === 'admin' ? [`${table}.admin
 /**
  * Auxiliary admin tools tied to a primary table — toggling a preset for the KEY table in
  * svc-roles.js mirrors the same preset onto each bundled table too, so a user granted product
- * management access gets Mind (AI knowledge base)/Customers (sale leads)/Report (revenue
- * dashboard)/Talks (svc-talk.js's boss<->AI-division tool) opened by default instead of needing a
- * separate manual grant per table. One-way only (bundled tables can still be toggled independently
- * in the UI — that does not feed back into `products`). `talks` is additionally recognized
- * server-side by llm-worker's tablePolicy.ts (`tableScoped: true`) — see that file's comment for why
- * a bundled Firestore-side capability token can unlock a D1 table the Worker owns.
+ * management access gets Customers (sale leads)/Report (revenue dashboard)/Talks (svc-talk.js's
+ * boss<->AI-division tool)/Knowledge (know+rel, /admin/knowledge) opened by default instead of
+ * needing a separate manual grant per table. One-way only (bundled tables can still be toggled
+ * independently in the UI — that does not feed back into `products`). `talks`/`know`/`rel` are
+ * additionally recognized server-side by llm-worker's tablePolicy.ts (`tableScoped: true`) — see
+ * that file's comment for why a bundled Firestore-side capability token can unlock a D1 table the
+ * Worker owns. `divisions` is deliberately NOT bundled here — always Super Admin only, see
+ * LayoutAdmin.astro's "Divisions" nav item.
  */
 export const TABLE_BUNDLES = {
     products: ['customers', 'report', 'talks', 'know', 'rel'],

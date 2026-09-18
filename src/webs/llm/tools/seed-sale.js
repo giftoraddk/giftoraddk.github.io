@@ -4,7 +4,7 @@
 // chuyên môn CHỌN ĐƯỢC cho <svc-aide> (prop `division="sale"`, xem svc-aide.js), bên cạnh chuyên môn
 // mặc định 'aide' (tools/seed-aide.js). Cloned from division/tools/seed-sale.js (domain-isolation
 // clone) — cùng nội dung persona (role/principles nén từ hook/sales.md), chỉ đổi nơi sửa tiếp
-// (/admin/llm-divisions, D1 thay vì Firestore).
+// (/admin/divisions, D1 thay vì Firestore).
 //
 // KHÁC division/tools/seed-sale.js's `hotline` field: <svc-aide> KHÔNG có lead-capture/extractPhone
 // (xem svc-aide.js's header) nên field này không được đọc bởi bất kỳ đâu trong domain llm — ĐÃ BỎ

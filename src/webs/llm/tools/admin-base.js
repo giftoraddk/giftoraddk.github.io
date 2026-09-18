@@ -128,7 +128,7 @@ export class DivisionAdminBase extends LitElement {
             console.error(`[${Ctor.name}] failed to load division config:`, err.message)
         }
         // Chưa có trong D1 (lần đầu chạy) — dùng seed local ngay, rồi ghi vào DB để lần sau đọc
-        // thẳng + sửa được qua Xuất/Nhập của /admin/llm-divisions.
+        // thẳng + sửa được qua Xuất/Nhập của /admin/divisions.
         if (!Ctor.SEED || this.division !== Ctor.SEED_ID) return
         this._division = Ctor.SEED
         const svc = createService('divisions', '', LLM_DB)

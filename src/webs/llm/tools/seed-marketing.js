@@ -8,7 +8,7 @@
 // division. svc-talk.js's _dfApprove tự bỏ qua bước mirror processTable khi rỗng.
 //
 // Seed 1 lần vào D1 table `divisions` (id 'marketing', server LLM_DB) nếu chưa tồn tại — xem
-// svc-talk.js's _dcEnsureSeeds. Sửa tiếp qua /admin/llm-divisions.
+// svc-talk.js's _dcEnsureSeeds. Sửa tiếp qua /admin/divisions.
 export const MARKETING_DIVISION_SEED = {
     title: 'Marketing',
     description: 'Chiến lược nội dung, phân tích khách hàng, viết bài SEO và tạo ảnh minh hoạ.',

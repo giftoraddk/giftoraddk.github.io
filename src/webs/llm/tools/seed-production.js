@@ -12,7 +12,7 @@
 // marketing) cần 1 sản phẩm trong bảng `products` (Firestore DB_ALL, KHÔNG đổi backend) khớp topic
 // tồn tại TRƯỚC khi được phép chạy — nếu chưa có, svc-talk.js tự dispatch topic đó cho production
 // chạy trước (xem svc-talk.js's _reactTurn/_wakeWaitingJobs). Seed 1 lần vào D1 table `divisions`
-// (id 'production', server LLM_DB) nếu chưa tồn tại — sửa tiếp qua /admin/llm-divisions.
+// (id 'production', server LLM_DB) nếu chưa tồn tại — sửa tiếp qua /admin/divisions.
 export const PRODUCTION_DIVISION_SEED = {
     title: 'Sản phẩm & Vận hành',
     description: 'Tạo sản phẩm mới (phân tích khách hàng, thiết kế, quy trình sản xuất) và đảm bảo chất lượng trước khi bàn giao.',

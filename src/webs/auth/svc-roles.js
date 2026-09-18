@@ -13,9 +13,7 @@ import '@/webs/apex/web-checkbox.js';
 // Used only when no `tables` prop is provided.
 // Prefer passing `tables` from the layout so this list never needs updating.
 const TABLES_STD = [
-    'posts', 'products', 'orders', 'comments',
-    'reviews', 'events', 'faqs', 'users', 'invoice',
-    'talents', 'jobs', 'proposals', // talent marketplace — xem hook/new_feature.md §6.2
+    'users', 'posts', 'products'
 ];
 
 // ── i18n ──────────────────────────────────────────────────────────────────

@@ -6,7 +6,7 @@
 // tri thức đa lĩnh vực chung, không phải bot bán hàng — xem svc-aide.js's header). `meta.role`/
 // `meta.principles` đọc bởi tools/aide-engine.js's _buildPersona() — chuyên môn là DATA nằm trong
 // seed, không hardcode trong engine, cùng tinh thần seed-marketing.js/seed-sale.js. Sửa tiếp qua
-// /admin/llm-divisions.
+// /admin/divisions.
 export const AIDE_DIVISION_SEED = {
     title: 'Trợ lý tri thức',
     description: 'Trả lời câu hỏi dựa trên kho tri thức đa lĩnh vực (luật, sản phẩm, y khoa, kỹ thuật, tài chính, FAQ...).',
