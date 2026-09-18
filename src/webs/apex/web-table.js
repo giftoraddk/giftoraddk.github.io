@@ -691,9 +691,8 @@ export class WebTable extends LitElement {
 				break;
 			case 'datetime':
 				// type="datetime" bật luôn time-of-day picker (web-datetime mặc định 'default' =
-				// chỉ chọn ngày, luôn ra 00:00) — cần cho field cửa sổ hiệu lực kiểu mind.js's
-				// effectiveFrom/effectiveTo, nơi "hiệu lực đến hết ngày X" khác hẳn "hiệu lực đến
-				// đúng 00:00 ngày X".
+				// chỉ chọn ngày, luôn ra 00:00) — cần cho field cửa sổ hiệu lực dạng effectiveFrom/
+				// effectiveTo, nơi "hiệu lực đến hết ngày X" khác hẳn "hiệu lực đến đúng 00:00 ngày X".
 				input = html`<web-datetime type="datetime" data-field=${storageKey} .value=${String(val??'')} .ui=${this.ui} height="32px"></web-datetime>`;
 				break;
 			case 'password':

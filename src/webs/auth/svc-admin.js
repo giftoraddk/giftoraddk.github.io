@@ -327,8 +327,7 @@ export class SvcAdmin extends LitElement {
     // Đồng bộ NGAY vào `know` (D1, LLM_DB) mỗi khi admin tự tạo/sửa tay 1 record thuộc bảng
     // 'products'/'posts'/'finance_reports' (kể cả giá/tồn kho mà pipeline AI của svc-talk.js không
     // tự set — xem webs/llm/tools/know-sync.js) — best-effort, tự no-op với bảng khác
-    // (syncKnowFromOutputTable tự kiểm tra this._table). Thay cho `mind`-sync cũ
-    // (division/tools/mind-sync.js, không còn gọi từ đây).
+    // (syncKnowFromOutputTable tự kiểm tra this._table).
     _dfSyncKnow(record) { if (record) syncKnowFromOutputTable(record, this._table); }
 
     /**

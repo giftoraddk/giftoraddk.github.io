@@ -1,17 +1,13 @@
 // src/webs/llm/tools/know-sync.js
 //
 // Syncs an approved svc-talk.js output record (products/posts/finance_reports) into THIS domain's
-// `know` table (D1, LLM_DB) — the equivalent of division/tools/mind-sync.js's
-// syncMindFromOutputTable, but targeting the NEW know/rel schema
-// (hook/knowledge_database_cloudflare_d1_vectorize.md) instead of the old `mind` Firestore
-// collection. The old mind-sync path in division/svc-talk.js/svc-sale.js is left COMPLETELY
-// untouched — these are 2 independent knowledge systems serving 2 independent chat widgets
-// (svc-sale.js / svc-aide.js), not a migration of one into the other (see svc-aide.js's header,
-// "clone không kế thừa").
+// `know` table (D1, LLM_DB) — successor to the old (retired) Firestore `mind` collection's
+// sync-on-approve step, targeting the NEW know/rel schema
+// (hook/knowledge_database_cloudflare_d1_vectorize.md) instead.
 //
-// No refTable/refId, no realtime hydration back to the source table (unlike division's
-// sale-engine.js's _hydrateRealtime) — `know`/`rel` (D1) is the ONLY source svc-aide reads from at
-// answer time (see tools/aide-engine.js + worker/packages/llm-worker/src/search.ts), by explicit product decision.
+// No refTable/refId, no realtime hydration back to the source table — `know`/`rel` (D1) is the
+// ONLY source svc-aide reads from at answer time (see tools/aide-engine.js +
+// worker/packages/llm-worker/src/search.ts), by explicit product decision.
 import { createService } from '@/services/crud.js'
 import { LLM_DB } from './server.js'
 

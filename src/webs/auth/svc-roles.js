@@ -4,7 +4,7 @@ import css from './styles/svc-roles.css?inline';
 import { auth, parseRoles } from '@/webs/auth/tools/service.js';
 import { createService } from '@/services/crud.js';
 import { injectStyles, txtLingo } from '@/services/helper.js';
-import { ORDER_PRESETS, roleCaps, TABLE_BUNDLES, RETIRED_TABLES } from '@/services/schemas/roles-constant.js';
+import { ORDER_PRESETS, roleCaps, TABLE_BUNDLES } from '@/services/schemas/roles-constant.js';
 import '@/webs/apex/web-select.js';
 import '@/webs/apex/web-table.js';
 import '@/webs/apex/web-checkbox.js';
@@ -151,11 +151,7 @@ export class SvcRoles extends LitElement {
             else         checkedNow.delete(preset);
             newRoles = this._comNewRoles(newRoles, table, checkedNow);
         }
-        // Dọn rác token của bảng đã bị RETIRED khỏi hệ thống (vd 'mind' cũ — không còn trong _tables
-        // lẫn TABLE_BUNDLES nữa) — UI không còn cách nào để uncheck nó, nên tự strip mỗi lần lưu,
-        // thay vì để kẹt vĩnh viễn trong `roles` string.
-        newRoles = this._comPruneStaleTables(newRoles);
-
+        
         // [3] EXECUTE: Optimistic update UI trước, ghi DB sau — rollback nếu ghi lỗi
         //   [3.a] OPTIMISTIC: Cập nhật UI ngay + đánh dấu đang lưu (disable checkbox)
         this._users  = this._users.map(u => u.id === userId ? { ...u, roles: newRoles } : u);
@@ -197,28 +193,6 @@ export class SvcRoles extends LitElement {
     /** True for the built-in "admin" global role — bypasses all table-level checks. */
     _comIsSuper(user) {
         return parseRoles(user).isAdmin;
-    }
-
-    /**
-     * Strips `{table}.capability` tokens whose table is no longer known to this UI (dropdown list
-     * `_tables` ∪ every TABLE_BUNDLES target) — leftover from a table that got retired from the
-     * system entirely (e.g. the old 'mind', replaced by 'know'/'rel'). Once retired, svc-roles.js
-     * has no checkbox left to uncheck it with, so without this the tokens would sit dead in `roles`
-     * forever. Bare tokens with no table prefix ('admin', 'user', ...) are always kept.
-     */
-    _comPruneStaleTables(rolesStr) {
-        const known   = new Set([...this._tables, ...Object.values(TABLE_BUNDLES).flat()]);
-        const retired = new Set(RETIRED_TABLES);
-        const { roles } = parseRoles(rolesStr);
-        return roles.filter(r => {
-            const dot = r.indexOf('.');
-            if (dot === -1) return true;
-            const table = r.slice(0, dot);
-            // RETIRED_TABLES always strips regardless of `known` — `_tables` (nav-derived) can be
-            // stale (see roles-constant.js's RETIRED_TABLES comment), `known` alone can't be trusted
-            // to catch a table that's gone for good.
-            return !retired.has(table) && known.has(table);
-        }).join('|');
     }
 
     /**

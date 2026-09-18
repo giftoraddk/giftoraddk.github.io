@@ -8,10 +8,10 @@ const pageDescription = 'Knowledge base (know/rel) admin page';
 	<div class='p-4'>
 		<h1 class='text-xl font-bold mb-5'>Cơ sở tri thức (know)</h1>
 		<!-- server='DB_LLMD1' — know/rel sống trên Cloudflare D1 (worker/), tách khỏi Firestore
-		     DB_ALL/DB_LLM (mind cũ của division/svc-sale.js) — xem src/webs/llm/tools/server.js,
-		     worker/README.md, hook/knowledge_database_cloudflare_d1_vectorize.md (D1 + Cloudflare
-		     Vectorize + Workers AI embedding — semantic search thật, xem worker/packages/llm-worker/src/search.ts).
-		     Trang duy nhất quản lý tri thức — thay thế hẳn /admin/mind.astro cũ, đã xoá. -->
+		     DB_ALL — xem src/webs/llm/tools/server.js, worker/README.md,
+		     hook/knowledge_database_cloudflare_d1_vectorize.md (D1 + Cloudflare Vectorize + Workers AI
+		     embedding — semantic search thật, xem worker/packages/llm-worker/src/search.ts). Trang
+		     duy nhất quản lý tri thức. -->
 		<!-- Nạp nhanh dữ liệu sản phẩm vào `know` (+ auto-link `rel` theo tag chung) để
 		     <svc-aide division="sale"> (tools/seed-sale.js) tư vấn chính xác giá/khuyến mãi/tồn kho —
 		     component tự chứa, xem src/webs/llm/svc-learn.js. Phát 'learn:done' sau mỗi lần nạp để

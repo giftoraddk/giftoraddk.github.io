@@ -100,7 +100,7 @@ export const parseJson = (value, fallback = {}) => {
 // real newline (vd textarea multi-line xuất từ svc-admin.js's _dfExportCsv) không bị tách nhầm
 // thành nhiều "dòng" — quote state phải sống xuyên suốt qua ký tự \n/\r\n. Dùng chung bởi
 // svc-admin.js (import CSV header-matched) và bất kỳ importer CSV vị trí cột cố định nào khác (vd
-// /admin/mind's external CSV import — xem svc-sale's hook/SALE.rst).
+// svc-learn.js's "Nạp lại"/"Nhập CSV ngoài" trên /admin/knowledge).
 export const parseCsvRows = (text) => {
     const rows = []; let row = [], cur = '', inQ = false;
     for (let i = 0; i < text.length; i++) {

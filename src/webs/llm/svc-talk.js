@@ -654,7 +654,7 @@ export class SvcTalk extends LitElement {
             // Record vừa duyệt (output.table 'products'/'posts'/'finance_reports') — đồng bộ NGAY
             // vào `know` (D1, LLM_DB) để <svc-aide> có dữ liệu trả lời ngay, không cần đợi admin
             // sửa gì thêm (xem tools/know-sync.js — best-effort, tự nuốt lỗi, tự no-op nếu table
-            // khác). Hoàn toàn độc lập với `mind`-sync cũ ở division/svc-talk.js.
+            // khác).
             syncKnowFromOutputTable(created, output.table)
             // Mirror job đã duyệt vào collection tiến trình của popup admin (division.meta.processTable)
             // — mọi seed trong domain này đặt processTable:'' (không có admin popup riêng), nên
