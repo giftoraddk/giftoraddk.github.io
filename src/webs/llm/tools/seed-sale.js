@@ -7,9 +7,10 @@
 // (/admin/llm-divisions, D1 thay vì Firestore).
 //
 // KHÁC division/tools/seed-sale.js's `hotline` field: <svc-aide> KHÔNG có lead-capture/extractPhone
-// (xem svc-aide.js's header) nên field này không được đọc bởi bất kỳ đâu trong domain llm — giữ lại
-// trong seed CHỈ để field-shape khớp `services/schemas/admin/divisions.js` (schema dùng chung, có
-// cột hotline) và không mất thông tin nếu admin đã từng điền; không có ý nghĩa hành vi ở đây.
+// (xem svc-aide.js's header) nên field này không được đọc bởi bất kỳ đâu trong domain llm — ĐÃ BỎ
+// khỏi seed (không như comment cũ tưởng, D1 `divisions` không có cột này — worker/packages/
+// llm-worker/migrations/know_db.sql — D1Client.set() chèn thẳng mọi field làm tên cột nên giữ lại
+// sẽ vỡ SQL "no such column: hotline" ngay khi write này chạy được).
 export const SALE_DIVISION_SEED = {
     title: 'Tư vấn & CSKH',
     description: 'Tư vấn sản phẩm, trả lời câu hỏi của khách vãng lai, hỗ trợ chốt đơn.',
@@ -17,7 +18,6 @@ export const SALE_DIVISION_SEED = {
     pics: '',
     lang: 'vi',
     ai: '',
-    hotline: '+84934561501',
     meta: {
         kind: 'chat',
         role: 'a Senior Sales Strategist, Customer Success Manager, and Customer Experience Specialist',

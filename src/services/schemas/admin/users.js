@@ -34,7 +34,10 @@ const TXT = {
  * only the "highest" match would silently hide that the other two are effectively granted too.
  */
 function matchedPresetLabels(caps) {
-	const set     = new Set(caps);
+	const set = new Set(caps);
+	// `admin` preset is stored as the bare shorthand cap 'admin' (see roles-constant.js's
+	// roleCaps()), not spelled out — its presence alone satisfies every preset for this table.
+	if (set.has('admin')) return ORDER_PRESETS.join('|');
 	const matches = ORDER_PRESETS.filter(p => ROLE_PRESETS[p].every(c => set.has(c)));
 	return matches.length ? matches.join('|') : null;
 }

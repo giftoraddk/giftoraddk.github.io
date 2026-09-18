@@ -198,12 +198,15 @@ export class SvcRoles extends LitElement {
     }
 
     /**
-     * Returns the subset of ORDER_PRESETS whose full capability set is already
-     * present in `rolesStr` for `table`. A preset is considered "checked" only
-     * when every single capability it defines is in the roles string.
+     * Returns the subset of ORDER_PRESETS whose full capability set is already present in
+     * `rolesStr` for `table`. A preset is considered "checked" when every single capability it
+     * defines is in the roles string — EXCEPT `admin`, stored as the single shorthand token
+     * `{table}.admin` (see roleCaps()), whose presence alone satisfies all 3 presets at once (it's
+     * a strict superset of editor/moderator, same as before this shorthand existed).
      */
     _comCheckedPresets(rolesStr, table) {
         const { roles } = parseRoles(rolesStr);
+        if (roles.includes(`${table}.admin`)) return [...ORDER_PRESETS];
         return ORDER_PRESETS.filter(preset =>
             roleCaps(preset, table).every(c => roles.includes(c))
         );
@@ -212,15 +215,16 @@ export class SvcRoles extends LitElement {
     /**
      * Rebuilds the full roles string after toggling a preset.
      * - Capabilities for all OTHER tables are left untouched (otherCaps).
-     * - This table's capabilities become the union of all checked presets.
+     * - This table's capabilities become the union of all checked presets — EXCEPT when `admin` is
+     *   checked, which collapses straight to the single `{table}.admin` shorthand token (it already
+     *   implies editor/moderator, no point spelling out their caps too).
      */
     _comNewRoles(currentRolesStr, table, checkedPresets) {
         const { roles } = parseRoles(currentRolesStr);
         const otherCaps = roles.filter(r => !r.startsWith(`${table}.`));
-        const tableCaps = new Set();
-        for (const preset of checkedPresets) {
-            for (const cap of roleCaps(preset, table)) tableCaps.add(cap);
-        }
+        const tableCaps = checkedPresets.has('admin')
+            ? new Set([`${table}.admin`])
+            : new Set([...checkedPresets].flatMap(preset => roleCaps(preset, table)));
         return [...otherCaps, ...tableCaps].join('|');
     }
 
