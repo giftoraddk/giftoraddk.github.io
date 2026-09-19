@@ -101,7 +101,7 @@ export const MARKETING_DIVISION_SEED = {
                     },
                     {
                         key: 'content', vi: 'Nội dung bài viết', en: 'Article content',
-                        maxTokens: 5000, temperature: 0.75, dependsOn: ['titleDesc'],
+                        maxTokens: 4000, temperature: 0.75, dependsOn: ['titleDesc'],
                         contextKeys: ['title', 'customerSituation', 'painPoints', 'customerInsight', 'buyingMotivation', 'contentPillars', 'contentAngles'],
                         fields: [{ key: 'content', vi: 'Nội dung', en: 'Content', desc: 'Full content as valid HTML (use <h2>/<h3>/<p>/<ul>/<li> tags where appropriate), standard SEO blog structure, with an opening that states the problem, a body developed from the analyzed insight/angles, and a closing CTA fitting the funnel stage (no direct sales CTA if the insight shows the customer has not recognized the problem yet). About 400-600 words.' }],
                     },

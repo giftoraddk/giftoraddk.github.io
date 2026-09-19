@@ -5,6 +5,7 @@
 //   - src/pages/product/_render-modes/[slug].isr.astro (ISR, PUBLIC_RENDER=isr, xem astro.config.mjs)
 // Props { product, allProducts } là dữ liệu thô đã fetch xong — component này thuần tính toán +
 // render, không quan tâm data đến từ getStaticPaths hay fetch per-request.
+import "@/webs/media/styles/prose-mirror.css";
 import { config as cardConfig } from '@/sections/another/_cardProductSeo.js';
 import { config as faqConfig } from '@/sections/another/_faqProduct.js';
 import { toPrice, productSlug, slugify, pickLang } from '@/services/helper.js';
@@ -201,7 +202,7 @@ const jsonLd = {
 
 	<!-- Content -->
 	{product.content && (
-		<div class="Editor ProseMirror !px-0 mt-10" set:html={product.content} />
+		<div class="Editor ProseMirror !px-0 mt-8 pt-8 border-t border-base-content/10" set:html={product.content} />
 	)}
 
 	<!-- FAQ -->

@@ -65,7 +65,7 @@ export const PRODUCTION_DIVISION_SEED = {
                     },
                     {
                         key: 'componentSpecs', vi: 'Cụ thể hoá thành phần', en: 'Component specs',
-                        maxTokens: 4000, temperature: 0.6, dependsOn: ['productConcept'],
+                        maxTokens: 3000, temperature: 0.6, dependsOn: ['productConcept'],
                         contextKeys: ['productConcept'],
                         fields: [{ key: 'componentSpecs', vi: 'Chi tiết thành phần', en: 'Component Specs', desc: 'For EACH physical component listed in productConcept above (skip logo/branding bullets and the budget-swap note), write one short block specifying its concrete attributes — choose whichever apply to that component\'s type: a box/case -> size, material, color, opening mechanism, logo method; a bottle/container -> capacity, material, color, logo method, packaging; a printed item (notebook/card) -> size, page count/cover, logo method; adapt freely for anything else. Format: the component\'s name on its own line, then each attribute as "label: value" on the next lines, with a blank line separating each component. IMPORTANT: insert a REAL newline character (JSON escape "\\n") between the name and each attribute line, between each attribute, and between components (double "\\n\\n") — e.g. "Insulated bottle\\nCapacity: 500ml\\nMaterial: stainless steel\\n\\nNotebook\\n...". NEVER put the name and its attributes, or two attributes, on the same line.' }],
                     },
@@ -105,7 +105,7 @@ export const PRODUCTION_DIVISION_SEED = {
                     },
                     {
                         key: 'content', vi: 'Nội dung sản phẩm', en: 'Product content',
-                        maxTokens: 5000, temperature: 0.7, dependsOn: ['titleDesc'],
+                        maxTokens: 4000, temperature: 0.7, dependsOn: ['titleDesc'],
                         contextKeys: ['title', 'description', 'productionProcess', 'desiredOutcome', 'productConcept', 'componentSpecs'],
                         fields: [{ key: 'content', vi: 'Nội dung', en: 'Content', desc: 'Full product content as valid HTML (use <h2>/<h3>/<p>/<ul>/<li> tags). Include: an opening paragraph on the value/outcome, a section describing what the product physically includes (grounded in the approved component list/specs), and a closing <h2> section heading (meaning "Production Process & Quality Control", written in the OUTPUT_LANGUAGE — never hardcode it in another language) summarizing the production process and the top quality checks before handover. About 300-500 words.' }],
                     },

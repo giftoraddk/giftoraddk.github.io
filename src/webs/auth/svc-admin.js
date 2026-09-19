@@ -692,8 +692,13 @@ export class SvcAdmin extends LitElement {
             opts.sortBy = this._serverSort.field;
             opts.order  = this._serverSort.dir;
         } else if (!hasFilters && !hasSearch) {
+            // Kept scoped to !hasFilters && !hasSearch (unchanged) — combining `searchField` with a
+            // `sortBy` on a DIFFERENT field needs a Firestore composite index (xem hook/CRUD.rst §
+            // QueryOpts), nên KHÔNG áp default sort này khi đang filter/search, tránh query vỡ vì
+            // thiếu index chưa tạo.
             if (this.orderable)       opts.sortBy = 'index';
             else if (this.orderField) opts.sortBy = this.orderField;
+            else                      { opts.sortBy = 'updated_at'; opts.order = 'desc'; }
         }
 
         if (this.limitCount > 0) opts.maxCount = this.limitCount;

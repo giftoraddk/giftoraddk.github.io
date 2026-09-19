@@ -233,8 +233,15 @@ export class SvcTalk extends LitElement {
 
     async _dfPostBoss(content) {
         const svc = createService('talks', '', LLM_DB)
-        const now = await svc.now()
-        const doc = await svc.create({ kind: 'chat', from: 'boss', content, created_at: now, updated_at: now })
+        let doc
+        try {
+            const now = await svc.now()
+            doc = await svc.create({ kind: 'chat', from: 'boss', content, created_at: now, updated_at: now })
+        } catch (err) {
+            this._draft = content
+            toastEmit(err.message || this._txt.errGeneric, 'error')
+            return
+        }
         this._log = [...this._log, doc]
         // Chụp lại target NGAY LÚC GỬI (không đọc `this._targetDivisionId` sống bên trong _reactTurn
         // — lượt đó có thể chạy trễ hơn do hàng đợi _queue, lúc đó sếp có thể đã đổi/xoá target rồi).
@@ -273,12 +280,14 @@ export class SvcTalk extends LitElement {
     // đó tham gia lượt này (chat + nhận task), mọi division khác im lặng hoàn toàn.
     async _reactTurn(bossContent, targetDivisionId) {
         const pendingJobs = []
-        // Đang nhắn ĐÍCH DANH 1 phòng ban (targetDivisionId) — coi như KHÔNG có phòng production để
-        // chờ, dù thật ra có active: cơ chế "chờ sản phẩm" (willWaitForProduct + auto-dispatch bên
-        // dưới) vốn ngầm lôi production vào cuộc dù sếp chỉ nhắn đích danh 1 phòng khác, phá đúng lời
-        // hứa "chỉ phòng đó trả lời". Chỉ áp dụng khi có target — lượt broadcast (targetDivisionId
-        // rỗng) giữ nguyên hành vi chờ-sản-phẩm như cũ.
-        const hasProductionDivision = !targetDivisionId && !!this._divisions.find(d => d.id === 'production')
+        // Đang nhắn ĐÍCH DANH 1 phòng ban (targetDivisionId) VẪN cho phép cơ chế "chờ sản phẩm"
+        // (willWaitForProduct + auto-dispatch bên dưới) hoạt động — division đó `requiresProduct`
+        // (vd marketing) phải tự động đợi production tạo xong sản phẩm rồi mới viết bài, dù đang
+        // nhắn riêng, chứ không được chạy ngay với productContext rỗng. KHÔNG phá lời hứa "chỉ
+        // phòng đó trả lời": production vẫn KHÔNG được chat trong lượt này (`divisionsThisTurn`
+        // bên dưới vẫn loại nó khỏi vòng lặp chat) — lời hứa đó chỉ áp dụng cho câu chat, còn job
+        // nền (pipeline tạo sản phẩm) vẫn cần chạy ngầm để division được nhắn có dữ liệu thật.
+        const hasProductionDivision = !!this._divisions.find(d => d.id === 'production')
         const divisionsThisTurn = targetDivisionId
             ? this._divisions.filter(d => d.id === targetDivisionId)
             : this._divisions
@@ -353,14 +362,13 @@ export class SvcTalk extends LitElement {
             }
             let productionJob = productionJobThisTurn
             if (!productionJob) {
-                // `hasProductionDivision` đã tự thành false khi đang nhắn đích danh 1 phòng ban khác
-                // production (xem khai báo ở trên) — coi như không có production để chờ trong trường
-                // hợp đó, y hệt trường hợp production thật sự không active.
+                // `hasProductionDivision` giờ chỉ phụ thuộc production có active hay không (KHÔNG
+                // còn tự tắt khi đang nhắn đích danh — xem khai báo ở trên) — nhắn riêng 1 division
+                // `requiresProduct` vẫn tự động chờ production tạo sản phẩm y hệt lượt broadcast.
                 const productionDivision = hasProductionDivision ? this._divisions.find(d => d.id === 'production') : null
                 if (!productionDivision) {
-                    // Không có phòng production active (hoặc đang nhắn đích danh 1 phòng khác) —
-                    // fallback chạy thẳng, tránh treo job mãi mãi / tránh production tự chạy thay khi
-                    // sếp không hề nhắn tới nó.
+                    // Không có phòng production active — fallback chạy thẳng, tránh treo job mãi
+                    // mãi vì chẳng còn ai để chờ.
                     const job = await this._createJobDoc(division, topic, { language })
                     await this._runJob(job.id, division)
                     continue

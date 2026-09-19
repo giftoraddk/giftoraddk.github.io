@@ -164,7 +164,7 @@
 .ProseMirror figure[data-media-wrap] svc-player {
   display: block;
   max-width: 100%;
-  min-width: 200px;
+  min-width: 240px;
   border-radius: 6px;
   border: 2px solid transparent;
   transition: border-color 0.15s;
