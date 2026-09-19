@@ -96,6 +96,27 @@ export const parseJson = (value, fallback = {}) => {
     try { return JSON.parse(value); } catch { return fallback; }
 };
 
+// created_at/updated_at/deleted_at lưu dạng epoch-ms NUMBER trong DB (xem
+// services/firestore.worker.js's WorkerAdapter.now()) — không đọc được bằng mắt khi xuất ra CSV
+// (svc-admin.js's _dfExportCsv/_dfImportCsv), nên 2 hàm này chuyển đổi 2 chiều sang/từ text
+// "YYYY-MM-DD HH:mm:ss" (giờ local máy, không phải UTC — khớp cách người dùng đọc/gõ giờ).
+export const formatDateTime = (value) => {
+    if (value === null || value === undefined || value === '') return '';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '';
+    const p = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+};
+
+export const parseDateTime = (text) => {
+    const trimmed = (text || '').trim();
+    if (!trimmed) return null;
+    // "YYYY-MM-DD HH:mm:ss" thiếu "T" nên không phải ISO chuẩn — new Date() parse trực tiếp không
+    // đảm bảo nhất quán giữa các browser, thay khoảng trắng giữa ngày/giờ bằng "T" trước khi parse.
+    const d = new Date(trimmed.includes('T') ? trimmed : trimmed.replace(' ', 'T'));
+    return Number.isNaN(d.getTime()) ? null : d.getTime();
+};
+
 // Tokenizes the WHOLE CSV text char-by-char (not line-by-line first) so a quoted cell containing a
 // real newline (vd textarea multi-line xuất từ svc-admin.js's _dfExportCsv) không bị tách nhầm
 // thành nhiều "dòng" — quote state phải sống xuyên suốt qua ký tự \n/\r\n. Dùng chung bởi

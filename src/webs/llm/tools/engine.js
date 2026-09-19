@@ -32,28 +32,49 @@ export const LANGUAGE_OPTIONS = [
 const _CJK_PATTERN = /[぀-ヿ㐀-䶿一-鿿가-힣豈-﫿]/u
 const _CJK_LANGS = new Set(['Chinese', 'Japanese', 'Korean'])
 
-// Vài model free-tier (đặc biệt reasoning model) in suy luận TRƯỚC khi tới JSON thật dù prompt đã
-// dặn "không giải thích gì thêm" — JSON thật luôn là khối {...} CUỐI CÙNG trong response, nên tìm
-// từ '{' cuối tới '}' cuối thay vì chỉ strip code-fence ở đầu/cuối chuỗi.
-function _cleanJson(raw) {
-    const text  = raw.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim()
-    const start = text.lastIndexOf('{')
-    const end   = text.lastIndexOf('}')
-    if (start !== -1 && end !== -1 && end > start) return text.slice(start, end + 1)
-    return text
+// Quét toàn bộ text, trả về MỌI khối "{...}" cân bằng ở top-level (đúng độ sâu ngoặc, bỏ qua
+// ngoặc nằm trong chuỗi "..."/escape) — không dùng lastIndexOf('{')/lastIndexOf('}') như trước vì
+// cách đó GIẢ ĐỊNH ký tự '}' cuối cùng trong toàn văn bản là của đúng khối JSON thật, điều này sai
+// bất cứ khi nào model in thêm chữ sau JSON có chứa dấu ngoặc nhọn (vd lời ghi chú "...{like this}"
+// sau khối JSON) — lastIndexOf khi đó cắt nhầm đúng đoạn rác đó, JSON.parse hỏng dù JSON thật ở
+// trên hoàn toàn hợp lệ.
+function _extractJsonCandidates(text) {
+    const candidates = []
+    let depth = 0, inString = false, escape = false, start = -1
+    for (let i = 0; i < text.length; i++) {
+        const ch = text[i]
+        if (inString) {
+            if (escape) escape = false
+            else if (ch === '\\') escape = true
+            else if (ch === '"') inString = false
+            continue
+        }
+        if (ch === '"') { inString = true; continue }
+        if (ch === '{') { if (depth === 0) start = i; depth++ }
+        else if (ch === '}' && depth > 0) {
+            depth--
+            if (depth === 0 && start !== -1) candidates.push(text.slice(start, i + 1))
+        }
+    }
+    return candidates
 }
 
+// Vài model free-tier (đặc biệt reasoning model) in suy luận TRƯỚC khi tới JSON thật dù prompt đã
+// dặn "không giải thích gì thêm" — JSON thật luôn là khối {...} CUỐI CÙNG hợp lệ trong response.
+// Thử từng candidate từ CUỐI lên ĐẦU (ưu tiên khối gần cuối nhất, đúng giả định trên), bỏ qua
+// candidate nào parse hỏng (vd đoạn rác "{like this}" không phải JSON hợp lệ) thay vì bỏ cuộc
+// ngay — candidate JSON thật (thường đứng trước đoạn rác đó) vẫn được thử tiếp.
 function _parseJsonObject(raw, errMessage) {
-    let parsed
-    try { parsed = JSON.parse(_cleanJson(raw)) } catch (err) {
-        console.error('[llm/engine] JSON.parse failed:', err.message, '\nraw response:', raw)
-        throw new Error(errMessage)
+    const text = raw.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim()
+    const candidates = _extractJsonCandidates(text)
+    for (let i = candidates.length - 1; i >= 0; i--) {
+        try {
+            const parsed = JSON.parse(candidates[i])
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed
+        } catch { /* candidate này không phải JSON hợp lệ — thử candidate trước đó */ }
     }
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-        console.error('[llm/engine] parsed value is not a plain object:', parsed, '\nraw response:', raw)
-        throw new Error(errMessage)
-    }
-    return parsed
+    console.error('[llm/engine] JSON.parse failed for all candidates:', candidates.length, '\nraw response:', raw)
+    throw new Error(errMessage)
 }
 
 // Model free-tier thỉnh thoảng lẫn nguyên cụm chữ Hán/Nhật/Hàn vào response dù system prompt đã
@@ -117,9 +138,19 @@ export function resolveAi(entityAi) {
     return [DEFAULT_CHAIN, entityAi].filter(Boolean).join('|')
 }
 
+// Vài model double-escape "\n" thành literal 2 ký tự backslash+n trong JSON string value, thay vì
+// 1 ký tự xuống dòng thật — buildCallPrompt's hướng dẫn hiển thị "\\n" (raw text, để dặn model
+// "đây là JSON escape \n") đôi khi bị model copy y nguyên MẶT CHỮ thay vì hiểu đúng ý nghĩa, dù
+// JSON.parse đã chạy đúng (chuỗi hợp lệ, chỉ là giá trị bên trong lại chứa \n LITERAL). Chuẩn hoá ở
+// đây — pick() là điểm hội tụ DUY NHẤT mọi field text đi qua trước khi vào `fields` bag — để UI
+// (svc-progress.js's _rfFieldValue) luôn xuống dòng đúng, bất kể model nào trả lời.
+function _unescapeNewlines(text) {
+    return text.replace(/\\n/g, '\n')
+}
+
 export function pick(obj, keys) {
     const out = {}
-    for (const k of keys) out[k] = typeof obj[k] === 'string' ? obj[k] : ''
+    for (const k of keys) out[k] = typeof obj[k] === 'string' ? _unescapeNewlines(obj[k]) : ''
     return out
 }
 

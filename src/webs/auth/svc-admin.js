@@ -2,7 +2,7 @@ import { LitElement, html } from 'lit';
 import 'iconify-icon';
 import css from './styles/svc-admin.css?inline';
 import { auth, parseRoles } from '@/webs/auth/tools/service.js';
-import { ulid, buildNested, injectStyles, txtLingo, getPath, toastEmit, parseCsvRows } from '@/services/helper.js';
+import { ulid, buildNested, injectStyles, txtLingo, getPath, toastEmit, parseCsvRows, formatDateTime, parseDateTime } from '@/services/helper.js';
 import { createService, invalidate as cacheInvalidate } from '@/services/crud.js';
 import { DEFAULT_CHAIN } from '@/services/tensor.js';
 import { triggerRebuild } from '@/webs/auth/tools/helper.js';
@@ -33,6 +33,10 @@ function deepMerge(target, source) {
 }
 
 // ── CSV helpers ───────────────────────────────────────────────────────────────
+
+// System-managed timestamp fields — never part of any table's `schema` (xem _dfExportCsv/
+// _dfImportCsv/_buildNewDoc), handled as a special case in both CSV directions instead.
+const DATE_FIELDS = ['created_at', 'updated_at', 'deleted_at'];
 
 function _parseCsvText(text) {
     const rows = parseCsvRows(text.replace(/^﻿/, '')).filter(r => r.some(c => c.trim() !== ''));
@@ -400,20 +404,27 @@ export class SvcAdmin extends LitElement {
         // '{' -> JSON.parse -> dot-path merge" branch.
         const metaCols  = allCols.filter(c => (c.key || '').startsWith('meta.'));
         const plainCols = allCols.filter(c => !metaCols.includes(c));
-        const cols      = metaCols.length ? [...plainCols, { __metaRaw: true }] : plainCols;
+        // created_at/updated_at/deleted_at are system-managed fields — never part of a table's
+        // `schema` (no admin form edits them directly) — so they'd otherwise never appear in the
+        // export at all. Appended as always-present trailing columns, formatted human-readable
+        // (DATE_FIELDS's epoch-ms storage value is meaningless to read/edit in a spreadsheet) —
+        // _dfImportCsv parses this exact format back on the way in.
+        const dateCols  = DATE_FIELDS.map(f => ({ __dateField: f }));
+        const cols      = [...(metaCols.length ? [...plainCols, { __metaRaw: true }] : plainCols), ...dateCols];
 
         // Header = actual storage key (col.key || col.field, same expr as the row lookup below) —
         // NOT col.label. col.label is a translated display string (vi/en) so it can't identify a
         // column reliably (breaks re-import across language switches, and doesn't match the real
         // DB field name — vd score/pricing/vat/tags phải là "score"/"pricing"/"vat"/"tags" như
         // trong bảng gốc, không phải "Đánh giá"/"Giá bán"/...).
-        const header  = cols.map(c => `"${c.__metaRaw ? 'meta' : (c.key || c.field)}"`).join(',');
+        const header  = cols.map(c => `"${c.__metaRaw ? 'meta' : (c.__dateField || c.key || c.field)}"`).join(',');
         const body    = data.map(row =>
             cols.map(col => {
                 if (col.__metaRaw) {
                     const raw = typeof row.meta === 'string' ? row.meta : JSON.stringify(row.meta ?? {});
                     return `"${raw.replace(/"/g, '""')}"`;
                 }
+                if (col.__dateField) return `"${formatDateTime(row[col.__dateField])}"`;
                 const v           = getPath(row, col.key || col.field) ?? '';
                 const importable  = col.write !== false || col.csvWrite;
                 const raw = importable
@@ -466,6 +477,16 @@ export class SvcAdmin extends LitElement {
             for (const [header, val] of Object.entries(csvRow)) {
                 const col = keyMap[header] || labelMap[header] || fieldMap[header];
                 if (!col) {
+                    // created_at/updated_at/deleted_at — not a schema column (see DATE_FIELDS),
+                    // so never matched above. CSV holds the human-readable "YYYY-MM-DD HH:mm:ss"
+                    // form (see _dfExportCsv) — parse back to the epoch-ms number the DB expects;
+                    // an empty/unparseable cell is left out of `flat` entirely so _buildNewDoc
+                    // falls back to its own default (`now`/`null`) instead of storing a bad value.
+                    if (DATE_FIELDS.includes(header)) {
+                        const parsed = parseDateTime(val);
+                        if (parsed != null) flat[header] = parsed;
+                        continue;
+                    }
                     const trimmed = (val || '').trim();
                     if (trimmed.startsWith('{')) {
                         try {
@@ -693,7 +714,12 @@ export class SvcAdmin extends LitElement {
         }
         return {
             ...data,
-            created_at: now, updated_at: now, deleted_at: null,
+            // CSV import (see _dfImportCsv) may have parsed real created_at/updated_at/deleted_at
+            // values into `data` already (epoch-ms numbers) — honor those (bulk-migrating historical
+            // data with its original dates) instead of always stamping `now`/`null`. The "+ Thêm"
+            // manual-add flow never populates these (not a schema field, no form input for them),
+            // so `data.created_at` etc. stay undefined there and this falls back exactly as before.
+            created_at: data.created_at ?? now, updated_at: data.updated_at ?? now, deleted_at: data.deleted_at ?? null,
             actors:  this._comActors('', 'created'),
             user_id: this._comUserId() || null,
             scope:   data.scope  || 'public',

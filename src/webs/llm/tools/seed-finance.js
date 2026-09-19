@@ -30,7 +30,7 @@ export const FINANCE_DIVISION_SEED = {
                 calls: [
                     {
                         key: 'g1', vi: 'Kết luận & phân tích', en: 'Conclusion & analysis',
-                        maxTokens: 900, temperature: 0.4, contextKeys: ['financialContext'], dependsOn: [],
+                        maxTokens: 2500, temperature: 0.4, contextKeys: ['financialContext'], dependsOn: [],
                         fields: [
                             { key: 'conclusion', vi: 'Kết luận', en: 'Conclusion', desc: 'The short, direct answer to the financial question asked — 1-2 sentences, no hedging filler.' },
                             { key: 'analysis', vi: 'Phân tích', en: 'Analysis', desc: 'The reasoning behind the conclusion — what the numbers in financialContext show, any trend/ratio/margin relevant, and what data was insufficient or assumed (mark assumptions explicitly as "Giả định:"). Max 5 sentences.' },
@@ -39,7 +39,7 @@ export const FINANCE_DIVISION_SEED = {
                     },
                     {
                         key: 'g2', vi: 'Rủi ro & quyết định', en: 'Risk & decision',
-                        maxTokens: 700, temperature: 0.4, contextKeys: ['financialContext', 'conclusion', 'analysis'], dependsOn: ['g1'],
+                        maxTokens: 2000, temperature: 0.4, contextKeys: ['financialContext', 'conclusion', 'analysis'], dependsOn: ['g1'],
                         fields: [
                             { key: 'risk', vi: 'Rủi ro', en: 'Risk', desc: 'Start with exactly one of GREEN/YELLOW/ORANGE/RED (hook/finance_accounting.md §29 — mark any threshold you use as "Ngưỡng phân tích đề xuất", never claim it is official company policy), then 1 sentence why.' },
                             { key: 'recommendation', vi: 'Khuyến nghị', en: 'Recommendation', desc: 'The recommended action(s) — what to do, who/which department should act, priority, and the risk of doing nothing. Max 4 sentences.' },

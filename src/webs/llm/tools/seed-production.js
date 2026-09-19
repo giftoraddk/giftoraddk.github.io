@@ -32,7 +32,7 @@ export const PRODUCTION_DIVISION_SEED = {
                 calls: [
                     {
                         key: 'g1', vi: 'Khách hàng & nhu cầu', en: 'Customer & need',
-                        maxTokens: 900, temperature: 0.7, contextKeys: [], dependsOn: [],
+                        maxTokens: 2000, temperature: 0.7, contextKeys: [], dependsOn: [],
                         fields: [
                             { key: 'customerProfile', vi: 'Khách hàng mục tiêu', en: 'Target Customer', desc: 'Primary target customer: who they are, their situation, what they are currently doing to solve this. Max 3 sentences.' },
                             { key: 'coreProblem', vi: 'Vấn đề cốt lõi', en: 'Core Problem', desc: 'The real functional/experience/quality problem the customer faces — not just the surface complaint. Max 3 sentences.' },
@@ -41,7 +41,7 @@ export const PRODUCTION_DIVISION_SEED = {
                     },
                     {
                         key: 'g2', vi: 'Rủi ro & tiêu chuẩn chất lượng', en: 'Risk & quality bar',
-                        maxTokens: 700, temperature: 0.7, contextKeys: [], dependsOn: [],
+                        maxTokens: 2000, temperature: 0.7, contextKeys: [], dependsOn: [],
                         fields: [
                             { key: 'keyRisks', vi: 'Rủi ro chính', en: 'Key Risks', desc: 'ONLY the top 3 ways this product/service could fail or disappoint the customer (not 5+) — 1 short sentence each. Max 3 sentences total.' },
                             { key: 'qualityBar', vi: 'Tiêu chuẩn chất lượng', en: 'Quality Bar', desc: 'What "good enough to sell" concretely means here — 2-3 observable/measurable quality expectations, not vague words like "good" or "professional". Max 3 sentences.' },
@@ -59,13 +59,13 @@ export const PRODUCTION_DIVISION_SEED = {
                 calls: [
                     {
                         key: 'productConcept', vi: 'Ý tưởng & cấu tạo', en: 'Concept & composition',
-                        maxTokens: 900, temperature: 0.7, dependsOn: [],
+                        maxTokens: 2500, temperature: 0.7, dependsOn: [],
                         contextKeys: ['customerProfile', 'coreProblem', 'desiredOutcome', 'keyRisks', 'qualityBar'],
                         fields: [{ key: 'productConcept', vi: 'Ý tưởng sản phẩm', en: 'Product Concept', desc: 'A "Product Concept V0" write-up in this exact shape: (1) ONE opening sentence naming the concept + target recipient/use-case + an estimated budget RANGE in the customer\'s local currency, a plausible range for this product tier (e.g. "800,000-1,200,000 VND per box"); (2) a blank line, then a short section header meaning "Expected composition"; (3) a bullet list (each line starts with "- ") of the EXACT physical components with quantities (e.g. "01 premium rigid box"), then 1-2 bullets for logo/branding placement, then a final bullet noting 1-2 components may be swapped depending on budget. 6-10 bullets total — grounded in the context below, no generic filler. IMPORTANT: insert a REAL newline character (JSON escape "\\n") between the opening sentence and the header, between the header and the first bullet, and between EVERY bullet — e.g. "...per box.\\n\\nExpected composition:\\n- 01 premium box...\\n- 01 insulated bottle...". NEVER put two bullets or the header on the same line separated only by a space.' }],
                     },
                     {
                         key: 'componentSpecs', vi: 'Cụ thể hoá thành phần', en: 'Component specs',
-                        maxTokens: 1600, temperature: 0.6, dependsOn: ['productConcept'],
+                        maxTokens: 4000, temperature: 0.6, dependsOn: ['productConcept'],
                         contextKeys: ['productConcept'],
                         fields: [{ key: 'componentSpecs', vi: 'Chi tiết thành phần', en: 'Component Specs', desc: 'For EACH physical component listed in productConcept above (skip logo/branding bullets and the budget-swap note), write one short block specifying its concrete attributes — choose whichever apply to that component\'s type: a box/case -> size, material, color, opening mechanism, logo method; a bottle/container -> capacity, material, color, logo method, packaging; a printed item (notebook/card) -> size, page count/cover, logo method; adapt freely for anything else. Format: the component\'s name on its own line, then each attribute as "label: value" on the next lines, with a blank line separating each component. IMPORTANT: insert a REAL newline character (JSON escape "\\n") between the name and each attribute line, between each attribute, and between components (double "\\n\\n") — e.g. "Insulated bottle\\nCapacity: 500ml\\nMaterial: stainless steel\\n\\nNotebook\\n...". NEVER put the name and its attributes, or two attributes, on the same line.' }],
                     },
@@ -88,7 +88,7 @@ export const PRODUCTION_DIVISION_SEED = {
                         key: 'process', vi: 'Quy trình sản xuất', en: 'Production process',
                         role: 'a Senior Product Manager and Process Designer',
                         task: 'Based on the customer/problem analysis and the approved Product Concept provided as context below (do not skip them), define how this product/service will be produced or delivered end-to-end. Do NOT write the product name, description, or any customer-facing content at this call — that happens in the other calls of this step.',
-                        maxTokens: 900, temperature: 0.7, dependsOn: [],
+                        maxTokens: 2500, temperature: 0.7, dependsOn: [],
                         contextKeys: ['coreProblem', 'desiredOutcome', 'keyRisks', 'productConcept', 'componentSpecs'],
                         fields: [
                             { key: 'productionProcess', vi: 'Quy trình', en: 'Production Process', desc: 'The end-to-end production/delivery steps (input -> preparation -> execution -> inspection -> handover), as a numbered list, max 6 steps. IMPORTANT: put EACH numbered step on its OWN line — insert a REAL newline character (JSON escape "\\n") between every step, e.g. "1. Receive raw materials...\\n2. Prepare...\\n3. Execute...". NEVER write two or more numbered steps on the same line separated only by a space.' },
@@ -96,7 +96,7 @@ export const PRODUCTION_DIVISION_SEED = {
                     },
                     {
                         key: 'titleDesc', vi: 'Tên & mô tả sản phẩm', en: 'Product name & description',
-                        maxTokens: 500, temperature: 0.7, dependsOn: [],
+                        maxTokens: 2000, temperature: 0.7, dependsOn: [],
                         contextKeys: ['customerProfile', 'coreProblem', 'desiredOutcome', 'productConcept'],
                         fields: [
                             { key: 'title', vi: 'Tên sản phẩm', en: 'Title', desc: 'A clear, specific, sellable product/service name — not a generic category label. About 3-8 words.' },
@@ -105,7 +105,7 @@ export const PRODUCTION_DIVISION_SEED = {
                     },
                     {
                         key: 'content', vi: 'Nội dung sản phẩm', en: 'Product content',
-                        maxTokens: 2200, temperature: 0.7, dependsOn: ['titleDesc'],
+                        maxTokens: 5000, temperature: 0.7, dependsOn: ['titleDesc'],
                         contextKeys: ['title', 'description', 'productionProcess', 'desiredOutcome', 'productConcept', 'componentSpecs'],
                         fields: [{ key: 'content', vi: 'Nội dung', en: 'Content', desc: 'Full product content as valid HTML (use <h2>/<h3>/<p>/<ul>/<li> tags). Include: an opening paragraph on the value/outcome, a section describing what the product physically includes (grounded in the approved component list/specs), and a closing <h2> section heading (meaning "Production Process & Quality Control", written in the OUTPUT_LANGUAGE — never hardcode it in another language) summarizing the production process and the top quality checks before handover. About 300-500 words.' }],
                     },
@@ -127,7 +127,7 @@ Rules for the final selection:
 - Never just repeat a word/phrase already used verbatim in the title.
 
 Output ONLY the final prioritized keyword list in the field below — never your reasoning, the keyword categories, or any priority scores.`,
-                        maxTokens: 150, temperature: 0.6, dependsOn: ['titleDesc'],
+                        maxTokens: 2000, temperature: 0.6, dependsOn: ['titleDesc'],
                         contextKeys: ['title', 'description', 'customerProfile', 'coreProblem', 'desiredOutcome'],
                         fields: [{ key: 'tags', vi: 'Tags', en: 'Tags', desc: 'EXACTLY 3-6 final prioritized keywords chosen per the strategy above (mix of primary + secondary + long-tail + problem/solution + commercial intent, each genuinely SEO-relevant — not filler words, not a plain copy of the title, no questions, no comparison words like vs/alternative/best/review). Format: tag1|tag2|tag3 — separate tags ONLY with a single | character, never with commas or any other punctuation. Correct: gift box|personalized|handmade. Wrong: gift box, personalized, handmade. No quotes, no hashtags, no leading/trailing |.' }],
                     },

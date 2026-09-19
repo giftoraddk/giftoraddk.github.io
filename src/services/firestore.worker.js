@@ -31,6 +31,18 @@ import { workerFetch, workerJson, llmFetch, llmJson } from '@/services/api.js';
 
 const POLL_MS = 5000;
 
+// Mirrors worker/packages/db-worker/src/db.ts's LEGACY_FIRESTORE_CONNECTIONS — these 2 connections
+// (and every table under them: products/posts/bays/talents/... everything but `profiles`) already
+// hold pre-existing documents with created_at/updated_at/deleted_at stored as a plain epoch-ms
+// NUMBER (`Date.now()`) — see e.g. webs/bay/tools/service.js's mix of `svc.now()` and `Date.now()`
+// writes into the SAME `bays` collection. Firestore's orderBy() ranks values by TYPE first
+// (Timestamp < String < ...), so once `now()` here started returning an ISO STRING instead, any
+// `sortBy: 'created_at'` query put every string-typed doc entirely before/after every number-typed
+// one regardless of actual time — sort was silently broken, not just imprecise. Numeric is also
+// simply correct for every direct arithmetic use of these fields (svc-bay.js's
+// `a.created_at - b.created_at`, bitmap.js's block math, etc.) which a string would NaN on.
+const LEGACY_FIRESTORE_CONNECTIONS = new Set(['DB_ALL', 'DB_LLM']);
+
 class PollingAdapter {
     /** Server-clock-ish timestamp — see worker/packages/db-worker/src/firestore.ts's now() for why this doesn't need
      *  a round trip: it's an audit-trail field (created_at/updated_at), not security-critical. */
@@ -71,6 +83,14 @@ export class WorkerAdapter extends PollingAdapter {
     constructor(connection) {
         super();
         this._connection = connection;
+    }
+
+    // DB_ALL/DB_LLM (legacy Firestore) → epoch-ms number, matching pre-existing documents there
+    // (see LEGACY_FIRESTORE_CONNECTIONS' comment above). DB_ACC (Supabase Postgres,
+    // `profiles.created_at TIMESTAMPTZ`) keeps the base class's ISO string — Postgres doesn't
+    // implicitly cast a bare number into a timestamptz column.
+    async now() {
+        return LEGACY_FIRESTORE_CONNECTIONS.has(this._connection) ? Date.now() : super.now();
     }
 
     async find(table, opts = {}) {

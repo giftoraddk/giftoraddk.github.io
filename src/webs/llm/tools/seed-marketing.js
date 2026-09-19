@@ -33,7 +33,7 @@ export const MARKETING_DIVISION_SEED = {
                         // svc-talk.js tự resolve + patch vào fields TRƯỚC khi chạy step này (xem
                         // svc-talk.js's _runJob/_comProductContext) — không phải field AI tự sinh.
                         key: 'g1', vi: 'Chủ đề & khách hàng', en: 'Topic & customer',
-                        maxTokens: 1200, temperature: 0.7, contextKeys: ['productContext'], dependsOn: [],
+                        maxTokens: 2500, temperature: 0.7, contextKeys: ['productContext'], dependsOn: [],
                         fields: [
                             { key: 'topicAnalysis', vi: 'Phân tích chủ đề', en: 'Topic Analysis', desc: 'Which category the topic belongs to, what problem it solves, who cares about it, why people search for or ignore it. Max 3 sentences.' },
                             { key: 'targetCustomer', vi: 'Khách hàng mục tiêu', en: 'Target Customer', desc: 'Primary target customer profile: current situation, search behavior, who they trust, what drives them to act. Max 3 sentences.' },
@@ -42,7 +42,7 @@ export const MARKETING_DIVISION_SEED = {
                     },
                     {
                         key: 'g2', vi: 'Nhu cầu & nỗi đau', en: 'Needs & pain points',
-                        maxTokens: 1200, temperature: 0.7, contextKeys: ['productContext'], dependsOn: [],
+                        maxTokens: 2500, temperature: 0.7, contextKeys: ['productContext'], dependsOn: [],
                         fields: [
                             { key: 'customerNeeds', vi: 'Nhu cầu', en: 'Customer Needs', desc: 'Needs at 3 levels — functional, emotional, identity — 1 short sentence each. Max 3 sentences total.' },
                             { key: 'painPoints', vi: 'Nỗi đau', en: 'Pain Points', desc: 'ONLY the top 3 most important pain points (not 5+) — 1 short sentence each (the problem + its main emotion/consequence). Max 3 sentences total, no long numbered lists.' },
@@ -51,7 +51,7 @@ export const MARKETING_DIVISION_SEED = {
                     },
                     {
                         key: 'g3', vi: 'Động lực & insight', en: 'Motivation & insight',
-                        maxTokens: 1200, temperature: 0.7, contextKeys: ['productContext'], dependsOn: [],
+                        maxTokens: 2500, temperature: 0.7, contextKeys: ['productContext'], dependsOn: [],
                         fields: [
                             { key: 'fearsObjections', vi: 'Nỗi sợ & phản đối', en: 'Fears & Objections', desc: 'ONLY the top 3 most common objections (not 5+) — 1 short sentence each, combining the real reason with the response angle. Max 3 sentences total.' },
                             { key: 'buyingMotivation', vi: 'Động lực mua hàng', en: 'Buying Motivation', desc: 'Strongest buying motivation — current problem + desired outcome + trigger — written as 1 paragraph of 2-3 sentences.' },
@@ -67,19 +67,19 @@ export const MARKETING_DIVISION_SEED = {
                 calls: [
                     {
                         key: 'contentPillars', vi: 'Trụ cột nội dung', en: 'Content pillars',
-                        maxTokens: 600, temperature: 0.75, dependsOn: [],
+                        maxTokens: 2000, temperature: 0.75, dependsOn: [],
                         contextKeys: ['targetCustomer', 'painPoints', 'customerDesires', 'buyingMotivation', 'customerInsight'],
                         fields: [{ key: 'contentPillars', vi: 'Trụ cột nội dung', en: 'Content Pillars', desc: 'ONLY the 3 most important content pillars (not 5+), directly matching the analyzed pain/need/desire — 1 short sentence each (name + purpose). Max 3 sentences total.' }],
                     },
                     {
                         key: 'funnelStrategy', vi: 'Chiến lược phễu', en: 'Funnel strategy',
-                        maxTokens: 600, temperature: 0.75, dependsOn: [],
+                        maxTokens: 2000, temperature: 0.75, dependsOn: [],
                         contextKeys: ['targetCustomer', 'painPoints', 'customerDesires', 'buyingMotivation', 'customerInsight'],
                         fields: [{ key: 'funnelStrategy', vi: 'Chiến lược phễu', en: 'Funnel Strategy', desc: 'How content guides the customer through Awareness -> Interest -> Consideration -> Conversion, combined into 1 paragraph of 3-4 sentences.' }],
                     },
                     {
                         key: 'contentAngles', vi: 'Góc độ nội dung', en: 'Content angles',
-                        maxTokens: 600, temperature: 0.75, dependsOn: [],
+                        maxTokens: 2000, temperature: 0.75, dependsOn: [],
                         contextKeys: ['targetCustomer', 'painPoints', 'customerDesires', 'buyingMotivation', 'customerInsight'],
                         fields: [{ key: 'contentAngles', vi: 'Góc độ nội dung', en: 'Content Angles', desc: 'ONLY the 3 most specific content angles (not 6+), 1 short sentence each tied to exactly 1 pain/desire/insight. Max 3 sentences total.' }],
                     },
@@ -92,7 +92,7 @@ export const MARKETING_DIVISION_SEED = {
                 calls: [
                     {
                         key: 'titleDesc', vi: 'Tiêu đề & mô tả', en: 'Title & description',
-                        maxTokens: 500, temperature: 0.75, dependsOn: [],
+                        maxTokens: 2000, temperature: 0.75, dependsOn: [],
                         contextKeys: ['customerSituation', 'painPoints', 'customerInsight', 'buyingMotivation', 'contentPillars', 'contentAngles'],
                         fields: [
                             { key: 'title', vi: 'Tiêu đề', en: 'Title', desc: 'SEO-optimized title, about 50-60 characters, containing the main keyword related to the topic, click-worthy but not misleading clickbait. 1 sentence.' },
@@ -101,7 +101,7 @@ export const MARKETING_DIVISION_SEED = {
                     },
                     {
                         key: 'content', vi: 'Nội dung bài viết', en: 'Article content',
-                        maxTokens: 3000, temperature: 0.75, dependsOn: ['titleDesc'],
+                        maxTokens: 5000, temperature: 0.75, dependsOn: ['titleDesc'],
                         contextKeys: ['title', 'customerSituation', 'painPoints', 'customerInsight', 'buyingMotivation', 'contentPillars', 'contentAngles'],
                         fields: [{ key: 'content', vi: 'Nội dung', en: 'Content', desc: 'Full content as valid HTML (use <h2>/<h3>/<p>/<ul>/<li> tags where appropriate), standard SEO blog structure, with an opening that states the problem, a body developed from the analyzed insight/angles, and a closing CTA fitting the funnel stage (no direct sales CTA if the insight shows the customer has not recognized the problem yet). About 400-600 words.' }],
                     },
@@ -121,7 +121,7 @@ Rules for the final selection:
 - Never just repeat a word/phrase already used verbatim in the title.
 
 Output ONLY the final prioritized keyword list in the field below — never your reasoning, the keyword categories, or any priority scores.`,
-                        maxTokens: 150, temperature: 0.6, dependsOn: ['titleDesc'],
+                        maxTokens: 2000, temperature: 0.6, dependsOn: ['titleDesc'],
                         contextKeys: ['title', 'description', 'targetCustomer', 'painPoints', 'customerDesires', 'contentPillars'],
                         fields: [{ key: 'tags', vi: 'Tags', en: 'Tags', desc: 'EXACTLY 3-6 final prioritized keywords chosen per the strategy above (mix of primary + secondary + long-tail + problem/solution + commercial intent, each genuinely SEO-relevant — not filler words, not a plain copy of the title, no questions, no comparison words like vs/alternative/best/review). Format: tag1|tag2|tag3 — separate tags ONLY with a single | character, never with commas or any other punctuation. Correct: cham soc da|meo vat lam dep. Wrong: cham soc da, meo vat lam dep. No quotes, no hashtags, no leading/trailing |.' }],
                     },

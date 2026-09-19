@@ -20,13 +20,18 @@ const allMenuItems = [
 	{ text: "Inventory", textIcon: "IN", href: root + "/inventory", require: "inventory" },
 	{ text: "Staff",     textIcon: "ST", href: root + "/staff",     require: "staff"     },
 	{ text: "Posts",     textIcon: "PO", href: root + "/posts",     require: "posts"    },
-	{ text: "Divisions", textIcon: "DV", href: root + "/llm-divisions", require: "divisions" },
-	{ text: "Knowledge", textIcon: "KN", href: root + "/knowledge", require: "mind" },
+	// divisions/know: write chỉ mở qua Super Admin toàn cục hoặc bundle 'products' (TABLE_BUNDLES,
+	// know/rel — xem worker/packages/llm-worker/src/tablePolicy.ts's tableScoped), không tự chọn
+	// riêng lẻ được — ẩn khỏi dropdown phân quyền của svc-roles.js (rolesEditable: false).
+	{ text: "Divisions", textIcon: "DV", href: root + "/divisions", require: "divisions", rolesEditable: false },
+	{ text: "Knowledge", textIcon: "KN", href: root + "/knowledge", require: "know", rolesEditable: false },
 	{ text: "Customers", textIcon: "CU", href: root + "/customers", require: "customers" },
 	{ text: "Report", textIcon: "RP", href: root + "/report", require: "report" },
 ];
 const menusJson  = JSON.stringify(allMenuItems);
-const tablesJson = JSON.stringify(allMenuItems.map(m => m.require).filter(Boolean));
+// Dropdown svc-roles.js chỉ liệt kê bảng phân quyền được RIÊNG LẺ — loại các mục
+// rolesEditable:false (chỉ cấp kèm qua bundle hoặc chỉ dành riêng Super Admin, xem comment trên).
+const tablesJson = JSON.stringify(allMenuItems.filter(m => m.rolesEditable !== false).map(m => m.require).filter(Boolean));
 // Mobile nav uses static items (no role filtering needed — server has no auth context)
 const menuItems = allMenuItems;
 

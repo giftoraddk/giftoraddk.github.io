@@ -30,12 +30,6 @@ export function safeURL(path, base) {
 	}
 }
 
-export const ulid = () => {
-	return (
-		// Timestamp for uniqueness
-		Date.now().toString(36) + Math.random().toString(36).slice(2, 10) // Random part for randomness
-	);
-};
 export const hexToRgba = (opacity, hex = '#34c85e') => {
 	const bigint = parseInt(hex.slice(1), 16);
 	const r = (bigint >> 16) & 255;

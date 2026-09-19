@@ -429,7 +429,12 @@ export class SvcProgress extends LitElement {
             }
             return html`<div class="prg-value">${raw.split('|').filter(Boolean).join(', ')}</div>`
         }
-        const raw = this.doc.fields[f.key] || ''
+        // .replace(/\\n/g, '\n') — defensive against records already persisted BEFORE engine.js's
+        // pick() started normalizing this (see that file's _unescapeNewlines) — some models
+        // double-escape "\n" into 2 literal backslash+n characters in the JSON string value instead
+        // of a real newline; without this, `.prg-value`'s `white-space: pre-line` has nothing real
+        // to break on and the literal "\n" text shows up on screen instead of a line break.
+        const raw = (this.doc.fields[f.key] || '').replace(/\\n/g, '\n')
         if (!raw) return ''
         if (this.editable && isOutput) {
             return html`<web-textarea .value=${raw} .ui=${this.ui} rows="2"
