@@ -4,14 +4,14 @@ const TXT = {
 		content: 'Nội dung', tags: 'Tags', score: 'Điểm',
 		views: 'Lượt xem', likes: 'Lượt thích', location: 'Địa điểm',
 		url: 'URL', slug: 'Slug', readingTime: 'Đọc (phút)', pics: 'Ảnh', order: 'Order',
-		published: 'Đã đăng', draft: 'Nháp', hidden: 'Tạm ẩn', archived: 'Lưu trữ',
+		published: 'Đã đăng', draft: 'Nháp', hidden: 'Tạm ẩn',
 	},
 	en: {
 		status: 'Status', title: 'Title', description: 'Description',
 		content: 'Content', tags: 'Tags', score: 'Score',
 		views: 'Views', likes: 'Likes', location: 'Location',
 		url: 'URL', slug: 'Slug', readingTime: 'Read (min)', pics: 'Images', order: 'Order',
-		published: 'Published', draft: 'Draft', hidden: 'Hidden', archived: 'Archived',
+		published: 'Published', draft: 'Draft', hidden: 'Hidden',
 	},
 };
 
@@ -28,7 +28,6 @@ export default (lang = 'vi') => {
 				{ value: 'active',   label: t.published },
 				{ value: 'draft',    label: t.draft     },
 				{ value: 'inactive', label: t.hidden    },
-				{ value: 'archived', label: t.archived  },
 			],
 			serverExecutor: true,
 			filterable: true,

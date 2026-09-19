@@ -24,7 +24,7 @@ export const XU_COSTS = {
 };
 
 // `talent.status`
-export const TALENT_STATUS = ['draft', 'active', 'inactive', 'archived'];
+export const TALENT_STATUS = ['draft', 'active', 'inactive'];
 
 // `job.status`
 export const JOB_STATUS = ['draft', 'published', 'closed', 'expired', 'cancelled'];

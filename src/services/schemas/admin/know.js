@@ -18,7 +18,7 @@ const TXT = {
     vi: {
         status: 'Trạng thái', type: 'Loại', title: 'Tiêu đề', content: 'Nội dung',
         version: 'Phiên bản',
-        active: 'Đang dùng', draft: 'Nháp', archived: 'Đã lưu trữ',
+        active: 'Đang dùng', draft: 'Nháp',
         tLaw: 'Luật', tProduct: 'Sản phẩm', tMedical: 'Y khoa', tTechnical: 'Kỹ thuật', tFinance: 'Tài chính', tFaq: 'FAQ',
         tags: 'Tags', price: 'Giá bán', promo: 'Khuyến mãi', quantity: 'Tồn kho', risk: 'Rủi ro', decision: 'Quyết định',
         segmentHints: 'Giá bán~Giá vốn~Đơn vị', promoHints: 'Giá trị giảm~Loại giảm (fixed hoặc percent)',
@@ -26,7 +26,7 @@ const TXT = {
     en: {
         status: 'Status', type: 'Type', title: 'Title', content: 'Content',
         version: 'Version',
-        active: 'Active', draft: 'Draft', archived: 'Archived',
+        active: 'Active', draft: 'Draft',
         tLaw: 'Law', tProduct: 'Product', tMedical: 'Medical', tTechnical: 'Technical', tFinance: 'Finance', tFaq: 'FAQ',
         tags: 'Tags', price: 'Sale price', promo: 'Promotion', quantity: 'Stock', risk: 'Risk', decision: 'Decision',
         segmentHints: 'Price~Cost~Unit', promoHints: 'Discount value~Discount type (fixed or percent)',
@@ -46,7 +46,6 @@ export default (lang = 'vi') => {
             opts: [
                 { value: 'active',   label: t.active   },
                 { value: 'draft',    label: t.draft    },
-                { value: 'archived', label: t.archived },
             ],
             filterable: true,
         },
