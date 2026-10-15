@@ -1,0 +1,49 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "llm",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-01-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "ai": { "binding": "AI" },
+  // Workers Rate Limiting — no KV write per request; `period` must be 10 or 60 (keep in step with the
+  // *_PERIOD_S constants in code).
+  "ratelimits": [
+    { "name": "MCP_RELAY_LIMIT", "namespace_id": "1001", "simple": { "limit": 60, "period": 60 } }, // /v1/mcp/:server, keyed ip:server
+    { "name": "AI_GUEST_LIMIT", "namespace_id": "1002", "simple": { "limit": 10, "period": 60 } }, // /v1/ai/stream guests, keyed ip:<ip>
+    { "name": "AI_USER_LIMIT", "namespace_id": "1003", "simple": { "limit": 120, "period": 60 } }, // /v1/ai/stream signed-in, keyed user:<sub>
+    { "name": "PUBLIC_READ_LIMIT", "namespace_id": "1004", "simple": { "limit": 240, "period": 60 } } // public GETs (sectors, know/rel/divisions), keyed ip:<ip>
+  ],
+  // Daily at 03:17 UTC: delete group-chat data past its 7 days (src/fn/retention.ts, index.ts scheduled).
+  "triggers": { "crons": ["17 3 * * *"] },
+  "vectorize": [
+    { "binding": "VEC", "index_name": "mega-knowledge", "remote": true }
+  ],
+  "vars": {
+    // Comma-separated list of allowed origins for authenticated routes, e.g. "https://<prod-domain>,http://localhost:5000".
+    "ALLOWED_ORIGIN": "https://chatzui.com,https://www.chatzui.com,https://giftoraddk.com,https://www.giftoraddk.com,http://localhost:5000",
+    "SUPABASE_URL": "https://epiwtyryvbqnsvcossjb.supabase.co",
+    "AI_FREE_TIMEOUT_MS": "9000",
+    // auth base URL (production) — /v1/hubs/* + billing peek read hub billing from it (src/hubs.ts). Filled from the
+    // .env's PUBLIC_AUTH_URL on every `pnpm run deploy` (scripts/stack.mjs deployVars); local dev reads .dev.vars.
+    "AUTH_URL": "https://auth.ssoddk.workers.dev",
+    // Sender of the MCP-token email (Resend, see src/email.ts) — domain must be verified in Resend (never gmail.com…).
+    // Filled from the .env's MAIL_FROM on every `pnpm run deploy` (scripts/stack.mjs deployVars, warns on a free mailbox).
+    // RESEND_API_KEY is a secret (push-secrets.mjs). Blank = no email; the token is still shown once.
+    "MAIL_FROM": "AI Operations <no-reply@chatzui.com>",
+    // The site the MCP-token email links: its embed bundle (/embed/svc-aide.js), the setup guide (/system/docs) and the Pro
+    // workspace (/system/<sector>). Blank = the first ALLOWED_ORIGIN.
+    "SITE_URL": "https://chatzui.com",
+    // Sectors a signed-in account may try on /system/<sector> (src/fn/trial.ts — X-Fn-Trial): comma-separated sector
+    // ids. Blank = trial off everywhere (the kill switch).
+    "FN_TRIAL_SECTORS": "ecommerce,education,fnb,healthcare,realestate"
+  },
+  
+  // MANUAL
+  "d1_databases": [
+    {
+      "binding": "LLM_DB",
+      "database_name": "mini",
+      "database_id": "24e7244e-0056-429f-a92f-bee6a1ee723c"
+    }
+  ],
+}

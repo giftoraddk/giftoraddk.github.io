@@ -1,11 +1,12 @@
 // src/services/schemas/admin/know.js
 //
-// Field phẳng cho <svc-admin dataTable='know' server='DB_LLMD1'> — kho tri thức đa lĩnh vực
+// Field phẳng cho <svc-resources dataTable='know' server='DB_LLMD1'> — kho tri thức đa lĩnh vực
 // (hook/knowledge_database_cloudflare_d1_vectorize.md) mà <svc-aide> đọc làm ngữ cảnh trả lời khách,
-// qua semantic search server-side — xem worker/packages/llm-worker/src/search.ts (POST /v1/search), không đọc bảng
+// qua semantic search server-side — xem worker/packages/llm/src/search.ts (POST /v1/search), không đọc bảng
 // này trực tiếp từ client nữa. `type` để TEXT TỰ DO (không ép enum) — đúng tinh thần file md's §24
 // "Multi-domain — không thay đổi schema"; `opts` dưới đây chỉ là shortcut UI cho filter nhanh 6 loại
 // phổ biến, KHÔNG giới hạn giá trị admin có thể gõ qua ô tìm kiếm/form sửa.
+// `owner`/`source`: kiến thức ĐỘC LẬP theo chủ hub (hubs.id, '' = chung) + URL API đã nạp ra dòng (hook/MCP.rst).
 // `description` (không phải `content`) là cột nội dung chính — xem know-sync.js's buildKnowContent.
 //
 // `meta` KHÔNG hiện thành 1 field JSON thô — tách từng field con qua `key: 'meta.xxx'`, ĐÚNG pattern
@@ -17,7 +18,7 @@
 const TXT = {
     vi: {
         status: 'Trạng thái', type: 'Loại', title: 'Tiêu đề', content: 'Nội dung',
-        version: 'Phiên bản',
+        version: 'Phiên bản', owner: 'Owner (hub)', source: 'Nguồn API',
         active: 'Đang dùng', draft: 'Nháp',
         tLaw: 'Luật', tProduct: 'Sản phẩm', tMedical: 'Y khoa', tTechnical: 'Kỹ thuật', tFinance: 'Tài chính', tFaq: 'FAQ',
         tags: 'Tags', price: 'Giá bán', promo: 'Khuyến mãi', quantity: 'Tồn kho', risk: 'Rủi ro', decision: 'Quyết định',
@@ -25,7 +26,7 @@ const TXT = {
     },
     en: {
         status: 'Status', type: 'Type', title: 'Title', content: 'Content',
-        version: 'Version',
+        version: 'Version', owner: 'Owner (hub)', source: 'API source',
         active: 'Active', draft: 'Draft',
         tLaw: 'Law', tProduct: 'Product', tMedical: 'Medical', tTechnical: 'Technical', tFinance: 'Finance', tFaq: 'FAQ',
         tags: 'Tags', price: 'Sale price', promo: 'Promotion', quantity: 'Stock', risk: 'Risk', decision: 'Decision',
@@ -64,6 +65,16 @@ export default (lang = 'vi') => {
                 { value: 'finance',   label: t.tFinance },
                 { value: 'faq',       label: t.tFaq },
             ],
+            filterable: true,
+            searchable: true,
+        },
+        {
+            // hubs.id của người sở hữu ('' = kiến thức chung, '@<host>' = kho riêng 1 site nền tảng) — svc-aide chỉ trả lời
+            // từ owner của nó (hook/MCP.rst)
+            label: t.owner,
+            field: 'owner',
+            type: 'text',
+            width: '160px',
             filterable: true,
             searchable: true,
         },
@@ -152,6 +163,12 @@ export default (lang = 'vi') => {
             width: '90px',
             align: 'center',
             default: 1,
+        },
+        {
+            label: t.source,
+            field: 'source',
+            type: 'text',
+            width: '200px',
         },
     ];
 };

@@ -1,7 +1,8 @@
 ---
 import '../styles/themes/gold.css';
 import Head from "@/components/Head/Base.astro";
-const { title = 'Apex app', description = '', noindex = false } = Astro.props;
+// jsonLd / ogImage: chuyển thẳng cho Head (vd /system/<ngành> — trang app nhưng vẫn được index).
+const { title = 'Apex app', description = '', noindex = false, viewport, jsonLd = [], ogImage } = Astro.props;
 ---
 
 <!doctype html>
@@ -11,6 +12,9 @@ const { title = 'Apex app', description = '', noindex = false } = Astro.props;
 			title={title}
 			description={description}
 			noindex={noindex}
+			viewport={viewport}
+			jsonLd={jsonLd}
+			ogImage={ogImage}
 		/>
 	</head>
 	<body>

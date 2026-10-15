@@ -1,8 +1,9 @@
 // rss.xml — Head/Base.astro (mọi trang) đã emit <link rel="alternate" href="/rss.xml"> từ trước,
 // nhưng file này chưa từng tồn tại (404) — endpoint này lấp đúng chỗ đó. Cùng khung build-time với
 // sitemap.xml.ts, dùng lại fetchCollection('posts') (build-cache dùng chung, không fetch lại).
-import { fetchCollection } from '@/services/firestore.server.ts';
-import { site } from '@/services/constants/site.js';
+import { fetchCollection } from '@/services/core/fetcher.server.js';
+import { site } from '@/services/tools/site';
+import { postSlug } from '@/services/tools/util';
 
 const escapeXml = (s: string) =>
     String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
@@ -19,7 +20,7 @@ export async function GET() {
         .slice(0, 50);
 
     const items = posts.map((p: any) => {
-        const link = `${base}/post/${p.id}`;
+        const link = `${base}/post/${postSlug(p)}/`; // cùng URL post/[slug].astro build ra (postSlug)
         const plainText = String(p.content || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
         const description = p.description || plainText.slice(0, 300);
         return [

@@ -1,0 +1,602 @@
+{
+  "name": "AI Operations — knowledge base",
+  "about": "Product, pricing, guide and legal knowledge for the svc-aide consultant, in English (the canonical source language — the consultant answers in the visitor's language). Load it in Consult → ⚙ → Load from API & MCP. Every item uses id / title / content / tags. Content stays English; tags also carry Vietnamese search keywords (giá, gói, nhúng…) because keyword search matches the visitor's own words.",
+  "site": "https://chatzui.com",
+  "updated": "2026-10-12",
+  "items": [
+    {
+      "id": "overview-en",
+      "title": "What is AI Operations?",
+      "content": "AI Operations (chatzui.com, by Golden Key IT Solutions Joint Stock Company) automates customer engagement and optimizes business operations with AI. It has two layers sharing one knowledge base. Starter: svc-aide, an AI consultant that answers your website visitors 24/7 from your own knowledge, with sources, embedded with one script tag. Pro: everything in Starter plus svc-talk, an AI Secretary that takes work from the boss and routes it to 9 AI departments (Strategy, Product, Marketing, Commercial, Operations, Supply, Quality, Finance, Technology) while you approve the key steps. Prices are in USD, paid with PayPal, with a 14-day free trial and cancel any time. You can also chat with the sample consultant for free, and any signed-in account can trial the workspace.",
+      "tags": [
+        "overview",
+        "ai-operations",
+        "giới thiệu",
+        "ứng dụng",
+        "sản phẩm",
+        "dịch vụ"
+      ]
+    },
+    {
+      "id": "plans-en",
+      "title": "AI Operations plans and prices: Free, Starter, Pro",
+      "content": "AI Operations has three tiers. Free ($0, no card): chat with the sample consultant, and once signed in, trial the Secretary and 9 departments with limits. Starter: $12/month billed monthly, or $9/month billed $108/year — the svc-aide consultant with your own knowledge base, loading over API or MCP, and embedding on your website. Pro: $24/month billed monthly, or $19/month billed $228/year — everything in Starter plus the AI Secretary (svc-talk) and all 9 departments, up to 100 jobs a day across your company. Both paid plans start with a 14-day free trial. Prices are in USD, paid with PayPal. Buy or manage a plan at /system/pricing.",
+      "tags": [
+        "pricing",
+        "plans",
+        "bảng giá",
+        "giá",
+        "gói",
+        "gói dịch vụ",
+        "chi phí"
+      ]
+    },
+    {
+      "id": "starter-en",
+      "title": "Starter plan — the AI consultant for your website",
+      "content": "Starter costs $12/month, or $108/year ($9/month), with a 14-day free trial. It includes: the svc-aide AI consultant answering visitors 24/7 from your own knowledge base, with sources; hybrid vector + keyword search that also catches SKUs and proper names; replies in the visitor's language (Vietnamese or English); your assistant's own name and avatar; loading knowledge from a JSON API by pasting one URL, or letting an AI (Claude, Cursor, VS Code) load it over MCP with one-click install; knowledge organised by type, sector and department, indexed automatically; embedding on any website with one script tag, light or dark look, button placement of your choice; chat history kept in the visitor's browser for 30 days; every customer's knowledge walled off; MCP tokens stored only as SHA-256 hashes; email support.",
+      "tags": [
+        "pricing",
+        "starter",
+        "giá",
+        "gói",
+        "gói starter"
+      ]
+    },
+    {
+      "id": "pro-en",
+      "title": "Pro plan — your whole company, run with AI",
+      "content": "Pro costs $24/month, or $228/year ($19/month), with a 14-day free trial. It includes everything in Starter, plus: the AI Secretary (svc-talk) — hand over work in one sentence, it frames the job and assigns it; an editable routing board (add or drop departments, change the lead); handoffs between departments you can follow in the chat; complex work ends with one verdict: Approve, Approve with conditions, Hold or Reject. All 9 expert departments, each running a multi-step process with expertise specific to your sector; approve step by step, edit by hand, or turn on Auto; versioned handoffs. Approved results become knowledge reused by the next department and by your consultant. A canvas workspace per sector, one command bar for every AI, and priority support. Limit: 100 jobs a day across your company.",
+      "tags": [
+        "pricing",
+        "pro",
+        "giá",
+        "gói",
+        "gói pro"
+      ]
+    },
+    {
+      "id": "free-en",
+      "title": "Free tier and the workspace trial",
+      "content": "AI Operations is free to try. With no card and no sign-up you can chat with the sample consultant on chatzui.com; it answers from the platform's shared knowledge and keeps your chat in your own browser for 30 days. Sign in (no purchase needed) and you can trial the whole workspace: the AI Secretary and 9 departments on the canvas, in all 5 sectors (E-commerce, Education, F&B, Healthcare, Real Estate), including sectors not yet released. Trial limits, per account and per sector, for good: 1 team task through the Secretary, 1 job per department, and 30 chat messages. Trial jobs cannot be regenerated or re-run. Approving works, but the results are saved as draft knowledge — and they are still there when you upgrade. Start at /system/ecommerce.",
+      "tags": [
+        "pricing",
+        "free",
+        "trial",
+        "miễn phí",
+        "dùng thử"
+      ]
+    },
+    {
+      "id": "billing-en",
+      "title": "How payment, the 14-day trial and cancelling work",
+      "content": "AI Operations is paid with PayPal, in US dollars (PayPal does not accept VND). Choose monthly or yearly billing: yearly saves $36 a year on Starter ($108 instead of $144) and $60 a year on Pro ($228 instead of $288). Every paid plan starts with a 14-day free trial. You can cancel any time, in the Your plan panel at chatzui.com/system/pricing or in your PayPal automatic payments. Buy, switch or manage your plan at chatzui.com/system/pricing: sign in with the account button in the corner (Google or an email link), pick a plan and a billing period, then pay with PayPal. The purchase page also lists the plans you already bought.",
+      "tags": [
+        "pricing",
+        "billing",
+        "thanh toán",
+        "dùng thử",
+        "huỷ gói"
+      ]
+    },
+    {
+      "id": "lapse-en",
+      "title": "What happens when the plan lapses or is cancelled",
+      "content": "Cancelling stops renewal: there are no further charges and you keep using the plan until the end of the period already paid for (or until the trial ends, if you cancel during the trial). If PayPal cannot collect a renewal, the plan keeps working for 3 grace days after the period ends. After that, the embedded svc-aide consultant, the MCP server, the Secretary and the departments stop serving your knowledge until you pay or subscribe again; requests answer 402. Your knowledge base is kept, so renewing picks up where you left off — open the consultant's ⚙ settings once to refresh. There is no lock-in: knowledge loaded from your own API is a copy — the source stays in your own systems.",
+      "tags": [
+        "billing",
+        "lapse",
+        "hết hạn",
+        "huỷ gói"
+      ]
+    },
+    {
+      "id": "upgrade-en",
+      "title": "Upgrading from Starter to Pro",
+      "content": "Upgrading from Starter to Pro loses nothing: your knowledge base, your MCP token and your embed code stay the same. The AI Secretary and the 9 departments open right after the upgrade — the billing is re-checked at once — and they work from that same knowledge. Upgrade at chatzui.com/system/pricing.",
+      "tags": [
+        "billing",
+        "upgrade",
+        "nâng cấp"
+      ]
+    },
+    {
+      "id": "purchase-email-en",
+      "title": "The email you get after buying a plan",
+      "content": "Right after you buy Starter or Pro, an email titled MCP token arrives. It contains the MCP endpoint, your MCP_TOKEN (shown only this once) and embed code with your owner (hub id) already filled in. If the email does not arrive: sign in at chatzui.com/system/ecommerce, open the Consult node, press ⚙, go to Load from API & MCP and press Activate MCP (the token is shown once), or use Issue a new token in the MCP section of the guide at /system/docs.",
+      "tags": [
+        "onboarding",
+        "mcp-token"
+      ]
+    },
+    {
+      "id": "quickstart-en",
+      "title": "Quick start: from purchase to the first answer",
+      "content": "You can have the consultant answering visitors in about ten minutes, no developer needed. 1. Buy a plan at chatzui.com/system/pricing (PayPal); the email brings your MCP endpoint, MCP_TOKEN and embed code. 2. Load knowledge: paste a JSON API link in the consultant's settings, or install MCP and ask your AI to load it. 3. Embed: paste two lines into your website, right before the closing body tag. 4. Ask a question: open your page, tap the assistant and ask something only your knowledge knows. 5. On Pro: open chatzui.com/system/ecommerce, sign in and message the Secretary.",
+      "tags": [
+        "onboarding",
+        "quickstart",
+        "bắt đầu",
+        "hướng dẫn"
+      ]
+    },
+    {
+      "id": "aide-en",
+      "title": "svc-aide — the AI consultant (Starter)",
+      "content": "svc-aide is the AI consultant: a floating chat on your website that answers visitors from your own knowledge base, with the sources it used. Visitors do not need to sign in. It answers ONLY from the knowledge of its owner (your hub), searches it with hybrid vector + keyword search, and replies in the visitor's language (Vietnamese or English). It acts as the Consult department of one sector (division, e.g. ecommerce.consult); you set its name and avatar. Questions are capped at 2,000 characters. The server keeps no visitor chats — history stays in the visitor's browser. svc-aide is the only part of AI Operations that can be embedded on your own website; the Secretary and departments run in the hosted workspace.",
+      "tags": [
+        "svc-aide",
+        "consultant"
+      ]
+    },
+    {
+      "id": "embed-en",
+      "title": "How to embed the consultant on a website",
+      "content": "Embedding takes two lines, pasted right before the closing body tag of every page (or your shared layout). Line 1 is a script tag with type=module and src=https://chatzui.com/embed/svc-aide.js — one self-contained JS file, no dependencies, works on any domain. Line 2 is the svc-aide tag with division=ecommerce.consult and owner=YOUR_HUB_ID; replace YOUR_HUB_ID with the owner from your purchase email (the email contains the full code ready to copy). The script tag must keep type=module. The owner is not a secret: it only lets the assistant read your knowledge to answer visitors; writing or deleting knowledge always needs your token or a sign-in.",
+      "tags": [
+        "embed",
+        "svc-aide",
+        "nhúng",
+        "cài đặt"
+      ]
+    },
+    {
+      "id": "embed-platforms-en",
+      "title": "Embedding on WordPress, Shopify, Haravan, Wix and other platforms",
+      "content": "The consultant works on any platform that allows a custom script. Plain HTML: paste the two lines right before the closing body tag on every page or the shared layout. WordPress: a header/footer code plugin (e.g. WPCode) → Footer, or a Custom HTML block in a footer widget. Shopify: Online Store → Themes → Edit code → layout/theme.liquid, paste before the closing body tag. Haravan / Sapo: Themes → Edit code → the main layout file, paste before the closing body tag. Wix / Squarespace / Webflow: the site's Custom code or Code injection, placed at Body – end. Some site builders block custom scripts on free tiers.",
+      "tags": [
+        "embed",
+        "platforms"
+      ]
+    },
+    {
+      "id": "embed-attributes-en",
+      "title": "svc-aide tag attributes",
+      "content": "Attributes of the svc-aide tag: owner — your hub id from the purchase email; the assistant answers only from this knowledge base (empty = the platform's shared knowledge). division — one sector's Consult, sector.consult; open now: ecommerce.consult. theme — dark (default) or light. lang — vi (default) or en, the interface text; answers follow the visitor's language. x and y — floating button position, default 99% and 65% (like background-position). types — only use these knowledge types, joined with a vertical bar, e.g. product|faq; empty = every type. embedded — no floating button, just the chat panel filling its container.",
+      "tags": [
+        "embed",
+        "attributes"
+      ]
+    },
+    {
+      "id": "embed-style-en",
+      "title": "Inline chat, colors and fonts of the embedded consultant",
+      "content": "To place the chat inside the page instead of a floating button, add the embedded attribute to the svc-aide tag and put it in a sized container, e.g. a div with height 560px and max-width 420px — the chat fills it. The bundle ships a default palette applied to the svc-aide tag only, so the rest of your page is untouched. Override it from your site's CSS on the svc-aide selector: --color-primary (accent: buttons, focus ring), --color-base-100 (panel background), --color-base-content (text) and --font-sans (font family).",
+      "tags": [
+        "embed",
+        "theme"
+      ]
+    },
+    {
+      "id": "privacy-en",
+      "title": "Where visitor chat history is stored",
+      "content": "Visitor conversations with the svc-aide consultant live in the visitor's own browser (IndexedDB), kept per consultant and per person, and cleared after 30 days. The server does not keep visitor chats: each question is sent with only the last few turns for context, answered, and nothing is stored. A signed-in user gets their own history separate from other accounts on the same browser.",
+      "tags": [
+        "privacy",
+        "svc-aide"
+      ]
+    },
+    {
+      "id": "knowledge-en",
+      "title": "How the knowledge base works",
+      "content": "The consultant answers only from your knowledge rows, so each row must be self-contained: a title plus content. Rows have a type — product, faq, law, post, technical, finance, medical, other, or your own — and a scope: a sector and a department (consult = the visitor chat; empty = shared by all). Search combines vectors and keywords, so it also finds exact SKUs and names; long rows are split into passages and indexed automatically. Rows sharing a tag are linked, so an answer pulls in related knowledge. Draft rows are stored but never found. Rows of type finance are never used to answer visitors. Every customer's knowledge is walled off: no one else can read, write or delete it.",
+      "tags": [
+        "knowledge",
+        "search"
+      ]
+    },
+    {
+      "id": "knowledge-api-en",
+      "title": "Loading knowledge from a JSON API",
+      "content": "1. Open chatzui.com/system/ecommerce and sign in with the Account node (top right) using the account that bought the plan. 2. Open the Consult node → the ⚙ button atop the chat → Load from API & MCP. 3. Paste the link, pick a Type and who uses it (this department, the whole sector, or every sector) → Preview (5 samples and the field mapping) → Load. No field mapping needed: the first array is found and title/name/question, description/content/answer, id/slug/sku and tags are guessed. Limits: up to 200 items and 5 MB per load, 20 saved sources. Reloading a source (⟳ under Saved sources) updates rows by id, never duplicates.",
+      "tags": [
+        "knowledge",
+        "import",
+        "nạp kiến thức",
+        "kiến thức"
+      ]
+    },
+    {
+      "id": "mcp-en",
+      "title": "What is MCP and do I need it?",
+      "content": "MCP (Model Context Protocol) is the standard that lets AI assistants such as Claude, Cursor or VS Code use outside tools. With AI Operations' MCP server installed, you just say load the new price list into the assistant, and the AI does it: it can read an API, a file (PDF, Markdown, spreadsheet) or text you paste, split it into self-contained items and load them into your knowledge base. MCP is optional — loading from a JSON API in the consultant's settings works too. Every MCP tool is scoped to your token's hub. The guide at chatzui.com/system/docs has one-click install.",
+      "tags": [
+        "mcp"
+      ]
+    },
+    {
+      "id": "mcp-install-en",
+      "title": "Installing the MCP server in Claude, Cursor, VS Code or Windsurf",
+      "content": "The MCP server speaks Streamable HTTP and is authenticated with the header Authorization: Bearer MCP_TOKEN. In the MCP section of chatzui.com/system/docs, paste your token (or sign in to issue a new one, filled in for you) and pick a client — the token never leaves your browser. Cursor and VS Code: one-click buttons open the app and ask to add the server. Claude Code: a ready-made claude mcp add command. Claude Desktop: a config block using mcp-remote (needs Node.js), then restart the app. Windsurf: a config block, then press Refresh in the MCP list. Script: install.sh (macOS/Linux) or install.ps1 (Windows) installs into every client found on the machine, asks for the token with hidden input and backs up each file (.bak) first. Test connection confirms it works.",
+      "tags": [
+        "mcp",
+        "install",
+        "cài đặt"
+      ]
+    },
+    {
+      "id": "mcp-tools-en",
+      "title": "MCP tools for managing knowledge",
+      "content": "The AI Operations MCP server has six tools, all limited to your token's hub (there is no owner parameter): hub_info — your hub, plan, saved sources and knowledge rows per type. list_knowledge — recent rows, filtered by type, status, sector or department. import_url — read a JSON API and copy it into knowledge, fields guessed, with dryRun to preview. upsert_knowledge — write items the AI shaped itself; the same id updates. reindex_knowledge — rebuild the search index (vector + keyword) for rows still pending. delete_knowledge — delete rows by id, your own hub's only. list, import and upsert also take sector and fn (department; consult = the visitor chat).",
+      "tags": [
+        "mcp",
+        "tools"
+      ]
+    },
+    {
+      "id": "mcp-prompts-en",
+      "title": "Example requests to give your AI over MCP",
+      "content": "Once MCP is installed, try telling your AI: Call hub_info on astro-knowledge and tell me how much knowledge there is. Or: Load https://api.myshop.com/products into the assistant as type product — dryRun first so I can check the mapping. Or: Read this returns-policy.md, split it into self-contained FAQ items and upsert_knowledge them as type faq. Review what was loaded with list_knowledge and remove rows with delete_knowledge.",
+      "tags": [
+        "mcp",
+        "examples"
+      ]
+    },
+    {
+      "id": "secretary-en",
+      "title": "svc-talk — the AI Secretary (Pro)",
+      "content": "svc-talk is the AI Secretary of the Pro plan. You send the work in one sentence — in the Secretary node or the command bar under the canvas, e.g. Plan next month's new product line launch. 1. The Secretary frames the job and pauses for you to review. 2. It proposes a routing board — which departments take part and which one leads; you can add or drop departments and change the lead, then approve. 3. The departments work: links on the canvas light up as work is handed out and handoffs come back; every task is one card you can view, approve step by step or re-run. 4. Integration cross-checks the handoffs and gives the verdict. The Secretary runs in the hosted workspace at chatzui.com/system/ecommerce; it is not embeddable on other sites.",
+      "tags": [
+        "pro",
+        "secretary",
+        "thư ký"
+      ]
+    },
+    {
+      "id": "pro-workflow-en",
+      "title": "Approval, Auto mode and handoffs on Pro",
+      "content": "On Pro you stay in control: the Secretary proposes, you approve the routing, and each department pauses for approval at its key steps. Auto: switch it on atop the Secretary panel — it approves each step, makes the images and hands on to the next department by itself. A one-off job for one department: open that department's node directly, no Secretary needed. Handoffs are versioned: a handoff built on an older version of the upstream department's work is flagged needs re-checking, and you re-run it or keep it. Approved results become knowledge that the next department and your consultant reuse.",
+      "tags": [
+        "pro",
+        "workflow"
+      ]
+    },
+    {
+      "id": "dept-strategy-en",
+      "title": "Strategy & Governance department",
+      "content": "Strategy & Governance is one of the 9 AI departments of the Pro plan. It answers whether to do something, which way and within which limits: options, business model, risks and decision criteria. Like every department it runs a multi-step process with expertise specific to your sector and reads your knowledge scoped to it. Use it through the Secretary, or open its node for a one-off job.",
+      "tags": [
+        "departments",
+        "strategy"
+      ]
+    },
+    {
+      "id": "dept-product-en",
+      "title": "Product & Innovation department",
+      "content": "Product & Innovation is one of the 9 AI departments of the Pro plan. It covers customer analysis, product or service design, the process and the quality bar. It runs a multi-step process with expertise specific to your sector and reads your knowledge scoped to it. Use it through the Secretary, or open its node for a one-off job.",
+      "tags": [
+        "departments",
+        "product"
+      ]
+    },
+    {
+      "id": "dept-marketing-en",
+      "title": "Marketing & Growth department",
+      "content": "Marketing & Growth is one of the 9 AI departments of the Pro plan. It produces customer analysis, a content strategy, an SEO article and a header image. Approved articles become knowledge your consultant can reuse. It runs a multi-step process with expertise specific to your sector. Use it through the Secretary, or open its node for a one-off job.",
+      "tags": [
+        "departments",
+        "marketing"
+      ]
+    },
+    {
+      "id": "dept-commercial-en",
+      "title": "Commercial & Customer department",
+      "content": "Commercial & Customer is one of the 9 AI departments of the Pro plan. It turns demand into sales: the buying journey, the offer, the sales process, objection handling and retention. It runs a multi-step process with expertise specific to your sector and reads your knowledge scoped to it. Use it through the Secretary, or open its node for a one-off job.",
+      "tags": [
+        "departments",
+        "commercial"
+      ]
+    },
+    {
+      "id": "dept-operations-en",
+      "title": "Operations & Delivery department",
+      "content": "Operations & Delivery is one of the 9 AI departments of the Pro plan. It turns the promise into a repeatable process: a process map, SOPs, capacity and delivery. It runs a multi-step process with expertise specific to your sector and reads your knowledge scoped to it. Use it through the Secretary, or open its node for a one-off job.",
+      "tags": [
+        "departments",
+        "operations"
+      ]
+    },
+    {
+      "id": "dept-supply-en",
+      "title": "Supply & Procurement department",
+      "content": "Supply & Procurement is one of the 9 AI departments of the Pro plan. It gets the right input, supplier and cost: specs, sourcing, inventory and backup plans. It runs a multi-step process with expertise specific to your sector and reads your knowledge scoped to it. Use it through the Secretary, or open its node for a one-off job.",
+      "tags": [
+        "departments",
+        "supply"
+      ]
+    },
+    {
+      "id": "dept-quality-en",
+      "title": "Quality & Performance department",
+      "content": "Quality & Performance is one of the 9 AI departments of the Pro plan. It builds quality in from the start: standards, acceptance criteria, QA/QC plans and a set of measurable KPIs. It runs a multi-step process with expertise specific to your sector and reads your knowledge scoped to it. Use it through the Secretary, or open its node for a one-off job.",
+      "tags": [
+        "departments",
+        "quality"
+      ]
+    },
+    {
+      "id": "dept-finance-en",
+      "title": "Finance & People department",
+      "content": "Finance & People is one of the 9 AI departments of the Pro plan. It works out unit economics, cash flow and risk, makes a GO/NO-GO call from real numbers, and drafts the workforce plan. Finance knowledge is internal: it is never used by the consultant to answer website visitors. Use it through the Secretary, or open its node for a one-off job.",
+      "tags": [
+        "departments",
+        "finance-dept"
+      ]
+    },
+    {
+      "id": "dept-technology-en",
+      "title": "Technology & Intelligence department",
+      "content": "Technology & Intelligence is one of the 9 AI departments of the Pro plan. It applies software, data, AI and automation to the real problem: requirements, architecture, security and rollout. It runs a multi-step process with expertise specific to your sector and reads your knowledge scoped to it. Use it through the Secretary, or open its node for a one-off job.",
+      "tags": [
+        "departments",
+        "technology"
+      ]
+    },
+    {
+      "id": "integration-en",
+      "title": "The Integration step and its verdicts",
+      "content": "On Pro, complex work does not end with nine separate reports. Integration cross-checks the departments' handoffs on 14 dimensions and makes one decision: Approve, Approve with conditions, Hold or Reject. In sectors that need an expert — Healthcare and Real Estate — a sign-off by a clinician or a lawyer is required before the call.",
+      "tags": [
+        "departments",
+        "integration"
+      ]
+    },
+    {
+      "id": "sectors-en",
+      "title": "Supported sectors",
+      "content": "AI Operations has 5 sectors, each with its own workspace and sector-specific expertise in every department: AI-Ecommerce (/system/ecommerce), AI-Education (/system/education), AI-F&B (/system/fnb), AI-Healthcare (/system/healthcare) and AI-Real Estate (/system/realestate). E-commerce is released today. Education, F&B, Healthcare and Real Estate are under expert review before release; Healthcare needs a clinician and Real Estate a lawyer to sign off before the final call. Any signed-in account can already trial every sector, unreleased ones included; a Pro account gets full access to released sectors and trial mode on the others.",
+      "tags": [
+        "sectors",
+        "ngành"
+      ]
+    },
+    {
+      "id": "workspace-en",
+      "title": "The canvas workspace",
+      "content": "The Secretary and the departments run in a canvas workspace, one per sector, at chatzui.com/system followed by the sector id — e.g. /system/ecommerce. Sign in with the Account node (top right) using the account that bought the plan. The canvas shows the Consult, the Secretary and every department as nodes; links light up as work is handed out and comes back. A single command bar under the canvas lets you command every AI. The workspace opens in its own browser tab.",
+      "tags": [
+        "workspace",
+        "pro"
+      ]
+    },
+    {
+      "id": "security-en",
+      "title": "Data and security — how AI Operations protects your knowledge",
+      "content": "Not a promise, but how the system is built. Isolation: every knowledge row is tied to your account and vector search runs in its own namespace, so no one can read, write or delete anyone else's knowledge. Tokens: your MCP token is emailed once and only its SHA-256 hash is kept; reissue it and the old one stops at once. Privacy: visitor conversations stay in their own browser for 30 days; the server keeps no visitor chats. Server-side expertise: department prompts, processes and roles are assembled on the server only, never sent to the browser. Control: you approve before anything is final; Auto runs only when you turn it on. Freedom: cancel any time through PayPal; knowledge from your API stays in your own systems.",
+      "tags": [
+        "security",
+        "privacy",
+        "bảo mật"
+      ]
+    },
+    {
+      "id": "tokens-en",
+      "title": "Keeping the MCP token safe and reissuing it",
+      "content": "Treat MCP_TOKEN like a password: whoever has it can load or delete your knowledge. Only its SHA-256 hash and last 4 characters are stored. If it leaks or is lost: open the consultant's ⚙ → Load from API & MCP → Reissue token, or use Issue a new token in the MCP section of chatzui.com/system/docs. The old token stops working at once, so set up your AI clients again with the new one. The owner (hub id) in the embed code is not a secret: it only lets the assistant read your knowledge to answer visitors.",
+      "tags": [
+        "security",
+        "mcp-token"
+      ]
+    },
+    {
+      "id": "trouble-answers-en",
+      "title": "Troubleshooting: answers are generic, not from my knowledge",
+      "content": "If the consultant answers generically instead of from your knowledge: check that the owner on the svc-aide tag is your hub id; check the rows are active (draft rows are never found); check the division matches the scope you loaded the rows for; then ask your AI to call hub_info and look at pendingIndex — if rows are still waiting, run reindex_knowledge. Rows of type finance are never used to answer visitors.",
+      "tags": [
+        "troubleshooting",
+        "svc-aide"
+      ]
+    },
+    {
+      "id": "trouble-errors-en",
+      "title": "Troubleshooting: errors 401 and 402, and trial limits",
+      "content": "401 from your AI client: the MCP token is wrong or has been reissued — paste the latest token and reinstall; Test connection in the MCP section of chatzui.com/system/docs confirms it. 402: the plan has lapsed — renew it, then open the consultant's ⚙ once to refresh; on the Secretary or departments, 402 means the account is on Starter and Pro is needed. Trial limit reached in a workspace: the free trial for that sector is used up (1 team task, 1 job per department, 30 messages) — upgrade to Pro to keep going.",
+      "tags": [
+        "troubleshooting",
+        "errors"
+      ]
+    },
+    {
+      "id": "trouble-embed-en",
+      "title": "Troubleshooting: no assistant button on my site, or no token email",
+      "content": "No assistant button on your site: the script tag needs type=module; your platform must allow custom scripts (some site builders block them on free tiers); open the browser console to look for a file load error. No token email after buying: sign in at chatzui.com/system/ecommerce → Consult → ⚙ → Load from API & MCP → Activate MCP (the token shows once), or use Issue a new token in the MCP section of chatzui.com/system/docs.",
+      "tags": [
+        "troubleshooting",
+        "embed"
+      ]
+    },
+    {
+      "id": "compare-en",
+      "title": "How is AI Operations different from a regular chatbot?",
+      "content": "Scripted chatbots only answer what was written in advance; AI Operations answers from your real knowledge and does real work for you. AI Operations answers from your own knowledge, with sources — a scripted bot only from a pre-written script. It is updated with one API load or over MCP — a scripted bot needs every flow edited by hand. Knowledge is scoped per sector and department — not one answer set for every situation. On Pro it does multi-step work with human approval and departments hand off with a cross-check — a scripted bot only does questions and answers, with no process. It embeds with one script tag on any platform — scripted bots are often locked to one platform.",
+      "tags": [
+        "compare",
+        "ai-operations"
+      ]
+    },
+    {
+      "id": "refund-en",
+      "title": "Refund and cancellation policy",
+      "content": "AI Operations subscriptions renew automatically through PayPal until cancelled. Cancel any time in the Your plan panel at chatzui.com/system/pricing or in your PayPal automatic payments: renewal stops, there are no further charges, and you keep using the plan until the end of the period already paid for. Cancelling during the 14-day free trial means no charge. Once a billing period has started there are no refunds for the remaining or unused time. Refunds are given for duplicate charges, charges after a successful cancellation, billing errors on our side, if the Service is discontinued, or where mandatory law requires — email dung.pham@goldenkey-software.com within 30 days of the charge. Full text: chatzui.com/system/legal/refund.",
+      "tags": [
+        "billing",
+        "legal",
+        "hoàn tiền",
+        "huỷ gói"
+      ]
+    },
+    {
+      "id": "legal-en",
+      "title": "Terms, privacy and legal documents",
+      "content": "AI Operations publishes five legal documents at chatzui.com/system/legal: Terms of Service (/system/legal/terms), Privacy Policy (/system/legal/privacy), Billing, Cancellation & Refund Policy (/system/legal/refund), Acceptable Use Policy (/system/legal/acceptable-use) and the Data Processing Addendum (/system/legal/dpa) for customers who embed the consultant on their own website. Each is published in English and Vietnamese, with its effective date at the top of the page. By creating an account, buying a plan or using the service, customers agree to all five. The provider is Golden Key IT Solutions Joint Stock Company (tax code 0316750591), 17-19-21 Nguyen Van Troi Street, Phu Nhuan Ward, Ho Chi Minh City, Vietnam; legal and privacy contact: dung.pham@goldenkey-software.com.",
+      "tags": [
+        "legal",
+        "privacy",
+        "điều khoản",
+        "chính sách"
+      ]
+    },
+    {
+      "id": "terms-en",
+      "title": "Terms of Service — key points",
+      "content": "The AI Operations Terms of Service (chatzui.com/system/legal/terms) cover: eligibility — the service is for businesses and professional users aged 18 or over; accounts — keep passwords and the MCP_TOKEN secret, you are responsible for activity under them; your content — you keep all rights and grant Golden Key a licence only to host and process it to provide the service, including sending it to the listed AI providers; it is never sold or used to train Golden Key's own models; usage limits such as 100 jobs a day on Pro and the trial quotas are part of each plan; features may change, with notice when a paid plan loses significant functionality; if the service is discontinued entirely, customers get 30 days' notice and a refund of prepaid unused time.",
+      "tags": [
+        "legal",
+        "terms"
+      ]
+    },
+    {
+      "id": "ai-output-en",
+      "title": "AI output disclaimer",
+      "content": "Under the AI Operations Terms of Service, answers, plans, articles, images and verdicts produced by AI are generated by third-party models and may be inaccurate, incomplete, outdated or biased; similar output may be produced for others. AI output is not legal, medical, financial, tax, investment or other professional advice. Customers must review AI output before using it, publishing it or making decisions on it — the approval steps and Auto mode are aids, not a substitute for human review. Healthcare and Real Estate work requires sign-off by a qualified professional. As between the parties, the customer owns the AI output generated for them, to the extent the law allows, with no warranty that it is free of third-party rights.",
+      "tags": [
+        "legal",
+        "terms",
+        "ai"
+      ]
+    },
+    {
+      "id": "embed-duties-en",
+      "title": "Customer duties when embedding the consultant",
+      "content": "A customer who embeds svc-aide on their website is responsible for that website and its visitors: they must tell visitors clearly that they are chatting with an AI, publish their own privacy notice stating that questions are processed by AI Operations and AI model providers, and comply with the law that applies to them. For visitor data, the customer is the data controller and Golden Key is the processor under the Data Processing Addendum (chatzui.com/system/legal/dpa). Visitors with privacy requests should contact the business that owns the website; requests sent to AI Operations are forwarded to that business.",
+      "tags": [
+        "legal",
+        "embed",
+        "privacy"
+      ]
+    },
+    {
+      "id": "liability-en",
+      "title": "Liability, suspension and changes to the terms",
+      "content": "The AI Operations service and AI output are provided as is and as available, without warranties, to the extent the law allows. Neither party is liable for indirect or consequential damages or lost profits, revenue or data; Golden Key's total liability is capped at what the customer paid in the previous 12 months, or USD 50 for free use — except where the law does not allow such limits, such as fraud or mandatory consumer rights. Customers indemnify Golden Key for claims arising from their content, their breach of the terms or claims by their website visitors. Golden Key may suspend or terminate accounts for breach, non-payment, legal requirements or security risks. Material changes to the terms are announced by email or in the service at least 15 days before they take effect.",
+      "tags": [
+        "legal",
+        "terms"
+      ]
+    },
+    {
+      "id": "governing-law-en",
+      "title": "Governing law and disputes",
+      "content": "The AI Operations terms are governed by the laws of Vietnam (the UN CISG does not apply). Before going to court, contact dung.pham@goldenkey-software.com — both sides negotiate in good faith for 30 days; unresolved disputes go to the competent courts of Ho Chi Minh City, Vietnam. Consumers keep the mandatory rights of their country of residence, including suing in their local courts where that law allows. Vietnam-specific: customers in Vietnam are protected by the Law on Protection of Consumers' Rights and may also complain to the consumer-protection authority; electronic invoices are issued under Vietnamese tax law when invoicing details are provided; for customers in Vietnam the Vietnamese text prevails, for everyone else the English text prevails.",
+      "tags": [
+        "legal",
+        "terms"
+      ]
+    },
+    {
+      "id": "billing-terms-en",
+      "title": "Failed payments, price changes and changing plans",
+      "content": "Under the AI Operations Billing & Refund Policy: prices are in USD at chatzui.com/system/pricing, and taxes or currency-conversion fees are borne by the customer; the amount charged is the one shown at checkout. One free trial per customer — trial abuse such as multiple accounts may be refused. A failed renewal keeps the plan working for 3 grace days, then the service is suspended until payment succeeds, with data kept. New prices apply to new subscriptions; existing subscriptions keep their price unless customers get at least 30 days' notice before the next renewal. To change plans (e.g. Starter to Pro), cancel the current subscription and subscribe to the new one — billed from that day, knowledge, token and embed code unchanged, no credit for the old plan's remaining time. Contact support before opening a PayPal dispute or chargeback.",
+      "tags": [
+        "billing",
+        "legal"
+      ]
+    },
+    {
+      "id": "privacy-data-en",
+      "title": "What personal data AI Operations collects",
+      "content": "Per the AI Operations Privacy Policy (chatzui.com/system/legal/privacy): account data — email, display name, avatar and the sign-in provider id (e.g. Google); passwords are kept hashed by the authentication provider. Billing — PayPal subscription id, status, plan, interval, payer id, trial and renewal dates; never card or bank numbers. Customer content — knowledge, source URLs, files and text loaded over MCP, messages and work given to the Secretary and departments. Visitor questions to the consultant are processed to answer and not stored on the servers. Technical data — IP address and request metadata for rate limiting and security, not for profiling. Also the SHA-256 hash and last 4 characters of the MCP token, trial counters, and emails customers send. Golden Key is controller for account and billing data, and processor for customer content and visitor data.",
+      "tags": [
+        "privacy",
+        "legal",
+        "dữ liệu cá nhân",
+        "quyền riêng tư"
+      ]
+    },
+    {
+      "id": "privacy-processors-en",
+      "title": "AI providers, sub-processors and data transfers",
+      "content": "AI Operations never sells personal data or shares it for targeted advertising. To answer and do work, customer content and visitor questions are sent to AI model providers: Groq, OpenRouter (and the model providers it routes to) and NVIDIA for text, Hugging Face for images, Cloudflare Workers AI for embeddings. Some free models routed through OpenRouter may have inputs logged or used by their provider under its own policy, so customers should not load sensitive data unless necessary and lawful. Other sub-processors: Cloudflare (servers, databases, vector search, rate limiting), Supabase (authentication, profiles), Google (optional sign-in), PayPal (payments), Resend (email) and the website hosting/CDN provider. Data may be processed in the US, the EU and elsewhere, under safeguards such as the EU Standard Contractual Clauses and Vietnam's cross-border transfer assessment.",
+      "tags": [
+        "privacy",
+        "legal",
+        "ai"
+      ]
+    },
+    {
+      "id": "privacy-retention-en",
+      "title": "Data retention and deletion",
+      "content": "AI Operations keeps account data while the account exists. Customer knowledge and the hub are kept even after a plan ends, so renewing resumes at once. Secretary and department group chats, jobs and handoffs are permanently deleted after 30 days; results approved into knowledge are kept. Billing records are kept as accounting and tax law requires; trial counters are kept to enforce trial quotas. Visitor chat history lives only in the visitor's browser for 30 days. To delete data, email dung.pham@goldenkey-software.com: deletion is completed within 30 days, or sooner where the law requires; backups and provider logs may persist briefly. Customers can export knowledge first with list_knowledge over MCP. There is no self-service account deletion button yet — deletion is by request.",
+      "tags": [
+        "privacy",
+        "legal"
+      ]
+    },
+    {
+      "id": "privacy-rights-en",
+      "title": "Privacy rights and how to use them",
+      "content": "Users of AI Operations can ask to access, correct, delete, restrict or object to processing of their personal data, receive a copy, withdraw consent and complain, by emailing dung.pham@goldenkey-software.com; identity may be verified, and replies come within 30 days or sooner where the law requires. EU and UK residents (GDPR, UK GDPR) may complain to their data protection authority. US residents, including California (CCPA/CPRA), may know, delete and correct their data, may use an authorised agent, and are not discriminated against; AI Operations does not sell or share personal information as defined there. In Vietnam, under the Law on Personal Data Protection, data subjects have the statutory rights including consent and withdrawal, complaints and compensation, and may complain to the data protection authority of the Ministry of Public Security. The service is not for anyone under 18.",
+      "tags": [
+        "privacy",
+        "legal"
+      ]
+    },
+    {
+      "id": "cookies-en",
+      "title": "Cookies and browser storage",
+      "content": "AI Operations uses no analytics or advertising cookies. It uses only: a theme cookie and a language cookie that remember light/dark mode and the VI/EN choice; browser localStorage for the sign-in session and a random id that keeps a visitor's consultant chat history apart; and IndexedDB for the chat history itself, stored only on the user's device for 30 days. PayPal and Google may set their own cookies when someone pays or signs in through them.",
+      "tags": [
+        "privacy",
+        "cookies"
+      ]
+    },
+    {
+      "id": "security-incident-en",
+      "title": "Security measures and breach notification",
+      "content": "AI Operations protects data with HTTPS/TLS encryption in transit, per-customer isolation of knowledge with vector search in a separate namespace, MCP tokens stored only as SHA-256 hashes and invalidated at once on reissue, department prompts and processes that run only on the server, and role-based access control. No system is perfectly secure. If a personal data breach occurs, affected customers are notified without undue delay — aiming for within 72 hours under the Data Processing Addendum — and authorities are notified within the time the law requires. Security vulnerabilities should be reported privately to dung.pham@goldenkey-software.com, with reasonable time to fix them before disclosure.",
+      "tags": [
+        "security",
+        "legal"
+      ]
+    },
+    {
+      "id": "aup-en",
+      "title": "Acceptable Use Policy — what is not allowed",
+      "content": "The AI Operations Acceptable Use Policy (chatzui.com/system/legal/acceptable-use) prohibits: anything illegal; infringing intellectual property or privacy, including importing data the customer has no right to use; scams, phishing, impersonation, fake reviews or misleading consumers; child sexual abuse material (zero tolerance, reported to authorities), sexually explicit content, extreme violence, terrorism, hate or harassment; malware and spam; processing sensitive personal data without a lawful basis; automated decisions with legal or significant effects (medical, legal, credit, hiring, housing, insurance) without a qualified human reviewing them; election manipulation and weapons instructions; and hiding that visitors talk to an AI where the law requires disclosure.",
+      "tags": [
+        "legal",
+        "acceptable-use"
+      ]
+    },
+    {
+      "id": "aup-technical-en",
+      "title": "Acceptable Use Policy — technical misuse and enforcement",
+      "content": "The AI Operations Acceptable Use Policy also forbids bypassing rate limits, plan limits or trial quotas (for example with multiple accounts), probing or scanning for vulnerabilities without permission, accessing other customers' data, overloading the system, reverse engineering or trying to extract the service's prompts, processes or source code, and sharing, reselling or renting accounts, MCP tokens or access without an agreement. Customers must also follow the usage policies of the AI model providers. Violations can lead to content removal, token revocation, suspension or termination, and reports to authorities; serious violations are not refunded. Report abuse or security issues privately to dung.pham@goldenkey-software.com.",
+      "tags": [
+        "legal",
+        "acceptable-use"
+      ]
+    },
+    {
+      "id": "dpa-en",
+      "title": "Data Processing Addendum (DPA) — summary",
+      "content": "The AI Operations Data Processing Addendum (chatzui.com/system/legal/dpa) is part of the Terms and applies to personal data in customer knowledge, Secretary and department work, and visitor questions on embedded consultants. The customer is the controller and Golden Key the processor, acting only on documented instructions. It covers confidentiality, security measures, general authorisation of the listed sub-processors (customers may terminate if they reasonably object to a new one), help with data-subject requests and impact assessments, breach notice aiming within 72 hours, deletion within 30 days on request, audit information once a year, the EU Standard Contractual Clauses (2021) and UK Addendum for transfers, and Vietnamese personal data protection obligations. Customers must have a lawful basis for their data and tell visitors their questions are processed by AI.",
+      "tags": [
+        "legal",
+        "privacy",
+        "dpa"
+      ]
+    },
+    {
+      "id": "contact-en",
+      "title": "Contact and support",
+      "content": "AI Operations is made by Golden Key IT Solutions Joint Stock Company (tax code 0316750591), 17-19-21 Nguyen Van Troi Street, Phu Nhuan Ward, Ho Chi Minh City, Vietnam. Email: dung.pham@goldenkey-software.com. Hotline: +84902030918. Social: x.com/chatzuiofficial, youtube.com/@chatzuiofficial, tiktok.com/@chatzuiofficial. Starter includes email support; Pro includes priority support.",
+      "tags": [
+        "contact",
+        "support",
+        "liên hệ",
+        "hỗ trợ",
+        "hotline"
+      ]
+    },
+    {
+      "id": "links-en",
+      "title": "Useful AI Operations pages",
+      "content": "chatzui.com — product page with plans, comparison, security and FAQ, plus a live sample consultant in the corner. chatzui.com/system/docs — the guide: embedding, loading knowledge, MCP one-click install, Secretary and departments, tokens and troubleshooting. chatzui.com/system/pricing — choose a plan, pay with PayPal and manage the plans you bought. chatzui.com/system/ecommerce — the AI-Ecommerce workspace with the Secretary and 9 departments (sign in to trial it free).",
+      "tags": [
+        "links",
+        "ai-operations"
+      ]
+    }
+  ]
+}

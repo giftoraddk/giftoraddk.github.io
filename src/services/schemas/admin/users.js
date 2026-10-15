@@ -1,10 +1,10 @@
-import { ORDER_PRESETS, ROLE_PRESETS } from '@/services/schemas/roles-constant.js';
+import { accessRows } from '@/packages/auth/tool/roles.js';
 
 // `password` field removed — user identity now lives in Supabase Auth (see
-// hook/cloudflare-worker.md, svc-login.js), which owns credential storage itself. There's no
+// hook/cloudflare-worker.md, svc-auth.js), which owns credential storage itself. There's no
 // longer a password value on the `profiles` row for this admin table to edit, and a `profiles`
 // row can't be pre-created for someone who doesn't have a Supabase Auth account yet anyway (its
-// `id` is a foreign key to `auth.users`, see worker/supabase/schema.sql). New staff accounts:
+// `id` is a foreign key to `auth.users`, see src/packages/auth/worker/supabase/schema.sql). New staff accounts:
 // have them sign in once via the normal login page (self-registers their `profiles` row), then
 // grant roles here / via svc-roles.js as before.
 
@@ -12,14 +12,14 @@ const TXT = {
 	vi: {
 		status: 'Trạng thái', email: 'Email', username: 'Username',
 		displayName: 'Tên hiển thị', bio: 'Bio',
-		avatar: 'Avatar', roles: 'Roles', connections: 'Connections', order: 'Order',
+		avatar: 'Avatar', roles: 'Roles', connections: 'Connections', order: 'Order', notes: 'Notes (node riêng)',
 		pending: 'Chờ duyệt', active: 'Hoạt động', banned: 'Bị khóa', suspended: 'Tạm khóa',
 		connSuffix: 'kết nối', customRole: 'tuỳ chỉnh', noRole: '—',
 	},
 	en: {
 		status: 'Status', email: 'Email', username: 'Username',
 		displayName: 'Display name', bio: 'Bio',
-		avatar: 'Avatar', roles: 'Roles', connections: 'Connections', order: 'Order',
+		avatar: 'Avatar', roles: 'Roles', connections: 'Connections', order: 'Order', notes: 'Notes (own nodes)',
 		pending: 'Pending', active: 'Active', banned: 'Banned', suspended: 'Suspended',
 		connSuffix: 'connections', customRole: 'custom', noRole: '—',
 	},
@@ -27,19 +27,12 @@ const TXT = {
 
 // ── Coarse role display for the read-only `roles` column ────────────────────
 /**
- * Display labels for EVERY preset whose full capability set is present in `caps` (a
- * table's bare capability list) — svc-roles.js's checkboxes are independent (checking
- * Editor doesn't uncheck Moderator/Admin), so a table with full admin-equivalent caps
- * has editor's AND moderator's AND admin's requirements all satisfied at once; showing
- * only the "highest" match would silently hide that the other two are effectively granted too.
+ * One accessRows() row as "posts:EDIT+REVIEW~own" (hook/AUTH_V2.rst) — legacy capability tokens are
+ * folded into levels, bundle tables with the same access into their main table; leftovers read as "custom".
  */
-function matchedPresetLabels(caps) {
-	const set = new Set(caps);
-	// `admin` preset is stored as the bare shorthand cap 'admin' (see roles-constant.js's
-	// roleCaps()), not spelled out — its presence alone satisfies every preset for this table.
-	if (set.has('admin')) return ORDER_PRESETS.join('|');
-	const matches = ORDER_PRESETS.filter(p => ROLE_PRESETS[p].every(c => set.has(c)));
-	return matches.length ? matches.join('|') : null;
+function accessLabel({ table, levels, scope, custom }, t) {
+	const base = levels.length ? `${levels.join('+')}${scope === 'all' ? '' : `~${scope}`}` : '';
+	return `${table}:${custom.length ? (base ? `${base}+${t.customRole}` : t.customRole) : base}`;
 }
 
 export default (lang = 'vi') => {
@@ -99,6 +92,12 @@ export default (lang = 'vi') => {
 			type: 'photor',
 		},
 		{
+			// JSON { nodes: [...] } the user builds on /system/app (svc-node-builder.js) — form only, not a list column
+			label: t.notes,
+			field: 'notes',
+			type: 'textarea',
+		},
+		{
 			label: t.roles,
 			field: 'roles',
 			write: false, // read-only — edit via svc-roles UI, which understands the underlying granular capability tokens
@@ -108,20 +107,10 @@ export default (lang = 'vi') => {
 				if (!tokens.length) return t.noRole;
 				if (tokens.includes('admin')) return 'Super Admin';
 
-				const byTable = tokens.reduce((acc, tok) => {
-					const dot = tok.indexOf('.');
-					if (dot === -1) return acc;
-					const table = tok.slice(0, dot);
-					(acc[table] ??= []).push(tok.slice(dot + 1));
-					return acc;
-				}, {});
-
 				// Plain string (not a lit TemplateResult) — grid cells default to
 				// `white-space:nowrap`, and this also needs to stay CSV-export-safe
-				// (svc-admin.js _dfExportCsv stringifies render() output for read-only cols).
-				return Object.entries(byTable)
-					.map(([table, caps]) => `${table}:${matchedPresetLabels(caps) ?? t.customRole}`)
-					.join(', ');
+				// (svc-resources.js _dfExportCsv stringifies render() output for read-only cols).
+				return accessRows(v).map(row => accessLabel(row, t)).join(', ') || t.noRole;
 			},
 		},
 		{

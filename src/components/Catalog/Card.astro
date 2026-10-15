@@ -1,0 +1,89 @@
+---
+// 1 card catalog: avatar tag + tên tag + dòng phụ · tiêu đề · ảnh · mô tả · số liệu · chia sẻ.
+//   post    → dòng phụ = thời gian đăng; chân card = lượt thích / lượt xem / phút đọc
+//   product → dòng phụ = tình trạng hàng; chân card = giá (/ đơn vị) / đánh giá
+// Nhiều ảnh → slideshow flipX (Media.astro, nạp khi card vào màn hình).
+// HTML ngữ nghĩa thuần (article / h* / time / data / a) — crawler đọc được không cần JS. Toàn card bấm được
+// nhờ stretched link trên tiêu đề; link tag + nút chia sẻ nổi lên trên (z-index).
+import Icon from './Icon.astro';
+import Media from './Media.astro';
+import I18nText from '@/components/I18nText.astro';
+import { site } from '@/services/tools/site';
+import { pickLang } from '@/services/tools/util';
+import { tagUrl, initialsOf, fmtDate, compactNum, type ItemView } from './lib';
+import type { Kind } from './kinds';
+
+interface Props {
+	kind: Kind;
+	item: ItemView;
+	level?: 2 | 3;              // cấp heading theo ngữ cảnh trang
+	eager?: boolean;            // ảnh trên màn hình đầu — không lazy (LCP)
+	attrs?: Record<string, any>; // data-* cho JS (stack)
+}
+
+const { kind, item: p, level = 3, eager = false, attrs = {} } = Astro.props;
+const H = `h${level}` as 'h2' | 'h3';
+const source = p.tag || site.subtitle;
+const isProduct = kind.id === 'product';
+const L = (en: string, vi: string) => pickLang({ en, vi });
+---
+
+<article class={`pf-card pf-tone-${p.tone}`} {...attrs}>
+	<header class="pf-card-head">
+		<span class="pf-avatar" aria-hidden="true">{initialsOf(source)}</span>
+		<div class="pf-src">
+			{p.tag
+				? <a class="pf-src-name" href={tagUrl(kind, p.tag)} rel="tag">{p.tag}<Icon name="check" size={14} class="pf-verified" /></a>
+				: <span class="pf-src-name">{source}</span>}
+			{isProduct
+				? <span class={`pf-time pf-stock ${p.inStock ? 'is-ok' : 'is-off'}`}>
+					<I18nText text={p.inStock ? { en: 'In stock', vi: 'Còn hàng' } : { en: 'Contact us', vi: 'Liên hệ' }} />
+				</span>
+				: p.published && <time class="pf-time" datetime={p.published} data-rel>{fmtDate(p.published)}</time>}
+		</div>
+	</header>
+
+	<H class="pf-card-title"><a href={p.url}>{p.title}</a></H>
+
+	{p.image && (
+		<figure class="pf-card-media">
+			<Media images={p.pics} alt={p.title} eager={eager} />
+		</figure>
+	)}
+
+	{p.excerpt && <p class="pf-card-excerpt">{p.excerpt}</p>}
+
+	<footer class="pf-card-foot">
+		{isProduct ? (
+			<>
+				<span class="pf-stat pf-price" title={L('Price', 'Giá')}>
+					{p.priceText
+						? <><data value={p.price}>{p.priceText}</data>{p.unit && <span class="pf-unit">/ {p.unit}</span>}</>
+						: <I18nText text={{ en: 'Contact', vi: 'Liên hệ' }} />}
+				</span>
+				{p.scoreCount > 0 && (
+					<span class="pf-stat" title={L('Rating', 'Đánh giá')}>
+						<Icon name="star" size={14} /><span class="sr-only"><I18nText text={{ en: 'Rating', vi: 'Đánh giá' }} />:</span>{p.scoreAvg.toFixed(1)}
+					</span>
+				)}
+			</>
+		) : (
+			<>
+				<span class="pf-stat" title={L('Likes', 'Lượt thích')}>
+					<Icon name="heart" size={15} /><span class="sr-only"><I18nText text={{ en: 'Likes', vi: 'Lượt thích' }} />:</span>{compactNum(p.likes)}
+				</span>
+				<span class="pf-stat" title={L('Views', 'Lượt xem')}>
+					<Icon name="eye" size={15} /><span class="sr-only"><I18nText text={{ en: 'Views', vi: 'Lượt xem' }} />:</span>{compactNum(p.views)}
+				</span>
+				<span class="pf-stat" title={L('Reading time', 'Thời gian đọc')}>
+					<Icon name="clock" size={15} />{p.readMin}′
+				</span>
+			</>
+		)}
+		<button type="button" class="pf-circle is-sm pf-share" data-share={p.url} data-title={p.title}
+			aria-haspopup="menu" aria-controls="pf-share-menu" aria-expanded="false"
+			aria-label={L('Share', 'Chia sẻ')}>
+			<Icon name="share" size={17} />
+		</button>
+	</footer>
+</article>

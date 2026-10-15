@@ -1,0 +1,3 @@
+- css: chứa style cho các component
+- service: chứa xử lý dữ liệu cũng như state cho component
+- tool: chứa các helper, constant, other ...

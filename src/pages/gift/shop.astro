@@ -1,28 +1,17 @@
 ---
+// /gift/shop — cửa hàng: toàn bộ sản phẩm + bộ lọc (giao diện components/Shop/Shop.astro, dữ liệu + SEO/GEO
+// modules/gift/catalog.js shopPageData). Giỏ hàng + thanh toán: <svc-pay> của CoreShop.
 import CoreShop from '@/layouts/CoreShop.astro';
-import { variant, views, menuItems, footerMenuItems, policies, socials, shop, bar, contact } from '@/modules/shop/gift';
+import Shop from '@/components/Shop/Shop.astro';
+import GiftAide from '@/components/Gift/Aide.astro';
+import { tintsChrome, shop } from '@/modules/gift/shop.js';
+import { shopPageData } from '@/modules/gift/catalog.js';
 
-const currentView = views.find(v => v.href === '/') ?? views[0];
-
-const bg = { blur: true }
+const data = await shopPageData({ type: 'shop' });
+const { page } = data;
 ---
 
-<CoreShop
-	title="Quà Tặng Đẹp và Ý Nghĩa Cho Mọi Dịp"
-  description="Giftora DDK cung cấp quà tặng đẹp, ý nghĩa cho sinh nhật, kỷ niệm, lễ Tết, người yêu, gia đình, bạn bè và đồng nghiệp. Khám phá ngay những món quà tinh tế, phù hợp với từng dịp."
-	menu={{ type: 'top', position: 'prefix', menuItems: menuItems }}
-	footer={{ columns: footerMenuItems, policies, socials, contact, bg, grid: 'grid-cols-1 sm:grid-cols-3' }}
-	bg={variant.bg}
-	theme={variant.theme}
-	variant={variant}
-  shop={shop}
-  bar={bar}
->
-	<script src='@/webs/apex/web-board.js'></script>
-	<div>
-		<web-board
-			unlock={import.meta.env.PUBLIC_EXP}
-			variant={JSON.stringify(variant)}
-		><script type="application/json" is:inline set:html={JSON.stringify(currentView.sections)}></script></web-board>
-	</div>
+<CoreShop {...tintsChrome} shop={shop} title={page.title} description={page.description} lang={page.lang} jsonLd={data.jsonLd} image={page.image}>
+	<Shop data={data} />
+	<GiftAide theme={tintsChrome.theme} lang={page.lang} />
 </CoreShop>

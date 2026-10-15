@@ -1,0 +1,248 @@
+/* <web-calendar> — same surface language as the User Portal (auth/css/svc-profile.css): tints mixed from
+   base-content (right in light and dark alike), round soft buttons, an 18px card. No backdrop-filter. */
+:host {
+	display: block;
+	width: 100%;
+	max-width: 340px;
+	--cal-surface: color-mix(in oklab, var(--color-base-content) 4%, transparent);
+	--cal-surface-hover: color-mix(in oklab, var(--color-base-content) 7%, transparent);
+	--cal-line: color-mix(in oklab, var(--color-base-content) 10%, transparent);
+	--cal-muted: color-mix(in oklab, var(--color-base-content) 58%, transparent);
+	--cal-radius: 18px;
+	--cal-cell-radius: 12px;
+}
+
+* { box-sizing: border-box; }
+
+button {
+	font: inherit;
+	color: inherit;
+	background: none;
+	border: 0;
+	padding: 0;
+	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
+}
+
+button:disabled { cursor: default; }
+
+button:focus-visible {
+	outline: 2px solid var(--color-primary);
+	outline-offset: 1px;
+}
+
+.cal {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	padding: 0.75rem;
+	border: 1px solid var(--cal-line);
+	border-radius: var(--cal-radius);
+	background: var(--color-base-100);
+	color: var(--color-base-content);
+	font-family: var(--font-sans, system-ui, sans-serif);
+	font-variant-numeric: tabular-nums;
+	user-select: none;
+}
+
+/* ── Header: ‹  Tháng 8 năm 2026 ▾  › ───────────────────────────────────── */
+
+.cal-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.25rem;
+	margin-bottom: 0.15rem;
+}
+
+.cal-nav {
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	background: var(--cal-surface);
+	font-size: 1.25rem;
+	transition: background 0.15s;
+}
+
+.cal-nav:hover:not(:disabled) { background: var(--cal-surface-hover); }
+.cal-nav:disabled { opacity: 0.3; }
+
+.cal-title {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.2rem;
+	min-width: 0;
+	padding: 0.4rem 0.75rem;
+	border-radius: 999px;
+	font-size: 0.98rem;
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	transition: background 0.15s;
+}
+
+.cal-title span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cal-title iconify-icon { flex-shrink: 0; color: var(--cal-muted); font-size: 1.05rem; }
+.cal-title:hover:not(:disabled) { background: var(--cal-surface); }
+
+/* ── Day grid ───────────────────────────────────────────────────────────── */
+
+.cal-weekdays,
+.cal-days {
+	display: grid;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+	gap: 2px;
+}
+
+.cal-weekdays span {
+	padding: 0.25rem 0;
+	color: var(--cal-muted);
+	font-size: 0.72rem;
+	font-weight: 600;
+	text-align: center;
+}
+
+.cal-weekdays .is-weekend { color: color-mix(in oklab, var(--color-error) 70%, var(--color-base-content)); }
+
+.cal-day {
+	position: relative;
+	display: grid;
+	place-items: center;
+	aspect-ratio: 1;
+	min-height: 36px;
+	border-radius: var(--cal-cell-radius);
+	font-size: 0.9rem;
+	font-weight: 500;
+	transition: background 0.12s, color 0.12s;
+}
+
+.cal-day:hover:not(:disabled, .is-on) { background: var(--cal-surface-hover); }
+.cal-day.is-weekend { color: color-mix(in oklab, var(--color-error) 70%, var(--color-base-content)); }
+.cal-day.is-out { opacity: 0.35; }
+.cal-day:disabled { opacity: 0.2; }
+
+/* Today: a small dot under the number (the selected day keeps the filled look) */
+.cal-day.is-today::after {
+	content: '';
+	position: absolute;
+	bottom: 5px;
+	left: 50%;
+	width: 4px;
+	height: 4px;
+	border-radius: 50%;
+	background: var(--color-primary);
+	transform: translateX(-50%);
+}
+
+.cal-day.is-today { font-weight: 700; color: var(--color-primary); }
+
+.cal-day.is-on,
+.cal-cell.is-on {
+	background: var(--color-primary);
+	color: var(--color-base-100); /* the themes' primary-content equals primary — base-100 reads on it */
+	font-weight: 700;
+	opacity: 1;
+}
+
+.cal-day.is-on.is-today::after { background: var(--color-base-100); }
+
+/* ── Month / year cells ─────────────────────────────────────────────────── */
+
+.cal-cells {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 0.4rem;
+	padding: 0.25rem 0;
+}
+
+.cal-cell {
+	min-height: 48px;
+	padding: 0 0.25rem;
+	border-radius: 14px;
+	background: var(--cal-surface);
+	font-size: 0.88rem;
+	font-weight: 600;
+	transition: background 0.12s, color 0.12s;
+}
+
+.cal-cell:hover:not(:disabled, .is-on) { background: var(--cal-surface-hover); }
+.cal-cell.is-today:not(.is-on) { color: var(--color-primary); box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--color-primary) 55%, transparent); }
+.cal-cell:disabled { opacity: 0.3; }
+
+/* ── Time (datetime) ────────────────────────────────────────────────────── */
+
+.cal-time {
+	display: flex;
+	align-items: center;
+	gap: 0.55rem;
+	height: 46px;
+	padding: 0 0.4rem 0 0.9rem;
+	border: 1px solid var(--cal-line);
+	border-radius: 14px;
+	background: var(--cal-surface);
+	font-size: 0.88rem;
+	font-weight: 600;
+}
+
+.cal-time iconify-icon { flex-shrink: 0; color: var(--cal-muted); font-size: 1.1rem; }
+.cal-time span { flex: 1; }
+
+.cal-time input {
+	height: 34px;
+	padding: 0 0.6rem;
+	border: 0;
+	border-radius: 10px;
+	outline: none;
+	background: var(--color-base-100);
+	color: inherit;
+	color-scheme: light dark;
+	font: inherit;
+	font-variant-numeric: tabular-nums;
+}
+
+.cal-time:focus-within {
+	border-color: var(--color-primary);
+	box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary) 18%, transparent);
+}
+
+/* ── Footer ─────────────────────────────────────────────────────────────── */
+
+.cal-foot {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	padding-top: 0.5rem;
+	border-top: 1px solid var(--cal-line);
+}
+
+.cal-link {
+	padding: 0.45rem 0.75rem;
+	border-radius: 999px;
+	color: var(--color-primary);
+	font-size: 0.85rem;
+	font-weight: 600;
+	transition: background 0.15s;
+}
+
+.cal-link:hover:not(:disabled) { background: var(--cal-surface); }
+.cal-link.is-muted { color: var(--cal-muted); }
+.cal-link:disabled { opacity: 0.4; }
+
+.cal-done {
+	margin-left: auto;
+	padding: 0.5rem 1.1rem;
+	border-radius: 999px;
+	background: var(--color-primary);
+	color: var(--color-base-100);
+	font-size: 0.85rem;
+	font-weight: 700;
+	transition: filter 0.15s;
+}
+
+.cal-done:hover { filter: brightness(1.06); }
+
+@media (prefers-reduced-motion: reduce) {
+	.cal-nav, .cal-title, .cal-day, .cal-cell, .cal-link, .cal-done { transition: none; }
+}

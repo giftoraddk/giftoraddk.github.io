@@ -16,8 +16,9 @@ const {
 } = Astro.props;
 ---
 
-{/* Mobile: Show NavMobile on all screens if type === 'mobile', otherwise hide it on large screens */}
-<NavMobile items={items} isMenu={isMenu} {...rest} class={`${type === 'mobile' ? '' : 'lg:hidden'} ${rest.class || ''}`}>
+{/* Mobile: Show NavMobile on all screens if type === 'mobile', otherwise hide it on large screens.
+    type 'top' dưới desktop luôn mở menu con bằng bottom sheet (isMenu=false) — dropdown chỉ dành cho desktop. */}
+<NavMobile items={items} isMenu={type === 'top' ? false : isMenu} {...rest} class={`${type === 'mobile' ? '' : 'lg:hidden'} ${rest.class || ''}`}>
   <slot name="actions" slot="actions" />
 </NavMobile>
 

@@ -2,7 +2,7 @@
 import ActionBtnTheme from "@/components/Nav/Action/BtnTheme.astro";
 import Menu from "@/components/Nav/Action/Menu.astro";
 import I18nText from "@/components/I18nText.astro";
-import { plainText } from "@/utils";
+import { plainText } from '@/services/tools/util';
 import "iconify-icon";
 const { items = [], class: c = "", isMenu = false } = Astro.props;
 
@@ -19,97 +19,300 @@ const isActive = (href: string | undefined) => {
 	}
 	return false;
 };
+
+// Mục root sáng khi chính nó hoặc bất kỳ con/cháu nào đang mở — mục có menu con thường không có href.
+// Mục có `target` (vd '_blank' mở tab mới) — kèm rel noopener để tab mới không với ngược về window.opener.
+const linkAttrs = (it: any) => it?.target ? { target: it.target, rel: it.target === '_blank' ? 'noopener' : undefined } : {};
+
+const isTrail = (it: any): boolean => isActive(it.href) || (it.items ?? []).some(isTrail);
+
+// Nhiều mục hơn bề ngang → thanh cuộn ngang (mỗi ô tối thiểu 3.5rem, snap theo ô, mờ mép phía còn mục bị khuất).
+// Chỉ ở chế độ bottom sheet (isMenu=false): dropdown của isMenu bật lên bằng position:absolute, vùng cuộn sẽ cắt mất.
+const scroll = !isMenu;
+const cell = scroll ? 'flex-1 shrink-0 min-w-14 snap-start flex justify-center' : 'flex-1 flex justify-center';
 ---
 <nav class={`fixed bottom-0 left-0 right-0 mx-auto rounded-3xl z-[100] bg-base-100/30 backdrop-blur-2xl border-white/10 border-t pb-[env(safe-area-inset-bottom,0px)] ${items.length > 7 ? '' : 'max-w-lg'} ${c}`}>
-	<div class="flex items-center justify-around h-18 p-2 text-base-content">
+	<div class:list={["flex items-center h-18 p-2 text-base-content", scroll ? "mnav-bar overflow-x-auto overflow-y-hidden overscroll-x-contain snap-x snap-mandatory" : "justify-around"]}>
 		{items.map((it, i) => {
-			const sub = it.items?.length > 0, id = `m_${i}`, T = sub ? 'button' : 'a';
+			const sub = it.items?.length > 0, id = `m_${i}`, T = sub ? 'button' : 'a', on = isTrail(it);
 			return (
-				<div class="flex-1 flex justify-center">
+				<div class={cell}>
 					{sub && isMenu ? (
 						<Menu isMobileRoot open horizontal items={[it]} class="menu-bottom p-0 m-0 [&>li>details>summary:after]:hidden" />
 					) : (
-							<T class="group flex flex-col items-center gap-1 w-full" data-nav-href={!sub ? (it.href || '#') : undefined} {...(sub?{type:"button", "data-dialog-trigger": id}:{href:it.href||"#"})}>
-								<div class={`menu-char-icon transition-all ${isActive(it.href) ? 'text-primary' : 'group-hover:scale-110 group-hover:-translate-y-1 opacity-60'}`}>
+							<T class="group flex flex-col items-center gap-1 w-full cursor-pointer" data-nav-href={!sub ? (it.href || '#') : undefined} {...(sub?{type:"button", "data-dialog-trigger": id, "aria-haspopup": "dialog", "aria-controls": id}:{href:it.href||"#", ...linkAttrs(it), "aria-current": on ? 'page' : undefined})}>
+								<div aria-hidden="true" class={`menu-char-icon transition-all ${on ? 'text-primary is-active' : 'group-hover:scale-110 group-hover:-translate-y-1 opacity-60'}`}>
 									{it.iconMobile || it.icon ? <iconify-icon icon={it.iconMobile || it.icon} class="text-2xl" /> : <span>{it.textIcon || (plainText(it.text) || 'A').charAt(0)}</span>}
 								</div>
+								<!-- thanh đáy chỉ hiện icon — tên truy cập của link/nút là chữ ẩn này (I18nText: đúng bản theo <html lang>) -->
+								<span class="sr-only"><I18nText text={it.text} /></span>
 							</T>
 					)}
 				</div>
 			)
 		})}
 		<slot name="actions" />
-		<div class="flex-1 flex justify-center"><div class="h-12 w-12 flex items-center justify-center rounded-full hover:bg-white/10 transition-all" style="background-color: color-mix(in oklab, var(--color-base-content) 10%, transparent);"><ActionBtnTheme /></div></div>
+		<div class={cell}><div class="h-12 w-12 flex items-center justify-center rounded-full hover:bg-white/10 transition-all" style="background-color: color-mix(in oklab, var(--color-base-content) 10%, transparent);"><ActionBtnTheme /></div></div>
 	</div>
 </nav>
 
-<!-- Menu Dialogs -->
+<!-- Menu Dialogs — bottom sheet nổi trên thanh đáy, cao vừa đủ số mục (tối đa 70dvh rồi cuộn), cùng ngôn ngữ
+     panel svc-node: quầng tints [a, b] 2 góc (--layout-tint-a/b của Core/CoreShop `tints`, mặc định info/accent),
+     viền mảnh, glyph vuông gradient a→b. Lớp <dialog> phủ toàn màn (scrim) — chỉ .mnav-sheet mang kích thước. -->
 {items.map((it, i) => {
 	const sub = it.items?.length > 0, id = `m_${i}`;
 	if (!sub || isMenu) return null;
+	const glyph = (x: any) => x.icon
+		? <iconify-icon icon={x.icon} />
+		: <span>{x.textIcon || (plainText(x.text) || 'A').slice(0, 2)}</span>;
 	return (
-		<dialog id={id} class="mobile-nav-dialog fixed inset-0 bottom-20 z-[90] w-full h-[calc(100dvh-4.5rem)] p-0 m-0 rounded-3xl bg-transparent opacity-0 invisible open:visible open:opacity-100 transition-all duration-500 overflow-hidden group flex flex-col">
-			<div class="glass text-base-content p-0 h-full w-full flex flex-col shadow-2xl translate-y-full group-open:translate-y-0 transition-transform duration-500 relative">
-				<div class="py-4 px-6 border-b border-white/10 flex items-center justify-between bg-base-200/20 sticky top-0 z-10">
-					<div class="flex items-center gap-4">
-						<div class="h-14 w-14 flex items-center justify-center bg-primary/20 rounded-full text-primary">
-							{it.icon ? <iconify-icon icon={it.icon} class="text-2xl" /> : <span class="font-bold text-2xl">{it.textIcon || (plainText(it.text) || 'A').charAt(0)}</span>}
-						</div>
-						<h3 class="font-bold text-2xl uppercase leading-none text-base-content/70"><I18nText text={it.text} /></h3>
-					</div>
-					<form method="dialog"><button class="opacity-60 hover:opacity-100 relative cursor-pointer">
-						<iconify-icon icon="ri:close-line" class="text-3xl" /></button>
-					</form>
+		<dialog id={id} aria-labelledby={`${id}_h`} class="mobile-nav-dialog group fixed inset-x-0 top-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] z-[90] m-0 h-auto max-h-none w-full max-w-none p-3 bg-transparent opacity-0 invisible open:visible open:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-end">
+			<form method="dialog" class="mnav-scrim absolute inset-0 -z-10 opacity-0 group-open:opacity-100 transition-opacity duration-300"><button class="w-full h-full cursor-default" aria-label="Close" tabindex="-1" /></form>
+
+			<div class="mnav-sheet text-base-content translate-y-4 scale-[0.98] group-open:translate-y-0 group-open:scale-100 transition-transform duration-300">
+				<div class="dragdown" aria-hidden="true"><span /></div>
+
+				<div class="mnav-head">
+					<span class="mnav-glyph is-lg" aria-hidden="true">{glyph(it)}</span>
+					<h3 id={`${id}_h`} class="mnav-title"><I18nText text={it.text} /></h3>
+					<span class="mnav-count">{it.items.length}</span>
+					<form method="dialog"><button class="mnav-close" aria-label="Close"><iconify-icon icon="ri:close-line" aria-hidden="true" /></button></form>
 				</div>
-				<div class="flex-1 overflow-y-auto px-2 py-4 relative z-1 custom-scrollbar">
-					<div class="flex flex-col gap-2">
+
+				<div class="mnav-scroll">
+					<ul class="mnav-list">
 						{it.items.map(s => (
-							<div class="flex flex-col gap-1">
-								<a href={s.href && s.href !== '#' ? s.href : undefined} class={`flex items-center gap-4 p-4 rounded-3xl transition-all active:scale-[0.97] group/s text-base-content/70 border border-transparent ${s.href ? 'hover:bg-primary/10 hover:border-primary/20' : 'opacity-70'}`}>
-									<div class={`h-14 w-14 flex items-center justify-center rounded-full transition-all bg-base-200/50 ${s.href ? 'group-hover/s:text-base-content group-hover/s:bg-primary/20 group-hover/s:scale-110' : ''}`}>
-										{s.icon ? <iconify-icon icon={s.icon} class="text-xl" /> : <span class="font-bold text-xl uppercase">{s.textIcon || (plainText(s.text) || 'A').charAt(0)}</span>}
-									</div>
-									<h4 class={`flex-1 font-bold text-xl truncate ${s.href ? 'group-hover/s:text-base-content' : ''}`}><I18nText text={s.text} /></h4>
-									{s.href && <iconify-icon icon="ri:arrow-right-s-line" class="text-2xl opacity-60 group-hover/s:translate-x-1" />}
+							<li>
+								<a href={s.href && s.href !== '#' ? s.href : undefined} {...linkAttrs(s)} class:list={['mnav-item', { 'is-active': isActive(s.href), 'is-off': !s.href }]}
+									aria-current={isActive(s.href) ? 'page' : undefined}>
+									<span class="mnav-glyph" aria-hidden="true">{glyph(s)}</span>
+									<span class="mnav-text"><I18nText text={s.text} /></span>
+									{s.href && <iconify-icon class="mnav-go" icon="ri:arrow-right-s-line" />}
 								</a>
-								{s.items?.length > 0 && <div class="ml-4 pl-1 border-l border-base-content/20 flex flex-col gap-1">
-									{s.items.map(d => (
-														<a href={d.href || '#'} class="flex items-center gap-4 p-4 rounded-3xl hover:bg-primary/10 transition-all group/d border border-transparent hover:border-primary/10 text-base-content/70 hover:text-base-content">
-															<div class="h-9 w-9 flex items-center justify-center bg-base-200/50 rounded-full group-hover/d:bg-primary/20 transition-all">
-																{d.icon ? <iconify-icon icon={d.icon} class="text-xl" /> : <span class="font-bold text-xs uppercase">{d.textIcon || (plainText(d.text) || 'A').charAt(0)}</span>}
-															</div>
-															<h5 class="font-bold truncate"><I18nText text={d.text} /></h5>
-															<iconify-icon icon="ri:arrow-right-s-line" class="ml-auto text-xl opacity-60 group-hover/d:translate-x-1" />
-														</a>
-									))}
-								</div>}
-								<div class="h-px w-[calc(100%-2rem)] mx-auto bg-base-content/5 last:hidden my-2" />
-							</div>
+								{s.items?.length > 0 && (
+									<ul class="mnav-sub">
+										{s.items.map(d => (
+											<li>
+												<a href={d.href || '#'} {...linkAttrs(d)} class:list={['mnav-item is-sm', { 'is-active': isActive(d.href) }]}
+													aria-current={isActive(d.href) ? 'page' : undefined}>
+													<span class="mnav-glyph is-sm" aria-hidden="true">{glyph(d)}</span>
+													<span class="mnav-text"><I18nText text={d.text} /></span>
+													<iconify-icon class="mnav-go" icon="ri:arrow-right-s-line" />
+												</a>
+											</li>
+										))}
+									</ul>
+								)}
+							</li>
 						))}
-					</div>
-				</div>
-				<div class="dragdown z-10 absolute top-0 left-1/2 -translate-x-1/2 p-2 cursor-grab active:cursor-grabbing">
-					<div class="w-12 h-1.5 bg-white/20 rounded-full opacity-60" />
+					</ul>
 				</div>
 			</div>
-			<form method="dialog" class="absolute inset-0 -z-10 bg-black/40 backdrop-blur-sm opacity-0 group-open:opacity-100 transition-opacity duration-500"><button class="w-full h-full" /></form>
 		</dialog>
 	)
 })}
 <style>
 	dialog::backdrop { display: none; }
-	.glass { 
-		background-color: rgba(255, 255, 255, 0.1);
-		backdrop-filter: blur(32px);
+
+	/* Thanh đáy cuộn ngang — ẩn scrollbar; JS bên dưới bật data-fade-l / data-fade-r khi còn mục khuất ở mép đó. */
+	.mnav-bar { scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+	.mnav-bar::-webkit-scrollbar { display: none; }
+	.mnav-bar[data-fade-l] { --mnav-mask: linear-gradient(to right, transparent, #000 28px); }
+	.mnav-bar[data-fade-r] { --mnav-mask: linear-gradient(to left, transparent, #000 28px); }
+	.mnav-bar[data-fade-l][data-fade-r] { --mnav-mask: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent); }
+	.mnav-bar:is([data-fade-l], [data-fade-r]) { -webkit-mask-image: var(--mnav-mask); mask-image: var(--mnav-mask); }
+
+	/* Scrim nhẹ — vẫn thấy trang phía sau */
+	.mnav-scrim {
+    backdrop-filter: blur(3px);
+	}
+
+	.mnav-sheet {
+		--a: var(--layout-tint-a, var(--color-primary));
+		--b: var(--layout-tint-b, var(--color-secondary));
+		--line: color-mix(in oklab, var(--color-base-content) 9%, transparent);
+		--surface: color-mix(in oklab, var(--color-base-content) 5%, transparent);
+		--muted: color-mix(in oklab, var(--color-base-content) 55%, transparent);
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		width: min(26rem, 100%);
+		max-height: min(70dvh, 36rem);
+		overflow: hidden;
+		border-radius: 24px;
+		border: 1px solid var(--line);
+		background:
+			radial-gradient(110% 70% at 100% 0%, color-mix(in oklab, var(--a) 18%, transparent), transparent 62%),
+			radial-gradient(80% 60% at 0% 0%, color-mix(in oklab, var(--b) 14%, transparent), transparent 60%),
+			color-mix(in oklab, var(--color-base-100) 94%, transparent);
+		box-shadow: 0 24px 48px -24px rgb(0 0 0 / 0.35);
+		backdrop-filter: blur(20px) saturate(1.3);
+		will-change: transform;
+	}
+
+	.dragdown { display: flex; justify-content: center; padding: 8px 0 2px; cursor: grab; }
+	.dragdown:active { cursor: grabbing; }
+	.dragdown span { width: 36px; height: 4px; border-radius: 999px; background: var(--line); }
+
+	.mnav-head { display: flex; align-items: center; gap: 10px; padding: 6px 12px 12px 14px; border-bottom: 1px solid var(--line); }
+	.mnav-title { flex: 1; min-width: 0; margin: 0; font-size: 1rem; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+	.mnav-count {
+		min-width: 1.4rem;
+		padding: 0 0.45rem;
+		border-radius: 999px;
+		background: var(--surface);
+		color: var(--muted);
+		font-size: 0.7rem;
+		font-weight: 600;
+		line-height: 1.4rem;
+		text-align: center;
+	}
+	.mnav-close {
+		display: grid;
+		place-items: center;
+		width: 34px;
+		height: 34px;
+		border-radius: 10px;
+		color: var(--muted);
+		font-size: 1.25rem;
+		transition: background 0.15s ease, color 0.15s ease;
+	}
+	.mnav-close:hover { background: var(--surface); color: var(--color-base-content); }
+
+	/* Glyph — ô vuông bo góc gradient a→b nhạt (như tile svc-node-builder) */
+	.mnav-glyph {
+		display: grid;
+		place-items: center;
+		flex-shrink: 0;
+		width: 34px;
+		height: 34px;
+		border-radius: 11px;
+		background: linear-gradient(135deg, color-mix(in oklab, var(--a) 18%, transparent), color-mix(in oklab, var(--b) 18%, transparent));
+		font-size: 0.72rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.02em;
+	}
+	.mnav-glyph iconify-icon { font-size: 1.1rem; }
+	.mnav-glyph.is-lg { width: 40px; height: 40px; border-radius: 12px; }
+	.mnav-glyph.is-lg iconify-icon { font-size: 1.25rem; }
+	.mnav-glyph.is-sm { width: 26px; height: 26px; border-radius: 8px; font-size: 0.62rem; }
+	.mnav-glyph.is-sm iconify-icon { font-size: 0.9rem; }
+
+	.mnav-scroll { overflow-y: auto; overscroll-behavior: contain; padding: 6px; scrollbar-width: thin; }
+	.mnav-list, .mnav-sub { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; }
+	.mnav-sub { margin: 2px 0 4px 26px; padding-left: 8px; border-left: 1px solid var(--line); }
+
+	.mnav-item {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		min-height: 48px;
+		padding: 6px 8px;
+		border-radius: 14px;
+		color: color-mix(in oklab, var(--color-base-content) 85%, transparent);
+		transition: background 0.15s ease, transform 0.15s ease;
+	}
+	.mnav-item.is-sm { min-height: 38px; gap: 10px; border-radius: 11px; }
+	.mnav-item[href]:hover { background: var(--surface); color: var(--color-base-content); }
+	.mnav-item[href]:active { transform: scale(0.985); }
+	.mnav-item.is-off { opacity: 0.55; }
+	.mnav-item:focus-visible { outline: none; box-shadow: 0 0 0 2px color-mix(in oklab, var(--a) 50%, transparent); }
+	.mnav-text { flex: 1; min-width: 0; font-size: 0.92rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+	.mnav-item.is-sm .mnav-text { font-size: 0.85rem; font-weight: 550; }
+	.mnav-go { flex-shrink: 0; font-size: 1.15rem; color: var(--muted); transition: transform 0.15s ease; }
+	.mnav-item[href]:hover .mnav-go { transform: translateX(2px); }
+
+	/* Mục đang mở: nền a nhạt + chấm gradient (cùng ý chấm của menu desktop .menu-minimal) */
+	.mnav-item.is-active { background: color-mix(in oklab, var(--a) 12%, transparent); color: var(--color-base-content); }
+	.mnav-item.is-active .mnav-go { display: none; }
+	.mnav-item.is-active::after {
+		content: '';
+		flex-shrink: 0;
+		width: 6px;
+		height: 6px;
+		margin-right: 6px;
+		border-radius: 999px;
+		background: linear-gradient(135deg, var(--a), var(--b));
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.mnav-sheet, .mnav-scrim, .mobile-nav-dialog { transition: none !important; }
 	}
 </style>
 
 <script>
 	document.addEventListener("astro:page-load", () => {
+		// --- THANH ĐÁY CUỘN NGANG ---
+		// Mờ mép theo vị trí cuộn + đưa mục đang mở vào giữa tầm nhìn (vd mục cuối trên màn hẹp).
+		document.querySelectorAll<HTMLElement>('.mnav-bar').forEach(bar => {
+			const fade = () => {
+				const max = bar.scrollWidth - bar.clientWidth;
+				bar.toggleAttribute('data-fade-l', bar.scrollLeft > 4);
+				bar.toggleAttribute('data-fade-r', max - bar.scrollLeft > 4);
+			};
+			const on = bar.querySelector<HTMLElement>('.is-active')?.closest<HTMLElement>('.snap-start');
+			if (on && bar.scrollWidth > bar.clientWidth) {
+				bar.scrollLeft = on.offsetLeft - (bar.clientWidth - on.offsetWidth) / 2;
+			}
+			fade();
+			bar.addEventListener('scroll', fade, { passive: true });
+			new ResizeObserver(fade).observe(bar);
+
+			// Chuột desktop: lăn bánh xe dọc → cuộn ngang; nhấn giữ + kéo → cuộn. Trong lúc cuộn tạm tắt snap (touchpad
+			// gửi delta vài px, snap-mandatory sẽ kéo ngược về ô cũ), bật lại khi dừng để thanh dừng đúng mép ô.
+			let snapTimer = 0;
+			const pauseSnap = () => {
+				bar.style.scrollSnapType = 'none';
+				clearTimeout(snapTimer);
+				snapTimer = window.setTimeout(() => { bar.style.scrollSnapType = ''; }, 160);
+			};
+
+			bar.addEventListener('wheel', (e) => {
+				const max = bar.scrollWidth - bar.clientWidth;
+				if (max <= 0 || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return; // không tràn / đã là cuộn ngang
+				const left = bar.scrollLeft;
+				if ((e.deltaY < 0 && left <= 0) || (e.deltaY > 0 && left >= max)) return; // tới mép — để trang tự cuộn
+				e.preventDefault();
+				pauseSnap();
+				bar.scrollLeft = left + (e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY); // deltaMode 1 = theo dòng (Firefox)
+			}, { passive: false });
+
+			let dragX = 0, dragLeft = 0, dragged = false, dragId = -1;
+			bar.addEventListener('pointerdown', (e) => {
+				if (e.pointerType !== 'mouse' || e.button !== 0 || bar.scrollWidth <= bar.clientWidth) return;
+				dragId = e.pointerId; dragX = e.clientX; dragLeft = bar.scrollLeft; dragged = false;
+			});
+			bar.addEventListener('pointermove', (e) => {
+				if (e.pointerId !== dragId) return;
+				const dx = e.clientX - dragX;
+				if (!dragged && Math.abs(dx) < 5) return; // ngưỡng nhỏ: click thường vẫn là click
+				if (!dragged) { dragged = true; bar.setPointerCapture(dragId); bar.style.cursor = 'grabbing'; }
+				pauseSnap();
+				bar.scrollLeft = dragLeft - dx;
+			});
+			const endDrag = (e: PointerEvent) => {
+				if (e.pointerId !== dragId) return;
+				dragId = -1;
+				bar.style.cursor = '';
+				if (bar.hasPointerCapture(e.pointerId)) bar.releasePointerCapture(e.pointerId);
+			};
+			bar.addEventListener('pointerup', endDrag);
+			bar.addEventListener('pointercancel', endDrag);
+			// Vừa kéo xong thì nuốt cú click (không điều hướng / không mở sheet ngoài ý muốn); kéo ảnh/link mặc định cũng tắt.
+			bar.addEventListener('click', (e) => {
+				if (!dragged) return;
+				dragged = false;
+				e.preventDefault();
+				e.stopPropagation();
+			}, true);
+			bar.addEventListener('dragstart', (e) => e.preventDefault());
+		});
+
 		document.querySelectorAll<HTMLDialogElement>('dialog.mobile-nav-dialog').forEach(dialog => {
-			const content = dialog.querySelector('.glass') as HTMLElement;
+			const content = dialog.querySelector('.mnav-sheet') as HTMLElement;
 			const handle = dialog.querySelector('.dragdown') as HTMLElement;
-			const scroll = dialog.querySelector('.overflow-y-auto') as HTMLElement;
+			const scroll = dialog.querySelector('.mnav-scroll') as HTMLElement;
 			if (!content || !scroll) return;
 
 			let startY = 0, currentY = 0, dragging = false;
@@ -202,16 +405,18 @@ const isActive = (href: string | undefined) => {
 		});
 
 		// --- ĐÓNG TỰ ĐỘNG KHỎI MOBILE VIEW ---
-		// Viết listener độc lập một lần để tránh attach dư thừa cho mỗi map loop
+		// Viết listener độc lập một lần để tránh attach dư thừa cho mỗi map loop.
+		// Đóng sheet khi thanh mobile bị ẩn (lg:hidden với type top/bottom/side; type mobile thì không bao giờ ẩn)
+		// — không dùng mốc px cứng để khớp đúng breakpoint của Nav/Base.astro.
 		const onResizeDesktop = () => {
-			if (window.innerWidth >= 768) {
-				document.querySelectorAll<HTMLDialogElement>('dialog.mobile-nav-dialog[open]').forEach(d => {
-					d.close();
-					const content = d.querySelector('.glass') as HTMLElement;
-					if (content) content.style.cssText = 'will-change: transform';
-					d.style.cssText = '';
-				});
-			}
+			document.querySelectorAll<HTMLDialogElement>('dialog.mobile-nav-dialog[open]').forEach(d => {
+				const trigger = document.querySelector(`[data-dialog-trigger="${d.id}"]`);
+				if (trigger && trigger.getClientRects().length > 0) return;
+				d.close();
+				const content = d.querySelector('.mnav-sheet') as HTMLElement;
+				if (content) content.style.cssText = 'will-change: transform';
+				d.style.cssText = '';
+			});
 		};
 		// Dẹp bỏ listener của phiên page-load trước (nếu có)
 		window.removeEventListener('resize', (window as any)._autoCloseNav);

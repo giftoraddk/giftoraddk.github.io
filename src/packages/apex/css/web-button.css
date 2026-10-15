@@ -1,0 +1,259 @@
+:host {
+	--core-height: var(--height-selector, 2.25rem);
+	--core-radius: var(--radius-selector, 0.5rem);
+	--core-font: var(--font-sans, 'system-ui');
+}
+
+.web-button {
+	font-family: var(--core-font);
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	font-weight: 600;
+	font-size: 1rem;
+	line-height: normal;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	cursor: pointer;
+	user-select: none;
+	border: 1px solid transparent;
+	overflow: hidden;
+	min-width: var(--core-height);
+	height: var(--core-height);
+	padding: 0 1rem;
+	outline: none;
+	box-sizing: border-box;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* outline:none ở trên tắt viền focus mặc định — trả lại cho bàn phím (không hiện khi bấm chuột). */
+.web-button:focus-visible {
+	outline: 2px solid var(--color-primary, currentColor);
+	outline-offset: 2px;
+}
+
+.web-button.web-square {
+	padding: 0;
+	aspect-ratio: 1 / 1;
+	width: var(--core-height);
+}
+
+.prefix-icon,
+.suffix-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	font-size: 1.2em;
+}
+
+/* Color Tokens mapping */
+.web-button.color-primary {
+	--btn-color: var(--color-primary, #34ace0);
+}
+.web-button.color-secondary {
+	--btn-color: var(--color-secondary, #706fd3);
+}
+.web-button.color-accent {
+	--btn-color: var(--color-accent, #a855f7);
+}
+.web-button.color-info {
+	--btn-color: var(--color-info, #00c7d4);
+}
+.web-button.color-warning {
+	--btn-color: var(--color-warning, #fbbf24);
+}
+.web-button.color-success {
+	--btn-color: var(--color-success, #2ebd85);
+}
+.web-button.color-error,
+.web-button.color-danger {
+	--btn-color: var(--color-error, #f5465c);
+}
+.web-button.color-base-content {
+	--btn-color: var(--color-base-content, #ffffff);
+}
+
+/* Modern Style (Default) */
+.web-button.modern {
+	border-radius: var(--core-radius);
+}
+
+/* Types */
+.web-button.type-fill {
+	background-color: var(--btn-color, var(--color-base-content, #333));
+	color: var(--color-base-100, #ffffff);
+}
+
+/* Special Case for base-content fill: needs dark text if bg is light */
+.web-button.type-fill.color-base-content {
+	color: var(--color-base-100, #0d0d0d);
+}
+
+.web-button.type-fill:hover:not(.loading):not(.disabled) {
+	filter: brightness(1.1);
+	box-shadow: 0 4px 15px color-mix(in oklab, var(--btn-color, var(--color-base-content)) 30%, transparent);
+}
+
+.web-button.type-outline {
+	background-color: transparent;
+	border-color: var(--btn-color, var(--color-base-content, #ffffff));
+	color: var(--btn-color, var(--color-base-content, #ffffff));
+}
+
+.web-button.type-outline:hover:not(.loading):not(.disabled) {
+	background-color: color-mix(in oklab, var(--btn-color, var(--color-base-content)) 8%, transparent);
+}
+
+.web-button.type-dash {
+	background-color: transparent;
+	border-color: var(--btn-color, var(--color-base-content, #ffffff));
+	border-style: dashed;
+	color: var(--btn-color, var(--color-base-content, #ffffff));
+}
+
+.web-button.type-dash:hover:not(.loading):not(.disabled) {
+	background-color: color-mix(in oklab, var(--btn-color, var(--color-base-content)) 8%, transparent);
+}
+
+.web-button.type-ghost {
+	background-color: transparent !important;
+	color: var(--btn-color, var(--color-base-content, #ffffff)) !important;
+	border-color: transparent !important;
+}
+
+.web-button.type-ghost:hover:not(.loading):not(.disabled) {
+	background-color: color-mix(in oklab, var(--btn-color, var(--color-base-content)) 8%, transparent) !important;
+}
+
+.web-button.type-soft {
+	background-color: color-mix(in oklab, var(--btn-color, var(--color-base-content)) 15%, transparent);
+	color: var(--btn-color, var(--color-base-content, #ffffff));
+	border-color: transparent;
+}
+
+.web-button.type-soft:hover:not(.loading):not(.disabled) {
+	background-color: color-mix(in oklab, var(--btn-color, var(--color-base-content)) 25%, transparent);
+}
+
+/* States */
+.web-button.disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+
+.web-button.loading {
+	cursor: wait;
+	color: transparent !important;
+}
+
+.web-button:active:not(.disabled):not(.loading) {
+	transform: scale(0.96) translateY(0);
+	box-shadow: none;
+}
+
+/* Loading Spinner — CSS thuần như web-steps.css: 1 phần tử, vòng border, cạnh dưới trong suốt → cung 3/4, xoay
+   bằng transform. Căn giữa bằng inset 0 + margin auto (KHÔNG translate(-50%) — transform đó sẽ bị animation
+   rotate đè). Cỡ theo --core-height, px chẵn để rơi đúng pixel theo chiều dọc: 36px → 16px · badge 18px → 8px;
+   độ dày px nguyên ≥ 2px. Trình duyệt chưa có round() → bản calc gần đúng. Màu đặt riêng vì chữ của nút đang
+   loading là transparent. */
+.loader {
+	--size: calc(var(--core-height) * .45);
+	--t: calc(var(--size) * .12);
+	position: absolute;
+	inset: 0;
+	margin: auto;
+	box-sizing: border-box;
+	width: var(--size);
+	height: var(--size);
+	border: max(2px, var(--t)) solid currentColor;
+	border-bottom-color: transparent;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+}
+
+@supports (width: round(1.5px, 1px)) {
+	.loader {
+		--size: round(calc(var(--core-height) * .45), 2px);
+		--t: round(calc(var(--size) * .12), 1px);
+	}
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.web-button.type-fill.loading .loader {
+	color: #ffffff;
+}
+
+.web-button:not(.type-fill).loading .loader {
+	color: var(--btn-color, #ffffff);
+}
+
+/* ── Pastel (token --pastel-* ở pastel.css) ─────────────────────────────── */
+/* fill: gradient tint a → b như nút chính của Node Builder; có color → gradient của chính màu đó (giữ nghĩa
+   success/error…). soft không màu: mặt xám nhạt (nút "Huỷ"); outline/dash: viền tint. */
+.pastel.web-button {
+	--btn-a: var(--pastel-a);
+	--btn-b: var(--pastel-b);
+	border-radius: var(--radius-selector);
+	color: var(--color-base-content);
+}
+.pastel.web-button[class*="color-"] {
+	--btn-a: var(--btn-color);
+	--btn-b: color-mix(in oklab, var(--btn-color) 62%, #ffffff);
+}
+.pastel.web-button.type-fill {
+	background: linear-gradient(110deg, var(--btn-a), var(--btn-b)) border-box;
+	border-color: transparent;
+	color: #ffffff;
+	box-shadow: none;
+}
+.pastel.web-button.type-fill:hover:not(.loading):not(.disabled) {
+	filter: brightness(1.06) saturate(1.05);
+	box-shadow: none;
+}
+.pastel.web-button.type-soft {
+	background: var(--pastel-surface);
+	color: var(--color-base-content);
+}
+.pastel.web-button.type-soft:hover:not(.loading):not(.disabled) {
+	background: var(--pastel-hover);
+}
+.pastel.web-button.type-soft[class*="color-"] {
+	background: color-mix(in oklab, var(--btn-color) 14%, transparent);
+	color: var(--btn-color);
+}
+.pastel.web-button.type-soft[class*="color-"]:hover:not(.loading):not(.disabled) {
+	background: color-mix(in oklab, var(--btn-color) 22%, transparent);
+}
+.pastel.web-button.type-outline,
+.pastel.web-button.type-dash {
+	border-color: color-mix(in oklab, var(--btn-a) 55%, transparent);
+	color: var(--btn-color, var(--color-base-content));
+}
+/* hover: glow 2 góc (kiểu --pastel-corner) theo màu CỦA NÚT (--btn-a / --btn-b), không lấy tint của layout — nút
+   success/error phủ tint xanh/tím của trang thành màu đục */
+.pastel.web-button.type-outline:hover:not(.loading):not(.disabled),
+.pastel.web-button.type-dash:hover:not(.loading):not(.disabled) {
+	background:
+		radial-gradient(260px 90px at 100% 0%, color-mix(in oklab, var(--btn-a) 16%, transparent), transparent 70%),
+		radial-gradient(220px 80px at 0% 0%, color-mix(in oklab, var(--btn-b) 12%, transparent), transparent 70%);
+	border-color: var(--btn-a);
+}
+.pastel.web-button.type-ghost:hover:not(.loading):not(.disabled) {
+	background-color: var(--pastel-hover) !important;
+}
+.pastel.web-button.type-ghost[class*="color-"]:hover:not(.loading):not(.disabled) {
+	background-color: color-mix(in oklab, var(--btn-color) 12%, transparent) !important;
+}
+.pastel.web-button:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 3px color-mix(in oklab, var(--btn-a) 22%, transparent);
+}
+.pastel.web-button.type-fill.loading .loader {
+	color: #ffffff;
+}

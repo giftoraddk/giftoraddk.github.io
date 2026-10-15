@@ -3,10 +3,10 @@ import Empty from '@/layouts/Empty.astro';
 ---
 
 <Empty
-	title="Shop — Đăng nhập"
+	title="Đăng nhập"
 	menu={{ type: 'mobile', menuItems: [] }}
 	noindex
 >
-	<script src='@/webs/auth/svc-login.js'></script>
-	<svc-login pathLink="/gift/" guestOk></svc-login>
+	<script src='@/packages/auth/svc-auth.js'></script>
+	<svc-auth pathLink="/" guestOk></svc-auth>
 </Empty>

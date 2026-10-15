@@ -1,0 +1,495 @@
+/* <svc-roles> — mobile first. Every breakpoint is a container query on the component itself (it lives in a
+   narrow svc-node panel as well as the full /admin screen — the viewport says nothing):
+     base     one card per row · table tabs scroll sideways · level chips wrap
+     ≥ 560    tabs + search on one row · cards 2 columns
+     ≥ 900    cards 3 columns
+   Surfaces are soft tints of base-content — no backdrop-filter (it re-blurs every frame over a live canvas). */
+:host {
+    display: block;
+    container: sr / inline-size;
+    --sr-surface: color-mix(in oklab, var(--color-base-content) 4%, transparent);
+    --sr-surface-2: color-mix(in oklab, var(--color-base-content) 8%, transparent);
+    --sr-line: color-mix(in oklab, var(--color-base-content) 9%, transparent);
+    --sr-muted: color-mix(in oklab, var(--color-base-content) 58%, transparent);
+    --sr-radius: 16px;
+    --sr-gutter: 0.9rem;
+    /* Sticky bar must stay opaque: in a svc-node panel take a little of both tints (like svc-records's list),
+       outside a node the tint vars are unset → plain base-100. */
+    --sr-sticky: color-mix(in oklab, var(--color-tint-a, var(--color-base-100)) 5%,
+                 color-mix(in oklab, var(--color-tint-b, var(--color-base-100)) 4%, var(--color-base-100)));
+}
+
+:host([fab]) { display: contents; }
+
+* { box-sizing: border-box; }
+
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+button:disabled { cursor: default; }
+button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+.sr {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0 var(--sr-gutter) var(--sr-gutter);
+    color: var(--color-base-content);
+    font-family: var(--font-sans, system-ui, sans-serif);
+}
+
+/* ── Head ───────────────────────────────────────────────────────────────── */
+
+.sr-head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding-top: var(--sr-gutter);
+}
+
+.sr-head-icon {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: color-mix(in oklab, var(--color-primary) 14%, transparent);
+    color: var(--color-primary);
+    font-size: 1.3rem;
+}
+
+.sr-head-title {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.sr-h1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.sr-muted { font-size: 0.82rem; color: var(--sr-muted); }
+
+.sr-icon-btn {
+    display: inline-grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    font-size: 1.2rem;
+}
+
+.sr-icon-btn:hover:not(:disabled) { background: var(--sr-surface-2); }
+.sr-icon-btn:disabled { opacity: 0.5; }
+
+/* ── Sticky bar: table tabs + search ────────────────────────────────────── */
+
+.sr-bar {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0 calc(-1 * var(--sr-gutter));
+    padding: 0.4rem var(--sr-gutter);
+    background: var(--sr-sticky);
+}
+
+.sr-tabs {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+}
+
+.sr-tabs::-webkit-scrollbar { display: none; }
+
+.sr-tab {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 36px;
+    padding: 0 0.9rem;
+    border-radius: 999px;
+    background: var(--sr-surface);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    scroll-snap-align: start;
+}
+
+.sr-tab:hover { background: var(--sr-surface-2); }
+
+.sr-tab[aria-selected='true'] {
+    background: var(--color-primary);
+    color: var(--color-base-100); /* not --color-primary-content: the themes set it = --color-primary */
+}
+
+.sr-tab.is-legacy:not([aria-selected='true']) { color: var(--color-warning); }
+
+.sr-tab-count {
+    min-width: 1.35rem;
+    padding: 0 0.35rem;
+    border-radius: 999px;
+    background: color-mix(in oklab, currentColor 16%, transparent);
+    font-size: 0.72rem;
+    line-height: 1.35rem;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.sr-search {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 40px;
+    padding: 0 0.85rem;
+    border: 1px solid var(--sr-line);
+    border-radius: 12px;
+    background: var(--sr-surface);
+    color: var(--sr-muted);
+}
+
+.sr-search:focus-within { border-color: var(--color-primary); }
+
+.sr-search input {
+    flex: 1;
+    min-width: 0;
+    height: 38px;
+    border: 0;
+    outline: 0;
+    background: none;
+    color: var(--color-base-content);
+    font: inherit;
+    font-size: 16px; /* ≥ 16px — iOS Safari zooms into smaller inputs */
+}
+
+/* ── Legend + bundle note ───────────────────────────────────────────────── */
+
+.sr-legend {
+    border-radius: 12px;
+    background: var(--sr-surface);
+    font-size: 0.85rem;
+}
+
+.sr-legend summary {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 40px;
+    padding: 0 0.85rem;
+    color: var(--sr-muted);
+    cursor: pointer;
+    list-style: none;
+}
+
+.sr-legend summary::-webkit-details-marker { display: none; }
+
+.sr-legend dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.35rem 0.75rem;
+    margin: 0;
+    padding: 0 0.85rem 0.75rem;
+}
+
+.sr-legend dt { font-weight: 600; }
+.sr-legend dd { margin: 0; color: var(--sr-muted); }
+
+.sr-bundle {
+    margin: -0.25rem 0 0;
+    font-size: 0.8rem;
+    color: var(--sr-muted);
+}
+
+.sr-bundle.is-legacy { color: var(--color-warning); }
+
+/* ── Notice / states ────────────────────────────────────────────────────── */
+
+.sr-notice {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.25rem 0.25rem 0.85rem;
+    border-radius: 12px;
+    background: color-mix(in oklab, var(--color-error) 12%, transparent);
+    color: var(--color-error);
+    font-size: 0.85rem;
+}
+
+.sr-notice span { flex: 1; min-width: 0; }
+
+.sr-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 2.5rem 1rem;
+    border-radius: var(--sr-radius);
+    background: var(--sr-surface);
+    color: var(--sr-muted);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.sr-state iconify-icon { font-size: 1.6rem; }
+.sr-state.is-error { color: var(--color-error); }
+
+.sr-retry {
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    background: var(--sr-surface-2);
+    color: var(--color-base-content);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* ── User cards ─────────────────────────────────────────────────────────── */
+
+.sr-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+}
+
+.sr-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 0;
+    padding: 0.85rem;
+    border: 1px solid var(--sr-line);
+    border-radius: var(--sr-radius);
+    background: var(--sr-surface);
+    transition: opacity 0.15s;
+}
+
+.sr-card[aria-busy='true'] { opacity: 0.7; }
+
+.sr-card-head {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-width: 0;
+}
+
+.sr-avatar {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    overflow: hidden;
+    border-radius: 50%;
+    background: color-mix(in oklab, var(--color-primary) 16%, transparent);
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+.sr-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.sr-who {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.sr-name, .sr-sub {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sr-name { font-size: 0.95rem; font-weight: 600; }
+.sr-sub  { font-size: 0.78rem; color: var(--sr-muted); }
+
+.sr-badge {
+    flex-shrink: 0;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--color-primary) 15%, transparent);
+    color: var(--color-primary);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.sr-saving { flex-shrink: 0; color: var(--color-primary); font-size: 1.1rem; }
+
+.sr-note {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--sr-muted);
+}
+
+/* Level chips — toggle buttons; an implied level (covered by another) lights up but can't be pressed alone */
+.sr-levels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.sr-level {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    min-height: 36px;
+    padding: 0 0.8rem;
+    border: 1px solid var(--sr-line);
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.sr-level:hover:not(:disabled) { background: var(--sr-surface-2); }
+
+.sr-level.is-on {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: var(--color-base-100);
+}
+
+.sr-level.is-on:hover:not(:disabled) { background: color-mix(in oklab, var(--color-primary) 85%, var(--color-base-content)); }
+
+.sr-level.is-implied {
+    border-color: color-mix(in oklab, var(--color-primary) 35%, transparent);
+    background: color-mix(in oklab, var(--color-primary) 12%, transparent);
+    color: var(--color-primary);
+}
+
+.sr-level:disabled:not(.is-implied) { opacity: 0.5; }
+
+.sr-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.6rem;
+}
+
+.sr-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--sr-muted);
+}
+
+.sr-seg {
+    display: inline-flex;
+    padding: 3px;
+    border-radius: 999px;
+    background: var(--sr-surface-2);
+}
+
+.sr-seg-btn {
+    min-height: 32px;
+    padding: 0 0.85rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--sr-muted);
+}
+
+.sr-seg-btn[aria-checked='true'] {
+    background: var(--color-base-100);
+    color: var(--color-base-content);
+    box-shadow: 0 1px 3px color-mix(in oklab, var(--color-base-content) 18%, transparent);
+}
+
+.sr-seg-btn:disabled { opacity: 0.5; }
+
+.sr-custom {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    margin-left: auto;
+    padding-left: 0.6rem;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--color-warning) 14%, transparent);
+    color: var(--color-warning);
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.sr-custom-x {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+}
+
+.sr-custom-x:hover:not(:disabled) { background: color-mix(in oklab, var(--color-warning) 18%, transparent); }
+
+.sr-spin { animation: sr-spin 0.9s linear infinite; }
+
+@keyframes sr-spin { to { transform: rotate(360deg); } }
+
+/* ── FAB mode (/admin) — floating button + full screen ──────────────────── */
+
+.sr-fab {
+    position: fixed;
+    right: 1rem;
+    bottom: calc(1rem + env(safe-area-inset-bottom));
+    z-index: 900;
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: var(--color-base-100);
+    font-size: 1.35rem;
+    box-shadow: 0 6px 20px color-mix(in oklab, var(--color-base-content) 28%, transparent);
+    transition: transform 0.15s;
+}
+
+.sr-fab:hover { transform: scale(1.06); }
+
+.sr-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 950;
+    container: sr / inline-size; /* :host is display:contents in fab mode — the screen is the container */
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: env(safe-area-inset-bottom);
+    background: var(--color-base-100);
+    animation: sr-in 0.18s ease;
+}
+
+.sr-screen .sr { max-width: 1200px; margin: 0 auto; }
+
+@keyframes sr-in {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sr-screen, .sr-spin { animation: none; }
+}
+
+/* ── Wider ──────────────────────────────────────────────────────────────── */
+
+@container sr (min-width: 560px) {
+    .sr-bar { flex-direction: row; align-items: center; }
+    .sr-tabs { flex: 1; min-width: 0; }
+    .sr-search { flex: 0 1 16rem; }
+    .sr-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@container sr (min-width: 900px) {
+    .sr { --sr-gutter: 1.25rem; }
+    .sr-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

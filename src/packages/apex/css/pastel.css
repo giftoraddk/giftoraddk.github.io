@@ -1,0 +1,29 @@
+/* ui="pastel" — token dùng chung cho mọi web-* (nạp trước CSS riêng của component: static styles = [pastel, ...]).
+   Cặp tint lấy từ chủ gần nhất: --color-tint-a/b (đặt tay, hoặc panel svc-node qua tool/tints.js) → layout
+   Core/CoreShop (--layout-tint-a/b) → primary/secondary.
+   - Nút hành động (button, toggle, checkbox, radio, tab active…): tô gradient tint a → b, chữ base-100.
+   - Ô nhập (text, textarea, select, expansion, currency, datetime, files…): nền --pastel-corner — glow 2 góc như header
+     web-table (ellipse cỡ px nên ô rộng vẫn nhạt), --pastel-corner-hi khi hover/focus; viền tint + vòng focus.
+   - Nút / chip / menu (breadcrumb, pagination, tags, mục menu…) cũng nền --pastel-corner — không dùng dải a → b phẳng. */
+:host {
+	--pastel-a: var(--color-tint-a, var(--layout-tint-a, var(--color-primary, #f5b335)));
+	--pastel-b: var(--color-tint-b, var(--layout-tint-b, var(--color-secondary, #e48aa6)));
+	--pastel-grad: linear-gradient(110deg, var(--pastel-a), var(--pastel-b));
+	--pastel-corner:
+		radial-gradient(260px 90px at 100% 0%, color-mix(in oklab, var(--pastel-a) 12%, transparent), transparent 70%),
+		radial-gradient(220px 80px at 0% 0%, color-mix(in oklab, var(--pastel-b) 10%, transparent), transparent 70%);
+	--pastel-corner-hi:
+		radial-gradient(260px 90px at 100% 0%, color-mix(in oklab, var(--pastel-a) 20%, transparent), transparent 70%),
+		radial-gradient(220px 80px at 0% 0%, color-mix(in oklab, var(--pastel-b) 16%, transparent), transparent 70%);
+	--pastel-ink: var(--color-base-100, #ffffff);
+	--pastel-surface: color-mix(in oklab, var(--color-base-content, #1f1f1f) 6%, transparent);
+	--pastel-hover: color-mix(in oklab, var(--color-base-content, #1f1f1f) 10%, transparent);
+	--pastel-muted: color-mix(in oklab, var(--color-base-content, #1f1f1f) 55%, transparent);
+	--pastel-line: color-mix(in oklab, var(--color-base-content, #1f1f1f) 11%, transparent);
+	--pastel-line-hi: color-mix(in oklab, var(--pastel-a) 45%, transparent);
+	--pastel-field: color-mix(in oklab, var(--color-base-100, #ffffff) 70%, transparent);
+	--pastel-pop: var(--color-base-100, #ffffff);
+	--pastel-ring: 0 0 0 3px color-mix(in oklab, var(--pastel-a) 20%, transparent);
+	--pastel-glow: 0 6px 18px -8px color-mix(in oklab, var(--pastel-b) 70%, transparent);
+	--pastel-shadow: 0 16px 40px -16px color-mix(in oklab, var(--pastel-a) 40%, rgb(0 0 0 / 0.25));
+}

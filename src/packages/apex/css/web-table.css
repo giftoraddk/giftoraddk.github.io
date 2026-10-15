@@ -1,0 +1,232 @@
+/* <web-table> — the <svc-list> look (auth/css/svc-list.css), read-only: one card, sticky lead column (thumb + title +
+   pill), the rest scrolls sideways. `tints` [a, b] → --wt-a / --wt-b: a soft two-corner glow on the header + the row
+   tint (a). No shadows; surfaces are mixed onto base-100 so the sticky cell stays opaque over what scrolls beneath. */
+:host {
+    display: block;
+    width: 100%;
+    --wt-a: var(--color-primary);
+    --wt-b: var(--color-secondary);
+    --wt-sticky: var(--color-base-100); /* surface behind the table — override when it isn't base-100 */
+    --wt-line: color-mix(in oklab, var(--color-base-content) 8%, transparent);
+    --wt-surface: color-mix(in oklab, var(--color-base-content) 5%, transparent);
+    --wt-muted: color-mix(in oklab, var(--color-base-content) 55%, transparent);
+    --wt-fade: color-mix(in oklab, var(--color-base-content) 6%, transparent),
+               color-mix(in oklab, var(--color-base-content) 2%, transparent) 40%, transparent;
+}
+
+* { box-sizing: border-box; }
+
+.wt {
+    overflow: clip; /* rounds the row fills + sticky cells at the corners */
+    border: 1px solid var(--wt-line);
+    border-radius: 16px;
+    background: var(--wt-sticky);
+    color: var(--color-base-content);
+    font-family: var(--font-sans, system-ui, sans-serif);
+}
+
+.wt-scroll {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+}
+
+.wt-row {
+    --wt-tint: 0%; /* a mixed into this row: 0 plain, alternate rows / hover more */
+    --wt-row-solid: color-mix(in oklab, var(--wt-a) var(--wt-tint), var(--wt-sticky));
+    display: grid;
+    grid-template-columns: var(--wt-cols);
+    align-items: stretch;
+    width: max(100%, var(--wt-min));
+    min-height: 66px;
+    background: color-mix(in oklab, var(--wt-a) var(--wt-tint), transparent);
+    cursor: pointer;
+    transition: background 0.12s;
+}
+
+.wt-row + .wt-row { border-top: 1px solid var(--wt-line); }
+.wt-row.is-alt { --wt-tint: 5%; }
+.wt-row:not(.wt-head):hover { --wt-tint: 9%; }
+.wt-row:focus-visible { outline: 2px solid var(--wt-a); outline-offset: -2px; }
+
+.wt-cell {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.15rem;
+    min-width: 0;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.92rem;
+    font-variant-numeric: tabular-nums;
+}
+
+/* text-align (inline, from the column) → flex alignment of the stacked lines */
+.wt-cell[style*='text-align:right'] { align-items: flex-end; }
+.wt-cell[style*='text-align:center'] { align-items: center; }
+
+.wt-val { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wt-dim { color: color-mix(in oklab, var(--color-base-content) 30%, transparent); }
+
+/* Lead column — sticky; opaque + edge shadow only while columns slide under it */
+.wt-lead {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    flex-direction: row;
+    align-items: center !important;
+    justify-content: flex-start;
+    gap: 0.7rem;
+    padding-left: 0.85rem;
+    transition: background 0.2s ease;
+}
+
+.is-scrolled .wt-lead { background: var(--wt-row-solid); }
+
+.wt-lead::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 100%;
+    width: 14px;
+    pointer-events: none;
+    opacity: 0;
+    background: linear-gradient(to right, var(--wt-fade));
+    transition: opacity 0.2s ease;
+}
+
+.is-scrolled .wt-lead::after { opacity: 1; }
+
+.wt-lead-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+    min-width: 0;
+}
+
+.wt-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-weight: 600;
+    font-size: 0.93rem;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+.wt-thumb {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    object-fit: cover;
+    background: var(--wt-surface);
+    box-shadow: inset 0 0 0 1px var(--wt-line);
+}
+
+/* No image → the title's two initials, tinted by a stable per-title tone */
+.wt-thumb.is-initials {
+    background: color-mix(in oklab, var(--tone) 15%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--tone) 24%, transparent);
+    color: color-mix(in oklab, var(--tone) 85%, var(--color-base-content));
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    user-select: none;
+}
+
+/* Status pill — tone from opts[].tone, else by option order */
+.wt-pill {
+    --tone: var(--wt-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    max-width: 100%;
+    padding: 0.1rem 0.55rem 0.1rem 0.45rem;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--tone) 13%, transparent);
+    color: color-mix(in oklab, var(--tone) 82%, var(--color-base-content));
+    font-size: 0.74rem;
+    font-weight: 600;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+
+.wt-pill::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--tone);
+}
+
+/* Tones — shared by the pill and the initials thumb */
+[data-tone='success']   { --tone: var(--color-success); }
+[data-tone='error']     { --tone: var(--color-error); }
+[data-tone='warning']   { --tone: var(--color-warning); }
+[data-tone='info']      { --tone: var(--color-info); }
+[data-tone='accent']    { --tone: var(--color-accent); }
+[data-tone='secondary'] { --tone: var(--color-secondary); }
+[data-tone='primary']   { --tone: var(--color-primary); }
+
+/* Header row — the tints glow lives here (px-sized, so wide tables stay soft) */
+.wt-head {
+    min-height: 44px;
+    border-bottom: 1px solid var(--wt-line);
+    cursor: default;
+    background:
+        radial-gradient(260px 90px at 100% 0%, color-mix(in oklab, var(--wt-a) 12%, transparent), transparent 70%),
+        radial-gradient(220px 80px at 0% 0%, color-mix(in oklab, var(--wt-b) 10%, transparent), transparent 70%);
+}
+
+.wt-head .wt-cell {
+    gap: 0.05rem;
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--wt-muted);
+    user-select: none;
+}
+
+.wt-head .wt-lead { flex-direction: column; align-items: flex-start !important; justify-content: center; }
+.wt-head .wt-cell.is-sortable { cursor: pointer; }
+.wt-head .wt-cell.is-sortable:hover,
+.wt-head .wt-cell.is-sorted { color: var(--color-base-content); }
+.wt-head .wt-cell:focus-visible { outline: 2px solid var(--wt-a); outline-offset: -2px; }
+
+.wt-head-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    max-width: 100%;
+    white-space: nowrap;
+}
+
+.wt-head-hint { font-size: 0.72rem; font-weight: 400; letter-spacing: 0; text-transform: none; }
+
+.wt-sort { flex-shrink: 0; font-size: 0.85rem; opacity: 0.45; }
+.is-sorted .wt-sort { opacity: 1; color: var(--wt-a); }
+
+.wt-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 2.5rem 1rem;
+    text-align: center;
+    color: var(--wt-muted);
+}
+
+.wt-empty iconify-icon { font-size: 2rem; opacity: 0.6; }
+
+@media (prefers-reduced-motion: reduce) {
+    .wt-row, .wt-lead, .wt-lead::after { transition: none; }
+}

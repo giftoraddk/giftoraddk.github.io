@@ -1,11 +1,13 @@
 ---
 import Core from '@/layouts/Core.astro';
-import PostDetailBody from '@/components/Common/PostDetail.astro';
-import { fetchCollection } from '@/services/firestore.server.ts';
-import { postSlug, pickLang } from '@/services/helper.js';
-import { menuItems, policies, socials } from '@/modules/landing/home.js';
+import { KINDS } from '@/components/Catalog/kinds';
+import PostDetailBody from '@/components/Catalog/Detail.astro';
+import { fetchCollection } from '@/services/core/fetcher.server.js';
+import { postSlug, pickLang } from '@/services/tools/util';
+import { menuItems, policies, socials } from '@/modules/gift/shop.js'; // footer chung giftoraddk.com
+import { menu as postMenu, tints } from '@/modules/post/index.js';
 
-// Trang chi tiết bài viết — biến thể SSG (mặc định). Nội dung thật nằm trong PostDetailBody.astro
+// Trang chi tiết bài viết — biến thể SSG (mặc định). Nội dung thật nằm trong components/Catalog/Detail.astro
 // (dùng chung với biến thể ISR ở src/pages/post/_render-modes/[slug].isr.astro, xem
 // astro.config.mjs renderModeIntegration — PUBLIC_RENDER=isr swap file này lúc build).
 //
@@ -25,10 +27,11 @@ const { post, allPosts } = Astro.props as { post: any; allPosts: any[] };
 const pics = (post.pics || '').split('|').filter(Boolean);
 const heroImg = pics[0] || '';
 const description = post.description || String(post.content || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().slice(0, 160) || '';
+const tags = String(post.tags || '').split('|').map((t: string) => t.trim()).filter(Boolean);
 const pageTitle = post.title || pickLang({ en: 'Post', vi: 'Bài viết' });
-const bg = { blur: true, gradient: true, tint: "#00c7d4", total: 3, blobType: "circleOverlap", blobMove: 'swap', deg: 180 };
+const bg = null;
 ---
 
-<Core title={pageTitle} description={description} image={heroImg} articleDate={post.created_at} footer={{ columns: menuItems, policies, socials, bg }}>
-	<PostDetailBody post={post} allPosts={allPosts} />
+<Core menu={postMenu} tints={tints} title={pageTitle} description={description} image={heroImg} articleDate={post.created_at} articleModified={post.updated_at} articleTags={tags} footer={{ columns: menuItems, policies, socials, bg }}>
+	<PostDetailBody kind={KINDS.post} item={post} allItems={allPosts} />
 </Core>

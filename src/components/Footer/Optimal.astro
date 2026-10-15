@@ -1,12 +1,12 @@
 ---
 import "iconify-icon";
-// import { site } from '@/services/constants/site'
+// import { site } from '@/services/tools/site'
 import I18nText from '@/components/I18nText.astro'
 
 const today = new Date()
 
 const {
-	logo = '/logo.png',
+	logo = '/logo.avif',
 	columns = [],
 	policies = [],
 	socials = [], // [{ icon, href, text }] — icon là tên iconify (vd: ri:facebook-fill)
@@ -19,7 +19,7 @@ const {
 <footer class='relative w-full border-t border-base-content/10'>
   {bg && (
     <>
-      <script src="@/webs/underlay/svc-underlay.js"></script>
+      <script src="@/packages/adopted/svc-underlay.js"></script>
       <svc-underlay id="footer-bg" class="-mt-1" transition:persist="footer-bg" {...bg}></svc-underlay>
     </>
   )}
@@ -79,9 +79,9 @@ const {
 						<div class:list={['flex flex-col gap-2', col.full && 'col-span-full order-first lg:order-none']}>
 							<p class='text-xs font-semibold uppercase tracking-widest text-base-content/70'><I18nText text={col.text} /></p>
 							<ul class='flex flex-col gap-0.5'>
-								{col.items.map((link: { text: string; href: string }) => (
+								{col.items.map((link: { text: string; href: string; target?: string }) => (
 									<li>
-										<a href={link.href} class='text-sm text-justify text-base-content/70 hover:text-base-content transition-colors no-underline'>
+										<a href={link.href} target={link.target} rel={link.target === '_blank' ? 'noopener' : undefined} class='text-sm text-justify text-base-content/70 hover:text-base-content transition-colors no-underline'>
 											<I18nText text={link.text} />
 										</a>
 									</li>

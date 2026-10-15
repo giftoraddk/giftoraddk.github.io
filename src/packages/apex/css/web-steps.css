@@ -1,0 +1,341 @@
+:host {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    --step-color:  var(--color-primary, #34ace0);
+    --step-error:  var(--color-error, #f5465c);
+    --step-muted:  color-mix(in oklab, var(--color-base-content, #fff) 35%, transparent);
+    --core-font:   var(--font-sans, system-ui);
+    --step-line-gap: 6px;   /* khoảng hở giữa line và circle */
+}
+
+/* web-steps lồng trong web-steps khác (xem `nested` ở web-steps.js) — width auto để margin không tràn.
+   `outer-narrow` = web-steps cha rộng <= 640px (đo component, không đo viewport). */
+:host([nested]) {
+    width: auto;
+    margin: 1rem .25rem;
+}
+:host([nested][outer-narrow]) { margin: .75rem 0; }
+
+/* ── Size variants ────────────────────────────────────────────────────────── */
+
+.web-steps.size-sm { --step-circle-size: 20px; --step-num-font: 0.75rem; --step-label-font: clamp(0.65rem, 0.8vw, 0.75rem);   --step-icon-size: 1.5rem;  --step-line-h: 2px; }
+.web-steps.size-md { --step-circle-size: 28px; --step-num-font: 0.85rem; --step-label-font: clamp(0.875rem, 1.1vw, 1rem);  --step-icon-size: 2rem;    --step-line-h: 3px; }
+.web-steps.size-lg { --step-circle-size: 36px; --step-num-font: 1rem; --step-label-font: clamp(1rem, 1.2vw, 1.25rem);     --step-icon-size: 2.25rem; --step-line-h: 3px; }
+.web-steps.size-xl { --step-circle-size: 45px; --step-num-font: 1.25rem; --step-label-font: clamp(1.25rem, 1.5vw, 1.5rem);      --step-icon-size: 2.75rem; --step-line-h: 4px; }
+
+.web-steps {
+    font-family: var(--core-font);
+    width: 100%;
+}
+
+/* ── Grid layout ─────────────────────────────────────────────────────────── */
+
+/* Renamed from .steps-grid — this is just the head bar (circles/lines/labels), so a consumer
+   page can add `position: sticky; top: 0` on it while `.steps-content` scrolls underneath. */
+.steps-head {
+    display: grid;
+    /* grid-template-columns set inline */
+    align-items: center;
+    width: 100%;
+}
+
+.web-steps.steps-vertical .steps-head {
+    align-items: stretch;
+    margin-bottom: 0;
+    column-gap: .5rem;
+}
+
+/* ── Icon row ─────────────────────────────────────────────────────────────── */
+
+.icon-cell {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    padding-bottom: 0.5rem;
+}
+
+.step-icon {
+    font-size: var(--step-icon-size, 2rem);
+    transition: color 0.3s;
+    color: var(--step-muted);
+}
+
+.step-icon.done,
+.step-icon.active,
+.step-icon.open { color: var(--step-color); }
+.step-icon.error  { color: var(--step-error); }
+
+/* ── Circle row ───────────────────────────────────────────────────────────── */
+
+.circle-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.step-circle {
+    width: var(--step-circle-size, 28px);
+    height: var(--step-circle-size, 28px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--step-num-font, 13px);
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    flex-shrink: 0;
+    transition: background 0.3s, box-shadow 0.3s;
+    position: relative;
+    z-index: 1;
+    background-color: color-mix(in oklab, var(--color-base-content, #000) 5%, transparent);
+    border: 1px solid color-mix(in oklab, var(--color-base-content, #000) 10%, transparent);
+    color: var(--step-muted);
+}
+
+.step-circle.done {
+    background: var(--step-color);
+    border-color: var(--step-color);
+    color: #fff;
+}
+
+.step-circle.active {
+    background: color-mix(in oklab, var(--step-color) 10%, transparent);
+    border: 2px solid var(--step-color);
+    color: var(--step-color);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--step-color) 18%, transparent);
+}
+
+/* 'open' — tới lượt, chờ người tự làm: viền như active, không bóng nhịp, không loader */
+.step-circle.open {
+    background: color-mix(in oklab, var(--step-color) 10%, transparent);
+    border: 1px dashed var(--step-color);
+    color: var(--step-color);
+}
+
+.step-circle.error {
+    background: var(--step-error);
+    border-color: var(--step-error);
+    color: #fff;
+}
+
+.step-circle iconify-icon { display: flex;font-size: calc(var(--step-icon-size) * 0.65); }
+
+/* linear mode: step 'pending' chưa tới lượt — không cho bấm tới, đổi con trỏ để phản ánh đúng */
+.web-steps.steps-linear .step-circle:not(.done):not(.active):not(.error):not(.open),
+.web-steps.steps-linear .step-label:not(.done):not(.active):not(.error):not(.open) {
+    cursor: not-allowed;
+}
+
+/* ── Line ─────────────────────────────────────────────────────────────────── */
+
+.line-cell {
+    display: flex;
+    align-items: center;
+}
+
+.step-line {
+    width: 100%;
+    height: var(--step-line-h, 2px);
+    background: color-mix(in oklab, var(--color-base-content, #000) 15%, transparent);
+    border-radius: 999px;
+    transition: background 0.3s;
+}
+
+.step-line.done { background: var(--step-color); }
+
+/* Cột step rộng theo label (auto) nên circle nằm giữa sẽ hở 2 bên — 2 đoạn "cánh" (flex:1 đều nhau,
+   circle vẫn ở giữa) nối line-cell tới cách circle đúng --step-line-gap. Line ngang = 3 đoạn ghép
+   (cánh phải step i + line-cell + cánh trái step i+1) nên chỉ bo 2 đầu ngoài cùng, chỗ nối để vuông. */
+.circle-cell { gap: var(--step-line-gap); }
+.circle-cell .step-line.edge { flex: 1 1 0; width: auto; }
+.circle-cell .step-line.none { visibility: hidden; }
+/* step đầu/cuối: bỏ hẳn cánh ngoài (không chỉ ẩn) để circle dạt sát mép, icon/label căn theo */
+.circle-cell.pos-start .step-line.none,
+.circle-cell.pos-end .step-line.none { display: none; }
+.icon-cell.pos-start, .label-cell.pos-start { justify-content: flex-start; text-align: left; }
+.icon-cell.pos-end,   .label-cell.pos-end   { justify-content: flex-end;   text-align: right; }
+.line-cell .step-line { border-radius: 0; }
+.circle-cell .step-line.edge:first-child { border-radius: 0 999px 999px 0; }
+.circle-cell .step-line.edge:last-child  { border-radius: 999px 0 0 999px; }
+
+/* ── Label row ─────────────────────────────────────────────────────────────── */
+
+.label-cell {
+    display: flex;
+    justify-content: center;
+    padding-top: 0.4rem;
+    text-align: center;
+}
+
+.step-label {
+    font-size: var(--step-label-font, clamp(0.75rem, 0.9vw, 0.875rem));
+    font-weight: 500;
+    color: var(--step-muted);
+    white-space: nowrap;
+    transition: color 0.3s;
+}
+
+.step-label.done,
+.step-label.active,
+.step-label.open {
+    color: var(--step-color);
+    font-weight: 600;
+}
+
+.step-label.error { color: var(--step-error); }
+
+/* ── Loader (step 'active') ───────────────────────────────────────────────── */
+
+/* 1 phần tử, CSS thuần: vòng border 4 cạnh, cạnh dưới trong suốt → cung 3/4, xoay bằng transform (chạy trên
+   compositor, không repaint). Màu = currentColor (màu chữ của .step-circle.active).
+   Cỡ theo --step-circle-size (= ô nội dung của .step-circle — content-box) trừ 2 lề px NGUYÊN → loader cùng chẵn/lẻ
+   với vòng nên flex căn giữa rơi đúng pixel (cỡ theo em ra số lẻ ~15.4px → lệch nửa pixel, lộ rõ khi xoay).
+   Độ dày cũng px nguyên (≥ 2px) cho viền sắc: sm 12/2 · md 16/2 · lg 22/3 · xl 27/3 (px). Trình duyệt chưa có
+   round() → bản calc gần đúng ở dưới. */
+.loader {
+    --size: calc(var(--step-circle-size, 28px) * .6);
+    --t: calc(var(--size) * .12);
+    display: inline-block;
+    flex: none;
+    box-sizing: border-box;
+    width: var(--size);
+    height: var(--size);
+    border: max(2px, var(--t)) solid currentColor;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@supports (width: round(1.5px, 1px)) {
+    .loader {
+        --size: calc(var(--step-circle-size, 28px) - 2 * round(calc(var(--step-circle-size, 28px) * .2), 1px));
+        --t: round(calc(var(--size) * .12), 1px);
+    }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Content panels ───────────────────────────────────────────────────────── */
+
+.steps-content { width: 100%; }
+
+.step-panel { display: none; }
+
+.step-panel.active {
+    display: block;
+    animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0);   }
+}
+
+/* ── Vertical timeline ────────────────────────────────────────────────────── */
+/* Same .steps-head grid as horizontal — marker-cell/content-cell just replace icon/circle/label
+   cells, one column-pair (marker | content) shared by every step, one shared row per step.
+   marker-cell and content-cell sit in the SAME row, so the grid stretches marker-cell to match
+   content-cell's height and its internal line (flex: 1) fills that exact height — no seam,
+   regardless of whether that step's content is collapsed or expanded. */
+
+.marker-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--step-line-gap);
+}
+
+.marker-cell .step-line.vertical {
+    width: var(--step-line-h, 2px);
+    flex: 1 1 auto;
+    min-height: 1rem;
+    margin-bottom: var(--step-line-gap);   /* hở trước circle của step kế (row kế bắt đầu ngay circle) */
+}
+
+.content-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding-bottom: 1.25rem;
+    text-align: left;
+}
+
+.steps-vertical .step-label {
+    line-height: 1.1;
+    white-space: normal;
+    text-align: left;
+    font-size: clamp(0.875rem, 1.1vw, 1rem);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Only the active step's content expands — like a tab panel, but inline next to its own marker. */
+.step-content {
+    display: none;
+    line-height: 1.65;
+}
+
+.step-content.active {
+    display: block;
+    animation: fadeIn 0.25s ease;
+}
+
+.step-content ::slotted(*) {
+    margin: 0;
+}
+
+/* ── Pastel (token --pastel-* ở pastel.css) ─────────────────────────────── */
+/* Bước xong: tròn gradient tint a → b, chữ trắng · bước đang chạy: nền trắng, viền gradient + vòng sáng nhạt, loader
+   màu tint a · chưa tới: nền xám nhạt · line đã qua: màu giữa a/b (line ngang ghép 3 đoạn nên không chạy gradient
+   riêng từng đoạn) · nội dung step đang mở: thẻ nền --pastel-corner. Lỗi vẫn theo --step-error. */
+.pastel.web-steps {
+    --step-color: var(--pastel-a);
+    --step-mid:   color-mix(in oklab, var(--pastel-a), var(--pastel-b));
+    --step-ink:   color-mix(in oklab, var(--pastel-a) 72%, var(--color-base-content, #1f1f1f));
+}
+
+.pastel .step-circle {
+    background: var(--pastel-surface);
+    border: 1px solid var(--pastel-line);
+}
+.pastel .step-circle.done {
+    background: var(--pastel-grad) border-box;
+    border-color: transparent;
+    color: #ffffff;
+}
+.pastel .step-circle.active {
+    background:
+        linear-gradient(var(--pastel-pop), var(--pastel-pop)) padding-box,
+        var(--pastel-grad) border-box;
+    border: 2px solid transparent;
+    color: var(--pastel-a);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--pastel-a) 14%, transparent);
+}
+.pastel .step-circle.open {
+    background: var(--pastel-pop);
+    border: 1px dashed var(--pastel-a);
+    color: var(--pastel-a);
+}
+.pastel .step-circle.error {
+    background: var(--step-error);
+    border-color: transparent;
+}
+.pastel .step-circle:focus-visible {
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--pastel-a) 24%, transparent);
+}
+
+.pastel .step-line { background: var(--pastel-line); }
+.pastel .step-line.done { background: var(--step-mid); }
+
+.pastel .step-icon.done,
+.pastel .step-icon.active,
+.pastel .step-icon.open { color: var(--step-mid); }
+
+.pastel .step-label.done,
+.pastel .step-label.active,
+.pastel .step-label.open { color: var(--step-ink); }
+.pastel .step-label.error { color: var(--step-error); }
+.pastel .step-panel.active { margin-top: 1rem; }
+.pastel.steps-vertical .step-content.active { margin-top: 0.15rem; }

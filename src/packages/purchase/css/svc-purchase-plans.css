@@ -1,0 +1,260 @@
+:host {
+    display: block;
+    width: 100%;
+    color: var(--color-base-content);
+    --pp-muted: color-mix(in oklab, var(--color-base-content) 60%, transparent);
+    --pp-line: color-mix(in oklab, var(--color-base-content) 10%, transparent);
+}
+
+.pp-wrap { display: flex; flex-direction: column; gap: 32px; }
+
+.pp-head { text-align: center; }
+.pp-heading { margin: 0; font-size: 1.35rem; font-weight: 600; }
+.pp-sub { margin: 6px 0 0; font-size: 0.875rem; color: var(--pp-muted); }
+
+/* ── Monthly / Yearly — one tab over every card (as on the /system pricing section) ── */
+.pp-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 999px;
+    border: 1px solid var(--pp-line);
+    background: color-mix(in oklab, var(--color-base-content) 5%, transparent);
+    width: fit-content;
+    max-width: 100%;
+    margin: -12px auto 0;
+}
+
+.pp-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 38px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--pp-muted);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.pp-tab:hover { color: var(--color-base-content); }
+.pp-tab:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+.pp-tab.is-active {
+    color: white;
+    background: linear-gradient(100deg, var(--color-warning), var(--color-secondary));
+    text-shadow: 0 1px 2px color-mix(in oklab, black 30%, transparent);
+}
+
+.pp-tab-save {
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: color-mix(in oklab, var(--color-success) 18%, transparent);
+    color: var(--color-success);
+    text-shadow: none;
+}
+
+.pp-tab.is-active .pp-tab-save { background: color-mix(in oklab, white 25%, transparent); color: white; }
+
+/* Horizontal slider, 1.5 cards in view. Each slide wraps its card so the track's overflow:hidden
+   doesn't clip the card's glow shadow; the slider sets the wrapper's width. */
+.pp-slide {
+    display: flex;
+    padding-bottom: 28px;
+}
+
+.pp-slide > .pp-card { flex: 1; }
+
+/* ── Card ──────────────────────────────────────────────────────────────────
+   --pp-a / --pp-b come inline per plan (theme color names, see PLAN_TINTS). */
+.pp-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border-radius: 24px;
+    overflow: hidden;
+    isolation: isolate;
+    background: linear-gradient(180deg, color-mix(in oklab, var(--pp-a) 12%, var(--color-base-100)) 0%, var(--color-base-100) 70%);
+    border: 1px solid var(--pp-line);
+    box-shadow: 0 18px 40px -18px color-mix(in oklab, var(--pp-b) 45%, transparent);
+}
+
+.pp-card.is-current { border-color: color-mix(in oklab, var(--pp-a) 60%, transparent); }
+
+/* Header art: a light source just above the top edge — hot core, the pair around it, fading into the card
+   so the title can overlap it. Sparkle positions come from sparklesOf(). */
+.pp-art {
+    position: relative;
+    height: 150px;
+    overflow: hidden;
+    background:
+        radial-gradient(22% 30% at 50% 0%, color-mix(in oklab, var(--pp-b) 35%, white) 0%, transparent 100%),
+        radial-gradient(48% 70% at 50% 0%, color-mix(in oklab, var(--pp-b) 90%, transparent) 0%, transparent 100%),
+        radial-gradient(85% 115% at 50% 0%, color-mix(in oklab, var(--pp-a) 65%, transparent) 0%, transparent 100%);
+    mask-image: linear-gradient(#000 55%, transparent);
+    -webkit-mask-image: linear-gradient(#000 55%, transparent);
+}
+
+.pp-spark {
+    position: absolute;
+    width: var(--s);
+    height: var(--s);
+    border-radius: 50%;
+    background: white;
+    opacity: var(--o);
+    box-shadow: 0 0 calc(var(--s) * 2.5) color-mix(in oklab, white 60%, transparent);
+    transform: translate(-50%, -50%);
+    animation: pp-twinkle 3.2s ease-in-out var(--d) infinite;
+}
+
+@keyframes pp-twinkle {
+    50% { opacity: calc(var(--o) * 0.3); }
+}
+
+/* "Save 25%" tab hanging from the top edge. */
+.pp-save {
+    position: absolute;
+    top: 0;
+    right: 18px;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 14px 18px;
+    background: color-mix(in oklab, var(--color-base-100) 70%, black);
+    color: var(--color-base-content);
+    clip-path: polygon(0 0, 100% 0, 100% 80%, 50% 100%, 0 80%);
+    line-height: 1.1;
+}
+
+.pp-save span { font-size: 0.72rem; color: var(--pp-muted); }
+.pp-save strong { font-size: 1.15rem; font-weight: 600; }
+
+.pp-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: -80px;
+    padding: 0 22px 24px;
+}
+
+.pp-name { margin: 0; font-size: 1.5rem; font-weight: 400; letter-spacing: 0.01em; }
+.pp-tagline { margin: 0; font-size: 0.85rem; line-height: 1.4; color: var(--pp-muted); }
+
+.pp-price { display: flex; align-items: baseline; gap: 8px; margin-top: 14px; }
+.pp-amount { font-size: 2.25rem; font-weight: 400; letter-spacing: -0.02em; line-height: 1; }
+.pp-unit { font-size: 0.85rem; color: var(--pp-muted); }
+
+.pp-billing { margin: 6px 0 0; min-height: 1.2em; font-size: 0.78rem; color: var(--pp-muted); }
+
+/* ── Action ─────────────────────────────────────────────────────────────── */
+.pp-action { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+
+.pp-cta {
+    height: 44px;
+    border-radius: 14px;
+    border: 1px solid var(--pp-line);
+    background: color-mix(in oklab, var(--color-base-content) 6%, transparent);
+    backdrop-filter: blur(8px);
+    color: var(--color-base-content);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.pp-cta:hover { background: color-mix(in oklab, var(--color-base-content) 10%, transparent); }
+.pp-cta:active { transform: scale(0.99); }
+.pp-cta:focus-visible { outline: 2px solid var(--pp-a); outline-offset: 2px; }
+
+/* Featured: iridescent glass in the card's pair. */
+.pp-cta.is-featured {
+    border-color: color-mix(in oklab, white 18%, transparent);
+    background:
+        linear-gradient(100deg,
+            color-mix(in oklab, var(--pp-a) 75%, white 10%) 0%,
+            color-mix(in oklab, var(--pp-b) 35%, var(--color-base-100)) 45%,
+            color-mix(in oklab, var(--pp-a) 55%, var(--color-base-100)) 75%,
+            color-mix(in oklab, var(--pp-b) 70%, white 10%) 100%);
+    color: white;
+    text-shadow: 0 1px 2px color-mix(in oklab, black 35%, transparent);
+}
+
+.pp-cta.is-featured:hover { filter: brightness(1.08); }
+
+.pp-current {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--pp-a);
+}
+
+.pp-divider {
+    width: 100%;
+    margin: 18px 0 4px;
+    border: none;
+    border-top: 1px solid var(--pp-line);
+}
+
+/* ── Limits / features ──────────────────────────────────────────────────── */
+.pp-section { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+.pp-section-title { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 0.95rem; font-weight: 600; }
+
+/* A group's icon in a soft chip of the card's pair. */
+.pp-group-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
+    font-size: 1rem;
+    color: var(--pp-a);
+    background: linear-gradient(135deg, color-mix(in oklab, var(--pp-a) 18%, transparent), color-mix(in oklab, var(--pp-b) 12%, transparent));
+}
+
+/* "Everything in Starter plus…" */
+.pp-from {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 14px 0 0;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    background: color-mix(in oklab, var(--pp-a) 10%, transparent);
+}
+
+.pp-from iconify-icon { color: var(--pp-a); }
+
+.pp-list {
+    margin: 0;
+    padding: 0 0 0 4px;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    font-size: 0.85rem;
+    color: color-mix(in oklab, var(--color-base-content) 78%, transparent);
+}
+
+.pp-item { display: flex; align-items: flex-start; gap: 10px; line-height: 1.45; }
+.pp-item iconify-icon { flex: none; margin-top: 1px; font-size: 1rem; color: var(--pp-a); }
+
+@media (prefers-reduced-motion: reduce) {
+    .pp-cta, .pp-tab { transition: none; }
+    .pp-spark { animation: none; }
+}

@@ -1,0 +1,48 @@
+import type { SectorAdapter } from '../types.ts';
+
+/** Education & Training (spec §33 Tier 1, §36). Product = a course or program; only marketing publishes (posts). */
+export const EDUCATION: SectorAdapter = {
+  id: 'education',
+  title: { vi: 'AI-Education', en: 'AI-Education' },
+  name: { vi: 'Giáo dục & Đào tạo', en: 'Education & Training' },
+  icon: 'ri:graduation-cap-line',
+  tints: ['info', 'primary'],
+  released: false,
+  vars: {
+    sector: 'education & training',
+    domains: 'K12, higher education, vocational training, corporate training, online learning, language learning',
+    customers: 'learners, parents of young learners, working adults upskilling, HR / L&D managers, schools and training centres',
+    offering: 'course, training program or learning service',
+    components: 'modules or sessions with their duration, learning materials, practice activities, assessments and the certificate',
+    qualityFocus: 'learning-outcome attainment, completion rate, instructor quality, content accuracy, learner safety and child protection',
+    kpis: 'enrolment conversion, completion rate, learning-outcome attainment, learner satisfaction (NPS), renewal rate, cost per learner',
+    regulations: 'education licensing and accreditation, child protection, refund and consumer rules, protection of learners\' personal data',
+    supplyFocus: 'instructors and teaching assistants, content licences, the learning platform, venues and printed materials',
+    useCases: 'a parent choosing a course for a child, an adult upskilling for a job, a company training its staff, a learner preparing for an exam or certificate, a student catching up on a subject',
+    processes: 'enquiry → placement test → enrolment, class scheduling and teacher assignment, lesson delivery and attendance, assessment and progress reports, certification and re-enrolment',
+    risks: 'low completion or drop-out, uneven teaching quality, teacher turnover, refund disputes, child-safety incidents, gaps in accreditation or licensing',
+    techPatterns: 'an LMS (learning management system), class scheduling and attendance, an online classroom, assessments and a gradebook, an enrolment CRM, a learner or parent app',
+    businessModels: 'per-course tuition, term or monthly subscription, packages of sessions, B2B corporate training contracts, self-paced online courses, certification fees',
+    consultScope: 'courses and who each suits, schedules and class formats, tuition and payment options, placement and entry requirements, certificates, how to enrol',
+    consultEscalate: 'a refund or transfer request, a complaint about a teacher or class, a learner\'s grades or personal records, any child-safety concern',
+    guardrails: 'Never promise guaranteed scores, certificates, admissions or jobs; when learners may be minors, collect only the personal data needed and require parental consent.',
+  },
+  lenses: {
+    strategy: { role: 'an education business strategist', focus: 'which learners and programmes to serve, accreditation and licensing limits, and the positioning against other schools or platforms' },
+    product: { role: 'a curriculum and instructional designer', focus: 'the learning outcomes first, then the modules, practice and assessments that prove them' },
+    marketing: { role: 'an enrolment marketer', focus: 'who decides (the learner, a parent or HR) and the outcome they want, proof of results, and the enrolment seasons' },
+    commercial: { role: 'an admissions and learner-success lead', focus: 'the enquiry-to-enrolment path, tuition packages and refunds, corporate (B2B) training deals, and keeping learners to completion' },
+    operations: { role: 'an academic operations manager', focus: 'class scheduling, teacher assignment, attendance, and the learner support that prevents drop-out' },
+    supply: { role: 'a manager of teaching staff, content and facilities', focus: 'recruiting and contracting teachers, content licences, classrooms and the learning platform' },
+    quality: { role: 'an academic quality-assurance lead', focus: 'whether learners reach the stated outcomes, teaching quality, fair assessment, and child protection' },
+    finance: { role: 'an education finance lead', focus: 'tuition pricing, cost per learner and per class, teacher pay, and the cash flow of upfront fees and refunds' },
+    technology: { role: 'an EdTech and learning-systems lead', focus: 'the LMS, the online classroom, assessments, and protecting learners\' (often minors\') data' },
+  },
+  core: ['product', 'operations', 'quality'],
+  review: null,
+  functions: {
+    product: { steps: [{ key: 'concept', role: 'a Senior Instructional Designer and Program Manager for {sector}' }] },
+    marketing: { output: { table: 'posts', fields: ['title', 'description', 'content', 'pics', 'tags'], status: 'draft' } },
+    consult: { role: 'a friendly, honest admissions advisor for a {sector} provider' },
+  },
+};

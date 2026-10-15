@@ -1,0 +1,492 @@
+/* Mirrors the User Portal look (auth/css/svc-profile.css) with a dv- prefix. Tinted surfaces are mixed
+   from base-content, so the same rules read right in light and dark. */
+:host {
+    display: block;
+    width: 100%;
+    --dv-surface: color-mix(in oklab, var(--color-base-content) 4%, transparent);
+    --dv-surface-hover: color-mix(in oklab, var(--color-base-content) 7%, transparent);
+    --dv-line: color-mix(in oklab, var(--color-base-content) 10%, transparent);
+    --dv-muted: color-mix(in oklab, var(--color-base-content) 58%, transparent);
+    --dv-radius: 18px;
+}
+
+* { box-sizing: border-box; }
+
+button { font: inherit; color: inherit; }
+button:disabled { cursor: default; opacity: 0.6; }
+
+.dv {
+    padding: 0.75rem 0.9rem 1rem;
+    color: var(--color-base-content);
+    font-family: var(--font-sans, system-ui, sans-serif);
+}
+
+.dv-view {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    animation: dv-in 0.22s ease-out;
+}
+
+@keyframes dv-in {
+    from { opacity: 0; transform: translateX(10px); }
+}
+
+.dv-top { display: flex; align-items: center; gap: 0.75rem; }
+/* Back button + title on one row — a long title ends in "…" instead of wrapping */
+.dv-top .dv-h1 {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dv-h1 {
+    margin: 0.25rem 0 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+
+.dv-hero {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 0.4rem 0;
+}
+
+.dv-hero-text { display: flex; flex-direction: column; align-items: flex-start; gap: 0.3rem; min-width: 0; }
+
+.dv-name {
+    max-width: 100%;
+    font-size: 1.35rem;
+    font-weight: 600;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dv-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.85rem;
+    color: var(--dv-muted);
+}
+
+.dv-avatar {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: color-mix(in oklab, var(--color-info) 22%, var(--color-base-100));
+    font-size: 2rem;
+}
+
+/* ── Stat tiles ─────────────────────────────────────────────────────────── */
+
+.dv-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+}
+
+.dv-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    min-width: 0;
+    padding: 0.85rem 0.4rem;
+    border-radius: var(--dv-radius);
+    background: var(--dv-surface);
+}
+
+.dv-stat b { font-size: 1.15rem; font-weight: 600; }
+.dv-stat span { font-size: 0.82rem; color: var(--dv-muted); }
+
+.dv-group-title {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--dv-muted);
+}
+
+/* ── Rows ───────────────────────────────────────────────────────────────── */
+
+.dv-row {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    width: 100%;
+    min-height: 54px;
+    padding: 0.6rem 1rem;
+    border: 0;
+    border-radius: var(--dv-radius);
+    background: var(--dv-surface);
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.dv-row:hover:not(:disabled), .dv-item-btn:hover { background: var(--dv-surface-hover); }
+
+.dv-row:focus-visible, .dv-btn:focus-visible, .dv-back:focus-visible, .dv-item-btn:focus-visible, .dv-chip-btn:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.dv-row-icon { flex-shrink: 0; font-size: 1.25rem; }
+.dv-row-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.dv-row-label { font-size: 0.98rem; }
+
+.dv-row-sub {
+    margin-top: 0.1rem;
+    font-size: 0.78rem;
+    color: var(--dv-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dv-row-value {
+    max-width: 40%;
+    font-size: 0.85rem;
+    color: var(--dv-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dv-row-chev { flex-shrink: 0; font-size: 1.2rem; color: var(--dv-muted); }
+
+/* ── Switch ─────────────────────────────────────────────────────────────── */
+
+.dv-switch {
+    position: relative;
+    flex-shrink: 0;
+    width: 46px;
+    height: 27px;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--color-base-content) 14%, transparent);
+    transition: background 0.2s;
+}
+
+.dv-switch::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 21px;
+    height: 21px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+    transition: transform 0.2s;
+}
+
+.dv-switch.is-on { background: var(--color-primary); }
+.dv-switch.is-on::after { transform: translateX(19px); }
+
+/* ── Sub views ──────────────────────────────────────────────────────────── */
+
+.dv-back {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--dv-surface);
+    font-size: 1.35rem;
+    cursor: pointer;
+}
+
+.dv-back:hover { background: var(--dv-surface-hover); }
+
+.dv-card {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.8rem 1rem;
+    border-radius: var(--dv-radius);
+    background: var(--dv-surface);
+    font-size: 0.92rem;
+}
+
+.dv-list { flex-direction: column; align-items: stretch; gap: 0; padding: 0.2rem 1rem; }
+.dv-list:has(.dv-item-btn) { padding: 0.2rem 0; overflow: hidden; }
+
+.dv-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid var(--dv-line);
+}
+
+.dv-item:last-child { border-bottom: 0; }
+
+.dv-item-btn {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.dv-item-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+
+.dv-index {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--dv-surface-hover);
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.dv-strong { font-weight: 600; }
+.dv-muted { font-size: 0.8rem; color: var(--dv-muted); }
+.dv-ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dv-note { font-size: 0.8rem; color: var(--dv-muted); }
+
+.dv-mcp { align-items: flex-start; }
+.dv-mcp .dv-item-text { gap: 0.25rem; }
+
+.dv-code {
+    margin-top: 0.2rem;
+    padding: 0.35rem 0.6rem;
+    border-radius: 10px;
+    background: var(--dv-surface-hover);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.78rem;
+    word-break: break-all;
+    user-select: all;
+}
+
+.dv-empty {
+    display: grid;
+    place-items: center;
+    padding: 2rem 0;
+    font-size: 0.85rem;
+    color: var(--dv-muted);
+}
+
+.dv-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.dv-chips-lg { gap: 0.5rem; }
+
+.dv-chip {
+    flex-shrink: 0;
+    padding: 0.25rem 0.65rem;
+    border: 0;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    background: var(--dv-surface-hover);
+}
+
+.dv-chip.is-ok { color: var(--color-success); background: color-mix(in oklab, var(--color-success) 14%, transparent); }
+.dv-chip.is-draft { color: var(--color-warning); background: color-mix(in oklab, var(--color-warning) 14%, transparent); }
+
+.dv-chip-btn {
+    padding: 0.45rem 0.9rem;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.dv-chip-btn.is-on { background: var(--color-primary); color: var(--color-base-content); }
+
+/* ── Form ───────────────────────────────────────────────────────────────── */
+
+.dv-form { display: flex; flex-direction: column; gap: 0.9rem; }
+
+.dv-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+}
+
+.dv-field {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    height: 54px;
+    padding: 0 1rem;
+    border-radius: var(--dv-radius);
+    border: 1px solid var(--dv-line);
+    background: color-mix(in oklab, var(--color-base-100) 70%, transparent);
+    font-size: 1rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.dv-field:focus-within, .dv-area:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary) 18%, transparent);
+}
+
+.dv-field > iconify-icon { flex-shrink: 0; font-size: 1.25rem; }
+
+.dv-field input,
+.dv-field select {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    outline: none;
+    background: transparent;
+    font: inherit;
+    color: inherit;
+}
+
+/* Popup option do trình duyệt vẽ: select trong suốt → nền mặc định trắng + chữ sáng kế thừa ở theme dark → phải tô lại. */
+.dv-field select option {
+    background: var(--color-base-100);
+    color: var(--color-base-content);
+}
+
+.dv-field input::placeholder, .dv-area::placeholder { color: var(--dv-muted); }
+
+.dv-area {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border-radius: var(--dv-radius);
+    border: 1px solid var(--dv-line);
+    background: color-mix(in oklab, var(--color-base-100) 70%, transparent);
+    font: inherit;
+    font-size: 0.95rem;
+    line-height: 1.45;
+    color: inherit;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.dv-area[readonly], .dv-field:has(input[readonly]) { background: var(--dv-surface); }
+
+.dv-principle { display: flex; align-items: flex-start; gap: 0.6rem; }
+.dv-principle .dv-index { margin-top: 0.7rem; }
+
+.dv-icon-btn {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    margin-top: 0.4rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    color: var(--dv-muted);
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.dv-icon-btn:hover { background: var(--dv-surface-hover); color: var(--color-error); }
+
+/* ── Buttons / notices ──────────────────────────────────────────────────── */
+
+.dv-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    height: 50px;
+    border-radius: 999px;
+    border: 1px solid var(--dv-line);
+    background: var(--color-base-100);
+    font-size: 0.98rem;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.dv-btn:hover:not(:disabled) { background: var(--dv-surface-hover); }
+.dv-btn-main { margin-top: 0.75rem; }
+
+.dv-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    align-self: flex-start;
+    padding: 0.2rem 0;
+    border: 0;
+    background: none;
+    color: var(--dv-muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.dv-link:hover:not(:disabled) { color: var(--color-base-content); }
+.dv-danger { align-self: center; margin-top: 0.4rem; color: var(--color-error); }
+.dv-danger:hover:not(:disabled) { color: var(--color-error); text-decoration: underline; }
+
+.dv-notice {
+    padding: 0.6rem 0.85rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    color: var(--dv-muted);
+    background: var(--dv-surface);
+}
+
+.dv-notice.is-ok { color: var(--color-success); background: color-mix(in oklab, var(--color-success) 12%, transparent); }
+.dv-notice.is-err { color: var(--color-error); background: color-mix(in oklab, var(--color-error) 12%, transparent); }
+
+.dv-spin { animation: dv-spin 0.8s linear infinite; }
+
+@keyframes dv-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dv-view, .dv-spin { animation: none; }
+}
+
+/* ── Hub: API import + MCP token ────────────────────────────────────────── */
+
+.dv-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88rem; }
+
+.dv-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 0.7rem 1rem;
+    border-radius: var(--dv-radius);
+    background: var(--dv-surface);
+    font-size: 0.85rem;
+}
+
+.dv-details[open] > summary { margin-bottom: 0.6rem; }
+.dv-details summary { cursor: pointer; color: var(--dv-muted); }
+.dv-details .dv-label + .dv-label { margin-top: 0.6rem; }
+
+.dv-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.4rem; }
+.dv-actions .dv-btn { margin: 0; }
+
+.dv-btn-primary {
+    border-color: transparent;
+    background: var(--color-primary);
+    color: var(--color-base-100); /* not --color-primary-content: the themes set it = --color-primary (invisible label) */
+}
+
+.dv-btn-primary:hover:not(:disabled) { background: color-mix(in oklab, var(--color-primary) 85%, var(--color-base-content)); }

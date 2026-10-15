@@ -1,0 +1,455 @@
+/* Tinted surfaces are mixed from base-content, so the same rules read right in light and dark. */
+:host {
+    display: block;
+    width: 100%;
+    --pf-surface: color-mix(in oklab, var(--color-base-content) 4%, transparent);
+    --pf-surface-hover: color-mix(in oklab, var(--color-base-content) 7%, transparent);
+    --pf-line: color-mix(in oklab, var(--color-base-content) 10%, transparent);
+    --pf-muted: color-mix(in oklab, var(--color-base-content) 58%, transparent);
+    --pf-radius: 18px;
+}
+
+* { box-sizing: border-box; }
+
+button { font: inherit; color: inherit; }
+button:disabled { cursor: default; opacity: 0.6; }
+
+.pf {
+    position: relative;
+    isolation: isolate;
+    padding: 1rem .75rem;
+    color: var(--color-base-content);
+    font-family: var(--font-sans, system-ui, sans-serif);
+}
+
+/* Soft pastel wash behind the header, like the mock's top gradient */
+.pf::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 240px;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+.pf-view {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    animation: pf-in 0.22s ease-out;
+}
+
+@keyframes pf-in {
+    from { opacity: 0; transform: translateX(10px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pf-view { animation: none; }
+}
+
+.pf-h1 {
+    margin: 0.25rem 0 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+/* Back button + title on one row — a long title ends in "…" instead of wrapping (same as svc-division's .dv-top) */
+.pf-top { display: flex; align-items: center; gap: 0.75rem; }
+.pf-top .pf-h1 {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+
+.pf-hero {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.4rem;
+}
+
+.pf-hero-text { min-width: 0; }
+
+.pf-name {
+    font-size: 1.45rem;
+    font-weight: 600;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pf-mail {
+    margin-top: 0.2rem;
+    font-size: 0.85rem;
+    color: var(--pf-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pf-avatar {
+    position: relative;
+    flex-shrink: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+.pf-avatar-lg { align-self: flex-start; margin-bottom: 0.5rem; }
+
+.pf-avatar-img {
+    display: block;
+    width: var(--pf-avatar, 88px);
+    height: var(--pf-avatar, 88px);
+    border-radius: 50%;
+    object-fit: cover;
+    background: color-mix(in oklab, var(--color-info) 22%, var(--color-base-100));
+}
+
+.pf-avatar-initials {
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: calc(var(--pf-avatar, 88px) * 0.36);
+    color: var(--color-base-content);
+}
+
+.pf-badge {
+    position: absolute;
+    right: -2px;
+    bottom: 2px;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--color-base-content);
+    color: var(--color-base-100);
+    border: 2px solid var(--color-base-100);
+    font-size: 0.95rem;
+}
+
+/* ── Stat tiles ─────────────────────────────────────────────────────────── */
+
+.pf-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+}
+
+.pf-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.85rem 0.4rem;
+    border-radius: var(--pf-radius);
+    background: var(--pf-surface);
+}
+
+.pf-stat b { font-size: 1.15rem; font-weight: 600; }
+.pf-stat span { font-size: 0.82rem; color: var(--pf-muted); }
+
+.pf-group-title {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--pf-muted);
+}
+
+/* ── Rows ───────────────────────────────────────────────────────────────── */
+
+.pf-row {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    width: 100%;
+    min-height: 54px;
+    padding: 0.6rem 1rem;
+    border: 0;
+    border-radius: var(--pf-radius);
+    background: var(--pf-surface);
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.pf-row:hover:not(:disabled) { background: var(--pf-surface-hover); }
+.pf-row:focus-visible, .pf-lang:focus-visible, .pf-btn:focus-visible, .pf-back:focus-visible, .pf-avatar:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.pf-row.is-danger, .pf-btn.is-danger { color: var(--color-error); }
+
+.pf-row-icon { flex-shrink: 0; font-size: 1.25rem; }
+
+.pf-row-text {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.pf-row-label { font-size: 0.98rem; }
+.pf-row-sub { font-size: 0.78rem; color: var(--pf-muted); margin-top: 0.1rem; }
+.pf-row-value { font-size: 0.85rem; color: var(--pf-muted); white-space: nowrap; }
+.pf-row-chev { font-size: 1.2rem; color: var(--pf-muted); }
+
+/* ── Switch / radio ─────────────────────────────────────────────────────── */
+
+.pf-switch {
+    position: relative;
+    flex-shrink: 0;
+    width: 46px;
+    height: 27px;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--color-base-content) 14%, transparent);
+    transition: background 0.2s;
+}
+
+.pf-switch::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 21px;
+    height: 21px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+    transition: transform 0.2s;
+}
+
+.pf-switch.is-on { background: var(--color-primary); }
+.pf-switch.is-on::after { transform: translateX(19px); }
+
+.pf-langs { display: flex; flex-direction: column; }
+
+.pf-lang {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    width: 100%;
+    padding: 0.95rem 0.1rem;
+    border: 0;
+    border-bottom: 1px solid var(--pf-line);
+    background: none;
+    text-align: left;
+    cursor: pointer;
+}
+
+.pf-lang:last-child { border-bottom: 0; }
+.pf-flag { font-size: 2.5rem; flex-shrink: 0; }
+.pf-lang-label { flex: 1; font-size: 1.02rem; }
+
+.pf-radio {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1.5px solid color-mix(in oklab, var(--color-base-content) 22%, transparent);
+    transition: background 0.15s, box-shadow 0.15s;
+}
+
+.pf-radio.is-on {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    box-shadow: inset 0 0 0 3px var(--color-base-100), 0 0 0 3px color-mix(in oklab, var(--color-primary) 22%, transparent);
+}
+
+/* ── Sub views ──────────────────────────────────────────────────────────── */
+
+.pf-back {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--pf-surface);
+    font-size: 1.35rem;
+    cursor: pointer;
+}
+
+.pf-back:hover { background: var(--pf-surface-hover); }
+
+.pf-card {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.8rem 1rem;
+    border-radius: var(--pf-radius);
+    background: var(--pf-surface);
+    font-size: 0.92rem;
+}
+
+.pf-list { flex-direction: column; align-items: stretch; gap: 0; padding: 0.2rem 1rem; }
+
+.pf-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid var(--pf-line);
+}
+
+.pf-item:last-child { border-bottom: 0; }
+
+.pf-item-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+
+.pf-strong { font-weight: 600; }
+.pf-muted { font-size: 0.8rem; color: var(--pf-muted); }
+.pf-cap { text-transform: capitalize; }
+.pf-ellipsis { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.pf-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-success);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-success) 25%, transparent);
+}
+
+.pf-chips { flex-wrap: wrap; gap: 0.4rem; }
+
+.pf-chip {
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    background: var(--pf-surface-hover);
+}
+
+.pf-chip.is-ok { color: var(--color-success); background: color-mix(in oklab, var(--color-success) 14%, transparent); }
+
+/* Roles: table name left, its access levels right */
+.pf-access {
+    flex-shrink: 0;
+    max-width: 60%;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    text-align: right;
+}
+
+.pf-role-note { margin-top: 0.4rem; color: var(--color-warning); }
+
+/* ── Edit form ──────────────────────────────────────────────────────────── */
+
+.pf-form { display: flex; flex-direction: column; gap: 0.9rem; }
+
+.pf-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+}
+
+.pf-field {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    height: 54px;
+    padding: 0 1rem;
+    border-radius: var(--pf-radius);
+    border: 1px solid var(--pf-line);
+    background: color-mix(in oklab, var(--color-base-100) 70%, transparent);
+    font-size: 1rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.pf-field:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary) 18%, transparent);
+}
+
+.pf-field > iconify-icon { flex-shrink: 0; font-size: 1.25rem; }
+
+.pf-field input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    outline: none;
+    background: transparent;
+    font: inherit;
+    color: inherit;
+}
+
+.pf-field input::placeholder { color: var(--pf-muted); }
+
+.pf-eye {
+    display: grid;
+    place-items: center;
+    padding: 0.25rem;
+    border: 0;
+    background: none;
+    color: var(--pf-muted);
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+/* ── Buttons / notices ──────────────────────────────────────────────────── */
+
+.pf-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    height: 50px;
+    border-radius: 999px;
+    border: 1px solid var(--pf-line);
+    background: var(--color-base-100);
+    font-size: 0.98rem;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.pf-btn:hover:not(:disabled) { background: var(--pf-surface-hover); }
+.pf-btn-main { margin-top: 0.75rem; }
+.pf-btn-ghost { height: 44px; background: transparent; font-size: 0.9rem; }
+
+.pf-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    align-self: flex-start;
+    padding: 0.2rem 0;
+    border: 0;
+    background: none;
+    color: var(--pf-muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.pf-link:hover:not(:disabled) { color: var(--color-base-content); }
+.pf-signout { align-self: center; margin-top: 0.6rem; color: var(--color-error); }
+.pf-signout:hover:not(:disabled) { color: var(--color-error); text-decoration: underline; }
+
+.pf-notice {
+    padding: 0.6rem 0.85rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+}
+
+.pf-notice.is-ok { color: var(--color-success); background: color-mix(in oklab, var(--color-success) 12%, transparent); }
+.pf-notice.is-err { color: var(--color-error); background: color-mix(in oklab, var(--color-error) 12%, transparent); }
+
+.pf-spin { animation: pf-spin 0.8s linear infinite; }
+
+@keyframes pf-spin {
+    to { transform: rotate(360deg); }
+}

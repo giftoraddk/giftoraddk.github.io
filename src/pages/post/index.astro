@@ -1,56 +1,26 @@
 ---
 import Core from '@/layouts/Core.astro';
-import List from '@/components/Common/List.astro';
-import { config as cardConfig } from '@/sections/another/_cardPost.js';
-import { config as configNews } from '@/sections/another/_slideNews.js';
-import { fetchCollection } from '@/services/firestore.server.ts';
-import { postSlug } from '@/services/helper.js';
-import { menuItems, policies, socials } from '@/modules/landing/home.js';
+import { KINDS } from '@/components/Catalog/kinds';
+import Feed from '@/components/Catalog/Feed.astro';
+import { fetchCollection } from '@/services/core/fetcher.server.js';
+import { pickLang } from '@/services/tools/util';
+import { site } from '@/services/tools/site';
+import { menuItems, policies, socials } from '@/modules/gift/shop.js'; // footer chung giftoraddk.com
+import { menu as postMenu, tints } from '@/modules/post/index.js';
 
-const pageTitle = 'Danh sách bài viết';
-const pageDescription = 'Khám phá các bài viết và khoảnh khắc mới nhất';
+// Danh sách bài viết — giao diện mobile-first pastel (components/Catalog/Feed.astro). Mọi bài render sẵn
+// trong HTML lúc build (SEO/GEO); tìm kiếm/sắp xếp/xem thêm chạy trên DOM đã có, không gọi lại API.
+const posts = await fetchCollection('posts');
 
-// Fetch posts server-side — data embed vào HTML → SEO-friendly
-// meta.url được inject để _cardPost có thể tạo link /post/{slug} (từ khoá, xem postSlug)
-const posts = (await fetchCollection('posts')).map((p) => ({
-	...p,
-	meta: { ...(p.meta ?? {}), url: `/post/${postSlug(p)}/` },
-}));
-
-const topViewed = [...posts]
-	.sort((a, b) => parseInt(b?.meta?.views ?? '0', 10) - parseInt(a?.meta?.views ?? '0', 10))
-	.slice(0, 5);
-
-const sortOptions = [
-	{ label: 'Mới nhất', value: 'newest', field: 'created_at', transform: 'date', order: 'desc' },
-	{ label: 'Nhiều xem nhất', value: 'views', field: 'meta.views', transform: 'int', order: 'desc' },
-	{ label: 'Nhiều like nhất', value: 'likes', field: 'meta.likes', transform: 'int', order: 'desc' },
-];
-
-const bg = { blur: true, gradient: true, tint: '#00c7d4', total: 3, blobType: 'circleOverlap', blobMove: 'swap', deg: 180 };
+const pageTitle = pickLang({ en: 'News & Stories', vi: 'Tin tức & Câu chuyện' });
+const pageDescription = pickLang({
+	en: `Latest posts, gift ideas and stories from ${site.subtitle} — browse by topic or search.`,
+	vi: `Bài viết, ý tưởng quà tặng và câu chuyện mới nhất từ ${site.subtitle} — xem theo chủ đề hoặc tìm kiếm.`,
+});
+const image = posts.map((p: any) => String(p.pics || '').split('|').find(Boolean)).find(Boolean);
+const bg = null;
 ---
 
-<Core title={pageTitle} description={pageDescription} footer={{ columns: menuItems, policies, socials, bg }}>
-	<List
-		pageTitle={pageTitle}
-		pageDescription={pageDescription}
-		items={posts}
-		cardConfig={cardConfig}
-		dataTable="posts"
-		urlPrefix="/post/"
-		searchPlaceholder="Tìm kiếm bài viết..."
-		sortOptions={sortOptions}
-	>
-		<Fragment slot="before">
-			{topViewed.length > 0 && (
-				<div class="mb-8">
-					<web-boxs data={JSON.stringify(topViewed)} config={JSON.stringify(configNews)} lang="vi" ui="modern"></web-boxs>
-				</div>
-			)}
-		</Fragment>
-	</List>
+<Core menu={postMenu} tints={tints} title={pageTitle} description={pageDescription} image={image} footer={{ columns: menuItems, policies, socials, bg }}>
+	<Feed kind={KINDS.post} items={posts} title={pageTitle} description={pageDescription} path="/post/" />
 </Core>
-
-<script>
-	import '@/webs/apex/web-boxs.js';
-</script>

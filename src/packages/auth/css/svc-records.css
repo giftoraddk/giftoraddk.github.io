@@ -1,0 +1,164 @@
+/* <svc-records> — panel header (table title + record count + actions) above <svc-list>. Same tinted-surface
+   language as svc-division / the User Portal, so it sits naturally in a svc-node popover. */
+:host {
+    display: block;
+    width: 100%;
+    min-height: 100%;
+    container-type: inline-size;
+    --sys-surface: color-mix(in oklab, var(--color-base-content) 5%, transparent);
+    --sys-line: color-mix(in oklab, var(--color-base-content) 9%, transparent);
+    --sys-muted: color-mix(in oklab, var(--color-base-content) 58%, transparent);
+}
+
+* { box-sizing: border-box; }
+
+/* In a svc-node panel the surface is base-100 under a tint glow (node/css/svc-node-style.css). The list's
+   sticky cells must stay opaque, so instead of plain base-100 (brighter than the glow around them) they take
+   a little of both tints. Outside a node the tint vars are unset → plain base-100. */
+svc-list {
+    --sl-sticky: color-mix(in oklab, var(--color-tint-a, var(--color-base-100)) 5%,
+                 color-mix(in oklab, var(--color-tint-b, var(--color-base-100)) 4%, var(--color-base-100)));
+}
+
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+button:disabled { cursor: default; opacity: 0.5; }
+
+.sys {
+    color: var(--color-base-content);
+    font-family: var(--font-sans, system-ui, sans-serif);
+}
+
+.sys-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 0.75rem;
+    padding: 0.9rem 0.9rem 0.25rem;
+}
+
+.sys-icon {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: color-mix(in oklab, var(--color-primary) 14%, transparent);
+    color: var(--color-primary);
+    font-size: 1.3rem;
+}
+
+.sys-title {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.sys-h1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.sys-muted { font-size: 0.82rem; color: var(--sys-muted); }
+
+.sys-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    margin-left: auto;
+}
+
+.sys-icon-btn {
+    display: inline-grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    font-size: 1.2rem;
+}
+
+.sys-icon-btn:hover:not(:disabled) { background: var(--sys-surface); }
+.sys-icon-btn.is-danger { color: var(--color-error); }
+
+.sys-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    height: 36px;
+    margin-left: 0.25rem;
+    padding: 0 0.85rem 0 0.65rem;
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: var(--color-base-100); /* not --color-primary-content: the themes set it = --color-primary */
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.sys-add iconify-icon { font-size: 1.15rem; }
+
+/* "Tạo bằng AI" trên đầu form Thêm mới — viền mảnh + nền tints nhạt, icon màu nhấn (không đổ bóng) */
+.sys-fn-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    height: 34px;
+    padding: 0 0.85rem 0 0.7rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, var(--color-primary) 35%, transparent);
+    background: linear-gradient(135deg, color-mix(in oklab, var(--color-primary) 12%, transparent), color-mix(in oklab, var(--color-secondary) 12%, transparent));
+    color: color-mix(in oklab, var(--color-primary) 75%, var(--color-base-content));
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+}
+.sys-fn-btn iconify-icon { font-size: 1.05rem; }
+.sys-fn-btn:hover { background: color-mix(in oklab, var(--color-primary) 18%, transparent); }
+
+/* Bottom sheet chạy phòng ban — <svc-fn> tối đa ~75% màn hình, tự cuộn bên trong */
+.sys-fn { height: min(75dvh, 720px); overflow: auto; }
+.sys-add:hover:not(:disabled) { background: color-mix(in oklab, var(--color-primary) 85%, var(--color-base-content)); }
+
+.sys-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 3rem 1rem;
+    text-align: center;
+    color: var(--sys-muted);
+}
+
+.sys-state iconify-icon { font-size: 1.6rem; }
+.sys-state.is-error iconify-icon { color: var(--color-error); }
+
+.sys-retry {
+    padding: 0.45rem 1rem;
+    border: 1px solid var(--sys-line);
+    border-radius: 999px;
+    color: var(--color-base-content);
+}
+
+.sys-spin { animation: sys-spin 0.9s linear infinite; }
+
+@keyframes sys-spin { to { transform: rotate(360deg); } }
+
+.sad-import-report {
+    max-height: 220px;
+    margin: 0;
+    padding-left: 1.2rem;
+    overflow: auto;
+    font-size: 0.82rem;
+    color: var(--sys-muted);
+}
+
+/* Narrow panel: title on its own line, actions below it. */
+@container (max-width: 340px) {
+    .sys-actions { width: 100%; }
+}

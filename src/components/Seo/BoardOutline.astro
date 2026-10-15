@@ -1,0 +1,49 @@
+---
+// Bản HTML ngữ nghĩa của nội dung <web-board> cho crawler không chạy JS (AI/GEO bot) — đặt làm con trực
+// tiếp của <web-board>; web-board gỡ phần tử [data-board-outline] ngay ở connectedCallback, nên khi JS
+// chạy (trình duyệt, Googlebot render) không còn bản trùng với nội dung thật. sr-only: không chớp nội
+// dung chưa style trước khi JS kịp chạy. Dữ liệu từ boardOutline() (packages/apex/tool/board-seo.js);
+// mọi chuỗi in qua biểu thức Astro nên được escape, không chèn được HTML.
+import type { OutlineSection } from '@/packages/apex/tool/board-seo.js';
+
+interface Props {
+	outline: OutlineSection[];
+}
+
+const { outline = [] } = Astro.props;
+---
+
+{outline.length > 0 && (
+	<div data-board-outline class="sr-only">
+		{outline.map((s) => {
+			const Heading = s.level === 1 ? 'h1' : 'h2';
+			return (
+				<section>
+					{s.eyebrow && <p>{s.eyebrow}</p>}
+					{s.heading && <Heading>{s.heading}</Heading>}
+					{s.paragraphs.map((p) => <p>{p}</p>)}
+					{s.lists.map((l) => {
+						// list có caption (vd 2 cột so sánh) → caption là h3, tiêu đề mục lùi xuống h4
+						const ItemHeading = l.caption ? 'h4' : 'h3';
+						return (
+							<>
+								{l.caption && <h3>{l.caption}</h3>}
+								<ul>
+									{l.items.map((it) => {
+										// href đã qua safeHref() (board-seo.js) — chỉ '/...' hoặc http(s)
+										const title = it.href && it.title ? <a href={it.href}>{it.title}</a> : it.title;
+										return (
+											<li>
+												{it.title && it.text ? <><ItemHeading>{title}</ItemHeading><p>{it.text}</p></> : title || it.text}
+											</li>
+										);
+									})}
+								</ul>
+							</>
+						);
+					})}
+				</section>
+			);
+		})}
+	</div>
+)}

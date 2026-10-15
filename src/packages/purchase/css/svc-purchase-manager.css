@@ -1,0 +1,491 @@
+/* <svc-purchase-manager> — mobile first. Every breakpoint is a container query on the component itself (it lives
+   in a narrow svc-node panel as well as on a full page — the viewport says nothing):
+     base     KPI 2×2 · filter chips scroll sideways · one card per row
+     ≥ 560    KPI in 4 · chips + search on one row · cards 2 columns
+     ≥ 960    cards 3 columns
+   `.pk-*` is the complete mode (PayPal return_url) — one centred status card.
+   Surfaces are soft tints of base-content — no backdrop-filter (it re-blurs every frame over a live canvas). */
+:host {
+    display: block;
+    container: pm / inline-size;
+    color: var(--color-base-content);
+    font-family: var(--font-sans, system-ui, sans-serif);
+    --pm-surface: color-mix(in oklab, var(--color-base-content) 4%, transparent);
+    --pm-surface-2: color-mix(in oklab, var(--color-base-content) 8%, transparent);
+    --pm-line: color-mix(in oklab, var(--color-base-content) 9%, transparent);
+    --pm-muted: color-mix(in oklab, var(--color-base-content) 58%, transparent);
+    --pm-radius: 16px;
+    --pm-gutter: 0.9rem;
+    /* Sticky bar stays opaque: in a svc-node panel a little of both tints, else plain base-100 (like svc-roles) */
+    --pm-sticky: color-mix(in oklab, var(--color-tint-a, var(--color-base-100)) 5%,
+                 color-mix(in oklab, var(--color-tint-b, var(--color-base-100)) 4%, var(--color-base-100)));
+}
+
+* { box-sizing: border-box; }
+
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+button:disabled { cursor: default; }
+button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+/* ── Complete mode ──────────────────────────────────────────────────────── */
+
+.pk-wrap { display: flex; justify-content: center; width: 100%; }
+
+.pk-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 380px;
+    padding: 36px 24px;
+    text-align: center;
+}
+
+.pk-icon { font-size: 3rem; color: var(--pm-muted); }
+.is-success .pk-icon { color: var(--color-success); }
+.is-pending .pk-icon { color: var(--color-warning); }
+.is-failed .pk-icon { color: var(--color-error); }
+.is-loading .pk-icon { animation: pm-spin 1s linear infinite; }
+
+.pk-title { font-size: 1.1rem; font-weight: 600; }
+
+.pk-sub {
+    margin-bottom: 10px;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: color-mix(in oklab, var(--color-base-content) 62%, transparent);
+}
+
+/* ── Manage mode ────────────────────────────────────────────────────────── */
+
+.pm {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0 var(--pm-gutter) var(--pm-gutter);
+}
+
+.pm-muted { font-size: 0.8rem; color: var(--pm-muted); }
+
+.pm-head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding-top: var(--pm-gutter);
+}
+
+.pm-head-icon {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: color-mix(in oklab, var(--color-primary) 14%, transparent);
+    color: var(--color-primary);
+    font-size: 1.3rem;
+}
+
+.pm-head-title { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+
+.pm-h1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.pm-env {
+    padding: 0 0.4rem;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--color-warning) 16%, transparent);
+    color: var(--color-warning);
+    font-weight: 600;
+}
+
+.pm-env.is-live { background: color-mix(in oklab, var(--color-success) 16%, transparent); color: var(--color-success); }
+
+.pm-icon-btn {
+    display: inline-grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    color: inherit;
+    font-size: 1.2rem;
+    text-decoration: none;
+}
+
+.pm-icon-btn:hover:not(:disabled) { background: var(--pm-surface-2); }
+.pm-icon-btn:disabled { opacity: 0.5; }
+
+/* KPI tiles — the ones tied to a status filter the list when tapped */
+.pm-kpis {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.pm-kpi {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: 0.55rem;
+    min-width: 0;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid transparent;
+    border-radius: var(--pm-radius);
+    background: var(--pm-surface);
+    text-align: left;
+}
+
+.pm-kpi iconify-icon {
+    grid-row: span 2;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    background: color-mix(in oklab, var(--tone) 14%, transparent);
+    color: var(--tone);
+    font-size: 1.15rem;
+}
+
+.pm-kpi b {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1.15rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.pm-kpi span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    color: var(--pm-muted);
+}
+
+.pm-kpi:not(:disabled):hover { background: var(--pm-surface-2); }
+.pm-kpi[aria-pressed='true'] { border-color: color-mix(in oklab, var(--tone) 45%, transparent); background: color-mix(in oklab, var(--tone) 8%, transparent); }
+
+/* Plan mix — monthly + yearly as one stacked bar per plan */
+.pm-mix {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    padding: 0.8rem 0.9rem;
+    border-radius: var(--pm-radius);
+    background: var(--pm-surface);
+}
+
+.pm-label {
+    margin: 0 0 0.15rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--pm-muted);
+}
+
+.pm-mix-row {
+    display: grid;
+    grid-template-columns: 5rem 1fr 2rem;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+}
+
+.pm-mix-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+
+.pm-mix-bar {
+    display: flex;
+    height: 10px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--pm-surface-2);
+}
+
+.is-month { background: var(--color-primary); }
+.is-year { background: var(--color-secondary); }
+
+.pm-mix-n { text-align: right; font-variant-numeric: tabular-nums; }
+
+.pm-mix-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    color: var(--pm-muted);
+}
+
+.pm-mix-legend span { width: 10px; height: 10px; border-radius: 3px; }
+.pm-mix-legend span + span { margin-left: 0.5rem; }
+
+/* Sticky bar: status chips + search */
+.pm-bar {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0 calc(-1 * var(--pm-gutter));
+    padding: 0.4rem var(--pm-gutter);
+    background: var(--pm-sticky);
+}
+
+.pm-chips {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.pm-chips::-webkit-scrollbar { display: none; }
+
+.pm-chip {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 36px;
+    padding: 0 0.85rem;
+    border-radius: 999px;
+    background: var(--pm-surface);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.pm-chip:hover { background: var(--pm-surface-2); }
+.pm-chip[aria-selected='true'] { background: var(--color-primary); color: var(--color-base-100); }
+
+.pm-chip-n {
+    min-width: 1.35rem;
+    padding: 0 0.35rem;
+    border-radius: 999px;
+    background: color-mix(in oklab, currentColor 16%, transparent);
+    font-size: 0.72rem;
+    line-height: 1.35rem;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.pm-search {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 40px;
+    padding: 0 0.85rem;
+    border: 1px solid var(--pm-line);
+    border-radius: 12px;
+    background: var(--pm-surface);
+    color: var(--pm-muted);
+}
+
+.pm-search:focus-within { border-color: var(--color-primary); }
+
+.pm-search input {
+    flex: 1;
+    min-width: 0;
+    height: 38px;
+    border: 0;
+    outline: 0;
+    background: none;
+    color: var(--color-base-content);
+    font: inherit;
+    font-size: 16px; /* ≥ 16px — iOS Safari zooms into smaller inputs */
+}
+
+.pm-notice {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.25rem 0.25rem 0.85rem;
+    border-radius: 12px;
+    background: color-mix(in oklab, var(--color-error) 12%, transparent);
+    color: var(--color-error);
+    font-size: 0.85rem;
+}
+
+.pm-notice span { flex: 1; min-width: 0; }
+
+.pm-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: var(--pm-gutter);
+    padding: 2.5rem 1rem;
+    border-radius: var(--pm-radius);
+    background: var(--pm-surface);
+    color: var(--pm-muted);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.pm-state iconify-icon { font-size: 1.6rem; }
+.pm-state.is-error { color: var(--color-error); }
+
+.pm-pill {
+    min-height: 36px;
+    padding: 0 1rem;
+    border-radius: 999px;
+    background: var(--pm-surface-2);
+    color: var(--color-base-content);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.pm-pill.is-danger { background: var(--color-error); color: var(--color-base-100); }
+.pm-pill.is-primary { background: var(--color-primary); color: var(--color-base-100); }
+.pm-pill.is-primary:hover { background: color-mix(in oklab, var(--color-primary) 85%, var(--color-base-content)); }
+
+/* "Gói của tôi" — the buyer's own plan: one card, or an invitation to pick one */
+.pm-cta { gap: 0.45rem; }
+.pm-cta iconify-icon { color: var(--color-primary); font-size: 2rem; }
+.pm-cta b { font-size: 1.05rem; color: var(--color-base-content); }
+.pm-cta .pm-pill { margin-top: 0.4rem; }
+
+.pm-list.is-single { grid-template-columns: minmax(0, 1fr) !important; max-width: 560px; }
+
+.pm-change {
+    display: inline-flex;
+    align-self: flex-start;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+/* Subscription cards */
+.pm-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+}
+
+.pm-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    min-width: 0;
+    padding: 0.85rem;
+    border: 1px solid var(--pm-line);
+    border-left: 3px solid var(--tone);
+    border-radius: var(--pm-radius);
+    background: var(--pm-surface);
+    transition: opacity 0.15s;
+}
+
+.pm-card[aria-busy='true'] { opacity: 0.7; }
+
+.pm-card-head { display: flex; align-items: center; gap: 0.65rem; min-width: 0; }
+
+.pm-avatar {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    overflow: hidden;
+    border-radius: 50%;
+    background: color-mix(in oklab, var(--color-primary) 16%, transparent);
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+.pm-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.pm-who { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+
+.pm-name, .pm-sub { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pm-name { font-size: 0.95rem; font-weight: 600; }
+.pm-sub { font-size: 0.78rem; color: var(--pm-muted); }
+
+.pm-status {
+    flex-shrink: 0;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--tone) 15%, transparent);
+    color: var(--tone);
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.pm-plan { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
+.pm-plan-name { font-size: 1.05rem; font-weight: 700; }
+.pm-price { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--pm-muted); }
+
+.pm-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+    font-size: 0.82rem;
+}
+
+.pm-warn { display: inline-flex; align-items: center; gap: 0.25rem; color: var(--color-warning); font-weight: 600; }
+
+.pm-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    margin-top: auto;
+    padding-top: 0.2rem;
+    border-top: 1px solid var(--pm-line);
+}
+
+.pm-cancel {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 36px;
+    margin-left: auto;
+    padding: 0 0.85rem;
+    border-radius: 999px;
+    color: var(--color-error);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.pm-cancel:hover:not(:disabled) { background: color-mix(in oklab, var(--color-error) 12%, transparent); }
+.pm-cancel:disabled { opacity: 0.5; }
+
+.pm-confirm {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 0.75rem;
+    border-radius: 12px;
+    background: color-mix(in oklab, var(--color-error) 9%, transparent);
+    font-size: 0.85rem;
+}
+
+.pm-confirm-actions { display: flex; justify-content: flex-end; gap: 0.5rem; }
+
+.pm-spin { animation: pm-spin 0.9s linear infinite; }
+
+@keyframes pm-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .pm-spin, .is-loading .pk-icon { animation: none; }
+}
+
+/* ── Wider ──────────────────────────────────────────────────────────────── */
+
+@container pm (min-width: 560px) {
+    .pm-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .pm-bar { flex-direction: row; align-items: center; }
+    .pm-chips { flex: 1; min-width: 0; }
+    .pm-search { flex: 0 1 16rem; }
+    .pm-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@container pm (min-width: 960px) {
+    .pm { --pm-gutter: 1.25rem; }
+    .pm-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

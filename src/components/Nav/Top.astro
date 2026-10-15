@@ -1,22 +1,33 @@
 ---
 import ActionBtnTheme from "@/components/Nav/Action/BtnTheme.astro";
 import { Image } from "astro:assets";
+import { site } from "@/services/tools/site";
 
 const {
 	root = "",
-	logo = "/logo.png",
+	logo = "/logo.avif",
 	logoText,
 	sticky = 'sticky top-0', // 'sticky top-0' || ''
+	// 'float'   — thanh nổi: tách khỏi mép trên, khối kính mờ bo tròn (style .nav-float bên dưới).
+	// 'minimal' — thanh tràn ngang, KHÔNG đường kẻ, nền gần trong suốt hoà vào glow tints (.nav-minimal).
+	// Cả hai đi cùng link chữ + chấm (menu.css .menu-float / .menu-minimal). Bỏ trống = kiểu cũ có đường kẻ dưới.
+	variant = '',
 	class: className = "",
 } = Astro.props;
+const float = variant === 'float';
+const minimal = variant === 'minimal';
+// float: khung ngoài trong suốt chừa lề, khối nav rộng = cột nội dung trang (max-w-6xl − px-4 hai bên = 70rem)
+const wrapClass = float ? 'px-4 pt-3' : minimal ? '' : 'border-b border-black/10 dark:border-white/10';
+const navClass = float ? 'nav-float mx-auto max-w-[70rem]' : minimal ? 'nav-minimal' : 'backdrop-blur bg-base-glass';
+const innerClass = float ? 'px-3 min-h-14' : 'mx-auto max-w-6xl px-4 min-h-16';
 ---
 
 <div
-	class={`${sticky} z-50 w-full border-b border-black/10 dark:border-white/10 text-base-content ${className}`}
+	class={`${sticky} z-50 w-full ${wrapClass} text-base-content ${className}`}
 >
-	<nav class="backdrop-blur bg-base-glass">
+	<nav class={navClass}>
 		<div
-			class="mx-auto max-w-6xl px-4 flex items-center justify-center min-h-16 text-sm"
+			class={`${innerClass} flex items-center justify-center text-sm`}
 		>
 			<div class="w-full flex items-center justify-between gap-3">
 				<!-- prefix -->
@@ -28,7 +39,7 @@ const {
 							width={48}
 							height={48}
 							format="png"
-							alt="logo"
+							alt={site.subtitle}
 						/>
 						{
 							logoText && (
@@ -55,3 +66,27 @@ const {
 		</div>
 	</nav>
 </div>
+
+<style>
+	/* Thanh nổi — cùng ngôn ngữ panel svc-node / svc-radar: kính mờ, viền mảnh, quầng tints [a, b] rất nhẹ
+	   (lấy --layout-tint-a/b của Core/CoreShop `tints`, không có thì info / accent). */
+	.nav-float {
+		border-radius: 20px;
+		background:
+			radial-gradient(420px 120px at 100% 0%, color-mix(in oklab, var(--layout-tint-a, var(--color-info)) 14%, transparent), transparent 70%),
+			radial-gradient(360px 120px at 0% 0%, color-mix(in oklab, var(--layout-tint-b, var(--color-accent)) 11%, transparent), transparent 70%),
+			color-mix(in oklab, var(--color-base-100) 72%, transparent);
+		box-shadow:
+			0 0 0 1px color-mix(in oklab, var(--color-base-content) 8%, transparent),
+			0 14px 32px -20px rgb(0 0 0 / 0.28);
+		backdrop-filter: blur(18px) saturate(1.4);
+	}
+
+	/* Tối giản — không viền, nền base-100 rất mỏng: đứng yên ở đầu trang thì glow tints của layout (.bg-wrap)
+	   lộ qua; nội dung cuộn xuống dưới thanh (sticky) thì lớp kính mờ giữ chữ menu đọc được.
+	   Chỉ viết backdrop-filter không tiền tố: lightningcss (minify của Vite) tự thêm -webkit-, còn cặp viết tay
+	   "backdrop-filter; -webkit-backdrop-filter" bị nó gộp còn mỗi bản -webkit- → Chrome mất hiệu ứng. */
+	.nav-minimal {
+		backdrop-filter: blur(12px);
+	}
+</style>

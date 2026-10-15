@@ -1,0 +1,29 @@
+:host { user-select: text; }
+  :host([flex="1"]) { flex: 1; }
+.wl-text { margin: 0; }
+.wl-unit { display: inline-block; }
+.wl-word { display: inline-block; white-space: nowrap; }
+.wl-motion { opacity: 0; }
+
+/* Typography chuẩn — xem hook/DESIGN.rst § "Font size chuẩn". Override qua stys (kèm // custom <prop>). */
+h1.wl-text { font-size: clamp(2.5rem, 5vw, 4.5rem); font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; white-space: pre-line; }
+h2.wl-text { font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; white-space: pre-line; }
+h3.wl-text { font-size: clamp(1.75rem, 3vw, 2.5rem); font-weight: 600; line-height: 1.2; letter-spacing: -0.01em; white-space: pre-line; }
+h4.wl-text { font-size: clamp(1.5rem, 2.5vw, 2rem); font-weight: 600; line-height: 1.25; letter-spacing: -0.01em; white-space: pre-line; }
+h5.wl-text { font-size: clamp(1.25rem, 2vw, 1.5rem); font-weight: 600; line-height: 1.3; }
+h6.wl-text { font-size: clamp(1rem, 1.5vw, 1.25rem); font-weight: 600; line-height: 1.35; }
+p.wl-text { font-size: clamp(0.875rem, 1.2vw, 1rem); font-weight: 400; line-height: 1.6; }
+span.wl-text { font-size: clamp(0.875rem, 1.2vw, 1rem); font-weight: inherit; line-height: inherit; }
+
+/* Bản chữ cho trình đọc màn hình khi motion (xem web-letters.js render) — ẩn bằng mắt, vẫn trong cây truy cập */
+.wl-sr {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}

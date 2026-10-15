@@ -1,0 +1,818 @@
+/* <svc-list> — mobile first. A floating list card: sticky lead column (thumb + title + status pill) and
+   sticky chevron, the middle scrolls sideways. Surfaces are mixed onto base-100 so sticky cells stay opaque
+   over what scrolls beneath them. No backdrop-filter anywhere (see fieldUi in svc-list.js). */
+:host {
+    display: block;
+    width: 100%;
+    container-type: inline-size;
+    --sl-bg: var(--color-base-100);
+    /* Rows are see-through (the list sits straight on its container); only the sticky cells need an opaque
+       fill to hide what scrolls beneath them — the row's tint mixed onto --sl-sticky, the surface behind the
+       list. Override --sl-sticky when that surface isn't base-100. */
+    --sl-sticky: var(--color-base-100);
+    /* Edge shadow next to a sticky cell: a short, faint fade */
+    --sl-fade: color-mix(in oklab, var(--color-base-content) 6%, transparent),
+               color-mix(in oklab, var(--color-base-content) 2%, transparent) 40%, transparent;
+    --sl-line: color-mix(in oklab, var(--color-base-content) 8%, transparent);
+    --sl-edge: color-mix(in oklab, var(--color-base-content) 13%, transparent);
+    --sl-surface: color-mix(in oklab, var(--color-base-content) 5%, transparent);
+    --sl-surface-2: color-mix(in oklab, var(--color-base-content) 9%, transparent);
+    --sl-muted: color-mix(in oklab, var(--color-base-content) 55%, transparent);
+    --sl-ring: 0 0 0 3px color-mix(in oklab, var(--color-primary) 22%, transparent);
+    --sl-shadow: 0 1px 2px color-mix(in oklab, var(--color-base-content) 6%, transparent),
+                 0 8px 24px -12px color-mix(in oklab, var(--color-base-content) 18%, transparent);
+    --sl-radius: 16px;
+}
+
+* { box-sizing: border-box; }
+
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+button:disabled { cursor: default; opacity: 0.5; }
+button:focus-visible { outline: none; box-shadow: var(--sl-ring); }
+
+.sl {
+    position: relative;
+    padding-bottom: 0.75rem;
+    color: var(--color-base-content);
+    font-family: var(--font-sans, system-ui, sans-serif);
+}
+
+/* ── Toolbar ───────────────────────────────────────────────────────────── */
+
+.sl-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 0.75rem 0.9rem;
+}
+
+.sl-tools {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.sl-grow { flex: 1; }
+
+/* Round, softly filled — the same button as svc-division's .dv-back */
+.sl-icon-btn {
+    position: relative;
+    display: inline-grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: color-mix(in oklab, var(--color-base-content) 4%, transparent);
+    font-size: 1.35rem;
+    transition: background 0.15s, color 0.15s;
+}
+
+.sl-icon-btn:hover:not(:disabled) { background: color-mix(in oklab, var(--color-base-content) 7%, transparent); }
+
+.sl-icon-btn.is-on {
+    background: color-mix(in oklab, var(--color-primary) 14%, transparent);
+    color: var(--color-primary);
+}
+
+.sl-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: grid;
+    place-items: center;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: var(--color-base-100);
+    font-size: 0.62rem;
+    font-weight: 700;
+}
+
+::slotted([slot='actions']) { flex-shrink: 0; }
+
+/* Search pill + column picker */
+
+.sl-search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+}
+
+.sl-search {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 42px;
+    padding: 0 0.3rem 0 0.85rem;
+    border: 1px solid var(--sl-edge);
+    border-radius: 999px;
+    background: var(--sl-bg);
+    color: var(--sl-muted);
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.sl-search:focus-within { border-color: var(--color-primary); box-shadow: var(--sl-ring); }
+.sl-search > iconify-icon { flex-shrink: 0; font-size: 1.1rem; }
+
+.sl-search input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    outline: 0;
+    background: none;
+    font: inherit;
+    font-size: 0.95rem;
+    color: var(--color-base-content);
+}
+
+.sl-search input::placeholder { color: var(--sl-muted); }
+
+.sl-search-clear {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    color: var(--sl-muted);
+    font-size: 1.05rem;
+}
+
+.sl-search-col {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    background: var(--sl-surface);
+    color: var(--color-base-content);
+    font-size: 1.05rem;
+    transition: background 0.15s, color 0.15s;
+}
+
+.sl-search-col:hover { background: var(--sl-surface-2); }
+.sl-search-col.is-on { background: var(--color-primary); color: var(--color-base-100); }
+
+.sl-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+}
+
+.sl-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 6;
+    width: min(280px, 100%);
+    max-height: min(420px, 70vh);
+    overflow: auto;
+    padding: 0.35rem;
+    border: 1px solid var(--sl-line);
+    border-radius: 14px;
+    background: var(--sl-bg);
+    box-shadow: var(--sl-shadow);
+    animation: sl-pop 0.14s ease-out;
+}
+
+@keyframes sl-pop {
+    from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+}
+
+.sl-menu-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.35rem 0.35rem 0.1rem 0.6rem;
+}
+
+.sl-menu-title {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--sl-muted);
+}
+
+.sl-menu-hint {
+    padding: 0 0.6rem 0.4rem;
+    font-size: 0.74rem;
+    color: var(--sl-muted);
+}
+
+/* "Server" toggle — ticked = the parent searches the whole table */
+.sl-toggle {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.3rem;
+    height: 28px;
+    padding: 0 0.65rem 0 0.45rem;
+    border: 1px solid var(--sl-edge);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--sl-muted);
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.sl-toggle iconify-icon { font-size: 1rem; }
+.sl-toggle:hover:not(.is-on) { background: var(--sl-surface); color: var(--color-base-content); }
+
+.sl-toggle.is-on {
+    border-color: transparent;
+    background: color-mix(in oklab, var(--color-primary) 16%, transparent);
+    color: color-mix(in oklab, var(--color-primary) 80%, var(--color-base-content));
+}
+
+.sl-toggle.is-on iconify-icon { color: var(--color-primary); }
+
+.sl-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.5rem 0.6rem;
+    border-radius: 10px;
+    text-align: left;
+}
+
+.sl-menu-item:hover { background: var(--sl-surface); }
+.sl-menu-item.is-active { background: color-mix(in oklab, var(--color-primary) 12%, transparent); }
+.sl-menu-item iconify-icon { flex-shrink: 0; width: 1.1rem; font-size: 1.1rem; color: var(--sl-muted); }
+.sl-menu-item.is-active iconify-icon { color: var(--color-primary); }
+
+.sl-menu-item:disabled { cursor: default; opacity: 0.5; }
+.sl-menu-item:disabled:hover { background: none; }
+
+.sl-menu-text { flex: 1; min-width: 0; font-size: 0.92rem; }
+.sl-menu-meta { flex-shrink: 0; font-size: 0.78rem; color: var(--color-primary); }
+
+/* Dropdown hung under a toolbar icon button — its own width, opens leftwards from the button */
+.sl-menu-anchor { position: relative; flex-shrink: 0; }
+.sl-menu.is-anchored { width: min(272px, calc(100cqw - 1.8rem)); }
+
+.sl-menu-section { display: block; padding: 0.6rem 0.6rem 0.25rem; }
+.sl-menu-section:first-child { padding-top: 0.4rem; }
+
+.sl-menu-foot {
+    margin-top: 0.35rem;
+    padding: 0.5rem 0.6rem 0.25rem;
+    border-top: 1px solid var(--sl-line);
+}
+
+/* Segmented quick filter — a track with a raised active segment */
+
+.sl-seg {
+    display: flex;
+    gap: 2px;
+    max-width: 100%;
+    padding: 3px;
+    overflow-x: auto;
+    border-radius: 12px;
+    background: var(--sl-surface);
+    scrollbar-width: none;
+}
+
+.sl-seg::-webkit-scrollbar { display: none; }
+
+.sl-seg-btn {
+    flex: 1 0 auto;
+    padding: 0.42rem 0.8rem;
+    border-radius: 9px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    color: color-mix(in oklab, var(--color-base-content) 72%, transparent);
+    transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+
+.sl-seg-btn:hover:not(.is-active) { color: var(--color-base-content); }
+
+.sl-seg-btn.is-active {
+    background: var(--sl-bg);
+    color: var(--color-base-content);
+    font-weight: 600;
+    box-shadow: 0 1px 3px color-mix(in oklab, var(--color-base-content) 16%, transparent);
+}
+
+.sl-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    justify-self: start;
+    color: var(--color-primary);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* ── List card ─────────────────────────────────────────────────────────── */
+
+.sl-card {
+    margin: 0 0.9rem;
+    overflow: clip; /* rounds the row fills + sticky cells at the corners */
+    border-radius: 1rem;
+}
+
+.sl-scroll {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+}
+
+.sl-row {
+    --sl-tint: 0%; /* primary mixed into this row: 0 plain, alternate rows / hover more */
+    --sl-row-bg: color-mix(in oklab, var(--color-primary) var(--sl-tint), transparent);
+    --sl-row-solid: color-mix(in oklab, var(--color-primary) var(--sl-tint), var(--sl-sticky));
+    display: grid;
+    grid-template-columns: var(--sl-cols);
+    align-items: stretch;
+    width: max(100%, var(--sl-min));
+    min-height: 66px;
+    background: var(--sl-row-bg);
+    transition: background 0.12s;
+}
+
+.sl-row + .sl-row { border-top: 1px solid var(--sl-line); }
+.sl-row.is-alt { --sl-tint: 5%; }
+.sl-row.is-open { cursor: pointer; }
+.sl-row.is-open:hover { --sl-tint: 9%; }
+.sl-row.is-open:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
+
+.sl-cell {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.15rem;
+    min-width: 0;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.92rem;
+    font-variant-numeric: tabular-nums;
+}
+
+/* text-align (inline, from the schema) → flex alignment of the stacked lines */
+.sl-cell[style*='text-align:right'] { align-items: flex-end; }
+.sl-cell[style*='text-align:center'] { align-items: center; }
+
+.sl-val {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sl-dim { color: color-mix(in oklab, var(--color-base-content) 30%, transparent); }
+
+.sl-lead,
+.sl-end {
+    position: sticky;
+    z-index: 1;
+    transition: background 0.2s ease;
+}
+
+.sl-lead {
+    left: 0;
+    flex-direction: row;
+    align-items: center !important;
+    justify-content: flex-start;
+    gap: 0.7rem;
+    padding-left: 0.85rem;
+}
+
+/* Opaque only while it actually covers columns — see-through otherwise, like the rows */
+.is-scrolled .sl-lead { background: var(--sl-row-solid); }
+.has-more .sl-end { background: var(--sl-row-solid); }
+
+/* Edge shadows: a soft fade next to a sticky cell, shown only while columns hide under it */
+.sl-lead::after,
+.sl-end::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 14px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.sl-lead::after { left: 100%; background: linear-gradient(to right, var(--sl-fade)); }
+.sl-end::before { right: 100%; background: linear-gradient(to left, var(--sl-fade)); }
+
+.is-scrolled .sl-lead::after,
+.has-more .sl-end::before { opacity: 1; }
+
+.sl-lead-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+    min-width: 0;
+}
+
+.sl-end {
+    right: 0;
+    align-items: center;
+    padding: 0 0.35rem;
+}
+
+.sl-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-weight: 600;
+    font-size: 0.93rem;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+.sl-thumb {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    object-fit: cover;
+    background: var(--sl-surface);
+    box-shadow: inset 0 0 0 1px var(--sl-line);
+}
+
+/* No image → the title's two initials, tinted by a stable per-title tone (data-tone, see below) */
+.sl-thumb.is-initials {
+    background: color-mix(in oklab, var(--tone) 15%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--tone) 24%, transparent);
+    color: color-mix(in oklab, var(--tone) 85%, var(--color-base-content));
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    user-select: none;
+}
+
+.sl-thumb.is-lg { width: 48px; height: 48px; border-radius: 14px; font-size: 1.1rem; }
+
+/* Status pill — tone from opts[].tone, else by option order */
+.sl-pill {
+    --tone: var(--sl-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    max-width: 100%;
+    padding: 0.1rem 0.55rem 0.1rem 0.45rem;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--tone) 13%, transparent);
+    color: color-mix(in oklab, var(--tone) 82%, var(--color-base-content));
+    font-size: 0.74rem;
+    font-weight: 600;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+
+.sl-pill::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--tone);
+}
+
+/* Tones — shared by the status pill and the initials thumb */
+[data-tone='success']   { --tone: var(--color-success); }
+[data-tone='error']     { --tone: var(--color-error); }
+[data-tone='warning']   { --tone: var(--color-warning); }
+[data-tone='info']      { --tone: var(--color-info); }
+[data-tone='accent']    { --tone: var(--color-accent); }
+[data-tone='secondary'] { --tone: var(--color-secondary); }
+[data-tone='primary']   { --tone: var(--color-primary); }
+
+.sl-chevron {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    background: var(--sl-surface);
+    color: var(--sl-muted);
+    font-size: 1.25rem;
+    transition: background 0.15s, color 0.15s, transform 0.15s;
+}
+
+.sl-row.is-open:hover .sl-chevron {
+    background: var(--color-primary);
+    color: var(--color-base-100);
+    transform: translateX(2px);
+}
+
+.sl-moves { display: flex; }
+.sl-move { width: 32px; height: 32px; font-size: 1.1rem; }
+.sl-doc { width: 34px; height: 34px; color: var(--color-primary); }
+
+/* Header row */
+
+.sl-head {
+    min-height: 44px;
+    border-bottom: 1px solid var(--sl-line);
+}
+
+.sl-head .sl-cell {
+    gap: 0.05rem;
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--sl-muted);
+    user-select: none;
+}
+
+.sl-head .sl-lead { flex-direction: column; align-items: flex-start !important; justify-content: center; }
+.sl-head .sl-cell.is-sortable { cursor: pointer; }
+.sl-head .sl-cell.is-sortable:hover,
+.sl-head .sl-cell.is-sorted { color: var(--color-base-content); }
+.sl-head .sl-cell:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
+
+.sl-head-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    max-width: 100%;
+    white-space: nowrap;
+}
+
+.sl-head-hint { font-size: 0.72rem; font-weight: 400; letter-spacing: 0; text-transform: none; }
+
+.sl-sort { flex-shrink: 0; font-size: 0.85rem; opacity: 0.45; }
+.is-sorted .sl-sort { opacity: 1; color: var(--color-primary); }
+
+.sl-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 2.5rem 1rem;
+    text-align: center;
+    color: var(--sl-muted);
+}
+
+.sl-empty iconify-icon { font-size: 2rem; opacity: 0.6; }
+
+.sl-pagination {
+    display: flex;
+    justify-content: center;
+    padding: 0.85rem 0.9rem 0;
+}
+
+/* ── Detail / edit ─────────────────────────────────────────────────────── */
+
+.sl-detail { animation: sl-in 0.22s ease-out; }
+
+@keyframes sl-in {
+    from { opacity: 0; transform: translateX(10px); }
+}
+
+.sl-detail-head {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.9rem 0.6rem 0.5rem;
+    border-bottom: 1px solid var(--sl-line);
+    transition: background 0.2s ease;
+}
+
+/* See-through at rest (blends into the panel); pinned over the scrolling form → the panel's opaque surface
+   (--sl-sticky, like the sticky list cells) + a soft fade below it. .is-stuck: svc-list.js _observeStuck() */
+.sl-stuck-probe { height: 1px; margin-bottom: -1px; }
+.sl-detail-head.is-stuck { background: var(--sl-sticky); }
+
+.sl-detail-head::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 14px;
+    pointer-events: none;
+    background: linear-gradient(to bottom, var(--sl-fade));
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.sl-detail-head.is-stuck::after { opacity: 1; }
+
+.sl-detail-title {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.sl-detail-title .sl-title { font-size: 1.08rem; -webkit-line-clamp: 1; }
+
+/* slot "new-actions" — nút phụ bên phải tiêu đề form "Thêm mới" (svc-records: Tạo bằng AI) */
+.sl-detail-actions { display: flex; align-items: center; gap: 0.4rem; margin-left: auto; flex-shrink: 0; }
+
+.sl-form-wrap { position: relative; }
+
+/* RecordTable's field markup (_rfField, app/record-table.js) — .wt-field / .wt-field-label / .wt-input / .wt-repeater */
+.sl-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    padding: 1rem;
+}
+
+@container (min-width: 560px) {
+    .sl-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .sl-form .wt-field.full { grid-column: 1 / -1; }
+}
+
+.wt-field { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
+
+.wt-field-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: color-mix(in oklab, var(--color-base-content) 75%, transparent);
+}
+
+.wt-input {
+    width: 100%;
+    height: 40px;
+    padding: 0 0.8rem;
+    border: 1px solid var(--sl-edge);
+    border-radius: 10px;
+    outline: 0;
+    background: var(--sl-bg);
+    font: inherit;
+    font-size: 0.93rem;
+    color: var(--color-base-content);
+}
+
+.wt-input:focus { border-color: var(--color-primary); box-shadow: var(--sl-ring); }
+
+.wt-repeater { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.wt-repeater-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem;
+    border-radius: 12px;
+    background: var(--sl-surface);
+}
+
+.wt-repeater-row .wt-input { flex: 1 1 160px; }
+.wt-btn-repeater-add { align-self: flex-start; }
+
+.sl-extras {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    padding: 0 0.9rem 0.9rem;
+}
+
+.sl-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    height: 36px;
+    padding: 0 0.85rem;
+    border: 1px solid var(--sl-line);
+    border-radius: 999px;
+    background: var(--sl-bg);
+    font-size: 0.88rem;
+    transition: background 0.15s;
+}
+
+.sl-action:hover:not(:disabled) { background: var(--sl-surface); }
+.sl-action.is-danger { color: var(--color-error); }
+
+.sl-confirm {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0.9rem 0.9rem;
+    padding: 0.7rem 0.8rem;
+    border-radius: 14px;
+    background: color-mix(in oklab, var(--color-error) 10%, var(--color-base-100));
+    font-size: 0.9rem;
+}
+
+.sl-confirm iconify-icon { font-size: 1.15rem; color: var(--color-error); }
+.sl-confirm span { flex: 1; }
+
+.sl-foot {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+    display: flex;
+    gap: 0.6rem;
+    padding: 0.75rem 0.9rem;
+    border-top: 1px solid var(--sl-line);
+    background: var(--sl-bg);
+}
+
+.sl-btn {
+    display: inline-flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    height: 44px;
+    padding: 0 1rem;
+    border: 1px solid var(--sl-edge);
+    border-radius: 999px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: background 0.15s;
+}
+
+.sl-btn:hover:not(:disabled) { background: var(--sl-surface); }
+.sl-confirm .sl-btn { flex: 0 0 auto; height: 34px; }
+
+/* not --color-primary-content: the themes set it = --color-primary (invisible label) */
+.sl-btn.is-primary {
+    border-color: transparent;
+    background: var(--color-primary);
+    color: var(--color-base-100);
+    font-weight: 600;
+}
+
+.sl-btn.is-primary:hover:not(:disabled) { background: color-mix(in oklab, var(--color-primary) 85%, var(--color-base-content)); }
+
+.sl-btn.is-danger {
+    border-color: transparent;
+    background: var(--color-error);
+    color: var(--color-base-100);
+}
+
+.sl-ai-loading {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    background: color-mix(in oklab, var(--color-base-100) 88%, transparent);
+    font-size: 0.9rem;
+}
+
+.sl-ai-loading iconify-icon { font-size: 1.6rem; color: var(--color-primary); }
+
+.sl-spin { animation: sl-spin 0.9s linear infinite; }
+
+@keyframes sl-spin { to { transform: rotate(360deg); } }
+
+/* ── Content preview ───────────────────────────────────────────────────── */
+
+.sl-preview {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    background: color-mix(in oklab, var(--color-base-content) 35%, transparent);
+}
+
+.sl-preview-panel {
+    position: relative;
+    width: min(640px, 100%);
+    max-height: 80vh;
+    overflow: auto;
+    padding: 1.25rem;
+    border-radius: 18px;
+    background: var(--sl-bg);
+    box-shadow: var(--sl-shadow);
+}
+
+.sl-preview-panel pre { margin: 0; white-space: pre-wrap; font-size: 0.85rem; }
+
+.sl-preview-close {
+    position: sticky;
+    top: 0;
+    float: right;
+    margin: -0.5rem -0.5rem 0 0;
+    background: var(--sl-bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sl-detail, .sl-menu { animation: none; }
+    .sl-row, .sl-chevron { transition: none; }
+}

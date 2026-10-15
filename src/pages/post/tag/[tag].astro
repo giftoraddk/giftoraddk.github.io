@@ -1,64 +1,43 @@
 ---
 import Core from '@/layouts/Core.astro';
-import List from '@/components/Common/List.astro';
-import { config as cardConfig } from '@/sections/another/_cardPost.js';
-import { fetchCollection } from '@/services/firestore.server.ts';
-import { postSlug, tagSlugMap, pickLang } from '@/services/helper.js';
-import { site } from '@/services/constants/site.js';
-import { menuItems, policies, socials } from '@/modules/landing/home.js';
+import { KINDS } from '@/components/Catalog/kinds';
+import Feed from '@/components/Catalog/Feed.astro';
+import { fetchCollection } from '@/services/core/fetcher.server.js';
+import { tagSlugMap, pickLang } from '@/services/tools/util';
+import { site } from '@/services/tools/site';
+import { menuItems, policies, socials } from '@/modules/gift/shop.js'; // footer chung giftoraddk.com
+import { menu as postMenu, tints } from '@/modules/post/index.js';
 
-// Trang danh mục bài viết theo tag — biến thể SSG (mặc định), song song với
-// src/pages/product/tag/[tag].astro. UI/hạ tầng danh sách (search+sort+masonry+infinite-scroll)
-// dùng chung qua Common/List.astro.
+// Trang bài viết theo tag — biến thể SSG (mặc định); bản ISR ở _render-modes/[tag].isr.astro.
+// Cùng giao diện Feed với /post/ (chip tag đang xem active + breadcrumb + JSON-LD CollectionPage).
 
 export async function getStaticPaths() {
 	const posts = await fetchCollection('posts');
-	const tagMap = tagSlugMap(posts);
-
-	return [...tagMap.entries()].map(([slug, { label, items }]) => ({
+	return [...tagSlugMap(posts).entries()].map(([slug, { label, items }]) => ({
 		params: { tag: slug },
-		props: {
-			tag: label,
-			posts: items.map((p: any) => ({ ...p, meta: { ...(p.meta ?? {}), url: `/post/${postSlug(p)}/` } })),
-		},
+		props: { tag: label, posts: items, allPosts: posts },
 	}));
 }
 
-const { tag, posts } = Astro.props as { tag: string; posts: any[] };
+const { tag, posts, allPosts } = Astro.props as { tag: string; posts: any[]; allPosts: any[] };
 const tagSlug = Astro.params.tag as string;
 
-const pageTitle = `${pickLang({ en: 'Post', vi: 'Bài viết' })} ${tag}`;
+const pageTitle = tag;
 const pageDescription = pickLang({
-	en: `Explore posts in the "${tag}" category on ${site.subtitle}.`,
-	vi: `Khám phá các bài viết thuộc danh mục "${tag}" tại ${site.subtitle}.`,
+	en: `${posts.length} posts about "${tag}" on ${site.subtitle}.`,
+	vi: `${posts.length} bài viết về "${tag}" tại ${site.subtitle}.`,
 });
-const canonicalUrl = `${site.domain.replace(/\/$/, '')}/post/tag/${tagSlug}/`;
-const bg = { blur: true, gradient: true, tint: '#00c7d4', total: 3, blobType: 'circleOverlap', blobMove: 'swap', deg: 180 };
-
-const sortOptions = [
-	{ label: 'Mới nhất', value: 'newest', field: 'created_at', transform: 'date', order: 'desc' },
-	{ label: 'Nhiều xem nhất', value: 'views', field: 'meta.views', transform: 'int', order: 'desc' },
-	{ label: 'Nhiều like nhất', value: 'likes', field: 'meta.likes', transform: 'int', order: 'desc' },
+const breadcrumb = [
+	{ label: pickLang({ en: 'Home', vi: 'Trang chủ' }), href: '/' },
+	{ label: pickLang({ en: 'Posts', vi: 'Bài viết' }), href: '/post/' },
+	{ label: pickLang({ en: 'Topics', vi: 'Chủ đề' }), href: '/post/tag/' },
+	{ label: tag },
 ];
+const image = posts.map((p: any) => String(p.pics || '').split('|').find(Boolean)).find(Boolean);
+const bg = null;
 ---
 
-<Core title={pageTitle} description={pageDescription} footer={{ columns: menuItems, policies, socials, bg }}>
-	<List
-		pageTitle={pageTitle}
-		pageDescription={pageDescription}
-		breadcrumb={[
-			{ label: pickLang({ en: 'Home', vi: 'Trang chủ' }), href: '/' },
-			{ label: pickLang({ en: 'Posts', vi: 'Bài viết' }), href: '/post/' },
-			{ label: tag },
-		]}
-		canonicalUrl={canonicalUrl}
-		items={posts}
-		cardConfig={cardConfig}
-		dataTable="posts"
-		urlPrefix="/post/"
-		searchPlaceholder="Tìm kiếm bài viết..."
-		sortOptions={sortOptions}
-		emptyLabel={pickLang({ vi: 'Chưa có bài viết nào.', en: 'No posts yet.' })}
-		bottomCta={{ href: '/post/', label: pickLang({ vi: 'Xem tất cả bài viết', en: 'View all posts' }) }}
-	/>
+<Core menu={postMenu} tints={tints} title={`${pageTitle} • ${pickLang({ en: 'Posts', vi: 'Bài viết' })}`} description={pageDescription} image={image} footer={{ columns: menuItems, policies, socials, bg }}>
+	<Feed kind={KINDS.post} items={posts} allItems={allPosts} title={pageTitle} description={pageDescription}
+		path={`/post/tag/${tagSlug}/`} activeTag={tagSlug} breadcrumb={breadcrumb} />
 </Core>

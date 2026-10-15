@@ -1,0 +1,7 @@
+:host { display: block; width: 100%; margin-bottom: 1.25rem; }
+.wbs-wrap { display: flex; flex-direction: column; gap: 0.75rem; }
+.wbs-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 2px; align-items: center; }
+.wbs-filter-select { flex-shrink: 0; }
+.wbs-filter-trigger { border-radius: 99px; }
+.wbs-range { display: flex; align-items: center; gap: 1rem; padding: 2px; }
+.wbs-range web-ranger { flex: 1 1 auto; min-width: 0; }

@@ -1,0 +1,48 @@
+import type { SectorAdapter } from '../types.ts';
+
+/** Food & Beverage (spec §33 Tier 1). Product = a dish, drink or menu; food safety runs through quality and supply. */
+export const FNB: SectorAdapter = {
+  id: 'fnb',
+  title: { vi: 'AI-F&B', en: 'AI-F&B' },
+  name: { vi: 'Ẩm thực & Đồ uống', en: 'Food & Beverage' },
+  icon: 'ri:restaurant-2-line',
+  tints: ['warning', 'success'],
+  released: false,
+  vars: {
+    sector: 'food & beverage',
+    domains: 'restaurant, café, bakery, cloud kitchen, catering, packaged food & beverage',
+    customers: 'dine-in guests, delivery-app customers, office lunch buyers, event and catering clients, families',
+    offering: 'dish, drink, menu or packaged food & beverage product',
+    components: 'ingredients with portion weights, recipe steps, preparation time, plating or packaging, and the allergens it contains',
+    qualityFocus: 'food safety and hygiene, allergen control, taste and portion consistency, temperature control, serving time',
+    kpis: 'food cost %, gross margin per dish, orders or covers per hour, average ticket, repeat-customer rate, waste %, review rating',
+    regulations: 'food safety and hygiene certification, ingredient origin and labelling, allergen disclosure, business and alcohol licences',
+    supplyFocus: 'fresh ingredients, dry goods and beverages, packaging, the cold chain and kitchen equipment',
+    useCases: 'a quick lunch near the office, a family dinner, ordering delivery at home, catering an office or an event, buying packaged food as a gift',
+    processes: 'menu engineering and recipe costing, purchasing and receiving, prep and the cooking line, service or delivery handover, cleaning and closing, stock counts',
+    risks: 'food-safety incidents, allergen mistakes, ingredient price swings, spoilage and waste, staff turnover, bad reviews, delivery-app fee changes',
+    techPatterns: 'a POS, kitchen display or order tickets, delivery-app integrations, table booking, inventory with recipe costing, loyalty and CRM',
+    businessModels: 'dine-in, takeaway and delivery, cloud kitchen, catering contracts, packaged food retail, franchising',
+    consultScope: 'the menu and what each dish contains, allergens and dietary options, prices and combos, opening hours and location, table booking, delivery and catering',
+    consultEscalate: 'an allergic reaction or a food-safety complaint, a problem with an existing order or payment, a large catering or event booking, any refund',
+    guardrails: 'Food-safety steps are mandatory, never optional; always flag common allergens; never claim a health or medical benefit the dish cannot prove.',
+  },
+  lenses: {
+    strategy: { role: 'an F&B concept and growth strategist', focus: 'the concept and format (dine-in, delivery, cloud kitchen, catering), the location, and the margin each format leaves' },
+    product: { role: 'a head chef and menu developer', focus: 'the recipe, portion and cost per dish, consistency at volume, and the allergens it contains' },
+    marketing: { role: 'an F&B marketer', focus: 'cravings and occasions, food photography, reviews, and visibility on delivery apps' },
+    commercial: { role: 'an F&B sales and guest-experience lead', focus: 'the channels (in-store, delivery apps, catering), combos and pricing, and the guest experience that brings people back' },
+    operations: { role: 'a kitchen and restaurant operations manager', focus: 'the prep and service line, station SOPs, peak-hour capacity, and ticket times' },
+    supply: { role: 'an F&B purchasing manager', focus: 'fresh-ingredient suppliers, the cold chain, receiving checks, par levels, and waste' },
+    quality: { role: 'a food-safety and quality lead (HACCP)', focus: 'the critical control points, temperature and hygiene logs, allergen control, and consistent taste and portions' },
+    finance: { role: 'an F&B finance controller', focus: 'food-cost % and gross margin per dish, labour cost, waste, and the covers per day needed to break even' },
+    technology: { role: 'a restaurant systems lead', focus: 'the POS, kitchen tickets, delivery-app integrations, booking, and inventory with recipe costing' },
+  },
+  core: ['product', 'supply', 'quality', 'finance'],
+  review: null,
+  functions: {
+    product: { steps: [{ key: 'concept', role: 'a Head Chef and Food Product Developer for {sector}' }] },
+    marketing: { output: { table: 'posts', fields: ['title', 'description', 'content', 'pics', 'tags'], status: 'draft' } },
+    consult: { role: 'a warm, honest host and order assistant for a {sector} business' },
+  },
+};

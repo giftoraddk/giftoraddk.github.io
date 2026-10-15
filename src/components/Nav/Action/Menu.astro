@@ -2,7 +2,7 @@
 import "./menu.css"
 import type { HTMLAttributes } from 'astro/types'
 import I18nText from '@/components/I18nText.astro'
-import { plainText } from '@/utils'
+import { plainText } from '@/services/tools/util'
 
 type LocalizedText = string | { vi: string; en?: string }
 
@@ -12,6 +12,7 @@ interface MenuItem {
 	iconMobile?: string
 	icon?: string
 	textIcon?: string
+	target?: string
 	disabled?: boolean
 	divider?: boolean
 	items?: MenuItem[]
@@ -60,6 +61,9 @@ const hasActiveChild = (items: MenuItem[]): boolean => {
 	})
 }
 
+// Mục có `target` (vd '_blank' mở tab mới) — kèm rel noopener để tab mới không với ngược về window.opener.
+const linkAttrs = (i: MenuItem) => i.target ? { target: i.target, rel: i.target === '_blank' ? 'noopener' : undefined } : {}
+
 const wrapperClass = ['menu', horizontal ? 'menu-horizontal' : '', className]
 	.filter(Boolean)
 	.join(' ')
@@ -72,7 +76,7 @@ const wrapperClass = ['menu', horizontal ? 'menu-horizontal' : '', className]
 				const active = isActive(item.href)
 				const renderIcon = (i: MenuItem) => {
 					if (i.icon) {
-						return <iconify-icon icon={i.icon} />
+						return <iconify-icon icon={i.icon} aria-hidden="true" />
 					}
 					else if (i.textIcon && !horizontal) {
 						return <span class='menu-char-icon'>{i.textIcon}</span>
@@ -93,7 +97,7 @@ const wrapperClass = ['menu', horizontal ? 'menu-horizontal' : '', className]
 				if (item.href) {
 					return (
 						<li>
-							<a href={item.href} class:list={[item.disabled ? 'disabled' : '', { 'menu-active': active }]}>
+							<a href={item.href} {...linkAttrs(item)} class:list={[item.disabled ? 'disabled' : '', { 'menu-active': active }]}>
 								{renderIcon(item)}
 								<span class='menu-text'><I18nText text={item.text} /></span>
 							</a>
@@ -109,12 +113,16 @@ const wrapperClass = ['menu', horizontal ? 'menu-horizontal' : '', className]
 								<summary class:list={[
 									item.disabled ? 'disabled' : '', 
 									{ 'menu-parent-active': parentActive },
-									isMobileRoot ? 'group flex flex-col items-center gap-1 w-full !py-0 !px-0 !min-h-0 transition-all rounded-2xl menu-mobile-root-summary' : ''
+									isMobileRoot ? 'group flex flex-col items-center gap-1 w-full cursor-pointer !py-0 !px-0 !min-h-0 transition-all rounded-2xl menu-mobile-root-summary' : ''
 								]}>
 									{isMobileRoot ? (
-										<div class="menu-char-icon transition-all group-hover:scale-110 group-hover:-translate-y-1">
-											{ item.iconMobile || item.icon ? <iconify-icon icon={item.iconMobile || item.icon} class="text-2xl" /> : <span>{item.textIcon || (plainText(item.text) || 'A').charAt(0)}</span>}
-										</div>
+										<>
+											<div aria-hidden="true" class:list={['menu-char-icon transition-all', parentActive ? 'text-primary is-active' : 'group-hover:scale-110 group-hover:-translate-y-1']}>
+												{ item.iconMobile || item.icon ? <iconify-icon icon={item.iconMobile || item.icon} class="text-2xl" /> : <span>{item.textIcon || (plainText(item.text) || 'A').charAt(0)}</span>}
+											</div>
+											<!-- mobile root chỉ hiện icon — chữ ẩn làm tên truy cập cho <summary> -->
+											<span class="sr-only"><I18nText text={item.text} /></span>
+										</>
 									) : (
 										<>
 											{renderIcon(item)}
@@ -138,6 +146,7 @@ const wrapperClass = ['menu', horizontal ? 'menu-horizontal' : '', className]
 												<li>
 													<a
 														href={subItem.href}
+														{...linkAttrs(subItem)}
 														class:list={[subItem.disabled ? 'disabled' : '', { 'menu-active': subActive }]}>
 														{renderIcon(subItem)}
 														<span class='menu-text'><I18nText text={subItem.text} /></span>
@@ -171,6 +180,7 @@ const wrapperClass = ['menu', horizontal ? 'menu-horizontal' : '', className]
 																		<li>
 																			<a
 																				href={subSubItem.href}
+																			{...linkAttrs(subSubItem)}
 																				class:list={[subSubItem.disabled ? 'disabled' : '', { 'menu-active': subSubActive }]}>
 																				{renderIcon(subSubItem)}
 																				<span class='menu-text'><I18nText text={subSubItem.text} /></span>

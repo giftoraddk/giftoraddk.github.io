@@ -1,0 +1,327 @@
+---
+// Trang danh sách catalog — /post/, /post/tag/{slug}/, /product/, /product/tag/{slug}/ (+ biến thể ISR).
+// Nhãn / đường dẫn / sắp xếp / điểm nổi bật lấy từ `kind` (kinds.ts) — markup, CSS, JS dùng chung.
+// SEO/GEO: MỌI record render sẵn trong HTML (article/h3/time/a thật, không sr-only, không phụ thuộc JS);
+// JSON-LD CollectionPage + ItemList + BreadcrumbList. JS chỉ tăng cường: tìm kiếm (?q=), sắp xếp,
+// "xem thêm"/cuộn vô hạn (ẩn bớt bằng data-later — nội dung vẫn ở DOM), xoay stack nổi bật.
+import './catalog.css';
+import Card from './Card.astro';
+import Share from './Share.astro';
+import Icon from './Icon.astro';
+import I18nText from '@/components/I18nText.astro';
+import { pickLang } from '@/services/tools/util';
+import {
+	PAGE_SIZE, base, toView, byNewest, tagStats, jsonLdHtml, publisherLd, breadcrumbLd, collectionLd,
+} from './lib';
+import type { Kind } from './kinds';
+
+interface Crumb { label: string; href?: string }
+interface Props {
+	kind: Kind;
+	items: any[];          // record của trang này (đã lọc theo tag nếu là trang tag)
+	allItems?: any[];      // toàn bộ record — để dựng danh sách tag (mặc định = items)
+	title: string;
+	description: string;
+	path: string;          // '/post/' | '/product/tag/{slug}/' … — canonical + JSON-LD + action form tìm kiếm
+	activeTag?: string;    // slug tag đang xem
+	breadcrumb?: Crumb[];  // bỏ trống ở trang list gốc
+}
+
+const { kind, items, allItems = items, title, description, path, activeTag = '', breadcrumb = [] } = Astro.props;
+const { t } = kind;
+
+const views = items.map(r => toView(r, kind)).sort(byNewest);
+const tags = tagStats(allItems.map(r => toView(r, kind)), kind);
+// Tag đang xem luôn đứng đầu danh sách (sau "Tất cả") để thấy ngay trên mobile
+const chips = activeTag ? [...tags.filter(x => x.slug === activeTag), ...tags.filter(x => x.slug !== activeTag)] : tags;
+const featured = views.length >= 4
+	? [...views].sort((a, b) => kind.featuredScore(b) - kind.featuredScore(a) || byNewest(a, b)).slice(0, 3)
+	: [];
+const pageUrl = `${base}${path}`;
+const sortAttrs = (v: (typeof views)[number]) =>
+	Object.fromEntries(kind.sorts.map(s => [`data-sort-${s.key}`, s.value(v)]));
+
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@graph': [
+		publisherLd(),
+		collectionLd({ url: pageUrl, name: title, description, items: views, about: activeTag ? chips[0]?.label : undefined }),
+		...(breadcrumb.length ? [breadcrumbLd(breadcrumb.map(b => ({ name: b.label, href: b.href })), pageUrl)] : []),
+	],
+};
+
+const L = (en: string, vi: string) => pickLang({ en, vi });
+const P = (x: { en: string; vi: string }) => pickLang(x);
+---
+
+<script type="application/ld+json" is:inline set:html={jsonLdHtml(jsonLd)} />
+<noscript><style>
+	.pf-feed > li[data-later] { display: grid !important; }
+	.pf-more, .pf-seg, [data-search-toggle], [data-stack-next] { display: none !important; }
+	.pf-search[hidden] { display: flex !important; }
+</style></noscript>
+
+<div class="pf pf-page pf-board" data-pf-feed data-page-size={PAGE_SIZE}>
+	<header class="pf-top">
+		{breadcrumb.length > 0 && (
+			<nav class="pf-crumbs" aria-label={L('Breadcrumb', 'Đường dẫn')}>
+				<ol>
+					{breadcrumb.map(b => (
+						<li>{b.href ? <a href={b.href}>{b.label}</a> : <span aria-current="page">{b.label}</span>}</li>
+					))}
+				</ol>
+			</nav>
+		)}
+
+		<div class="pf-top-row">
+			<div class="pf-top-text">
+				<p class="pf-kicker" data-today>&nbsp;</p>
+				<h1 class="pf-h1">{title}</h1>
+			</div>
+			<div class="pf-top-actions">
+				<button type="button" class="pf-circle" data-search-toggle aria-controls="pf-search" aria-expanded="false"
+					aria-label={P(t.search)}>
+					<Icon name="search" />
+				</button>
+				<a class="pf-circle" href={`${kind.base}tag/`} aria-label={P(t.allTopics)}>
+					<Icon name="grid" />
+				</a>
+			</div>
+		</div>
+
+		<p class="pf-intro"><Icon name="sparkle" size={17} /><span>{description}</span></p>
+
+		<form id="pf-search" class="pf-search" role="search" action={path} method="get" hidden>
+			<Icon name="search" size={18} />
+			<label class="sr-only" for="pf-q"><I18nText text={t.search} /></label>
+			<input id="pf-q" name="q" type="search" autocomplete="off" enterkeyhint="search" placeholder={P(t.searchPh)} />
+			<button type="button" class="pf-circle is-sm" data-search-clear aria-label={L('Clear search', 'Xoá tìm kiếm')}>
+				<Icon name="close" size={16} />
+			</button>
+		</form>
+	</header>
+
+	<!-- Mobile: nằm ngay dưới header (chip cuộn ngang + stack nổi bật). Desktop: cột phải, sticky. -->
+	<aside class="pf-side" aria-label={P(t.side)}>
+		{chips.length > 0 && (
+			<nav class="pf-topics" aria-labelledby="pf-topics-h">
+				<div class="pf-side-head">
+					<h2 class="pf-h2" id="pf-topics-h"><I18nText text={t.topics} /><small>{chips.length}</small></h2>
+					<a class="pf-link" href={`${kind.base}tag/`}><I18nText text={{ en: 'See all', vi: 'Xem tất cả' }} /></a>
+				</div>
+				<div class="pf-chips">
+					<a class="pf-chip" href={kind.base} aria-current={activeTag ? undefined : 'page'}>
+						<span class="pf-chip-text"><I18nText text={{ en: 'All', vi: 'Tất cả' }} /></span>
+					</a>
+					{chips.map(x => (
+						<a class="pf-chip" href={x.url} rel="tag" aria-current={x.slug === activeTag ? 'page' : undefined}>
+							<span class="pf-chip-text">{x.label}</span><span class="pf-chip-count">{x.count}</span>
+						</a>
+					))}
+				</div>
+			</nav>
+		)}
+
+		{featured.length > 0 && (
+			<section class="pf-sec pf-featured" aria-labelledby="pf-featured-h" data-stack>
+				<div class="pf-sec-head">
+					<h2 class="pf-h2" id="pf-featured-h"><I18nText text={t.featured} /></h2>
+					<div class="pf-stack-dots" aria-hidden="true">
+						{featured.map((_, i) => <span class={i === 0 ? 'is-on' : ''} />)}
+					</div>
+					<button type="button" class="pf-circle is-sm" data-stack-next aria-label={P(t.nextFeatured)}>
+						<Icon name="next" size={18} />
+					</button>
+				</div>
+				<div class="pf-stack">
+					{featured.map((v, i) => (
+						<Card kind={kind} item={v} eager={i === 0} attrs={{ 'data-pos': i, inert: i > 0 ? true : undefined }} />
+					))}
+				</div>
+			</section>
+		)}
+	</aside>
+
+	<section class="pf-sec pf-main" aria-labelledby="pf-feed-h">
+		<div class="pf-sec-head">
+			<h2 class="pf-h2" id="pf-feed-h">
+				<I18nText text={activeTag ? t.crumb : t.all} />
+				<small data-pf-count>{views.length}</small>
+			</h2>
+			{views.length > 1 && (
+				<div class="pf-seg" role="group" aria-label={L('Sort by', 'Sắp xếp theo')}>
+					{kind.sorts.map((s, i) => (
+						<button type="button" data-sort={s.key} data-dir={s.dir} aria-pressed={i === 0 ? 'true' : 'false'}><I18nText text={s.text} /></button>
+					))}
+				</div>
+			)}
+		</div>
+
+		{views.length > 0 ? (
+			<ol class="pf-feed">
+				{views.map((v, i) => (
+					<li data-search={v.search} data-later={i >= PAGE_SIZE ? '' : undefined} {...sortAttrs(v)}>
+						<Card kind={kind} item={v} eager={i === 0 && featured.length === 0} />
+					</li>
+				))}
+			</ol>
+		) : null}
+
+		<div class="pf-empty" data-pf-empty hidden={views.length > 0}>
+			<Icon name="inbox" size={28} />
+			<span data-empty-text><I18nText text={t.empty} /></span>
+			<a class="pf-chip" href={kind.base} hidden={!activeTag}><I18nText text={t.viewAll} /></a>
+		</div>
+
+		<button type="button" class="pf-more" data-pf-more hidden={views.length <= PAGE_SIZE}>
+			<I18nText text={{ en: 'Load more', vi: 'Xem thêm' }} />
+		</button>
+	</section>
+
+	<Share />
+</div>
+
+<script>
+	// Bỏ dấu giống slugify() (services/tools/util.js) — data-search dựng bằng đúng hàm đó lúc build
+	const norm = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()
+		.replace(/đ/g, 'd').replace(/[^a-z0-9]+/g, ' ').trim();
+
+	function initFeed(root: HTMLElement) {
+		const pageSize = Number(root.dataset.pageSize) || 12;
+		const list = root.querySelector<HTMLOListElement>('.pf-feed');
+		const items = list ? [...list.children] as HTMLElement[] : [];
+		const form = root.querySelector<HTMLFormElement>('.pf-search');
+		const input = root.querySelector<HTMLInputElement>('#pf-q');
+		const toggle = root.querySelector<HTMLButtonElement>('[data-search-toggle]');
+		const more = root.querySelector<HTMLButtonElement>('[data-pf-more]');
+		const empty = root.querySelector<HTMLElement>('[data-pf-empty]');
+		const count = root.querySelector<HTMLElement>('[data-pf-count]');
+		const sortBtns = [...root.querySelectorAll<HTMLButtonElement>('[data-sort]')];
+		const emptyText = empty?.querySelector<HTMLElement>('[data-empty-text]');
+		const emptyDefault = emptyText?.innerHTML ?? '';
+
+		let q = new URLSearchParams(location.search).get('q') ?? '';
+		// Sắp xếp theo giá trị số build sẵn ở <li data-sort-{key}> — không cần biết đang là post hay product
+		let sortKey = sortBtns[0]?.dataset.sort ?? '';
+		let sortDir = sortBtns[0]?.dataset.dir ?? 'desc';
+		let shown = pageSize;
+		const valueOf = (li: HTMLElement) => Number(li.getAttribute(`data-sort-${sortKey}`)) || 0;
+
+		function apply() {
+			if (!list) return;
+			const tokens = norm(q).split(' ').filter(Boolean);
+			const order = sortKey
+				? [...items].sort((a, b) => sortDir === 'asc' ? valueOf(a) - valueOf(b) : valueOf(b) - valueOf(a))
+				: items;
+			let visible = 0;
+			for (const li of order) {
+				list.appendChild(li); // đổi thứ tự DOM — giữ đúng thứ tự đọc/tab
+				const hay = li.dataset.search || '';
+				const hit = tokens.every(tk => hay.includes(tk));
+				li.toggleAttribute('data-miss', !hit);
+				li.toggleAttribute('data-later', hit && visible >= shown);
+				if (hit) visible++;
+			}
+			if (count) count.textContent = String(visible);
+			if (more) more.hidden = visible <= shown;
+			if (empty) {
+				empty.hidden = visible > 0;
+				if (!emptyText) return;
+				if (tokens.length) emptyText.textContent = `${document.documentElement.lang === 'en' ? 'No results for' : 'Không có kết quả cho'} “${q}”`;
+				else emptyText.innerHTML = emptyDefault; // markup SSR gốc (I18nText), không chứa input người dùng
+			}
+		}
+
+		function setQuery(value: string) {
+			q = value;
+			shown = pageSize;
+			apply();
+			const url = new URL(location.href);
+			if (q) url.searchParams.set('q', q); else url.searchParams.delete('q');
+			history.replaceState(history.state, '', url);
+		}
+
+		function openSearch(focus = true) {
+			if (!form) return;
+			form.hidden = false;
+			toggle?.setAttribute('aria-expanded', 'true');
+			if (focus) input?.focus();
+		}
+
+		// ── Search ──
+		if (input) input.value = q;
+		if (q || location.hash === '#pf-q') openSearch(location.hash === '#pf-q');
+		toggle?.addEventListener('click', () => {
+			if (form?.hidden) openSearch();
+			else { form!.hidden = true; toggle.setAttribute('aria-expanded', 'false'); if (q) { input!.value = ''; setQuery(''); } }
+		});
+		let timer = 0;
+		input?.addEventListener('input', () => { clearTimeout(timer); timer = window.setTimeout(() => setQuery(input.value.trim()), 180); });
+		form?.addEventListener('submit', (e) => { e.preventDefault(); setQuery(input!.value.trim()); input!.blur(); });
+		root.querySelector('[data-search-clear]')?.addEventListener('click', () => { input!.value = ''; setQuery(''); input!.focus(); });
+		// Mục "Tìm kiếm" của menu (modules/<loại>/index.js → href '…/#pf-q') khi đang ở chính trang list
+		// → mở ô tìm, không điều hướng
+		document.querySelectorAll<HTMLAnchorElement>('a[href$="#pf-q"]').forEach(a => a.addEventListener('click', (e) => {
+			if (new URL(a.href).pathname !== location.pathname) return;
+			e.preventDefault();
+			openSearch();
+			form?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+		}));
+
+		// ── Sort ──
+		sortBtns.forEach(btn => btn.addEventListener('click', () => {
+			sortKey = btn.dataset.sort ?? '';
+			sortDir = btn.dataset.dir ?? 'desc';
+			sortBtns.forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+			shown = pageSize;
+			apply();
+		}));
+
+		// ── Xem thêm / cuộn vô hạn ──
+		const loadMore = () => { shown += pageSize; apply(); };
+		more?.addEventListener('click', loadMore);
+		if (more && 'IntersectionObserver' in window) {
+			const io = new IntersectionObserver((entries) => {
+				if (entries[0]?.isIntersecting && !more.hidden) loadMore();
+			}, { rootMargin: '320px' });
+			io.observe(more);
+			document.addEventListener('astro:before-swap', () => io.disconnect(), { once: true });
+		}
+
+		if (q) apply();
+		initStack(root);
+		const today = root.querySelector<HTMLElement>('[data-today]');
+		if (today) today.textContent = new Intl.DateTimeFormat(document.documentElement.lang || 'vi', {
+			weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+		}).format(new Date());
+	}
+
+	// Stack nổi bật: card trước → ra sau; card sau → inert (không focus/đọc được khi đang bị che)
+	function initStack(root: HTMLElement) {
+		const sec = root.querySelector<HTMLElement>('[data-stack]');
+		if (!sec) return;
+		const cards = [...sec.querySelectorAll<HTMLElement>('.pf-stack > .pf-card')];
+		const dots = [...sec.querySelectorAll<HTMLElement>('.pf-stack-dots span')];
+		let front = 0;
+		const render = () => cards.forEach((c, i) => {
+			const pos = (i - front + cards.length) % cards.length;
+			c.dataset.pos = String(pos);
+			c.inert = pos !== 0;
+			dots[i]?.classList.toggle('is-on', pos === 0);
+		});
+		const next = (dir = 1) => { front = (front + dir + cards.length) % cards.length; render(); };
+		sec.querySelector('[data-stack-next]')?.addEventListener('click', () => next());
+		let x0 = 0;
+		const stack = sec.querySelector<HTMLElement>('.pf-stack')!;
+		stack.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+		stack.addEventListener('touchend', (e) => {
+			const dx = e.changedTouches[0].clientX - x0;
+			if (Math.abs(dx) > 48) next(dx < 0 ? 1 : -1);
+		});
+	}
+
+	document.addEventListener('astro:page-load', () => {
+		const root = document.querySelector<HTMLElement>('[data-pf-feed]');
+		if (root) initFeed(root);
+	});
+</script>

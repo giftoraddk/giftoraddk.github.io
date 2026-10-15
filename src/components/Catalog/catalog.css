@@ -1,0 +1,917 @@
+/* Bộ giao diện catalog (src/components/Catalog/* — post & product) — mobile first, cùng tinh thần panel svc-node / svc-radar:
+   MỘT lớp quầng sáng tints [a, b] rất nhẹ cho cả trang (layout Core/CoreShop `tints`, hoặc .pf-page khi
+   layout không có tints), mọi bề mặt bên trên trung tính (base-100 + viền mảnh base-content), màu nhấn chỉ ở
+   chi tiết nhỏ: glyph chữ viết tắt, pill số, chip đang chọn, dấu tick. Không đổ bóng, không glow theo từng card.
+   Mọi màu là biến theme → light/dark tự đổi theo data-theme.
+
+   Cặp tint: .pf lấy --layout-tint-a/b (Core/CoreShop), không có thì [info, accent]. .pf-tone-* (tag của bài,
+   lib.ts toneOf) chỉ đổi màu glyph. Biến suy ra (--pf-grad, --pf-ring, --tint-ink…) khai báo lại ở MỌI phần tử
+   mang cặp tint — custom property chứa var() được tính tại phần tử khai báo nó, không tự tính lại ở con. */
+
+.pf {
+	--pf-a: var(--layout-tint-a, var(--color-info));
+	--pf-b: var(--layout-tint-b, var(--color-accent));
+	--pf-ink: var(--color-base-content);
+	--pf-surface: color-mix(in oklab, var(--color-base-content) 4%, transparent);
+	--pf-hover: color-mix(in oklab, var(--color-base-content) 7%, transparent);
+	--pf-line: color-mix(in oklab, var(--color-base-content) 4%, transparent);
+	--pf-line-strong: color-mix(in oklab, var(--color-base-content) 16%, transparent);
+	--pf-muted: color-mix(in oklab, var(--color-base-content) 55%, transparent);
+	--pf-base: color-mix(in oklab, var(--color-base-100) 30%, transparent); /* nền mọi bề mặt — glow tints của layout xuyên qua */
+	--pf-solid: color-mix(in oklab, var(--color-base-100) 92%, transparent); /* phần tử nổi / chồng lên nhau */
+	--pf-radius: 18px;
+	--pf-gutter: 16px;
+
+	position: relative;
+	color: var(--pf-ink);
+	-webkit-tap-highlight-color: transparent;
+}
+
+.pf-tone-primary   { --pf-a: var(--color-primary);   --pf-b: var(--color-accent); }
+.pf-tone-info      { --pf-a: var(--color-info);      --pf-b: var(--color-accent); }
+.pf-tone-accent    { --pf-a: var(--color-accent);    --pf-b: var(--color-warning); }
+.pf-tone-secondary { --pf-a: var(--color-secondary); --pf-b: var(--color-info); }
+.pf-tone-success   { --pf-a: var(--color-success);   --pf-b: var(--color-info); }
+.pf-tone-warning   { --pf-a: var(--color-warning);   --pf-b: var(--color-accent); }
+
+.pf,
+[class*='pf-tone-'] {
+	--pf-grad: linear-gradient(135deg, color-mix(in oklab, var(--pf-a) 14%, transparent), color-mix(in oklab, var(--pf-b) 14%, transparent));
+	--pf-soft-a: color-mix(in oklab, var(--pf-a) 12%, transparent);
+	--pf-ring: color-mix(in oklab, var(--pf-a) 50%, transparent);
+	--tint-ink: color-mix(in oklab, var(--pf-a) 65%, var(--color-base-content));
+}
+
+.pf a { color: inherit; text-decoration: none; }
+.pf button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+.pf :focus-visible { outline: none; box-shadow: 0 0 0 2px var(--pf-ring); border-radius: 12px; }
+.pf-ico { flex-shrink: 0; display: block; }
+
+/* ── Khung trang (list / tags) ───────────────────────────────────────────── */
+
+/* Khung = Tailwind "mx-auto max-w-6xl px-4" (đặt trong CSS: post.css không nằm trong @layer nên sẽ thắng
+   utility Tailwind 4 nếu gắn class). .pf.pf-page để thắng .pf { --pf-gutter: 24px } ở ≥640px. */
+.pf.pf-page {
+	--pf-gutter: 1rem; /* px-4 ở mọi khổ — chip cuộn ngang tràn mép dùng cùng giá trị */
+	max-width: 72rem;  /* max-w-6xl */
+	margin-inline: auto; /* mx-auto */
+	padding: 18px var(--pf-gutter) 112px; /* đáy: chừa chỗ cho NavMobile (thanh đáy cố định của Core) */
+}
+/* Layout không có tints → trang tự vẽ 1 lớp glow nhẹ (kích thước cố định, không phình theo màn rộng);
+   có tints (Core/CoreShop .has-tints) thì layout đã vẽ — bỏ để không chồng 2 lớp / lộ khung chữ nhật 1200px. */
+.pf-page {
+	background:
+		radial-gradient(900px 480px at 100% 0%, color-mix(in oklab, var(--pf-a) 14%, transparent), transparent 70%),
+		radial-gradient(700px 420px at 0% 0%, color-mix(in oklab, var(--pf-b) 11%, transparent), transparent 70%);
+	background-repeat: no-repeat;
+}
+.has-tints .pf-page { background: none; }
+
+.pf-top { display: grid; gap: 12px; }
+.pf-top-row { display: flex; align-items: center; gap: 10px; }
+.pf-top-text { flex: 1; min-width: 0; }
+.pf-kicker { margin: 0 0 2px; font-size: 0.75rem; color: var(--pf-muted); }
+.pf-h1 {
+	margin: 0;
+	font-size: clamp(1.35rem, 5vw, 1.9rem);
+	font-weight: 700;
+	letter-spacing: -0.015em;
+	line-height: 1.2;
+}
+.pf-top-actions { display: flex; gap: 4px; }
+
+/* Gợi ý viền nét đứt (như "Pick a node below…") */
+.pf-intro {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	margin: 0;
+	padding: 0.7rem 0.9rem;
+	border: 1px dashed var(--pf-line-strong);
+	border-radius: 14px;
+	font-size: 0.82rem;
+	line-height: 1.45;
+	color: var(--pf-muted);
+}
+.pf-intro > .pf-ico { color: var(--pf-a); }
+
+/* Nút icon — phẳng như nút fullscreen / close của panel */
+.pf-circle {
+	display: inline-grid;
+	place-items: center;
+	flex-shrink: 0;
+	width: 38px;
+	height: 38px;
+	border-radius: 12px;
+	color: var(--pf-ink);
+	transition: background 0.15s ease, transform 0.15s ease;
+}
+.pf-circle:hover { background: var(--pf-hover); }
+.pf-circle:active { transform: scale(0.94); }
+.pf-circle.is-sm { width: 32px; height: 32px; border-radius: 10px; color: var(--pf-muted); }
+.pf-circle.is-sm:hover { color: var(--pf-ink); }
+.pf-circle.is-glass {
+	border-radius: 999px;
+	background: color-mix(in oklab, #000 26%, transparent);
+	color: #fff;
+	backdrop-filter: blur(10px);
+}
+.pf-circle.is-glass:hover { background: color-mix(in oklab, #000 38%, transparent); }
+
+/* Breadcrumb — hiển thị thật (khớp BreadcrumbList JSON-LD) */
+.pf-crumbs ol { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; list-style: none; font-size: 0.75rem; color: var(--pf-muted); }
+.pf-crumbs li:not(:last-child)::after { content: '/'; margin-left: 4px; opacity: 0.5; }
+.pf-crumbs a:hover { color: var(--pf-ink); }
+.pf-crumbs [aria-current] { color: var(--pf-ink); font-weight: 600; }
+
+/* Search — như ô "Find a node" (form GET thật: chạy cả khi không có JS) */
+.pf-search {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	height: 44px;
+	padding: 0 0.35rem 0 0.9rem;
+	border-radius: 12px;
+	background: var(--pf-surface);
+	color: var(--pf-muted);
+	transition: box-shadow 0.15s ease;
+}
+.pf-search:focus-within { box-shadow: 0 0 0 2px var(--pf-ring); }
+.pf-search[hidden] { display: none; }
+.pf-search input {
+	flex: 1;
+	min-width: 0;
+	height: 100%;
+	border: 0;
+	outline: 0;
+	background: transparent;
+	color: var(--pf-ink);
+	font: inherit;
+	font-size: 0.9rem;
+}
+.pf-search input::-webkit-search-cancel-button { display: none; }
+/* Chỉ 1 viền: vòng ngoài của .pf-search:focus-within — tắt vòng của rule chung .pf :focus-visible
+   (và outline mặc định của trình duyệt/theme) trên chính ô input bên trong */
+.pf-search input:focus,
+.pf-search input:focus-visible { outline: none; box-shadow: none; }
+
+/* Pill số (như "55" / "2") */
+.pf-chip-count,
+.pf-h2 small {
+	display: inline-block;
+	min-width: 1.25rem;
+	padding: 0 0.4rem;
+	border-radius: 999px;
+	background: var(--pf-surface);
+	color: var(--pf-muted);
+	font-size: 0.68rem;
+	font-weight: 600;
+	line-height: 1.25rem;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+}
+
+/* Chips — mobile: cuộn ngang, mép mờ; desktop: danh sách dọc ở sidebar (xem breakpoint) */
+.pf-chips {
+	display: flex;
+	gap: 6px;
+	margin: 0 calc(var(--pf-gutter) * -1);
+	padding: 2px var(--pf-gutter) 6px;
+	overflow-x: auto;
+	scrollbar-width: none;
+	scroll-snap-type: x proximity;
+	mask-image: linear-gradient(90deg, transparent 0, #000 var(--pf-gutter), #000 calc(100% - 28px), transparent);
+}
+.pf-chips::-webkit-scrollbar { display: none; }
+.pf-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	flex-shrink: 0;
+	height: 34px;
+	padding: 0 12px;
+	border-radius: 999px;
+	scroll-snap-align: start;
+	background: var(--pf-surface);
+	font-size: 0.8rem;
+	font-weight: 550;
+	white-space: nowrap;
+	transition: background 0.15s ease, color 0.15s ease;
+}
+.pf-chip:hover { background: var(--pf-hover); }
+.pf-chip[aria-current='page'],
+.pf-chip[aria-pressed='true'] { background: var(--pf-soft-a); color: var(--tint-ink); font-weight: 650; }
+.pf-chip[aria-current='page'] .pf-chip-count { background: color-mix(in oklab, var(--pf-a) 14%, transparent); color: var(--tint-ink); }
+
+/* Section heading — như "Purchase System  2" / "Lịch sử điểm" */
+.pf-sec { margin-top: 20px; }
+.pf-sec-head,
+.pf-side-head { display: flex; align-items: center; gap: 8px; margin: 0 2px 10px; }
+.pf-side-head { display: none; } /* mobile: chip đã tự giải thích; desktop mới hiện tiêu đề cột */
+.pf-h2 { flex: 1; display: flex; align-items: center; gap: 0.45rem; margin: 0; font-size: 0.9rem; font-weight: 650; }
+.pf-link { font-size: 0.76rem; font-weight: 600; color: var(--pf-muted); }
+.pf-link:hover { color: var(--pf-ink); }
+
+.pf-side { margin-top: 14px; }
+
+/* Sort — segmented */
+.pf-seg { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--pf-surface); }
+.pf-seg button {
+	height: 28px;
+	padding: 0 10px;
+	border-radius: 8px;
+	font-size: 0.74rem;
+	font-weight: 600;
+	color: var(--pf-muted);
+}
+.pf-seg button[aria-pressed='true'] { background: var(--pf-solid); color: var(--pf-ink); box-shadow: 0 0 0 1px var(--pf-line); }
+
+/* ── Glyph — ô vuông bo góc gradient a→b nhạt (như "PY" / "PM") ──────────── */
+
+.pf-avatar,
+.pf-glyph,
+.pf-rel-thumb {
+	display: grid;
+	place-items: center;
+	flex-shrink: 0;
+	width: 40px;
+	height: 40px;
+	overflow: hidden;
+	border-radius: 12px;
+	background: var(--pf-grad);
+	color: var(--pf-ink);
+	font-size: 0.76rem;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+}
+.pf-glyph img,
+.pf-rel-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ── Card — bề mặt trung tính, viền mảnh ─────────────────────────────────── */
+
+.pf-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 12px;
+	border-radius: var(--pf-radius);
+	background: var(--pf-base);
+	border: 1px solid var(--pf-line);
+	transition: border-color 0.15s ease, background 0.15s ease;
+}
+@media (hover: hover) {
+	.pf-card:hover { border-color: var(--pf-line-strong); background: var(--pf-solid); }
+}
+
+.pf-card-head { display: flex; align-items: center; gap: 10px; }
+.pf-src { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3; }
+.pf-src-name {
+	position: relative;
+	z-index: 1; /* nổi trên stretched link của card */
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	max-width: 100%;
+	font-size: 0.86rem;
+	font-weight: 650;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+a.pf-src-name:hover { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--pf-line-strong); }
+.pf-verified { color: var(--layout-tint-a, var(--color-info)); }
+.pf-time { font-size: 0.72rem; color: var(--pf-muted); }
+
+.pf-card-title { margin: 0; font-size: 0.98rem; font-weight: 650; line-height: 1.4; }
+.pf-card-title a::after { content: ''; position: absolute; inset: 0; border-radius: inherit; z-index: 0; } /* stretched link */
+.pf-card-title a:focus-visible { box-shadow: none; }
+.pf-card:has(.pf-card-title a:focus-visible) { box-shadow: 0 0 0 2px var(--pf-ring); }
+
+.pf-card-media {
+	margin: 0;
+	overflow: hidden;
+	aspect-ratio: 16 / 10;
+	border-radius: 12px;
+	background: var(--pf-surface);
+}
+.pf-card-media img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+@media (hover: hover) { .pf-card:hover .pf-card-media img { transform: scale(1.025); } }
+
+.pf-card-excerpt {
+	margin: 0;
+	font-size: 0.82rem;
+	line-height: 1.55;
+	color: var(--pf-muted);
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.pf-card-foot { display: flex; align-items: center; gap: 6px; }
+.pf-stat {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	height: 26px;
+	padding: 0 9px;
+	border-radius: 999px;
+	background: var(--pf-surface);
+	color: var(--pf-muted);
+	font-size: 0.72rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+}
+.pf-card-foot .pf-share { margin-left: auto; position: relative; z-index: 1; }
+
+/* ── Slideshow nhiều ảnh (Media.astro + apex/web-glide.js, hiệu ứng flipX) ──────────────── */
+
+/* Ảnh SSR nằm dưới; <web-glide> (JS dựng khi khung vào màn hình) phủ kín lên trên */
+.pf-glide { position: relative; width: 100%; height: 100%; }
+.pf-glide > web-glide { position: absolute; inset: 0; z-index: 1; }
+.pf-glide-n {
+	position: absolute;
+	right: 8px;
+	bottom: 8px;
+	z-index: 2;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 2px 8px;
+	border-radius: 999px;
+	background: color-mix(in oklab, var(--color-base-100) 82%, transparent);
+	color: var(--pf-ink);
+	font-size: 0.68rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	backdrop-filter: blur(8px);
+	pointer-events: none;
+}
+/* Hero: pill nằm trên mép sheet đè lên ảnh → đẩy lên */
+.pf-hero .pf-glide-n { bottom: 64px; right: 16px; } /* sheet đè lên hero 36–52px (mobile/tablet) */
+
+/* ── Featured stack ──────────────────────────────────────────────────────── */
+
+.pf-stack { display: grid; padding-top: 28px; }
+.pf-stack > .pf-card {
+	background: var(--color-base-100); /* đặc: các card chồng lên nhau, nền trong sẽ lộ card phía sau */
+	grid-area: 1 / 1;
+	height: 100%;
+	transform-origin: 50% 0;
+	transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.45s ease;
+}
+.pf-stack > [data-pos='0'] { z-index: 3; }
+.pf-stack > [data-pos='1'] { z-index: 2; transform: translateY(-14px) scale(0.94); opacity: 0.85; }
+.pf-stack > [data-pos='2'] { z-index: 1; transform: translateY(-28px) scale(0.88); opacity: 0.6; }
+.pf-stack > [data-pos]:not([data-pos='0']) { pointer-events: none; }
+.pf-stack > [data-pos]:not([data-pos='0']) > :not(.pf-card-head) { visibility: hidden; }
+.pf-stack-dots { display: flex; gap: 5px; }
+.pf-stack-dots span { width: 6px; height: 6px; border-radius: 999px; background: var(--pf-line-strong); transition: width 0.3s ease, background 0.3s ease; }
+.pf-stack-dots span.is-on { width: 16px; background: color-mix(in oklab, var(--pf-a) 60%, transparent); }
+
+/* ── Feed ─────────────────────────────────────────────────────────────────── */
+
+.pf-feed { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.pf-feed > li { display: grid; }
+.pf-feed > li[data-later],
+.pf-feed > li[data-miss] { display: none; }
+.pf-more {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	width: 100%;
+	height: 44px;
+	margin-top: 14px;
+	border-radius: 14px;
+	border: 1px dashed var(--pf-line-strong) !important;
+	color: var(--pf-muted) !important;
+	font-size: 0.85rem;
+	font-weight: 600;
+}
+.pf-more:hover { background: var(--pf-surface) !important; color: var(--pf-ink) !important; }
+.pf-more[hidden] { display: none; }
+
+.pf-empty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
+	padding: 40px 16px;
+	border: 1px dashed var(--pf-line-strong);
+	border-radius: var(--pf-radius);
+	text-align: center;
+	font-size: 0.85rem;
+	color: var(--pf-muted);
+}
+.pf-empty > .pf-ico { color: var(--pf-a); }
+.pf-empty[hidden] { display: none; }
+
+/* ── Tags page (/post/tag/) — card chủ đề ────────────────────────────────── */
+
+/* Số liệu dưới tiêu đề — pill trung tính */
+.pf-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.pf-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	height: 28px;
+	padding: 0 11px;
+	border-radius: 999px;
+	background: var(--pf-surface);
+	color: var(--pf-muted);
+	font-size: 0.76rem;
+	font-weight: 550;
+}
+.pf-pill b { color: var(--pf-ink); font-weight: 700; font-variant-numeric: tabular-nums; }
+.pf-pill .pf-ico { color: var(--pf-a); }
+
+/* Hàng số liệu (trái) · sắp xếp (phải) ngay trên lưới — chật thì nhóm sắp xếp xuống dòng */
+.pf-sec-head.is-between { flex-wrap: wrap; justify-content: space-between; row-gap: 8px; }
+.pf-seg[hidden] { display: none; }
+
+.pf-tags { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.pf-tags > li { display: grid; }
+.pf-tags > li[data-miss] { display: none; }
+
+/* Mobile: card ngang — ảnh vuông trái, nội dung phải */
+.pf-topic {
+	display: grid;
+	grid-template-columns: 92px minmax(0, 1fr);
+	gap: 12px;
+	height: 100%;
+	padding: 8px;
+	border-radius: var(--pf-radius);
+	background: var(--pf-base);
+	border: 1px solid var(--pf-line);
+	transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+.pf-topic:hover { border-color: var(--pf-line-strong); background: var(--pf-solid); }
+.pf-topic:active { transform: scale(0.99); }
+.pf-topic:focus-visible { border-radius: var(--pf-radius); } /* giữ bo góc card (rule chung .pf :focus-visible đặt 12px) */
+
+.pf-topic-cover {
+	position: relative;
+	overflow: hidden;
+	aspect-ratio: 1;
+	border-radius: 12px;
+	background: var(--pf-grad);
+}
+.pf-topic-cover img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+@media (hover: hover) { .pf-topic:hover .pf-topic-cover img { transform: scale(1.04); } }
+.pf-topic-fallback {
+	display: grid;
+	place-items: center;
+	height: 100%;
+	font-size: 1.4rem;
+	font-weight: 800;
+	letter-spacing: 0.02em;
+	color: color-mix(in oklab, var(--pf-a) 55%, var(--pf-ink));
+}
+.pf-topic-count {
+	position: absolute;
+	left: 6px;
+	bottom: 6px;
+	padding: 2px 8px;
+	border-radius: 999px;
+	background: color-mix(in oklab, var(--color-base-100) 88%, transparent);
+	color: var(--pf-ink);
+	font-size: 0.68rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	backdrop-filter: blur(8px);
+}
+
+.pf-topic-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 4px 4px 2px 0; }
+.pf-topic-name {
+	margin: 0;
+	font-size: 0.95rem;
+	font-weight: 680;
+	line-height: 1.3;
+	letter-spacing: -0.005em;
+	overflow-wrap: anywhere;
+}
+.pf-topic-hash { margin-right: 2px; color: color-mix(in oklab, var(--pf-a) 70%, var(--pf-ink)); font-weight: 700; }
+.pf-topic-posts { display: grid; gap: 2px; }
+.pf-topic-post {
+	position: relative;
+	padding-left: 12px;
+	font-size: 0.76rem;
+	line-height: 1.45;
+	color: var(--pf-muted);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.pf-topic-post::before {
+	content: '';
+	position: absolute;
+	left: 2px;
+	top: 0.62em;
+	width: 4px;
+	height: 4px;
+	border-radius: 999px;
+	background: color-mix(in oklab, var(--pf-a) 60%, transparent);
+}
+.pf-topic-meta {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	margin-top: auto;
+	font-size: 0.72rem;
+	color: var(--pf-muted);
+}
+.pf-topic-go {
+	display: grid;
+	place-items: center;
+	width: 26px;
+	height: 26px;
+	border-radius: 9px;
+	background: var(--pf-surface);
+	color: var(--pf-ink);
+	transition: transform 0.15s ease, background 0.15s ease;
+}
+.pf-topic:hover .pf-topic-go { background: var(--pf-soft-a); transform: translateX(2px); }
+
+/* ── Detail ──────────────────────────────────────────────────────────────── */
+
+.pf-detail { padding-bottom: 112px; } /* như .pf-page — chỗ cho NavMobile */
+.pf-hero {
+	position: relative;
+	height: min(52vh, 480px);
+	min-height: 260px;
+	overflow: hidden;
+	background: var(--pf-surface);
+}
+.pf-hero > img,
+.pf-hero > .pf-glide > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.pf-hero > .pf-glide { height: 100%; }
+.pf-hero::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(180deg, rgb(0 0 0 / 0.3), transparent 30%);
+	pointer-events: none;
+}
+.pf-hero-fallback {
+	display: grid;
+	place-items: center;
+	height: 100%;
+	font-size: clamp(4rem, 22vw, 9rem);
+	font-weight: 800;
+	color: color-mix(in oklab, var(--pf-a) 30%, transparent);
+	background: var(--pf-grad);
+}
+.pf-hero:has(.pf-hero-fallback)::after { display: none; }
+.pf-hero-bar {
+	position: absolute;
+	inset: 0 0 auto;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 14px var(--pf-gutter);
+}
+.pf-hero-label { flex: 1; text-align: center; font-weight: 650; color: #fff; text-shadow: 0 1px 8px rgb(0 0 0 / 0.35); }
+.pf-hero:has(.pf-hero-fallback) .pf-hero-label { color: var(--pf-ink); text-shadow: none; }
+
+.pf-sheet {
+	position: relative;
+	z-index: 2;
+	max-width: 760px;
+	margin: -36px auto 0;
+	padding: 18px var(--pf-gutter) 28px;
+	border-radius: 24px 24px 0 0;
+	background: var(--pf-base);
+	border: 1px solid var(--pf-line);
+	border-bottom: 0;
+	backdrop-filter: blur(24px) saturate(1.2); /* nền 30%: phần sheet đè lên ảnh hero vẫn đọc được */
+}
+.pf-sheet-head { display: grid; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid var(--pf-line); }
+.pf-d-title { margin: 2px 0 0; font-size: clamp(1.4rem, 6vw, 2.1rem); font-weight: 720; line-height: 1.22; letter-spacing: -0.02em; }
+.pf-d-date { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; font-size: 0.8rem; color: var(--pf-muted); }
+.pf-d-meta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	font-size: 0.78rem;
+}
+.pf-d-meta li {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	height: 28px;
+	padding: 0 10px;
+	border-radius: 999px;
+	background: var(--pf-surface);
+}
+.pf-d-meta b { font-weight: 650; }
+.pf-d-meta .pf-ico { color: var(--pf-muted); }
+
+/* Tóm tắt đầu bài (GEO: đoạn AI hay trích dẫn) — viền trái màu a, nền trung tính */
+.pf-lead {
+	margin: 18px 0 0;
+	padding: 12px 16px;
+	border-left: 3px solid color-mix(in oklab, var(--pf-a) 55%, transparent);
+	border-radius: 4px 14px 14px 4px;
+	background: var(--pf-surface);
+	font-size: 0.96rem;
+	line-height: 1.6;
+}
+.pf-lead strong {
+	display: block;
+	margin-bottom: 2px;
+	font-size: 0.68rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--pf-muted);
+}
+
+.pf-prose { margin-top: 18px; font-size: 1rem; line-height: 1.75; }
+.pf-prose img { border-radius: 14px; }
+
+.pf-gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+.pf-gallery img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; background: var(--pf-surface); }
+
+.pf-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.pf-chip-row .pf-chip { height: 32px; }
+
+.pf-engage { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+
+/* Bài liên quan — hàng gọn: glyph + tiêu đề */
+.pf-rel { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.pf-rel-item {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 8px;
+	border-radius: 14px;
+	transition: background 0.15s ease;
+}
+.pf-rel-item:hover { background: var(--pf-surface); }
+.pf-rel-thumb { width: 64px; height: 64px; }
+.pf-rel-body { min-width: 0; display: grid; gap: 3px; }
+.pf-rel-title { margin: 0; font-size: 0.88rem; font-weight: 650; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.pf-rel-title a::after { content: ''; position: absolute; inset: 0; border-radius: inherit; }
+
+/* ── Menu chia sẻ — 1 menu position:fixed dùng chung, Share.astro định vị cạnh nút vừa bấm ── */
+
+.pf-share-menu {
+	position: fixed;
+	z-index: 120; /* trên NavMobile (z-100, Nav/Mobile.astro) */
+	display: grid;
+	gap: 2px;
+	width: 224px;
+	padding: 6px;
+	border-radius: 16px;
+	background: var(--pf-solid); /* nổi trên nội dung — không dùng --pf-base 30% (khó đọc) */
+	border: 1px solid var(--pf-line);
+	box-shadow: 0 16px 36px -20px rgb(0 0 0 / 0.28);
+	backdrop-filter: blur(16px) saturate(1.3);
+	transform-origin: 100% 0;
+	opacity: 0;
+	transform: translateY(-4px) scale(0.96);
+	transition: opacity 0.16s ease, transform 0.16s ease;
+}
+.pf-share-menu[data-up='true'] { transform-origin: 100% 100%; transform: translateY(4px) scale(0.96); }
+.pf-share-menu.is-open { opacity: 1; transform: none; }
+.pf-share-menu[hidden] { display: none; }
+.pf-share-menu [role='menuitem'] {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+	height: 42px;
+	padding: 0 8px;
+	border-radius: 10px;
+	font-size: 0.86rem;
+	font-weight: 600;
+	text-align: left;
+	color: var(--pf-ink);
+}
+.pf-share-menu [role='menuitem']:hover,
+.pf-share-menu [role='menuitem']:focus-visible { background: var(--pf-hover); box-shadow: none; }
+.pf-share-ico {
+	display: grid;
+	place-items: center;
+	flex-shrink: 0;
+	width: 30px;
+	height: 30px;
+	border-radius: 10px;
+	--brand: var(--pf-a);
+	background: color-mix(in oklab, var(--brand) 12%, transparent);
+	color: color-mix(in oklab, var(--brand) 85%, var(--color-base-content));
+}
+.pf-share-ico.is-facebook { --brand: #1877f2; }
+.pf-share-ico.is-x { --brand: var(--color-base-content); }
+.pf-share-ico.is-tiktok { --brand: #fe2c55; }
+.pf-share-ico.is-copy { --brand: var(--color-success); }
+
+/* Toast nhỏ cho "đã sao chép link" */
+.pf-toast {
+	position: fixed;
+	left: 50%;
+	bottom: 96px;
+	z-index: 110;
+	transform: translate(-50%, 12px);
+	padding: 9px 14px;
+	border-radius: 12px;
+	background: var(--pf-ink);
+	color: var(--color-base-100);
+	font-size: 0.82rem;
+	font-weight: 600;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.pf-toast.is-on { opacity: 1; transform: translate(-50%, 0); }
+
+/* ── Product — giá, tồn kho, khối mua hàng, FAQ ──────────────────────────── */
+
+/* Hàng tiêu đề feed: product có 4 kiểu sắp xếp → cho xuống dòng khi chật */
+.pf-main > .pf-sec-head { flex-wrap: wrap; row-gap: 8px; }
+
+.pf-stat.pf-price { background: var(--pf-soft-a); color: var(--pf-ink); font-weight: 700; }
+.pf-unit { margin-left: 3px; font-weight: 500; color: var(--pf-muted); }
+.pf-stock.is-ok { color: color-mix(in oklab, var(--color-success) 75%, var(--color-base-content)); }
+.pf-stock.is-off { color: var(--pf-muted); }
+.pf-dot { width: 7px; height: 7px; border-radius: 999px; background: currentColor; }
+.pf-rel-price { color: var(--pf-ink); font-weight: 650; }
+
+.pf-buy {
+	display: grid;
+	gap: 12px;
+	padding: 14px;
+	border-radius: 16px;
+	background: var(--pf-surface);
+	border: 1px solid var(--pf-line);
+}
+.pf-price-lg {
+	display: flex;
+	align-items: baseline;
+	flex-wrap: wrap;
+	gap: 2px 6px;
+	margin: 0;
+	font-size: clamp(1.4rem, 5vw, 1.8rem);
+	font-weight: 750;
+	letter-spacing: -0.01em;
+	font-variant-numeric: tabular-nums;
+}
+.pf-price-lg .pf-unit { font-size: 0.9rem; }
+.pf-buy .pf-d-meta li { background: var(--pf-base); }
+.pf-buy-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.pf-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	height: 44px;
+	padding: 0 18px;
+	border-radius: 12px;
+	background: var(--pf-base);
+	border: 1px solid var(--pf-line-strong) !important;
+	font-size: 0.88rem;
+	font-weight: 650;
+	transition: background 0.15s ease, transform 0.15s ease;
+}
+.pf-btn:hover { background: var(--pf-hover); }
+.pf-btn:active { transform: scale(0.98); }
+/* Nút chính: mực đậm trên nền base — trung tính như toast, không dùng màu nhấn đậm */
+.pf-btn.is-primary { flex: 1 1 220px; background: var(--pf-ink); border-color: var(--pf-ink) !important; color: var(--color-base-100); }
+.pf-btn.is-primary:hover { background: color-mix(in oklab, var(--pf-ink) 86%, var(--pf-a)); }
+
+.pf-faq { display: grid; gap: 6px; }
+.pf-faq details { border-radius: 14px; background: var(--pf-surface); }
+.pf-faq summary {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 12px 14px;
+	font-size: 0.9rem;
+	font-weight: 650;
+	cursor: pointer;
+	list-style: none;
+}
+.pf-faq summary::-webkit-details-marker { display: none; }
+.pf-faq summary::after { content: '+'; flex-shrink: 0; font-size: 1.1rem; color: var(--pf-muted); transition: transform 0.2s ease; }
+.pf-faq details[open] summary::after { transform: rotate(45deg); }
+.pf-faq p { margin: 0; padding: 0 14px 14px; font-size: 0.88rem; line-height: 1.65; color: var(--pf-muted); }
+
+/* ── Tablet ──────────────────────────────────────────────────────────────── */
+
+@media (min-width: 640px) {
+	.pf { --pf-gutter: 24px; }
+	.pf-feed { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+	/* Tags: card dọc — ảnh bìa 16:9 trên, nội dung dưới */
+	.pf-tags { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+	.pf-topic { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 8px; }
+	.pf-topic-cover { aspect-ratio: 16 / 9; }
+	.pf-topic-fallback { font-size: 2.2rem; }
+	.pf-topic-count { left: auto; right: 8px; bottom: auto; top: 8px; }
+	.pf-topic-body { gap: 8px; padding: 12px 6px 4px; }
+	.pf-topic-name { font-size: 1rem; }
+	.pf-gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+	.pf-featured { max-width: 520px; }
+	.pf-sheet { padding: 24px 32px 36px; margin-top: -52px; }
+
+	/* Bài đầu feed (có ảnh) = "lead story" nằm ngang, trải 2 cột: ảnh trái, nội dung phải */
+	.pf-feed > li:first-child { grid-column: 1 / -1; }
+	.pf-feed > li:first-child > .pf-card:has(.pf-card-media) {
+		display: grid;
+		grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+		grid-template-rows: auto auto 1fr auto;
+		grid-template-areas: 'media head' 'media title' 'media excerpt' 'media foot';
+		column-gap: 22px;
+		row-gap: 10px;
+		padding: 14px;
+	}
+	.pf-feed > li:first-child > .pf-card:has(.pf-card-media) > .pf-card-head { grid-area: head; }
+	.pf-feed > li:first-child > .pf-card:has(.pf-card-media) > .pf-card-title { grid-area: title; font-size: clamp(1.1rem, 2.2vw, 1.45rem); line-height: 1.3; letter-spacing: -0.01em; }
+	/* Khung ảnh giữ tỉ lệ 4:3, canh trên — không kéo cao theo khối chữ (ảnh bị cắt + phóng to thêm, mờ với ảnh nhỏ) */
+	.pf-feed > li:first-child > .pf-card:has(.pf-card-media) > .pf-card-media { grid-area: media; aspect-ratio: 4 / 3; align-self: start; }
+	.pf-feed > li:first-child > .pf-card:has(.pf-card-media) > .pf-card-excerpt { grid-area: excerpt; -webkit-line-clamp: 4; line-clamp: 4; font-size: 0.88rem; }
+	.pf-feed > li:first-child > .pf-card:has(.pf-card-media) > .pf-card-foot { grid-area: foot; }
+}
+
+/* ── Desktop ─────────────────────────────────────────────────────────────── */
+
+@media (min-width: 1024px) {
+	.pf.pf-page { padding-top: 32px; padding-bottom: 56px; } /* ≥lg: NavMobile ẩn (Nav/Base.astro lg:hidden) */
+	.pf-detail { padding-bottom: 56px; }
+	.pf-h1 { font-size: clamp(1.9rem, 2.6vw, 2.4rem); }
+	.pf-tags { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+
+	/* Trang list: header trên cùng; feed (trái) + sidebar sticky (phải) */
+	.pf-board {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 300px;
+		grid-template-areas: 'top top' 'main side';
+		column-gap: 40px;
+		align-items: start;
+	}
+	.pf-board > .pf-top { grid-area: top; }
+	.pf-board > .pf-main { grid-area: main; }
+	.pf-board > .pf-side {
+		grid-area: side;
+		position: sticky;
+		top: 20px;
+		display: grid;
+		gap: 22px;
+		margin-top: 20px;
+		max-height: calc(100dvh - 40px);
+		overflow-y: auto;
+		scrollbar-width: none;
+	}
+	.pf-board > .pf-side::-webkit-scrollbar { display: none; }
+	.pf-side .pf-sec { margin-top: 0; }
+	.pf-side-head { display: flex; }
+
+	/* Chip → danh sách dọc kiểu hàng key–value của panel radar */
+	.pf-side .pf-chips {
+		flex-direction: column;
+		gap: 1px;
+		margin: 0;
+		padding: 0;
+		overflow: visible;
+		mask-image: none;
+	}
+	.pf-side .pf-chip {
+		justify-content: space-between;
+		width: 100%;
+		height: 36px;
+		padding: 0 10px;
+		border-radius: 10px;
+		background: transparent;
+		font-size: 0.84rem;
+	}
+	.pf-side .pf-chip:hover { background: var(--pf-surface); }
+	.pf-side .pf-chip[aria-current='page'] { background: var(--pf-soft-a); }
+	.pf-chip-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+	.pf-featured { max-width: none; }
+	.pf-side .pf-card-excerpt { display: none; }
+
+	/* Detail: ảnh hero gói trong khung bo góc, sheet đè lên */
+	.pf-hero { max-width: 1200px; height: 460px; margin: 20px auto 0; border-radius: 28px; }
+	.pf-sheet { margin-top: -72px; border-radius: 28px 28px 0 0; padding: 28px 40px 40px; }
+	.pf-rel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1280px) {
+	.pf-tags { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+	.pf-board { grid-template-columns: minmax(0, 1fr) 320px; column-gap: 48px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pf *, .pf *::before, .pf *::after { transition: none !important; animation: none !important; }
+}

@@ -1,0 +1,78 @@
+/* <svc-learn> — kiểu tints (panel svc-node): KHÔNG tự vẽ khung (khung + glow 2 góc do .adm-panel của trang admin lo),
+   bên trong chỉ có bề mặt trung tính (base-content 4%) + viền mảnh, màu nhấn ở glyph / icon nhỏ. Không đổ bóng.
+   Cặp màu: --color-tint-a/b do .adm-panel truyền xuống (custom property xuyên shadow DOM), thiếu thì primary/secondary.
+   Mobile first: 2 thẻ xếp dọc, ≥768px nằm cạnh nhau. */
+
+:host {
+    --svl-a: var(--color-tint-a, var(--color-primary));
+    --svl-b: var(--color-tint-b, var(--color-secondary));
+    --svl-ink: var(--color-base-content);
+    --svl-muted: color-mix(in oklab, var(--color-base-content) 60%, transparent);
+    --svl-surface: color-mix(in oklab, var(--color-base-content) 4%, transparent);
+    --svl-line: color-mix(in oklab, var(--color-base-content) 10%, transparent);
+    --svl-line-strong: color-mix(in oklab, var(--color-base-content) 18%, transparent);
+    display: block;
+    color: var(--svl-ink);
+}
+
+.svl { display: grid; gap: 14px; padding: 16px; }
+
+.svl-head { display: flex; align-items: flex-start; gap: 12px; }
+.svl-glyph {
+    display: inline-grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    font-size: 20px;
+    background: linear-gradient(135deg, color-mix(in oklab, var(--svl-a) 18%, transparent), color-mix(in oklab, var(--svl-b) 18%, transparent));
+    color: color-mix(in oklab, var(--svl-a) 70%, var(--svl-ink));
+}
+.svl-title { margin: 0; font-size: 1rem; font-weight: 700; line-height: 1.3; }
+.svl-hint { margin: 2px 0 0; font-size: 0.82rem; line-height: 1.45; color: var(--svl-muted); }
+
+.svl-cards { display: grid; gap: 12px; }
+.svl-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid var(--svl-line);
+    border-radius: 16px;
+    background: var(--svl-surface);
+}
+.svl-card-head { display: flex; align-items: center; gap: 8px; }
+.svl-card-head iconify-icon { font-size: 18px; color: color-mix(in oklab, var(--svl-a) 70%, var(--svl-ink)); }
+.svl-card-head h3 { margin: 0; font-size: 0.92rem; font-weight: 700; }
+.svl-desc { margin: 0; font-size: 0.8rem; line-height: 1.5; color: var(--svl-muted); }
+
+.svl-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.svl-field { display: grid; gap: 4px; min-width: 0; }
+.svl-field-wide { grid-column: 1 / -1; }
+.svl-field > span { font-size: 0.72rem; font-weight: 600; color: var(--svl-muted); }
+.svl-field web-text { display: block; width: 100%; }
+
+/* Ngành / phòng — native select, cùng chiều cao/viền với web-text */
+.svl-select {
+    width: 100%;
+    min-width: 0;
+    height: 36px;
+    padding: 0 0.6rem;
+    border-radius: 10px;
+    border: 1px solid var(--svl-line-strong);
+    background: var(--color-base-100);
+    color: inherit;
+    font: inherit;
+    font-size: 0.82rem;
+}
+.svl-select:focus-visible { outline: none; border-color: color-mix(in oklab, var(--svl-a) 55%, transparent); box-shadow: 0 0 0 3px color-mix(in oklab, var(--svl-a) 15%, transparent); }
+
+/* Nút luôn ở đáy thẻ — 2 thẻ cao khác nhau vẫn thẳng hàng nút */
+.svl-actions { display: flex; justify-content: flex-end; margin-top: auto; padding-top: 2px; }
+
+@media (min-width: 768px) {
+    .svl { padding: 18px 20px 20px; }
+    .svl-cards { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); align-items: stretch; }
+}

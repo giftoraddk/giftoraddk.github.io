@@ -1,0 +1,75 @@
+:host {
+	z-index: 0;
+	position: relative;
+	display: contents;
+  min-width: fit-content;
+	cursor: pointer;
+	--core-font: var(--font-sans, system-ui);
+}
+
+/* ── Single image (mirrors web-image) ─────────────────────────── */
+.gallery-single {
+	position: relative;
+	overflow: hidden;
+}
+
+.gallery-single img {
+	width: 100%;
+	height: auto;
+	display: block;
+}
+
+.image-hover-zoom {
+	transform: scale(1);
+	transition: transform 0.3s ease-in-out;
+}
+
+.image-hover-zoom:hover {
+	transform: scale(1.1);
+}
+
+/* Blur background — single image mode */
+.gallery-single.blur {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	position: relative;
+	overflow: hidden;
+	background: #000;
+}
+
+.gallery-single.blur .gsb-bg {
+	position: absolute;
+	inset: 0;
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+	filter: blur(40px);
+	transform: scale(1.1);
+	pointer-events: none;
+}
+
+.gallery-single.blur img {
+    z-index: 1;
+	  position: relative;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    margin: 0 auto auto;
+}
+
+/* ── Stack (slider container) ──────────────────────────────────── */
+.gallery-stack {
+	position: relative;
+	width: 100%;
+	cursor: pointer;
+	user-select: none;
+	aspect-ratio: 4/3;
+	overflow: hidden;
+}
+
+.gallery-stack web-glide {
+	width: 100%;
+	height: 100%;
+}

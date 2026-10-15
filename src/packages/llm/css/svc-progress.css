@@ -1,0 +1,51 @@
+:host { display: block; }
+
+.prg-error {
+    display: flex; align-items: center; justify-content: space-between; gap: .5rem; flex-wrap: wrap;
+    font-size: .8rem; color: var(--color-error, #f5465c);
+    padding: .5rem .75rem; margin-bottom: 2rem; border-radius: .5rem;
+    background: color-mix(in oklab, var(--color-error, #f5465c) 10%, transparent);
+}
+.prg-error-actions { display: flex; gap: .4rem; flex-shrink: 0; }
+
+.prg-sub { display: flex; flex-direction: column; gap: .25rem; margin: .1rem 0 .35rem; }
+.prg-sub web-textarea, .prg-sub svc-editor { width: 100%; }
+.prg-item { display: flex; flex-direction: column; gap: .15rem; }
+.prg-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; opacity: .55; }
+.prg-value { font-size: .8rem; line-height: 1.5; color: var(--color-base-content); white-space: pre-line; }
+.prg-copyable { display: flex; flex-direction: column; gap: .3rem; }
+.prg-copy-row { display: flex; justify-content: flex-end; }
+
+/* Nút "Tạo lại ảnh" + 3 nút tròn mở prompt trên ChatGPT/Gemini/Claude */
+.prg-generate-actions { flex-direction: row; align-items: center; flex-wrap: wrap; gap: .5rem; }
+
+.prg-pics { display: block; max-width: 100%; border-radius: .5rem; }
+.prg-pics-sm { max-width: 140px; border-radius: .4rem; }
+
+.prg-approve { margin-top: 1rem; display: flex; justify-content: flex-end; }
+
+/* Expert sign-off (outline.review) — confirm + the reviewer's name, above the Approve button */
+.prg-signoff {
+    margin-top: 1rem; padding: .6rem .75rem; display: flex; flex-direction: column; gap: .5rem;
+    border: 1px solid color-mix(in oklab, var(--color-warning) 45%, transparent); border-radius: .6rem;
+    background: color-mix(in oklab, var(--color-warning) 10%, transparent);
+}
+.prg-signoff-check { display: flex; align-items: flex-start; gap: .5rem; font-size: .85rem; cursor: pointer; }
+.prg-signoff-check input { margin-top: .2rem; accent-color: var(--color-primary); }
+
+/* Sticky trong vùng cuộn của nơi chứa (vd .tlk-detail) — nền đục để nội dung cuộn không lộ qua */
+.prg-pause {
+    position: sticky; top: -0.75rem; z-index: 2;
+    display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: .5rem; flex-wrap: wrap;
+    font-size: .85rem; color: var(--color-base-content);
+    padding: .25rem; margin-bottom: .5rem; border-radius: .25rem;
+    background: color-mix(in oklab, var(--color-primary, #ffbb24) 10%, var(--color-base-100));
+}
+.prg-pause-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; }
+
+/* Ô nhập chỉ dẫn thêm + nút "Tạo lại" cấp sub-step (xem svc-progress.js's _rfRegenerateRow) */
+.prg-regen-row { display: flex; align-items: center; gap: .5rem; margin-top: .35rem; }
+.prg-regen-row web-texts { flex: 1; min-width: 0; }
+
+/* Nơi chứa đã ghim card của nó ở đầu vùng cuộn (externalActions, vd <svc-job-card>) — banner nằm theo dòng, không bị che */
+.prg-pause.is-flow { position: static; }

@@ -1,0 +1,127 @@
+---
+// Giao diện mua sắm giftoraddk.com — /gift/shop, /gift/<danh mục>, /gift/<ngân sách> (dữ liệu: modules/gift/catalog.js
+// shopPageData). Mobile first: lưới 2 cột + nút "Bộ lọc" mở bottom sheet; desktop: bộ lọc cột trái sticky, lưới 3–4 cột.
+// Phong cách tints (shop.css): 1 lớp glow [a, b] của layout CoreShop, mọi bề mặt trung tính, màu nhấn chỉ ở chi tiết nhỏ.
+// SEO/GEO: breadcrumb + h1 + đoạn tóm tắt có số liệu, MỌI sản phẩm của trang render sẵn (card ngoài trang đầu chỉ ẩn bằng
+// data-later), liên kết nội bộ tới mọi trang dịp / ngân sách ngay trong bộ lọc, FAQ cuối trang; JSON-LD tương ứng do trang truyền vào layout (shopPageData().jsonLd).
+// JS (shop.client.ts) chỉ tăng cường: lọc / sắp xếp / tìm trên DOM, đồng bộ query string, giỏ hàng.
+import './shop.css';
+import Card from './Card.astro';
+import Filter from './Filter.astro';
+import Icon from '@/components/Catalog/Icon.astro';
+import I18nText from '@/components/I18nText.astro';
+import { PAGE_SIZE, SHOP_PATH } from '@/modules/gift/catalog.js';
+
+interface Props { data: Awaited<ReturnType<typeof import('@/modules/gift/catalog.js').shopPageData>> }
+
+const { page, items, crumbs, summary, facets, faq, quote } = Astro.props.data;
+const sorts = [
+	{ key: 'featured', text: { vi: 'Nổi bật', en: 'Featured' } },
+	{ key: 'price-asc', text: { vi: 'Giá tăng dần', en: 'Price: low to high' } },
+	{ key: 'price-desc', text: { vi: 'Giá giảm dần', en: 'Price: high to low' } },
+	{ key: 'newest', text: { vi: 'Mới nhất', en: 'Newest' } },
+];
+---
+
+<noscript><style>
+	.gs-item[data-later] { display: block !important; }
+	.gs-more, .gs-sort, .gs-trends, .gs-mobile, .gs-search, .gs-group input, .gs-range, .gs-toggle { display: none !important; }
+	.gs-filter { position: static !important; transform: none !important; visibility: visible !important; }
+</style></noscript>
+
+<div class="gs" data-gs data-page-size={PAGE_SIZE}>
+	<nav class="gs-crumbs" aria-label="Breadcrumb">
+		<ol>
+			{crumbs.map((c, i) => (
+				<li>{i < crumbs.length - 1 ? <a href={c.path}>{c.name}</a> : <span aria-current="page">{c.name}</span>}</li>
+			))}
+		</ol>
+	</nav>
+
+	<header class="gs-head">
+		<h1 class="gs-h1">{page.title}</h1>
+		<p class="gs-summary"><Icon name="sparkle" size={17} /><span>{summary}</span></p>
+	</header>
+
+	<div class="gs-layout">
+		<Filter facets={facets} total={items.length} allHref={SHOP_PATH} />
+		<div class="gs-backdrop" data-filter-backdrop hidden></div>
+
+		<section class="gs-main" aria-labelledby="gs-results-h" data-gs-main>
+			{facets.trends.length > 0 && (
+				<div class="gs-trends gs-panel">
+					<span class="gs-trends-label"><I18nText text={{ vi: 'Xu hướng:', en: 'Trending:' }} /></span>
+					<div class="gs-trends-list" data-hscroll>
+						{facets.trends.map((t: any) => (
+							<button type="button" class="gs-trend" data-trend={t.value} aria-pressed="false">
+								<Icon name="trend" size={15} />{t.label}
+							</button>
+						))}
+					</div>
+				</div>
+			)}
+
+			<div class="gs-toolbar">
+				<h2 id="gs-results-h" class="gs-count">
+					<I18nText text={{ vi: 'Tìm thấy', en: 'Found' }} /> <strong data-count>{items.length}</strong> <I18nText text={{ vi: 'kết quả', en: 'results' }} />
+				</h2>
+				<button type="button" class="gs-filter-btn gs-mobile" data-filter-open aria-controls="gs-filter" aria-expanded="false">
+					<Icon name="filter" size={17} /><I18nText text={{ vi: 'Bộ lọc', en: 'Filters' }} /><span class="gs-badge" data-active-count hidden></span>
+				</button>
+				{items.length > 1 && (
+					<div class="gs-sort" role="group" aria-label="Sắp xếp theo" data-hscroll>
+						{sorts.map((s, i) => (
+							<button type="button" data-sort={s.key} aria-pressed={i === 0 ? 'true' : 'false'}><I18nText text={s.text} /></button>
+						))}
+					</div>
+				)}
+			</div>
+
+			<div class="gs-active" data-active hidden>
+				<div class="gs-active-list" data-active-list></div>
+				<button type="button" class="gs-link-btn" data-clear><I18nText text={{ vi: 'Xoá tất cả', en: 'Clear all' }} /></button>
+			</div>
+
+			{items.length > 0 && (
+				<ol class="gs-grid" data-grid>
+					{items.map((p, i) => <Card item={p} quote={quote} eager={i < 2} later={i >= PAGE_SIZE} />)}
+				</ol>
+			)}
+
+			<div class="gs-empty gs-panel" data-empty hidden={items.length > 0}>
+				<Icon name="inbox" size={30} />
+				<p>
+					{items.length > 0
+						? <I18nText text={{ vi: 'Không có sản phẩm phù hợp bộ lọc.', en: 'No products match these filters.' }} />
+						: <I18nText text={{ vi: 'Danh mục này đang cập nhật mẫu mới.', en: 'New products coming soon.' }} />}
+				</p>
+				{items.length > 0
+					? <button type="button" class="gs-btn is-ghost" data-clear><I18nText text={{ vi: 'Xoá bộ lọc', en: 'Clear filters' }} /></button>
+					: <a class="gs-btn is-ghost" href={SHOP_PATH}><I18nText text={{ vi: 'Xem tất cả sản phẩm', en: 'View all products' }} /></a>}
+			</div>
+
+			<button type="button" class="gs-more" data-more hidden={items.length <= PAGE_SIZE}>
+				<I18nText text={{ vi: 'Xem thêm sản phẩm', en: 'Load more' }} /><Icon name="down" size={17} />
+			</button>
+		</section>
+	</div>
+
+	<section class="gs-faq gs-panel" aria-labelledby="gs-faq-h">
+		<h2 id="gs-faq-h" class="gs-h2"><I18nText text={{ vi: 'Câu hỏi thường gặp', en: 'FAQ' }} /></h2>
+		{faq.map((f, i) => (
+			<details class="gs-qa" open={i === 0}>
+				<summary><h3>{f.q}</h3><Icon name="down" size={18} class="gs-chev" /></summary>
+				<p>{f.a}</p>
+			</details>
+		))}
+	</section>
+</div>
+
+<script>
+	import { initShop } from './shop.client';
+
+	document.addEventListener('astro:page-load', () => {
+		const root = document.querySelector<HTMLElement>('[data-gs]');
+		if (root) initShop(root);
+	});
+</script>

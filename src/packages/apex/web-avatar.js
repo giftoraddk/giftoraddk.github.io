@@ -1,0 +1,80 @@
+import { LitElement, html, unsafeCSS } from 'lit'
+import 'iconify-icon'
+import styles from './css/web-avatar.css?inline'
+import pastelStyles from './css/pastel.css?inline'
+
+export class WebAvatar extends LitElement {
+    static shadowRootOptions = { mode: 'open' }
+    static styles = [unsafeCSS(pastelStyles), unsafeCSS(styles)]
+
+    static properties = {
+        src: { type: String },
+        icon: { type: String }, // iconify name (vd 'ri:customer-service-2-line') — fallback khi KHÔNG có src, ưu tiên hơn initials
+        name: { type: String },
+        size: { type: String }, // CSS value
+        shape: { type: String }, // 'circle', 'square'
+        status: { type: String }, // 'online', 'away', 'busy'
+        theme: { type: String },
+        ui: { type: String } // modern, pastel
+    }
+
+    static get uiConfigs() {
+        return {
+            modern: {
+                wrap: 'modern web-avatar',
+            },
+            pastel: {
+                wrap: 'pastel web-avatar',
+            }
+        }
+    }
+
+    constructor() {
+        super()
+        this.src = ''
+        this.icon = ''
+        this.name = ''
+        this.size = '40px'
+        this.shape = 'circle'
+        this.status = ''
+        this.theme = ''
+        this.ui = 'modern'
+    }
+
+    updated(changedProperties) {
+        if (changedProperties.has('theme') && this.theme) {
+            this.setAttribute('data-theme', this.theme)
+        } else if (changedProperties.has('theme') && !this.theme) {
+            this.removeAttribute('data-theme')
+        }
+        if (changedProperties.has('size')) {
+            this.style.setProperty('--avatar-size', this.size)
+        }
+    }
+
+    _getInitials() {
+        if (!this.name) return ''
+        return this.name.split(' ').map(n => n[0]).join('').substr(0, 2)
+    }
+
+    render() {
+        const uiConfig = this.constructor.uiConfigs[this.ui || 'modern']
+        return html`
+      <div class="${uiConfig.wrap} ${this.shape}" title="${this.name}">
+        ${this.src
+                ? html`<img src="${this.src}" alt="${this.name}" @error=${() => this.src = ''}>`
+                : this.icon
+                    ? html`<iconify-icon icon="${this.icon}"></iconify-icon>`
+                    : html`<span class="initials">${this._getInitials()}</span>`
+            }
+        ${this.status ? html`<div class="status-dot ${this.status}"></div>` : ''}
+      </div>
+    `
+    }
+}
+
+if (!customElements.get('web-avatar')) {
+    customElements.define('web-avatar', WebAvatar)
+}
+
+export default WebAvatar

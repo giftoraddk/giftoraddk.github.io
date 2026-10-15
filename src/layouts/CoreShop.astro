@@ -1,27 +1,35 @@
 ---
-import "../styles/themes/popular.css";
+import "../styles/themes/default.css";
 import { ClientRouter, fade } from "astro:transitions";
 import Head from "@/components/Head/Base.astro";
 import NavBase from "@/components/Nav/Base.astro";
 import UtilityBar from "@/components/Nav/Action/UtilityBar.astro";
 import FooterOptimal from "@/components/Footer/Optimal.astro";
-import { COOKIE_CONFIG } from "@/services/storeCookie.js";
-import { site } from "@/services/constants/site.js";
+import { COOKIE_CONFIG } from "@/services/core/cookier.js";
+import { site } from "@/services/tools/site";
+import { layoutTints, layoutClasses, themeCSS } from "@/services/tools/page.js";
 // Props astro
 const {
 	title,
 	description,
 	image,
 	articleDate,
+	noindex = false, // forward tới <Head> — xem Head/Base.astro
+	jsonLd = [], // object[] JSON-LD riêng của trang — forward tới <Head> (cùng prop của Core.astro)
+	lang = site.defaultLang, // <html lang> lúc SSR — trang nội dung tiếng Việt (vd /gift/*) truyền 'vi'
 	menu = {
     type: "top",
     position: "default", // default, prefix, suffix
+    // variant: 'float' (thanh nổi bo tròn) | 'minimal' (tràn ngang, không viền) — cả hai link chữ + chấm
+    // (Nav/Top.astro .nav-float/.nav-minimal, menu.css .menu-float/.menu-minimal); bỏ trống = kiểu cũ
   },
 	footer = {},
-	bg= {},
+	bg = {}, // props <svc-underlay>; null = tắt underlay
+	tints = null, // [a, b] tên màu theme — xem tintPair bên dưới; có tints thì underlay tắt
   theme = "light", // data-theme value, cũng là key chọn variant[theme]
 	variant = {}, // { [theme]: { ui, mainColors, bgColors, textColor, bgImage } }
   shop = {
+    sellerId: '', // user id người bán — modules/gift/shop.js (khớp SELLER_IDS của Worker auth)
     seller: '', // name~phone~address~email~taxCode
     wallet: {},
     vietqr: {},
@@ -30,52 +38,15 @@ const {
   bar = null, // { hotlineLabel, socialsLabel, socials: [{ icon, href, text }] } — không truyền thì ẩn UtilityBar
 } = Astro.props;
 
-const { ui, mainColors } = variant[theme] ?? {}; // forwarded as data-ui on <html> (spatial UI variant hook, glassmorphism etc.) + passed to the new fixed warden/stats fabs below for visual consistency with the page's configured theme
+// tints / class bố cục / CSS màu theo theme — logic dùng chung với Core.astro, xem services/tools/page.js
+const { tintPair, tintStyle, showUnderlay } = layoutTints(tints, bg);
+const { isHorizontal, wrapClass, screenClass } = layoutClasses(menu);
+const themeStyles = themeCSS(variant);
 
-const isHorizontal = menu.type === "top" || menu.type === "bottom" || menu.type === "mobile";
-const wrapClass = (isHorizontal ? "flex-col" : "flex-row") + " flex bg-base-100";
-const screenClass = " h-dvh overflow-y-auto overflow-x-hidden bg-wrap";
-
-const pipeVars = (value, keys) =>
-	value
-		? value
-				.split("|")
-				.map((c) => c.trim())
-				.map((c, i) => (c && keys[i] ? `--color-${keys[i]}: ${c};` : ""))
-				.filter(Boolean)
-				.join(" ")
-		: "";
-
-// Emit a `[data-theme]`-scoped rule per theme key in `variant` (not just the current
-// `theme` prop) — so switching data-theme at runtime (cookie toggle / BtnTheme, see
-// Core.astro's anti-flash script) picks up the matching colors purely via CSS cascade,
-// same mechanism popular.css itself uses. A static inline `style` baked from a single
-// resolved theme would freeze colors at whatever theme was active during SSR and never
-// react to a later client-side data-theme change.
-const themeBlock = (themeKey, cfg) => {
-	if (!cfg) return "";
-	const vars = [
-		pipeVars(cfg.mainColors, ["primary", "secondary", "accent", "info", "warning", "success", "error"]),
-		pipeVars(cfg.bgColors, ["base-100", "base-200", "base-300"]),
-		pipeVars(cfg.textColor, ["base-content"]),
-		cfg.bgImage ? `--bg-wrap-image: url("${cfg.bgImage}");` : "",
-	]
-		.filter(Boolean)
-		.join(" ");
-	// html[data-theme=...] (not just [data-theme=...]) — matches popular.css's own
-	// [data-theme='dark'] specificity plus the element type, so this page-level
-	// override reliably wins regardless of stylesheet source order.
-	return vars ? `html[data-theme='${themeKey}'] { ${vars} }` : "";
-};
-
-const themeCSS = Object.entries(variant)
-	.filter(([key]) => key !== "theme")
-	.map(([key, cfg]) => themeBlock(key, cfg))
-	.filter(Boolean)
-	.join("\n");
+const { ui, mainColors } = variant[theme] ?? {}; // forwarded as data-ui on <html> (pastel UI variant hook) + passed to the new fixed warden/stats fabs below for visual consistency with the page's configured theme
 ---
 
-<html lang={site.defaultLang} class="scroll-smooth overflow-hidden" data-theme={theme} data-ui={ui}>
+<html lang={lang} class="scroll-smooth overflow-hidden" data-theme={theme} data-ui={ui}>
 	<head>
 		<ClientRouter />
 		<Head
@@ -83,19 +54,10 @@ const themeCSS = Object.entries(variant)
 			description={description}
 			ogImage={image}
 			articleDate={articleDate}
+			noindex={noindex}
+			jsonLd={jsonLd}
 		/>
-		<style set:html={themeCSS}></style>
-    
-      <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-R5KRS0PW0F"></script>
-    <script is:inline>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-R5KRS0PW0F');
-    </script>
-    
+		<style set:html={themeStyles}></style>
 		<!-- Apply saved theme before first paint to prevent flash -->
 		<script define:vars={{ themeCookie: COOKIE_CONFIG.THEME, langCookie: COOKIE_CONFIG.LANGUAGE }} is:inline>
 			(function() {
@@ -145,7 +107,8 @@ const themeCSS = Object.entries(variant)
 	<body transition:animate={fade({ duration: "0.5s" })}>
 		<div
 			id="main-wrap"
-			class={wrapClass + (isHorizontal ? screenClass : "")}
+			class={wrapClass + (isHorizontal ? screenClass : "") + (tintPair ? " has-tints" : "")}
+			style={tintStyle}
 		>
 			<!-- Utility bar: chỉ render khi có prop bar -->
 			{bar && (
@@ -162,18 +125,21 @@ const themeCSS = Object.entries(variant)
 				logoText=""
 				type={menu.type}
         position={menu.position}
-				class={`${menu.order || ""} ${menu.type === "bottom" ? "order-last" : ""}`}
+				class={`${menu.order || ""} ${menu.type === "mobile" ? "order-last" : ""}`}
 				items={menu.menuItems}
 				open={true}
 				isMenu={true}
+				{...(['float', 'minimal'].includes(menu.variant) && { menuClass: `menu-${menu.variant}`, variant: menu.variant })}
 			/>
 			<!-- Main -->
 			<main
 				id="main"
 				class={`text-base-content ${menu.type === "side" ? "flex-1" + screenClass : "flex-1"}`}
 			>
-        <script src="@/webs/underlay/svc-underlay.js"></script>
-        <svc-underlay id="main-bg" class="-mt-1" transition:persist="main-bg" {...bg}></svc-underlay>
+        <!-- Script để ngoài biểu thức: <script> trong {...} Astro không bundle (in thô, alias @/ hỏng). Chỉ định
+             nghĩa custom element — không có thẻ <svc-underlay> thì không chạy gì. -->
+        <script src="@/packages/adopted/svc-underlay.js"></script>
+        {showUnderlay && <svc-underlay id="main-bg" class="-mt-1" transition:persist="main-bg" {...bg}></svc-underlay>}
 				<div class="min-h-dvh relative">
           <slot />
         </div>
@@ -190,52 +156,37 @@ const themeCSS = Object.entries(variant)
           />
         )}
 			</main>
-      	<script src="@/webs/pay/svc-pay.js"></script>
+      	<script src="@/packages/pay/svc-pay.js"></script>
         <svc-pay id="pay-factor" transition:persist="pay-factor" role="buyer" isCart position="fixed"
-          onlyDelivery
-          sellerId="01JUU9AA1EB3J1NRZEGPQXJY3B"
+          onlyDelivery loginRequired
+          sellerId={shop?.sellerId}
           seller={shop?.seller}
           wallet={JSON.stringify(shop.wallet)}
           vietqr={JSON.stringify(shop.vietqr)}
           cashDisabled={shop?.cashDisabled}
         ></svc-pay>
 
-        <script src="@/webs/pay/svc-pay-warden.js"></script>
+        <script src="@/packages/pay/svc-pay-warden.js"></script>
         <svc-pay-warden id="shop-orders-warden" transition:persist="shop-orders-warden"
           position="fixed" x="99%" y="calc(100% - 11rem)"
           ui={ui} theme={theme} mainColors={mainColors} lang="vi">
         </svc-pay-warden>
 
-        <script src="@/webs/pay/svc-pay-stats.js"></script>
-        <svc-pay-stats id="shop-stats" transition:persist="shop-stats" style="display:none"
-          position="fixed" x="99%" y="calc(100% - 14.5rem)"
-          ui={ui} theme={theme} mainColors={mainColors} lang="vi">
-        </svc-pay-stats>
-
-        <script src="@/webs/llm/svc-aide.js"></script>
-        <svc-aide id="shop-sale" transition:persist="shop-sale" division="sale"
-          x="99%" y="calc(100% - 18rem)"
-          ui={variant.ui} theme={variant.theme} lang="vi">
-        </svc-aide>
-
-        <script src="@/webs/auth/svc-logged.js"></script>
-        <svc-logged id="svc-logged" transition:persist="svc-logged" pathLink="/"></svc-logged>
+        <!-- Trợ lý (svc-aide) do trang tự gắn — giftoraddk.com: components/Gift/Aide.astro, tự xếp lên trên cụm nút này
+             (y = calc(100% - 14.5rem)) khi có #pay-factor. Không gắn ở đây để mỗi trang chỉ có đúng 1 trợ lý. -->
 		</div>
 
     <script>
-      import { auth } from '@/webs/auth/tools/service.js';
+      import { auth } from '@/packages/auth/service/service.js';
 
-      // Flow gán role cho <svc-pay-warden>/<svc-pay-stats> (nút fixed, xem CoreShop.astro's mount
-      // ngay phía trên) — isSeller (auth.isAdmin() HOẶC user.id === sellerId, xem dưới — seller
+      // Flow gán role cho <svc-pay-warden> (nút fixed, xem CoreShop.astro's mount ngay phía trên) — isSeller (auth.isAdmin() HOẶC user.id === sellerId, xem dưới — seller
       // của shop này chưa chắc mang cờ admin hệ thống) -> role="seller" (sellerId/wallet đọc thẳng
       // từ #pay-factor, đã đúng props qua prop `shop` của layout, tránh lặp lại 1 sellerId/wallet
-      // hardcode nữa) hoặc buyer (bất kỳ ai khác, kể cả khách vãng lai chưa đăng nhập).
-      // svc-pay-stats KHÔNG có chế độ buyer (chỉ seller mới có doanh thu/khách hàng để xem) — ẩn
-      // hẳn khi không phải seller, cùng cách Shop.astro đã làm.
+      // hardcode nữa) hoặc buyer (bất kỳ ai khác). Mua hàng bắt buộc đăng nhập: #pay-factor (loginRequired) nhận buyerId
+      // = người đang đăng nhập — chưa có thì "Đặt hàng" hiện form đăng nhập trước; Worker cũng từ chối đơn không tài khoản.
       async function applyCoreShopRole() {
         const payEl    = document.getElementById('pay-factor') as any;
         const wardenEl = document.getElementById('shop-orders-warden') as any;
-        const statsEl  = document.getElementById('shop-stats') as any;
         if (!payEl) return;
         const sellerId = payEl.sellerId;
         const wallet   = payEl.wallet;
@@ -245,6 +196,7 @@ const themeCSS = Object.entries(variant)
         // sellerId hardcode của shop này thì vẫn coi như đang xem với vai trò seller, không chỉ
         // riêng auth.isAdmin() (super-admin toàn site).
         const isSeller = isAdmin || (user?.id && user.id === sellerId);
+        payEl.buyerId = user?.id ?? '';
 
         if (wardenEl) {
           wardenEl.wallet = wallet;
@@ -257,13 +209,11 @@ const themeCSS = Object.entries(variant)
             wardenEl.buyerId = user?.id ?? '';
           }
         }
-
-        if (statsEl) {
-          statsEl.style.display = isSeller ? '' : 'none';
-          if (isSeller) statsEl.sellerId = sellerId;
-        }
       }
       document.addEventListener('astro:page-load', applyCoreShopRole);
+      // Đăng nhập / đăng xuất ngay trên trang (form trong giỏ, svc-account…) → cập nhật lại người mua + vai trò
+      window.addEventListener('login-success', applyCoreShopRole);
+      window.addEventListener('account-change', applyCoreShopRole);
     </script>
 	</body>
 	<style>
@@ -271,6 +221,19 @@ const themeCSS = Object.entries(variant)
 			background-image: var(--bg-wrap-image, none);
 			background-size: cover;
 			background-position: center;
+		}
+		/* tints — glow 2 góc như panel svc-node / svc-radar. Ellipse kích thước CỐ ĐỊNH (px) + nhạt hơn panel:
+		   tính theo % thì trên màn rộng quầng sáng phình ra cả trang, trông đậm.
+		   Áp lên phần tử cuộn (.bg-wrap: #main-wrap khi menu ngang, <main> khi menu side); nền màu vẫn là
+		   bg-base-100, ảnh --bg-wrap-image (variant) nằm dưới cùng. */
+		.bg-wrap.has-tints,
+		.has-tints .bg-wrap {
+			background-image:
+				radial-gradient(1000px 560px at 100% 0%, color-mix(in oklab, var(--layout-tint-a) 18%, transparent), transparent 70%),
+				radial-gradient(760px 480px at 0% 0%, color-mix(in oklab, var(--layout-tint-b) 15%, transparent), transparent 70%),
+				var(--bg-wrap-image, none);
+			background-size: 100% 100%, 100% 100%, cover;
+			background-repeat: no-repeat;
 		}
 	</style>
 </html>

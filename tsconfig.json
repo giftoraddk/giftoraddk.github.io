@@ -3,9 +3,9 @@
 	"include": [
 		".astro/types.d.ts",
 		"src/**/*",
-		"src/webs/**/*",
+		"src/packages/**/*",
 		"env.d.ts"
-, "src/modules/landing/main.js"	],
+	],
 	"exclude": [
 		"dist"
 	],

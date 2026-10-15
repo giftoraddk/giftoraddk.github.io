@@ -1,39 +1,77 @@
 ---
+// '/' — trang chủ Giftora DDK (quà tặng doanh nghiệp). giftoraddk.com chỉ bán quà tặng, nên trang chính nằm thẳng ở gốc
+// domain: URL nhận nhiều link + tìm kiếm thương hiệu nhất, và là trang AI crawler đọc đầu tiên — chúng chỉ đọc HTML 1 lần,
+// không theo redirect/refresh, nên nội dung phải ở ngay đây. /gift chỉ còn chuyển về '/' (redirects, astro.config.mjs);
+// các trang con /gift/<danh mục>, /gift/<ngân sách>, /gift/service/*, /gift/policy/*, /gift/shop giữ nguyên.
+// Nội dung: src/modules/gift/index.js; meta + CTA: modules/gift/meta.js; khung kiểu tints: modules/gift/shop.js `tintsChrome`.
+// Kiến thức của trợ lý: public/data/gift.json.
 import Core from '@/layouts/Core.astro';
-import { site } from '@/services/constants/site.js';
+import BoardOutline from '@/components/Seo/BoardOutline.astro';
+import GiftAide from '@/components/Gift/Aide.astro';
+import { views } from '@/modules/gift/index.js';
+import { tintsChrome } from '@/modules/gift/shop.js';
+import { page } from '@/modules/gift/meta.js';
+import { GIFT_GROUPS, siteNavLd } from '@/modules/gift/nav.js';
+import { company, companyHours, companyPostalAddress } from '@/modules/company.js';
+import { boardPageSeo } from '@/packages/apex/tool/board-seo.js';
 
-// Trang gốc '/' — phục vụ SEO/GEO (title/description/OG/canonical thật cho domain root, không
-// để rỗng) VÀ redirect sang trang chính, đích cấu hình qua `site.homeRedirect`
-// (src/services/constants/site.js) — đổi giá trị đó (vd '/shop', '/gift') để đổi đích, không
-// cần sửa file này. '' = tắt redirect, trang hiển thị bình thường.
-//
-// Vì sao không dùng `redirects` trong astro.config.mjs: cách đó thay hẳn '/' bằng 1 stub HTML
-// tự sinh, không cho viết title/description riêng cho domain root — mất giá trị SEO của URL
-// quan trọng nhất site. Cách ở đây giữ '/' là 1 trang thật (Base.astro vẫn render đầy đủ
-// title/description/OG, canonical trỏ đúng sang đích redirect) + <meta http-equiv="refresh">
-// để chuyển hướng trình duyệt — hoạt động trên output:'static', không cần Astro.redirect()/
-// adapter (xem hook/geo-platform-plan.md §B1 — cùng nguyên tắc "không thêm hạ tầng mới"). Nhiều
-// AI/search crawler chỉ đọc HTML 1 lần, không chạy JS/theo refresh, nên vẫn cần nội dung + link
-// nội bộ thật ở dưới, không chỉ mỗi thẻ redirect.
-const target = site.homeRedirect;
+const currentView = views.find((v) => v.href === '/') ?? views[0];
 
-// site.title (site.js) đã là câu SEO/GEO soạn sẵn riêng cho domain root (giàu từ khóa, không lặp
-// site.subtitle vì Head/Base.astro tự nối "• {site.subtitle}" vào <title>) — dùng thẳng làm
-// default, sửa copy SEO chỉ cần đổi ở site.js, không cần đụng file này.
-const pageTitle = site.title;
-const pageDescription = site.description || site.subtitle;
+// SEO/GEO — web-board chỉ render ở client; outline + JSON-LD dựng từ CHÍNH sections để crawler không chạy JS đọc được
+// (best-seller thật lấy lúc build → ItemList, quy trình → HowTo, câu hỏi → FAQPage).
+const seo = boardPageSeo(page, currentView.sections, Astro.site ?? Astro.url);
+const base = seo.url.replace(/\/$/, '');
+// WebSite + SiteNavigationElement (modules/gift/nav.js): tên site + các mục con được index — tín hiệu cho sitelinks.
+// Store: cửa hàng thật (địa chỉ, giờ mở cửa, liên hệ) gắn về Organization của Head/Base.astro qua cùng @id; danh mục,
+// mức ngân sách và dịch vụ thành OfferCatalog — AI Search trả lời "bán gì / ở đâu / mấy giờ / gọi số nào".
+const jsonLd = [
+	...seo.jsonLd,
+	...siteNavLd(),
+	{
+		'@context': 'https://schema.org',
+		'@type': 'Store',
+		'@id': `${base}/#store`,
+		name: page.name,
+		description: page.description,
+		url: seo.url,
+		image: new URL('/images/common/gift-main.webp', seo.url).href,
+		telephone: company.hotline,
+		email: company.email,
+		address: companyPostalAddress,
+		areaServed: { '@type': 'Country', name: 'Việt Nam' },
+		currenciesAccepted: 'VND',
+		paymentAccepted: 'Chuyển khoản ngân hàng, Tiền mặt (COD)',
+		openingHoursSpecification: companyHours.map((h) => ({ '@type': 'OpeningHoursSpecification', dayOfWeek: h.days, opens: h.opens, closes: h.closes })),
+		parentOrganization: { '@id': `${base}/#organization` },
+		hasOfferCatalog: {
+			'@type': 'OfferCatalog',
+			name: 'Quà tặng doanh nghiệp',
+			itemListElement: GIFT_GROUPS.slice(0, 3).map((g) => ({
+				'@type': 'OfferCatalog',
+				name: g.title,
+				itemListElement: g.links.map((l) => ({ '@type': 'OfferCatalog', name: l.name, description: l.description, url: `${base}${l.path}` })),
+			})),
+		},
+	},
+];
 ---
 
-<Core title={pageTitle} description={pageDescription} redirectTo={target}>
-	<div class="min-h-[60vh] flex flex-col items-center justify-center text-center px-6 py-16 gap-6">
-		<h1 class="text-3xl md:text-5xl font-bold">{pageTitle}</h1>
-		{pageDescription && <p class="max-w-xl opacity-70">{pageDescription}</p>}
-		{target && (
-			<a href={target}
-				class="inline-flex items-center justify-center px-7 py-3 rounded-2xl font-semibold
-					border border-primary text-primary-content hover:opacity-90 transition-opacity">
-				Go to home
-			</a>
-		)}
+<Core
+	{...tintsChrome}
+	title={page.title}
+	description={page.description}
+	image="/images/common/gift-dark.webp"
+	lang={page.lang}
+	noindex={!page.indexable}
+	jsonLd={jsonLd}
+>
+	<script src='@/packages/apex/web-board.js'></script>
+	<div>
+		<web-board
+			unlock={import.meta.env.PUBLIC_EXP}
+			variant={JSON.stringify(tintsChrome.variant)}
+		><script type="application/json" is:inline set:html={JSON.stringify(currentView.sections)}></script><BoardOutline outline={seo.outline} /></web-board>
 	</div>
+
+	<GiftAide theme={tintsChrome.theme} lang={page.lang} />
 </Core>

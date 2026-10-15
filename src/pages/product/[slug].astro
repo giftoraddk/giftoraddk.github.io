@@ -1,18 +1,18 @@
 ---
 import Core from '@/layouts/Core.astro';
-import ProductDetailBody from '@/components/Common/ProductDetail.astro';
-import { fetchCollection } from '@/services/firestore.server.ts';
-import { productSlug, pickLang } from '@/services/helper.js';
-import { menuItems, policies, socials } from '@/modules/landing/home.js';
+import { KINDS } from '@/components/Catalog/kinds';
+import Detail from '@/components/Catalog/Detail.astro';
+import { fetchCollection } from '@/services/core/fetcher.server.js';
+import { productSlug, pickLang } from '@/services/tools/util';
+import { menuItems, policies, socials } from '@/modules/gift/shop.js'; // footer chung giftoraddk.com
+import { menu as productMenu, tints } from '@/modules/product/index.js';
 
-// Trang chi tiết sản phẩm CRAWLABLE — biến thể SSG (mặc định, xem hook/BUILD_MODES nếu thêm sau):
-// build tĩnh, getStaticPaths + fetchCollection lúc build, nội dung thật bake vào HTML cho
-// AI/search crawler. Nội dung/markup thật sự nằm trong ProductDetailBody.astro (dùng chung với
-// biến thể ISR ở src/pages/product/_render-modes/[slug].isr.astro, xem astro.config.mjs
-// renderModeIntegration — PUBLIC_RENDER=isr swap file này bằng biến thể đó lúc build).
+// Trang chi tiết sản phẩm CRAWLABLE — biến thể SSG (mặc định): getStaticPaths + fetchCollection lúc build,
+// nội dung thật bake vào HTML cho AI/search crawler. Markup nằm trong components/Catalog/Detail.astro (kind
+// product — dùng chung với bài viết và với biến thể ISR ở _render-modes/[slug].isr.astro, xem
+// astro.config.mjs renderModeIntegration — PUBLIC_RENDER=isr swap file này lúc build).
 //
-// URL dùng slug từ khoá (vd /product/hop-qua-sinh-nhat-{id}/) thay vì id thô — tốt hơn cho
-// Google/AI search match query, xem productSlug() (services/helper.js).
+// URL dùng slug từ khoá (vd /product/hop-qua-sinh-nhat-{id}/) thay vì id thô — xem productSlug().
 
 export async function getStaticPaths() {
 	const products = await fetchCollection('products');
@@ -27,10 +27,11 @@ const { product, allProducts } = Astro.props as { product: any; allProducts: any
 const pics = (product.pics || '').split('|').filter(Boolean);
 const heroImg = pics[0] || '';
 const description = product.description || String(product.content || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().slice(0, 160) || '';
+const tags = String(product.tags || '').split('|').map((t: string) => t.trim()).filter(Boolean);
 const pageTitle = product.title || pickLang({ en: 'Product', vi: 'Sản phẩm' });
-const bg = { blur: true, gradient: true, tint: '#2ebd85', total: 3, blobType: 'circleOverlap', blobMove: 'swap', deg: 180 };
+const bg = null;
 ---
 
-<Core title={pageTitle} description={description} image={heroImg} articleDate={product.created_at} footer={{ columns: menuItems, policies, socials, bg }}>
-	<ProductDetailBody product={product} allProducts={allProducts} />
+<Core menu={productMenu} tints={tints} title={pageTitle} description={description} image={heroImg} articleDate={product.created_at} articleModified={product.updated_at} articleTags={tags} footer={{ columns: menuItems, policies, socials, bg }}>
+	<Detail kind={KINDS.product} item={product} allItems={allProducts} />
 </Core>

@@ -1,0 +1,189 @@
+:host {
+    display: block;
+    --core-font: var(--font-sans, 'system-ui');
+}
+
+.toast-container {
+	font-family: var(--core-font);
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 109;
+    pointer-events: none;
+}
+
+.toast-container.top-left      { top: 64px; left: 24px; align-items: flex-start; }
+.toast-container.top-center    { top: 64px; left: 50%; align-items: center; transform: translateX(-50%); }
+.toast-container.top-right     { top: 64px; right: 24px; align-items: flex-end; }
+.toast-container.bottom-left   { bottom: 72px; left: 24px; align-items: flex-start; flex-direction: column-reverse; }
+.toast-container.bottom-center { bottom: 72px; left: 50%; align-items: center; flex-direction: column-reverse; transform: translateX(-50%); }
+.toast-container.bottom-right  { bottom: 72px; right: 24px; align-items: flex-end; flex-direction: column-reverse; }
+
+.toast-wrapper {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+    transition:
+        grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.toast-wrapper.show {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+}
+
+.toast-wrapper.closing {
+    grid-template-rows: 0fr !important;
+    opacity: 0 !important;
+    transform: translate3d(0, 12px, 0) !important;
+}
+
+.web-toast {
+    pointer-events: auto;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: var(--color-base-100, #0d0d0d);
+    border: 1px solid var(--color-base-300, #393939);
+    border-radius: 12px;
+    color: var(--color-base-content, #ffffff);
+    font-size: .875rem;
+    min-width: 300px;
+    min-height: 0;
+    overflow: hidden;
+    margin: 4px;
+}
+
+.icon {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.message {
+    flex: 1;
+    font-weight: 500;
+}
+
+.action-btn {
+    flex-shrink: 0;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 99px;
+    font-size: 0.8em;
+    font-weight: 600;
+    color: var(--color-primary, #34ace0);
+    background: color-mix(in oklab, var(--color-primary, #34ace0) 15%, transparent);
+    transition: background 0.2s;
+}
+
+.action-btn:hover {
+    background: color-mix(in oklab, var(--color-primary, #34ace0) 25%, transparent);
+}
+
+.close-btn {
+    opacity: 0.5;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-btn:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.1);
+    transform: rotate(90deg);
+}
+
+.progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 100%;
+    background: currentColor;
+    opacity: 0.4;
+    transform-origin: left;
+    transform: scaleX(0);
+}
+
+.show .progress-bar {
+    animation: shrink var(--duration) linear forwards;
+}
+
+@keyframes shrink {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}
+
+/* màu theo type — modern: vạch trái; pastel: glow góc + viền + ô icon + thanh tiến trình */
+.web-toast.success { --to-color: var(--color-success, #2ebd85); }
+.web-toast.info    { --to-color: var(--color-info, #00c7d4); }
+.web-toast.warning { --to-color: var(--color-warning, #fbbf24); }
+.web-toast.error   { --to-color: var(--color-error, #f5465c); }
+
+.modern.web-toast { border-left: 4px solid var(--to-color, var(--color-info, #00c7d4)); }
+.modern .icon { color: var(--to-color); }
+
+/* ── Pastel (token --pastel-* ở pastel.css) ─────────────────────────────── */
+/* Như web-alert pastel: glow 2 góc màu của type trên nền đặc (toast nổi trên nội dung), viền mảnh cùng màu, icon
+   trong ô vuông bo tô nhạt. Shadow nhỏ + margin đủ chứa nó — .toast-wrapper overflow:hidden cắt shadow lớn thành khung. */
+.pastel.web-toast {
+	--to: var(--to-color, var(--pastel-a));
+	gap: 12px;
+	margin: 4px 10px 14px;
+	padding: 12px 14px;
+	border-radius: var(--radius-box);
+	background:
+		radial-gradient(260px 90px at 100% 0%, color-mix(in oklab, var(--to) 14%, transparent), transparent 70%),
+		radial-gradient(220px 80px at 0% 0%, color-mix(in oklab, var(--to) 9%, transparent), transparent 70%),
+		var(--pastel-pop);
+	border: 1px solid color-mix(in oklab, var(--to) 28%, transparent);
+	box-shadow: 0 6px 16px -10px color-mix(in oklab, var(--to) 60%, rgb(0 0 0 / 0.35));
+}
+.pastel .icon {
+	width: 32px;
+	height: 32px;
+	border-radius: 10px;
+	background: color-mix(in oklab, var(--to) 16%, transparent);
+	color: var(--to);
+}
+.pastel .icon svg {
+	width: 17px;
+	height: 17px;
+}
+.pastel .action-btn {
+	background: color-mix(in oklab, var(--to) 16%, transparent);
+	color: color-mix(in oklab, var(--to) 75%, var(--color-base-content, #1f1f1f));
+}
+.pastel .action-btn:hover {
+	background: color-mix(in oklab, var(--to) 26%, transparent);
+}
+.pastel .close-btn:hover {
+	background: color-mix(in oklab, var(--to) 14%, transparent);
+	color: var(--to);
+}
+.pastel .progress-bar {
+	height: 2px;
+	background: linear-gradient(90deg, var(--to), color-mix(in oklab, var(--to) 50%, transparent));
+	opacity: 0.8;
+}

@@ -1,0 +1,164 @@
+/* <web-datetime> — the field + the popover shell around <web-calendar> (which draws the card itself, see
+   css/web-calendar.css). Field height / radius follow the shared web-* tokens so it lines up with
+   <web-select> & co. in a form. */
+:host {
+	display: inline-block;
+	width: 100%;
+	position: relative;
+	font-family: inherit;
+	--core-height: var(--height-selector, 2.25rem);
+	--core-radius: var(--radius-selector, 0.5rem);
+	--core-font: var(--font-sans, 'system-ui');
+}
+
+.web-datetime {
+	position: relative;
+	width: 100%;
+	font-family: var(--core-font);
+}
+
+/* ── Field ──────────────────────────────────────────────────────────────── */
+
+.datetime-trigger {
+	display: flex;
+	align-items: center;
+	gap: 0.55rem;
+	box-sizing: border-box;
+	width: 100%;
+	height: var(--core-height);
+	margin: 0;
+	padding: 0 12px 0 14px;
+	border: 1px solid var(--color-base-300, #393939);
+	border-radius: var(--core-radius);
+	background: var(--color-base-100, #0d0d0d);
+	color: var(--color-base-content, #ffffff);
+	font: inherit;
+	font-size: .875rem;
+	font-weight: 500;
+	text-align: left;
+	cursor: pointer;
+	transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.datetime-trigger:hover:not(:disabled) { border-color: var(--color-primary, #34ace0); }
+
+.datetime-trigger.open,
+.datetime-trigger:focus-visible {
+	outline: none;
+	border-color: var(--color-primary, #34ace0);
+	box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary, #34ace0) 18%, transparent);
+}
+
+.datetime-trigger:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.dt-icon {
+	flex-shrink: 0;
+	color: color-mix(in oklab, var(--color-base-content, #ffffff) 55%, transparent);
+	font-size: 1.1rem;
+}
+
+.datetime-trigger.open .dt-icon { color: var(--color-primary, #34ace0); }
+
+.selected-value {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+}
+
+.placeholder { color: color-mix(in oklab, var(--color-base-content, #ffffff) 55%, transparent); }
+
+.chevron {
+	flex-shrink: 0;
+	font-size: 1.15rem;
+	opacity: 0.6;
+	transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.open .chevron { transform: rotate(180deg); }
+
+/* ── Pastel (token --pastel-* ở pastel.css) ─────────────────────────────── */
+/* ô nhập: nền --pastel-corner (glow 2 góc như web-table), đậm hơn khi hover/focus + viền tint — không backdrop-filter (re-blur mỗi frame trên canvas sống, vd panel svc-node) */
+.pastel .datetime-trigger {
+	border-color: var(--pastel-line);
+	background: var(--pastel-corner);
+	border-radius: var(--radius-selector);
+}
+.pastel .datetime-trigger:hover:not(:disabled) {
+	border-color: var(--pastel-line-hi);
+	background: var(--pastel-corner-hi);
+}
+.pastel .datetime-trigger.open,
+.pastel .datetime-trigger:focus-visible {
+	border-color: var(--pastel-a);
+	background: var(--pastel-corner-hi);
+	box-shadow: var(--pastel-ring);
+	outline: none;
+}
+.pastel .datetime-trigger.open .dt-icon {
+	color: var(--pastel-a);
+}
+/* Vỏ popover vẫn trong suốt — <web-calendar> tự là thẻ (nền + viền). Tô nền cho vỏ thì góc của nó lộ ra ngoài góc
+   bo của lịch; nên chỉ giữ bóng và cho vỏ + lịch cùng một bán kính theme. */
+.pastel .dropdown-menu {
+	border-radius: var(--radius-box);
+	box-shadow: var(--pastel-shadow);
+}
+.pastel .dropdown-menu web-calendar {
+	--cal-radius: var(--radius-box);
+}
+
+/* ── Popover shell ──────────────────────────────────────────────────────── */
+
+.dropdown-menu {
+	box-sizing: border-box;
+	position: fixed;
+	/* Reset UA popover defaults (inset:0, margin:auto, padding, border, background) — top / left / width /
+	   max-height come inline from _place() */
+	inset: auto;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	overflow: auto;
+	overscroll-behavior: contain;
+	border-radius: 18px;
+	box-shadow: 0 18px 44px -12px rgb(0 0 0 / 0.45), 0 2px 8px rgb(0 0 0 / 0.12);
+	z-index: 100;
+
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	transform: scale(0.96) translateY(6px);
+	transform-origin: top left;
+	transition:
+		opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+		transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+		visibility 0.28s;
+}
+
+.dropdown-menu.show {
+	opacity: 1;
+	visibility: visible;
+	pointer-events: auto;
+	transform: none;
+}
+
+.dropdown-menu web-calendar { max-width: none; }
+
+/* A popover starts from display:none, so the entry transition has no "from" frame — @starting-style
+   supplies one (browsers without it just skip the intro). */
+@starting-style {
+	.dropdown-menu.show {
+		opacity: 0;
+		transform: scale(0.96) translateY(6px);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.dropdown-menu, .chevron, .datetime-trigger { transition: none; }
+}

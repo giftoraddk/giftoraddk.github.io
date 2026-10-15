@@ -76,7 +76,7 @@ export default (lang = 'vi') => {
 			type: 'text',   // required for CSV import to accept this column — see `csvWrite` below
 			width: '90px',
 			write: false,   // read-only in grid/edit form — computed from customer reviews, not hand-typed
-			csvWrite: true, // ...but CSV import may still seed/update it (see svc-admin.js _dfImportCsv)
+			csvWrite: true, // ...but CSV import may still seed/update it (see svc-resources.js _dfImportCsv)
 			render: (v) => {
 				const [avg, count] = String(v || '0~0').split('~').map(Number);
 				return count ? `${avg.toFixed(1)} (${count})` : '—';

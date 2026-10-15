@@ -1,0 +1,504 @@
+/* <svc-finance-report> — mobile first. Every breakpoint is a container query on the component itself (it
+   lives in a narrow svc-node panel as well as on the wide /admin/report page — the viewport says nothing):
+     base     KPI 2×2 · filters stacked · charts / lists in one column · detail table as cards
+     ≥ 480    category + product side by side
+     ≥ 720    filters in one row · KPI in 4 columns
+     ≥ 900    charts / lists 2 columns (product chart + detail table full width)
+   and on each panel: ≥ 620 the detail cards become a real table.
+   Surfaces are soft tints of base-content — no backdrop-filter (it re-blurs every frame over a live canvas). */
+:host {
+	display: block;
+	container: rpt / inline-size;
+	--rpt-surface: color-mix(in oklab, var(--color-base-content) 4%, transparent);
+	--rpt-surface-2: color-mix(in oklab, var(--color-base-content) 7%, transparent);
+	--rpt-line: color-mix(in oklab, var(--color-base-content) 9%, transparent);
+	--rpt-muted: color-mix(in oklab, var(--color-base-content) 58%, transparent);
+	--rpt-radius: 18px;
+	--rpt-pad: 1rem;
+	--rpt-gutter: 0.9rem; /* outer padding — the component brings its own, like svc-division */
+}
+
+* { box-sizing: border-box; }
+
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+.rpt {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	padding: var(--rpt-gutter);
+	color: var(--color-base-content);
+	font-family: var(--font-sans, system-ui, sans-serif);
+	font-variant-numeric: tabular-nums;
+}
+
+.rpt-h,
+.rpt-panel-title {
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 700;
+	line-height: 1.3;
+	letter-spacing: -0.005em;
+}
+
+/* ── States ─────────────────────────────────────────────────────────────── */
+
+.rpt-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.6rem;
+	padding: 2.5rem 1rem;
+	border-radius: var(--rpt-radius);
+	background: var(--rpt-surface);
+	color: var(--rpt-muted);
+	font-size: 0.9rem;
+	text-align: center;
+}
+
+.rpt-state iconify-icon { font-size: 1.8rem; }
+.rpt-state.is-error { color: var(--color-error); }
+
+.rpt-btn {
+	padding: 0.5rem 1.1rem;
+	border-radius: 999px;
+	background: var(--rpt-surface-2);
+	color: var(--color-base-content);
+	font-weight: 600;
+	font-size: 0.85rem;
+}
+
+.rpt-btn:hover { background: color-mix(in oklab, var(--color-base-content) 11%, transparent); }
+
+.rpt-empty {
+	padding: 1.5rem 0;
+	color: var(--rpt-muted);
+	font-size: 0.875rem;
+	text-align: center;
+}
+
+/* ── Filters ────────────────────────────────────────────────────────────── */
+
+.rpt-filters {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: 0.75rem;
+	padding: var(--rpt-pad);
+	border-radius: var(--rpt-radius);
+	background: var(--rpt-surface);
+}
+
+.rpt-field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+	min-width: 0;
+}
+
+.rpt-label {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	color: var(--rpt-muted);
+	font-size: 0.72rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+}
+
+.rpt-label iconify-icon { font-size: 0.95rem; }
+
+.rpt-range {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+.rpt-range > web-datetime { flex: 1; min-width: 0; }
+.rpt-range-sep { flex-shrink: 0; color: var(--rpt-muted); }
+
+/* ── Section header + currency switch ───────────────────────────────────── */
+
+.rpt-section {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	margin-top: 0.25rem;
+}
+
+.rpt-seg {
+	display: inline-flex;
+	flex-shrink: 0;
+	padding: 3px;
+	border-radius: 999px;
+	background: var(--rpt-surface-2);
+}
+
+.rpt-seg button {
+	padding: 0.35rem 0.8rem;
+	border-radius: 999px;
+	color: var(--rpt-muted);
+	font-size: 0.78rem;
+	font-weight: 600;
+	white-space: nowrap;
+	transition: background 0.15s, color 0.15s;
+}
+
+.rpt-seg button.is-on {
+	background: var(--color-base-100);
+	color: var(--color-base-content);
+	box-shadow: 0 1px 3px color-mix(in oklab, var(--color-base-content) 16%, transparent);
+}
+
+/* ── KPI ────────────────────────────────────────────────────────────────── */
+
+.rpt-kpis {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.6rem;
+}
+
+.rpt-kpi {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	min-width: 0;
+	padding: 0.9rem;
+	border-radius: var(--rpt-radius);
+	background: var(--rpt-surface);
+}
+
+.rpt-kpi-head {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	min-width: 0;
+}
+
+.rpt-kpi-icon {
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 30px;
+	height: 30px;
+	border-radius: 10px;
+	background: color-mix(in oklab, var(--color-primary) 14%, transparent);
+	color: var(--color-primary);
+	font-size: 1rem;
+}
+
+.rpt-kpi-label {
+	min-width: 0;
+	color: var(--rpt-muted);
+	font-size: 0.75rem;
+	font-weight: 600;
+	line-height: 1.25;
+}
+
+.rpt-kpi-value {
+	/* scales with the component (≈ card width / 10), so a long VND figure fits its card on one line */
+	font-size: clamp(1rem, 4.4cqi, 1.5rem);
+	font-weight: 800;
+	line-height: 1.2;
+	letter-spacing: -0.015em;
+	overflow-wrap: anywhere;
+}
+
+.rpt-kpi-sub {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.25rem 0.4rem;
+	color: var(--rpt-muted);
+	font-size: 0.72rem;
+}
+
+.rpt-growth {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.1rem;
+	padding: 0.1rem 0.45rem 0.1rem 0.3rem;
+	border-radius: 999px;
+	font-weight: 700;
+}
+
+.rpt-growth.is-up { background: color-mix(in oklab, var(--color-success) 15%, transparent); color: var(--color-success); }
+.rpt-growth.is-down { background: color-mix(in oklab, var(--color-error) 15%, transparent); color: var(--color-error); }
+
+/* ── Charts + panels ────────────────────────────────────────────────────── */
+
+.rpt-grid {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: 0.75rem;
+}
+
+.rpt-panel {
+	container: panel / inline-size;
+	display: flex;
+	flex-direction: column;
+	gap: 0.85rem;
+	min-width: 0;
+	padding: var(--rpt-pad);
+	border-radius: var(--rpt-radius);
+	background: var(--rpt-surface);
+}
+
+/* <svc-graph> renders in light DOM with its stylesheet injected into THIS shadow root, so its card is
+   restyled here to match the panels (and drops its pastel wash). */
+.rpt svc-graph { container-type: inline-size; min-width: 0; }
+
+.rpt svc-graph .graph-card,
+.rpt svc-graph .graph-card.pastel {
+	padding: var(--rpt-pad);
+	border: 0;
+	border-radius: var(--rpt-radius);
+	background: var(--rpt-surface);
+	backdrop-filter: none;
+}
+
+.rpt svc-graph .graph-header { margin-bottom: 0.5rem; }
+.rpt svc-graph .graph-title { font-size: 1rem; font-weight: 700; }
+.rpt svc-graph .graph-table-pane { border-color: var(--rpt-line); }
+
+/* Its own table toggle puts the table beside the chart — under it once the card is narrow */
+@container (max-width: 560px) {
+	.rpt svc-graph .graph-layout { flex-direction: column; }
+	.rpt svc-graph .graph-table-pane { width: 100% !important; }
+}
+
+/* ── Top products ───────────────────────────────────────────────────────── */
+
+.rpt-top {
+	display: flex;
+	flex-direction: column;
+	gap: 0.8rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* name + revenue on the first line, the quantity bar under the name */
+.rpt-top-row {
+	display: grid;
+	grid-template-columns: 1.75rem minmax(0, 1fr) auto;
+	grid-template-areas:
+		'rank name rev'
+		'rank bar  qty';
+	align-items: center;
+	gap: 0.3rem 0.7rem;
+	font-size: 0.86rem;
+}
+
+.rpt-rank {
+	display: grid;
+	grid-area: rank;
+	place-items: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	border-radius: 50%;
+	background: var(--rpt-surface-2);
+	font-size: 0.75rem;
+	font-weight: 700;
+}
+
+.rpt-rank.is-podium {
+	background: color-mix(in oklab, var(--color-primary) 18%, transparent);
+	color: var(--color-primary);
+}
+
+.rpt-top-name {
+	grid-area: name;
+	overflow: hidden;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.rpt-top-rev {
+	grid-area: rev;
+	font-weight: 700;
+	text-align: right;
+	white-space: nowrap;
+}
+
+.rpt-top-bar {
+	grid-area: bar;
+	height: 6px;
+	overflow: hidden;
+	border-radius: 999px;
+	background: var(--rpt-surface-2);
+}
+
+.rpt-top-bar > span {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--color-primary);
+}
+
+.rpt-top-qty {
+	grid-area: qty;
+	color: var(--rpt-muted);
+	font-size: 0.75rem;
+	text-align: right;
+}
+
+/* ── Detail: cards on a phone, a table once the panel is wide ───────────── */
+
+.rpt-dtable {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.rpt-drow {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.55rem 0.9rem;
+	padding: 0.8rem 0.9rem;
+	border-radius: 14px;
+	background: var(--rpt-surface);
+	font-size: 0.85rem;
+}
+
+.rpt-drow.is-head { display: none; }
+
+.rpt-drow.is-total {
+	background: color-mix(in oklab, var(--color-primary) 12%, transparent);
+	font-weight: 700;
+}
+
+.rpt-dname {
+	grid-column: 1 / -1;
+	min-width: 0;
+	font-weight: 700;
+	overflow-wrap: anywhere;
+}
+
+.rpt-dcell {
+	display: flex;
+	flex-direction: column;
+	gap: 0.1rem;
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.rpt-dcell::before {
+	content: attr(data-label);
+	color: var(--rpt-muted);
+	font-size: 0.7rem;
+	font-weight: 600;
+}
+
+.rpt-badge {
+	align-self: flex-start;
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	background: color-mix(in oklab, var(--color-success) 16%, transparent);
+	color: var(--color-success);
+	font-size: 0.75rem;
+	font-weight: 700;
+}
+
+.rpt-badge.is-down {
+	background: color-mix(in oklab, var(--color-error) 16%, transparent);
+	color: var(--color-error);
+}
+
+@container panel (min-width: 620px) {
+	.rpt-dtable { gap: 0; }
+
+	.rpt-drow,
+	.rpt-drow.is-head {
+		display: grid;
+		grid-template-columns: minmax(150px, 2fr) repeat(5, minmax(84px, 1fr));
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.6rem 0.75rem;
+		border-radius: 0;
+		background: none;
+	}
+
+	.rpt-drow + .rpt-drow { border-top: 1px solid var(--rpt-line); }
+	.rpt-drow:not(.is-head, .is-total):hover { background: var(--rpt-surface); }
+
+	.rpt-drow.is-head {
+		color: var(--rpt-muted);
+		font-size: 0.7rem;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+	}
+
+	.rpt-drow.is-head > :not(:first-child),
+	.rpt-dcell { align-items: flex-end; text-align: right; }
+
+	.rpt-drow.is-total {
+		border-radius: 12px;
+		border-top-color: transparent;
+		background: color-mix(in oklab, var(--color-primary) 12%, transparent);
+	}
+
+	.rpt-dname { grid-column: auto; font-weight: 600; }
+	.rpt-drow.is-total .rpt-dname { font-weight: 800; }
+	.rpt-dcell::before { display: none; }
+	.rpt-badge { align-self: flex-end; }
+}
+
+/* ── Skeleton ───────────────────────────────────────────────────────────── */
+
+.rpt-skel {
+	position: relative;
+	overflow: hidden;
+	border-radius: var(--rpt-radius);
+	background: var(--rpt-surface);
+}
+
+.rpt-skel::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background-image: linear-gradient(100deg, transparent 30%, color-mix(in oklab, var(--color-base-content) 9%, transparent) 50%, transparent 70%);
+	background-size: 240% 100%;
+	animation: rpt-shimmer 1.4s ease-in-out infinite;
+}
+
+.rpt-skel-filters { height: 8.5rem; }
+.rpt-skel-kpi { height: 7.5rem; }
+.rpt-skel-chart { height: 18rem; }
+
+@keyframes rpt-shimmer {
+	0% { background-position: 200% 0; }
+	100% { background-position: -40% 0; }
+}
+
+/* ── Breakpoints (component width) ──────────────────────────────────────── */
+
+@container rpt (min-width: 480px) {
+	.rpt-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.rpt-field-time { grid-column: 1 / -1; }
+	.rpt-skel-filters { height: 6.5rem; }
+}
+
+@container rpt (min-width: 720px) {
+	.rpt { gap: 1.1rem; }
+	.rpt-filters { grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)); align-items: end; }
+	.rpt-field-time { grid-column: auto; }
+	.rpt-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; }
+	.rpt-kpi { padding: 1.1rem; }
+	.rpt-kpi-value { font-size: clamp(1.1rem, 2.3cqi, 1.6rem); } /* 4 cards a row now */
+	.rpt-skel-filters { height: 4.75rem; }
+}
+
+@container rpt (min-width: 900px) {
+	.rpt { --rpt-pad: 1.25rem; } /* not :host — a container query never styles the container itself */
+	.rpt-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+	.rpt-wide { grid-column: 1 / -1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.rpt-skel::after { animation: none; }
+}

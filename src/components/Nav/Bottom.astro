@@ -1,10 +1,11 @@
 ---
 import ActionBtnTheme from "@/components/Nav/Action/BtnTheme.astro";
 import { Image } from "astro:assets";
+import { site } from "@/services/tools/site";
 
 const {
 	root = "",
-	logo = "/logo.png",
+	logo = "/logo.avif",
 	logoText,
 	sticky = 'sticky bottom-0', // 'sticky bottom-0' || ''
 	class: className = "",
@@ -28,7 +29,7 @@ const {
 							width={48}
 							height={48}
 							format="png"
-							alt="logo"
+							alt={site.subtitle}
 						/>
 						{
 							logoText && (

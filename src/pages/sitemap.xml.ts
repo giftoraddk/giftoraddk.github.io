@@ -2,16 +2,16 @@
 // getStaticPaths() của post/[id].astro + product/[id].astro dùng (fetchCollection), nên URL trong
 // sitemap luôn khớp với URL thật đã build ra. Không cần package @astrojs/sitemap: chỉ vài chục
 // URL cố định + 2 collection, viết tay rẻ hơn thêm 1 integration mới.
-import { fetchCollection } from '@/services/firestore.server.ts';
-import { site } from '@/services/constants/site.js';
-import { corporateGiftCategories } from '@/services/constants/tags.js';
-import { budgetTiers } from '@/modules/gift-budget.js';
-import { services as giftServices } from '@/modules/gift-services.js';
-import { productSlug, postSlug, tagSlugMap } from '@/services/helper.js';
+import { fetchCollection } from '@/services/core/fetcher.server.js';
+import { site, builtUrl } from '@/services/tools/site';
+import { productSlug, postSlug, tagSlugMap } from '@/services/tools/util';
+import { shopPage } from '@/modules/gift/meta.js';
+import { GIFT_GROUPS } from '@/modules/gift/nav.js';
 
-// Cùng nguồn mà src/pages/gift/[occasions].astro / [budget].astro / service/[slug].astro dùng
-// cho getStaticPaths(), đảm bảo URL trong sitemap luôn khớp URL thật đã build.
-const CATEGORY_KEYS = Object.keys(corporateGiftCategories.vi);
+// GIFT_GROUPS (modules/gift/nav.js) — danh mục, ngân sách, dịch vụ, chính sách: cùng nguồn getStaticPaths() của
+// src/pages/gift/[occasions].astro / [budget].astro / service/[slug].astro / policy/[slug].astro, nên URL luôn khớp.
+// Chính sách (nhóm cuối) ít đổi, ưu tiên thấp.
+const GROUP_RANK: [changefreq: string, priority: string][] = [['weekly', '0.8'], ['weekly', '0.7'], ['monthly', '0.6'], ['yearly', '0.3']];
 
 const escapeXml = (s: string) =>
     s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
@@ -35,9 +35,11 @@ function urlEntry(loc: string, lastmod?: string | null, changefreq = 'weekly', p
 
 export async function GET() {
     const base = site.domain.replace(/\/$/, '');
+    // Collection chỉ tải khi trang của nó được build (site.pages).
+    const collectionOf = (path: string, table: string) => (builtUrl(path) ? fetchCollection(table) : Promise.resolve([]));
     const [posts, products] = await Promise.all([
-        fetchCollection('posts'),
-        fetchCollection('products'),
+        collectionOf('/post/', 'posts'),
+        collectionOf('/product/', 'products'),
     ]);
 
     // Trang tag — cùng tagSlugMap() mà product/tag/[tag].astro và post/tag/[tag].astro dùng cho
@@ -45,20 +47,21 @@ export async function GET() {
     const productTagSlugs = [...tagSlugMap(products).keys()];
     const postTagSlugs = [...tagSlugMap(posts).keys()];
 
-    const entries: string[] = [
-        urlEntry(`${base}/`, null, 'monthly', '1.0'),
-        urlEntry(`${base}/gift/`, null, 'weekly', '1.0'),
-        urlEntry(`${base}/gift/shop`, null, 'daily', '0.9'),
-        urlEntry(`${base}/post/`, null, 'daily', '0.7'),
-        urlEntry(`${base}/product/`, null, 'daily', '0.8'),
-        ...CATEGORY_KEYS.map((key) => urlEntry(`${base}/gift/${key}`, null, 'weekly', '0.8')),
-        ...budgetTiers.map((tier) => urlEntry(`${base}/gift/${tier.key}`, null, 'weekly', '0.7')),
-        ...giftServices.map((svc) => urlEntry(`${base}/gift/service/${svc.slug}`, null, 'weekly', '0.6')),
-        ...posts.map((p: any) => urlEntry(`${base}/post/${postSlug(p)}/`, toIso(p.updated_at ?? p.created_at), 'weekly', '0.6')),
-        ...products.map((p: any) => urlEntry(`${base}/product/${productSlug(p)}/`, toIso(p.updated_at ?? p.created_at), 'weekly', '0.7')),
-        ...productTagSlugs.map((slug) => urlEntry(`${base}/product/tag/${slug}/`, null, 'weekly', '0.5')),
-        ...postTagSlugs.map((slug) => urlEntry(`${base}/post/tag/${slug}/`, null, 'weekly', '0.5')),
+    // [path, lastmod, changefreq, priority] — chỉ URL có build (builtUrl, site.pages) mới vào sitemap.
+    const urls: [string, string | null, string, string][] = [
+        ['/', null, 'weekly', '1.0'],
+        [shopPage.path, null, 'daily', '0.9'],
+        ['/product/', null, 'daily', '0.8'],
+        ['/product/tag/', null, 'weekly', '0.6'],
+        ['/post/', null, 'daily', '0.7'],
+        ['/post/tag/', null, 'weekly', '0.6'],
+        ...GIFT_GROUPS.flatMap((g, i) => g.links.map((l): [string, null, string, string] => [l.path, null, ...(GROUP_RANK[i] ?? GROUP_RANK[2])])),
+        ...products.map((p: any): [string, string | null, string, string] => [`/product/${productSlug(p)}/`, toIso(p.updated_at ?? p.created_at), 'weekly', '0.7']),
+        ...posts.map((p: any): [string, string | null, string, string] => [`/post/${postSlug(p)}/`, toIso(p.updated_at ?? p.created_at), 'weekly', '0.6']),
+        ...productTagSlugs.map((slug): [string, null, string, string] => [`/product/tag/${slug}/`, null, 'weekly', '0.5']),
+        ...postTagSlugs.map((slug): [string, null, string, string] => [`/post/tag/${slug}/`, null, 'weekly', '0.5']),
     ];
+    const entries = urls.filter(([path]) => builtUrl(path)).map(([path, ...rest]) => urlEntry(`${base}${path}`, ...rest));
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries.join('\n')}\n</urlset>\n`;
 

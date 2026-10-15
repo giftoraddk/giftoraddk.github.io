@@ -1,0 +1,197 @@
+---
+// /product/invoice?id=<mã đơn> — tra cứu / theo dõi 1 đơn hàng (thay /channel/invoice của astro-micro, trang đó dùng
+// <svc-pay-watch> không có ở repo này). Link do packages/pay/service/service.js buildInvoiceUrl() tạo — <svc-pay> mở sau
+// khi xác nhận thanh toán, nút "mở tab mới" của <svc-pay-warden>.
+//
+// Trang tĩnh, mọi thứ chạy ở trình duyệt:
+//   - không có ?id → form nhập mã đơn (GET form thuần, không cần JS)
+//   - chưa đăng nhập → <svc-auth embedded> (đơn chỉ người mua / người bán / quản trị đọc được — auth tables.ts 'owner')
+//   - đã đăng nhập → <svc-pay invoiceId> (cùng luồng xử lý đơn như trong giỏ: người mua huỷ / xác nhận nhận hàng / trả hàng,
+//     người bán xử lý). Vai trò seller khi là admin hoặc chính sellerId của shop (#pay-factor, giống CoreShop) — KHÔNG lấy
+//     từ URL; quyền thật do Worker kiểm từng request (auth/worker invoices.ts).
+import CoreShop from '@/layouts/CoreShop.astro';
+import I18nText from '@/components/I18nText.astro';
+import { tintsChrome, shop } from '@/modules/gift/shop.js';
+---
+
+<CoreShop {...tintsChrome} shop={shop} title="Tra cứu đơn hàng" description="Xem chi tiết và trạng thái giao hàng của đơn hàng." lang="vi" noindex>
+	<section class="inv mx-auto max-w-3xl px-4 py-8 sm:py-12">
+		<header class="inv-head">
+			<p class="inv-kicker"><I18nText text={{ vi: 'Đơn hàng', en: 'Order' }} /></p>
+			<h1 class="inv-title"><I18nText text={{ vi: 'Tra cứu đơn hàng', en: 'Track your order' }} /></h1>
+			<p class="inv-id" data-inv-id hidden></p>
+		</header>
+
+		<!-- Không có ?id — nhập mã đơn -->
+		<form class="inv-card inv-find" method="get" action="/product/invoice/" data-inv-view="find" hidden>
+			<label class="inv-label" for="inv-code"><I18nText text={{ vi: 'Mã đơn hàng', en: 'Order code' }} /></label>
+			<div class="inv-row">
+				<input id="inv-code" class="inv-input" name="id" required minlength="10" maxlength="64" pattern="[0-9A-Za-z_\-]+"
+					autocomplete="off" placeholder="01K36VHRF6PYZH33VRR9SD0YJH" />
+				<button class="inv-btn" type="submit"><I18nText text={{ vi: 'Xem đơn', en: 'View order' }} /></button>
+			</div>
+			<p class="inv-hint"><I18nText text={{ vi: 'Mã đơn có trong tin nhắn xác nhận và mục "Đơn của tôi".', en: 'The code is in your confirmation and under "My orders".' }} /></p>
+		</form>
+
+		<!-- Đang tải -->
+		<div class="inv-card inv-state" data-inv-view="loading">
+			<span class="inv-spin" aria-hidden="true"></span>
+			<I18nText text={{ vi: 'Đang tải đơn hàng…', en: 'Loading order…' }} />
+		</div>
+
+		<!-- Chưa đăng nhập -->
+		<div class="inv-card" data-inv-view="auth" hidden>
+			<p class="inv-note"><I18nText text={{ vi: 'Đăng nhập bằng tài khoản đã đặt đơn để xem đơn hàng này.', en: 'Sign in with the account that placed this order to view it.' }} /></p>
+			<div data-inv-auth></div>
+		</div>
+
+		<!-- Không có / không có quyền -->
+		<div class="inv-card inv-state is-empty" data-inv-view="missing" hidden>
+			<p><I18nText text={{ vi: 'Không tìm thấy đơn hàng, hoặc đơn này không thuộc tài khoản của bạn.', en: 'Order not found, or it does not belong to your account.' }} /></p>
+			<a class="inv-btn is-ghost" href="/product/invoice/"><I18nText text={{ vi: 'Nhập mã khác', en: 'Try another code' }} /></a>
+		</div>
+
+		<!-- Đơn hàng -->
+		<div class="inv-card inv-pay" data-inv-view="order" hidden></div>
+	</section>
+</CoreShop>
+
+<script>
+	import { auth } from '@/packages/auth/service/service.js';
+	import { createService } from '@/services/core/crud.js';
+
+	const ID_RE = /^[0-9A-Za-z_-]{10,64}$/;
+	let run = 0;
+
+	const $ = (sel: string) => document.querySelector(sel) as HTMLElement | null;
+
+	function show(view: string) {
+		document.querySelectorAll<HTMLElement>('[data-inv-view]').forEach((el) => { el.hidden = el.dataset.invView !== view; });
+	}
+
+	async function mountOrder(id: string, user: any, token: number) {
+		const invoice = await createService('invoices').findById(id).catch(() => null);
+		if (token !== run) return;
+		if (!invoice) { show('missing'); return; }
+
+		const shopEl = document.getElementById('pay-factor') as any; // <svc-pay isCart> của CoreShop — nguồn sellerId/wallet/vietqr
+		const sellerId = shopEl?.sellerId ?? '';
+		const isSeller = (await auth.isAdmin()) || (!!user?.id && user.id === sellerId);
+		if (token !== run) return;
+
+		await import('@/packages/pay/svc-pay.js');
+		const box = $('[data-inv-view="order"]');
+		if (!box) return;
+		const pay = document.createElement('svc-pay') as any;
+		// Props đặt TRƯỚC khi gắn vào DOM — _dcInit() chạy ở connectedCallback, invoiceId phải có sẵn
+		Object.assign(pay, {
+			service: 'pay_invoice_view', // tách khỏi section 'pay' của giỏ (#pay-factor) trên cùng trang
+			invoiceId: id,
+			role: isSeller ? 'seller' : 'buyer',
+			sellerId: invoice.seller_id || sellerId,
+			buyerId: user.id,
+			seller: shopEl?.seller ?? '',
+			wallet: shopEl?.wallet ?? {},
+			vietqr: shopEl?.vietqr ?? {},
+			cashDisabled: !!shopEl?.cashDisabled,
+			onlyDelivery: true,
+		});
+		box.replaceChildren(pay);
+		show('order');
+	}
+
+	function askSignIn(id: string, token: number) {
+		import('@/packages/auth/svc-auth.js').then(() => {
+			if (token !== run) return;
+			const slot = $('[data-inv-auth]');
+			if (!slot) return;
+			const form = document.createElement('svc-auth') as any;
+			form.embedded = true;
+			form.guestOk = true;
+			form.addEventListener('login-success', () => init(), { once: true });
+			slot.replaceChildren(form);
+			show('auth');
+		});
+	}
+
+	async function init() {
+		if (location.pathname.replace(/\/+$/, '') !== '/product/invoice') return;
+		const token = ++run;
+		const id = new URLSearchParams(location.search).get('id')?.trim() ?? '';
+		const idEl = $('[data-inv-id]');
+		if (!ID_RE.test(id)) {
+			if (idEl) idEl.hidden = true;
+			show('find');
+			return;
+		}
+		if (idEl) { idEl.textContent = `#${id}`; idEl.hidden = false; }
+		show('loading');
+		const user = await auth.get();
+		if (token !== run) return;
+		if (!user?.id) { askSignIn(id, token); return; }
+		await mountOrder(id, user, token);
+	}
+
+	document.addEventListener('astro:page-load', init);
+	// Đăng xuất / đổi tài khoản ngay trên trang (svc-account) → kiểm lại quyền xem đơn
+	window.addEventListener('account-change', () => { if (location.pathname.startsWith('/product/invoice')) init(); });
+</script>
+
+<style>
+	.inv { display: flex; flex-direction: column; gap: 1.25rem; }
+	.inv-head { display: flex; flex-direction: column; gap: 0.35rem; }
+	.inv-kicker {
+		margin: 0; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+		color: color-mix(in oklab, var(--color-primary) 80%, var(--color-base-content));
+	}
+	.inv-title { margin: 0; font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 800; line-height: 1.2; }
+	.inv-id {
+		margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85rem;
+		opacity: 0.7; overflow-wrap: anywhere;
+	}
+
+	/* Card kiểu tints — glow 2 góc trên nền base-100 (cùng card của /gift/shop) */
+	.inv-card {
+		border-radius: 1.25rem;
+		border: 1px solid color-mix(in oklab, var(--color-base-content) 10%, transparent);
+		background:
+			radial-gradient(220px 140px at 100% 0%, color-mix(in oklab, var(--color-primary) 20%, transparent), transparent 70%),
+			radial-gradient(200px 120px at 0% 0%, color-mix(in oklab, var(--color-secondary) 15%, transparent), transparent 70%),
+			var(--color-base-100);
+		padding: 1.25rem;
+	}
+	.inv-card[hidden] { display: none; }
+	.inv-pay { overflow: hidden; }
+
+	.inv-find { display: flex; flex-direction: column; gap: 0.6rem; }
+	.inv-label { font-weight: 700; font-size: 0.9rem; }
+	.inv-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+	.inv-input {
+		flex: 1 1 14rem; min-width: 0; height: 2.75rem; padding: 0 0.9rem; border-radius: 0.75rem;
+		border: 1px solid color-mix(in oklab, var(--color-base-content) 18%, transparent);
+		background: var(--color-base-100); color: inherit; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+	}
+	.inv-input:focus { outline: 2px solid color-mix(in oklab, var(--color-primary) 55%, transparent); outline-offset: 1px; }
+	.inv-hint, .inv-note { margin: 0; font-size: 0.85rem; opacity: 0.7; }
+	.inv-note { margin-bottom: 0.75rem; opacity: 0.85; }
+
+	.inv-btn {
+		display: inline-flex; align-items: center; justify-content: center; height: 2.75rem; padding: 0 1.25rem;
+		border-radius: 0.75rem; border: 0; cursor: pointer; font-weight: 700; text-decoration: none;
+		background: var(--color-primary); color: var(--color-primary-content);
+	}
+	.inv-btn.is-ghost {
+		background: transparent; color: var(--color-primary);
+		border: 1px solid color-mix(in oklab, var(--color-primary) 40%, transparent);
+	}
+
+	.inv-state { display: flex; align-items: center; justify-content: center; gap: 0.6rem; min-height: 8rem; text-align: center; }
+	.inv-state.is-empty { flex-direction: column; }
+	.inv-state p { margin: 0; }
+	.inv-spin {
+		width: 1.1rem; height: 1.1rem; border-radius: 50%;
+		border: 2px solid color-mix(in oklab, var(--color-primary) 25%, transparent); border-top-color: var(--color-primary);
+		animation: inv-spin 0.8s linear infinite;
+	}
+	@keyframes inv-spin { to { transform: rotate(360deg); } }
+</style>

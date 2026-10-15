@@ -1,0 +1,30 @@
+---
+import Core from '@/layouts/Core.astro';
+import { KINDS } from '@/components/Catalog/kinds';
+import Tags from '@/components/Catalog/Tags.astro';
+import { fetchCollection } from '@/services/core/fetcher.server.js';
+import { pickLang } from '@/services/tools/util';
+import { site } from '@/services/tools/site';
+import { menuItems, policies, socials } from '@/modules/gift/shop.js'; // footer chung giftoraddk.com
+import { menu as productMenu, tints } from '@/modules/product/index.js';
+
+// Trang tổng hợp danh mục sản phẩm /product/tag/ — mỗi tag 1 card dẫn tới /product/tag/{slug}/
+// (cùng tagSlugMap/slugify với [tag].astro, sitemap.xml.ts, llms.txt.ts).
+const products = await fetchCollection('products');
+
+const pageTitle = pickLang({ en: 'Product categories', vi: 'Danh mục sản phẩm' });
+const pageDescription = pickLang({
+	en: `Every gift category at ${site.subtitle}, with the number of products in each.`,
+	vi: `Tất cả danh mục quà tặng tại ${site.subtitle}, kèm số sản phẩm trong từng danh mục.`,
+});
+const breadcrumb = [
+	{ label: pickLang({ en: 'Home', vi: 'Trang chủ' }), href: '/' },
+	{ label: pickLang({ en: 'Products', vi: 'Sản phẩm' }), href: '/product/' },
+	{ label: pickLang({ en: 'Categories', vi: 'Danh mục' }) },
+];
+const bg = null;
+---
+
+<Core menu={productMenu} tints={tints} title={pageTitle} description={pageDescription} footer={{ columns: menuItems, policies, socials, bg }}>
+	<Tags kind={KINDS.product} items={products} title={pageTitle} description={pageDescription} breadcrumb={breadcrumb} />
+</Core>

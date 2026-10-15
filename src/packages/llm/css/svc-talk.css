@@ -1,0 +1,85 @@
+/* src/packages/llm/css/svc-talk.css — ported from astro-micro's src/webs/llm/styles/svc-talk.css
+   (Event Bus Global port, Task 16) — layout/visuals unchanged, only the file location moved to this
+   repo's `css/` convention (see svc-progress.css). Uses only system CSS variables
+   (--color-*), no hardcoded hex/rgb colors per this project's color rule. */
+
+:host { display: contents; }
+
+/* Floating (not embedded): the fab is position:fixed and the panel a fixed popover — nothing here belongs to the page
+   flow, but <web-popover> is inline-block, so even empty it leaves one line box (a strip of white space where this
+   element sits, e.g. under the last section). A 0-height block takes no room; its fixed children still show. */
+:host(:not([embedded])) web-popover { display: block; height: 0; }
+
+/* Popover top-layer/positioning (Popover API, follows <web-fab> live while dragging via web-fab's
+   'drag' event) is entirely handled by <web-popover> itself (packages/apex/web-popover.js) —
+   .tlk-panel is just normal content projected into its default slot, sized/laid out here. */
+.tlk-panel {
+    box-sizing: border-box;
+    width: 380px; height: calc(100% + 1rem); min-height: 380px;
+    margin: -.5rem; /* bleed past web-popover's own .5rem content padding — edge-to-edge head/composer */
+    border-radius: .5rem; overflow: hidden; /* own rounding — .web-popover-content itself doesn't clip */
+    display: flex; flex-direction: column;
+}
+
+/* embedded — nơi mount khác (vd <svc-node>'s overlay chrome) đã tự có kích thước/viền riêng, panel
+   chỉ cần lấp đầy container đó thay vì tự đặt kích thước+bleed-margin cho <web-popover>. */
+:host([embedded]) .tlk-panel {
+    width: 100%; height: 100%; min-height: 0;
+    margin: 0;
+    border-radius: 0;
+}
+
+.tlk-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .5rem .75rem; flex: 0 0 auto;
+    border-bottom: 1px solid color-mix(in oklab, var(--color-base-300) 30%, transparent);
+}
+.tlk-title { font-weight: 600; }
+.tlk-auto { display: inline-flex; align-items: center; gap: .4rem; flex: 0 0 auto; font-size: .8rem; }
+.tlk-title.has-icon { display: inline-flex; align-items: center; gap: .4rem; }
+.tlk-title.has-icon iconify-icon { font-size: 1.15rem; flex: 0 0 auto; }
+/* Chế độ dùng thử — lượt còn lại (svc-talk _rfTrial) */
+.tlk-trial {
+    display: flex; align-items: center; gap: .4rem; flex: 0 0 auto;
+    padding: .35rem .75rem; font-size: .75rem;
+    color: var(--color-info);
+    background: color-mix(in oklab, var(--color-info) 10%, transparent);
+}
+
+.tlk-messages { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: .6rem; padding: .75rem; }
+.tlk-empty { opacity: .6; font-size: .8rem; text-align: center; margin: auto; }
+
+.tlk-msg { display: flex; gap: .5rem; max-width: 85%; }
+.tlk-msg.mine { margin-left: auto; flex-direction: row-reverse; }
+.tlk-bubble { background: color-mix(in oklab, var(--color-base-300) 30%, transparent); border-radius: .75rem; padding: .5rem .75rem; min-width: 0; }
+.tlk-msg.mine .tlk-bubble { background: color-mix(in oklab, var(--color-primary) 25%, transparent); }
+.tlk-author { font-size: .72rem; opacity: .7; display: block; margin-bottom: .1rem; }
+.tlk-content { margin: 0; font-size: .875rem; white-space: pre-wrap; word-break: break-word; }
+.tlk-typing { letter-spacing: .15em; animation: tlk-typing-pulse 1.2s ease-in-out infinite; }
+@keyframes tlk-typing-pulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+
+.tlk-actions { display: flex; gap: .4rem; margin-top: .4rem; flex-wrap: wrap; }
+
+.tlk-composer-wrap { position: relative; flex: 0 0 auto; border-top: 1px solid var(--color-base-300); }
+.tlk-composer { display: flex; gap: .5rem; padding: .5rem; }
+.tlk-composer web-text { flex: 1; min-width: 0; }
+
+/* View "Xem chi tiết" (_rbDetail) — thay khung chat ngay trong panel, cùng kích thước (popover chỉ đặt vị trí
+   lúc mở — đổi rộng giữa chừng sẽ tràn); cần rộng hơn thì dùng nút fullscreen của popover. */
+.tlk-detail-head { justify-content: flex-start; gap: .5rem; }
+.tlk-detail-head .tlk-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tlk-back {
+    display: flex; align-items: center; justify-content: center; flex: 0 0 auto;
+    width: 28px; height: 28px; border: none; border-radius: 50%; cursor: pointer;
+    background: none; color: inherit; font-size: 1.1rem;
+}
+.tlk-back:hover { background: color-mix(in oklab, var(--color-base-content) 10%, transparent); }
+.tlk-detail { flex: 1; min-height: 0; overflow-y: auto; padding: .75rem; }
+
+/* Card task (svc-task-card) — 1 card / task ở vị trí bubble của Thư ký (avatar + card), rộng hết khung chat */
+.tlk-msg.is-card { max-width: 100%; width: 100%; }
+.tlk-card { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+/* Card chi tiết job (svc-job-card) đầu view chi tiết, trên <svc-progress> */
+.tlk-detail svc-job-card { margin-bottom: .9rem; }
+/* Card chi tiết thu gọn (attribute `collapsed`) ghim ở đầu vùng cuộn — top âm = bù padding của .tlk-detail */
+.tlk-detail svc-job-card[collapsed] { position: sticky; top: -.75rem; z-index: 3; }

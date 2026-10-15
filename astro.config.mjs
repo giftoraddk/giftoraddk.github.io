@@ -7,25 +7,18 @@ import tailwindcss from '@tailwindcss/vite';
 import mdx from '@astrojs/mdx';
 import remarkGfm from 'remark-gfm';
 import { unified } from '@astrojs/markdown-remark';
-import { site } from './src/services/constants/site.js';
 import vercel from '@astrojs/vercel';
-// import node from '@astrojs/node';
+import { site } from './src/services/tools/site.ts';
 
-// Thư mục con của src/pages/ muốn loại khỏi `pnpm build` (production) — vẫn hoạt động bình
-// thường lúc `pnpm dev`/`pnpm preview` (chỉ áp dụng khi command === 'build', xem
-// excludePagesIntegration bên dưới). Ghi tên thư mục tương đối tới src/pages/, vd 'channel' loại
-// toàn bộ src/pages/channel/**.
-const excludePages = ['channel', 'doc', 'landing', 'shop', 'talent', 'ui', 'software'];
-
-// 'ssg' (mặc định) — mọi route bake tĩnh lúc build, đúng như trước giờ.
-// 'isr' (`PUBLIC_RENDER=isr pnpm build`, xem package.json "build:isr") — 4 route data-động ở
-// PUBLIC_RENDER_ROUTES chuyển sang on-demand + cache theo thời gian (Vercel ISR, xem
-// renderModeIntegration bên dưới), mọi route khác KHÔNG đổi, vẫn tĩnh 100%.
+// 'ssg' (mặc định) — mọi route bake tĩnh lúc build.
+// 'isr' (`PUBLIC_RENDER=isr pnpm build`, xem package.json "build:isr") — các route ở PUBLIC_RENDER_ROUTES chuyển
+// sang on-demand + cache theo thời gian (Vercel ISR, xem renderModeIntegration bên dưới); mọi route khác vẫn tĩnh 100%.
+// Biến PUBLIC_ nên client cũng đọc được qua import.meta.env.PUBLIC_RENDER.
 const PUBLIC_RENDER = process.env.PUBLIC_RENDER === 'isr' ? 'isr' : 'ssg';
 
-// 4 route có 2 biến thể ([slug/tag].astro = SSG mặc định, _render-modes/[slug/tag].isr.astro =
-// ISR) — xem Context trong mỗi file .isr.astro để hiểu vì sao SSG/ISR cần code khác nhau (không
-// gộp bằng 1 `export const prerender = <biểu thức>` được, xem renderModeIntegration).
+// Route có biến thể ISR ở `_render-modes/<tên>.isr.astro` cạnh nó. Route đã có file (bản SSG) → ISR đè lên; route
+// CHƯA có file → chỉ tồn tại ở chế độ ISR. Không gộp được bằng 1 `export const prerender = <biểu thức>` vì SSG cần
+// getStaticPaths còn ISR đọc Astro.params lúc request — xem Context trong từng file .isr.astro.
 const PUBLIC_RENDER_ROUTES = [
 	'product/[slug].astro',
 	'product/tag/[tag].astro',
@@ -34,63 +27,22 @@ const PUBLIC_RENDER_ROUTES = [
 ];
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const pagesDir  = path.join(__dirname, 'src/pages');
-const stashDir  = path.join(__dirname, '.astro-build-stash');
+const pagesDir = path.join(__dirname, 'src/pages');
 
 /**
- * Move các thư mục trong `excludePages` ra khỏi src/pages/ TRƯỚC khi Astro quét route (nên các
- * trang đó không được build luôn, không phải build-rồi-xoá-output) — restore lại ngay khi build
- * xong (thành công hay lỗi) để working tree không bao giờ ở trạng thái thiếu thư mục. Chỉ chạy
- * khi `astro build` (command === 'build') — `pnpm dev` luôn thấy đủ trang để code/preview.
- */
-function excludePagesIntegration() {
-	/** @type {string[]} */
-	let moved = [];
-
-	const restore = () => {
-		for (const name of moved) {
-			const from = path.join(stashDir, name);
-			if (fs.existsSync(from)) fs.renameSync(from, path.join(pagesDir, name));
-		}
-		moved = [];
-	};
-
-	return {
-		name: 'exclude-pages',
-		hooks: {
-			/** @param {{ command: 'dev' | 'build' | 'preview' | 'sync' }} opts */
-			'astro:config:setup': ({ command }) => {
-				if (command !== 'build' || !excludePages.length) return;
-
-				fs.mkdirSync(stashDir, { recursive: true });
-				moved = excludePages.filter((name) => fs.existsSync(path.join(pagesDir, name)));
-				for (const name of moved) {
-					fs.renameSync(path.join(pagesDir, name), path.join(stashDir, name));
-				}
-
-				// An toàn khi build bị Ctrl+C hoặc crash giữa chừng — vẫn trả file về chỗ cũ.
-				process.once('exit', restore);
-				process.once('SIGINT', () => { restore(); process.exit(1); });
-			},
-			'astro:build:done': restore,
-		},
-	};
-}
-
-/**
- * PUBLIC_RENDER=isr: trước khi Astro quét route, đè nội dung 4 file trong PUBLIC_RENDER_ROUTES bằng
- * biến thể `_render-modes/*.isr.astro` tương ứng (sao lưu nội dung SSG gốc trong bộ nhớ) — restore
- * lại nguyên trạng ngay khi build xong (thành công hay lỗi), same safety net như
- * excludePagesIntegration. PUBLIC_RENDER mặc định ('ssg') khiến hàm này no-op hoàn toàn — không
- * đụng file nào, `pnpm build` giữ nguyên hành vi như trước khi có tính năng này.
+ * PUBLIC_RENDER=isr: trước khi Astro quét route, chép biến thể `_render-modes/*.isr.astro` vào chỗ từng route trong
+ * PUBLIC_RENDER_ROUTES (nội dung SSG gốc sao lưu trong bộ nhớ; route chưa có file thì ghi nhận để xoá) — trả lại
+ * nguyên trạng ngay khi build xong, lỗi, hay bị Ctrl+C. PUBLIC_RENDER mặc định ('ssg') → no-op hoàn toàn.
  */
 function renderModeIntegration() {
-	/** @type {Map<string, string>} */
+	/** @type {Map<string, string | null>} rel → nội dung gốc, null = file do integration tạo */
 	const backups = new Map();
 
 	const restore = () => {
 		for (const [rel, content] of backups) {
-			fs.writeFileSync(path.join(pagesDir, rel), content);
+			const target = path.join(pagesDir, rel);
+			if (content === null) fs.rmSync(target, { force: true });
+			else fs.writeFileSync(target, content);
 		}
 		backups.clear();
 	};
@@ -103,15 +55,14 @@ function renderModeIntegration() {
 				if (command !== 'build' || PUBLIC_RENDER !== 'isr') return;
 
 				for (const rel of PUBLIC_RENDER_ROUTES) {
-					const target  = path.join(pagesDir, rel);
+					const target = path.join(pagesDir, rel);
 					const variant = path.join(path.dirname(target), '_render-modes', path.basename(target).replace(/\.astro$/, '.isr.astro'));
-					if (!fs.existsSync(target) || !fs.existsSync(variant)) continue;
+					if (!fs.existsSync(variant)) continue;
 
-					backups.set(rel, fs.readFileSync(target, 'utf-8'));
+					backups.set(rel, fs.existsSync(target) ? fs.readFileSync(target, 'utf-8') : null);
 					fs.copyFileSync(variant, target);
 				}
 
-				// An toàn khi build bị Ctrl+C hoặc crash giữa chừng — vẫn trả file về chỗ cũ.
 				process.once('exit', restore);
 				process.once('SIGINT', () => { restore(); process.exit(1); });
 			},
@@ -120,13 +71,43 @@ function renderModeIntegration() {
 	};
 }
 
+/**
+ * Chỉ giữ trong dist/ các trang thuộc mục cấp 1 của src/pages có trong `site.pages` (services/tools/site.ts — giftoraddk.com
+ * chỉ bán quà tặng). Astro không có tuỳ chọn loại route khỏi build, và đổi tên src/pages lúc build bị Windows chặn
+ * (EPERM khi IDE / watcher đang giữ thư mục) — nên mọi route vẫn render như thường, rồi astro:build:done xoá đầu ra cấp 1
+ * của các mục ngoài danh sách (dist/gift, dist/rss.xml…). src/ không bị đụng tới; tên trùng 1 mục của public/ thì giữ.
+ * Chỉ cho build tĩnh: `dev` và build ISR (route on-demand nằm ở function, không ở dist) vẫn đủ mọi trang.
+ * `site.pages` rỗng = giữ tất cả.
+ */
+function pageScopeIntegration() {
+	return {
+		name: 'page-scope',
+		hooks: {
+			/** @param {{ dir: URL, logger: import('astro').AstroIntegrationLogger }} opts */
+			'astro:build:done': ({ dir, logger }) => {
+				if (!site.pages.length || PUBLIC_RENDER === 'isr') return;
+				const outDir = fileURLToPath(dir);
+				const publicNames = new Set(fs.readdirSync(path.join(__dirname, 'public')));
+				const dropped = [];
+				for (const name of fs.readdirSync(pagesDir)) {
+					if (name.startsWith('_') || name.startsWith('.') || site.pages.includes(name)) continue;
+					const out = name.replace(/\.(astro|mdx?|[jt]s)$/, ''); // 'gift' → 'gift', 'rss.xml.ts' → 'rss.xml'
+					if (publicNames.has(out) || !fs.existsSync(path.join(outDir, out))) continue;
+					fs.rmSync(path.join(outDir, out), { recursive: true, force: true });
+					dropped.push(out);
+				}
+				logger.info(`kept: ${site.pages.join(', ')} — dropped: ${dropped.join(', ') || '(none)'}`);
+			},
+		},
+	};
+}
+
 // https://astro.build/config
 export default defineConfig({
-	// Bắt buộc phải set — không có `site`, Astro.site là undefined và safeURL()
-	// (Head/Base.astro's canonical/og:image) rơi về Astro.url.origin, mặc định
-	// "http://localhost:4321" lúc build static — khiến og:image/canonical sai domain.
+	// URL gốc thật — Astro.site/Astro.url lúc build lấy từ đây; thiếu nó canonical/og:url (Head/Base.astro)
+	// rơi về origin của server build. Cùng nguồn site.domain mà sitemap.xml/robots.txt/llms.txt dùng.
 	site: site.domain,
-	integrations: [mdx(), excludePagesIntegration(), renderModeIntegration()],
+	integrations: [mdx(), pageScopeIntegration(), renderModeIntegration()],
 	markdown: {
 		processor: unified({ remarkPlugins: [remarkGfm] }),
 		shikiConfig: {
@@ -141,11 +122,15 @@ export default defineConfig({
 	// },
 	output: 'static',
 	outDir: './docs',
-	// Only routes with `export const prerender = false` (e.g. the fake CRUD mock under
-	// /api/products, or the 4 ISR routes swapped in by renderModeIntegration when
-	// PUBLIC_RENDER=isr) run through an adapter — everything else stays a fully static build.
-	// Adapter is only attached in ISR mode so the default `pnpm build` never even loads it.
-	// adapter: node({ mode: 'standalone' }),
+	// Khu quản trị chỉ có 1 trang động pages/admin/[table].astro — /admin/ về trang đầu tiên của modules/admin PAGES.
+	redirects: {
+		'/admin': '/admin/users/',
+		// Trang chủ Giftora nằm ở gốc '/' (src/pages/index.astro) — link cũ /gift/ chuyển về đó.
+		'/gift': '/',
+	},
+	// Chỉ route `export const prerender = false` (các route ISR do renderModeIntegration chép vào) chạy qua adapter —
+	// mọi route khác vẫn build tĩnh. Adapter chỉ gắn ở chế độ ISR nên `pnpm build` mặc định không nạp nó.
+	// expiration 1 giờ — dữ liệu sản phẩm / bài viết cập nhật trong vòng 1 giờ.
 	adapter: PUBLIC_RENDER === 'isr' ? vercel({ isr: { expiration: 60 * 60 } }) : undefined,
 	// Uncomment the line below if you want to deploy to a subdirectory like /mvp/
 	// base: '/mvp/',
@@ -190,10 +175,10 @@ export default defineConfig({
 	},
 	// Disable HTML minification
 	compressHTML: false,
-  experimental: {
-    collectionStorage: {
-      type: 'chunked',
-      chunkSize: 1024 * 1024, // reduce the size of chunks
-    },
-  },
+  // experimental: {
+  //   collectionStorage: {
+  //     type: 'chunked',
+  //     chunkSize: 1024 * 1024, // reduce the size of chunks
+  //   },
+  // },
 });

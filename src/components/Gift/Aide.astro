@@ -1,0 +1,66 @@
+---
+// Trợ lý chọn quà của giftoraddk.com — <svc-aide site="giftoraddk.com">, không owner = trợ lý riêng của site: kho riêng owner
+// '@giftoraddk.com' (kiến thức + persona + face). Nạp public/data/gift.json qua ⚙ của trợ lý này (chỉ admin). Worker so
+// site với Origin: chạy được trên giftoraddk.com (và localhost), copy thẻ sang site khác là bị chặn.
+// transition:persist — giữ nguyên khung chat (và cuộc trò chuyện đang mở) khi ClientRouter chuyển trang.
+// Kèm bộ bắt `cell-action` của nút CTA (modules/gift/meta.js CTA) — section nào có nút CTA thì trang chỉ cần có component này.
+import { SITE, GIFT_LANG } from '@/modules/gift/meta.js';
+
+interface Props {
+	theme?: string;
+	lang?: string;
+}
+const { theme = 'light', lang = GIFT_LANG } = Astro.props;
+---
+
+<svc-aide id="gift-aide" site={new URL(SITE).host} theme={theme} lang={lang} transition:persist="gift-aide"></svc-aide>
+
+<script>
+	import '@/packages/llm/svc-aide.js';
+	import { watchHtmlAttr } from '@/services/tools/util.js';
+	import { ctaOf } from '@/modules/gift/meta.js';
+
+	const aide = () => document.getElementById('gift-aide') as (HTMLElement & { lang: string; y: string }) | null;
+
+	// Trang CoreShop có cụm nút nổi góc phải (giỏ hàng #pay-factor, đơn hàng) — trợ lý xếp lên trên cùng cụm đó;
+	// trang Core không có thì về vị trí mặc định. Đặt lại mỗi lần chuyển trang vì phần tử được persist qua cả 2 layout.
+	const SHOP_Y = 'calc(100% - 14.5rem)';
+	const DEFAULT_Y = '65%';
+
+	// Trợ lý nói theo ngôn ngữ trang (nút VI/EN ở bar đổi <html lang>, cookie giữ lựa chọn). astro:page-load chạy cả lần
+	// tải đầu lẫn sau mỗi lần ClientRouter chuyển trang — <html> mới nên phải gắn lại observer.
+	let unwatch: (() => void) | undefined;
+	document.addEventListener('astro:page-load', () => {
+		unwatch?.();
+		const el = aide();
+		if (el) el.y = document.getElementById('pay-factor') ? SHOP_Y : DEFAULT_Y;
+		unwatch = el ? watchHtmlAttr('lang', (lang: string | null) => { el.lang = lang === 'en' ? 'en' : 'vi'; }) : undefined;
+	});
+
+	// Cuộn qua #main-wrap (vùng scroll thật, xem Core.astro — <html> có overflow-hidden).
+	function scrollToSection(id: string) {
+		const el = document.getElementById(id);
+		if (!el) return;
+		const container = document.getElementById('main-wrap') ?? document.documentElement;
+		const top = el.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop;
+		container.scrollTo({ top, behavior: 'smooth' });
+	}
+
+	// Mở khung chat — bấm nút nổi của trợ lý (web-fab là trigger của web-popover bên trong).
+	function openAide() {
+		const fab = aide()?.shadowRoot?.querySelector('web-fab') as HTMLElement | null;
+		fab?.click();
+	}
+
+	// web-cell chỉ phát 'cell-action' với value = chữ trên nút — meta.js CTA nói nút nào làm gì (cả vi lẫn en).
+	// Gắn 1 lần vào document (sống qua các lần chuyển trang). Link ngoài (Zalo) mở tab mới.
+	document.addEventListener('cell-action', (e) => {
+		const cta = ctaOf((e as CustomEvent).detail?.value);
+		if (!cta) return;
+		if ('href' in cta) {
+			if (/^https?:\/\//.test(cta.href)) window.open(cta.href, '_blank', 'noopener');
+			else window.location.href = cta.href;
+		} else if ('scroll' in cta) scrollToSection(cta.scroll);
+		else if ('demo' in cta) openAide();
+	});
+</script>

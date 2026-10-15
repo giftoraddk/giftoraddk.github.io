@@ -1,0 +1,179 @@
+/* No background of its own — sits on whatever surface hosts it (page, popover, glass panel). */
+:host {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    color: var(--color-base-content);
+}
+
+.au-card {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.au-head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1.5rem 1.5rem 0;
+}
+
+.au-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+}
+
+.au-logo { font-size: 1.9rem; color: var(--color-base-content); }
+.au-logo-img { height: 1.9rem; width: auto; }
+.au-wordmark { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
+
+.au-title { font-size: 1.05rem; font-weight: 600; line-height: 1.3; }
+
+.au-sub {
+    margin-top: 0.35rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: color-mix(in oklab, var(--color-base-content) 62%, transparent);
+    overflow-wrap: anywhere;
+}
+
+.au-sub strong { color: var(--color-base-content); font-weight: 600; }
+
+.au-verify-icon { font-size: 2.5rem; color: var(--color-primary); margin-bottom: 0.75rem; }
+
+.au-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1.75rem 1.5rem 1.5rem;
+}
+
+.au-google iconify-icon { font-size: 1.1rem; margin-right: 0.5rem; }
+
+.au-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: color-mix(in oklab, var(--color-base-content) 62%, transparent);
+}
+
+.au-divider::before,
+.au-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: color-mix(in oklab, var(--color-base-content) 12%, transparent);
+}
+
+.au-field { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.au-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.au-hint { font-weight: 400; color: color-mix(in oklab, var(--color-base-content) 50%, transparent); }
+
+.au-field.is-invalid .au-label { color: var(--color-error); }
+
+.au-field-error {
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: var(--color-error);
+}
+
+.au-field-error .au-link { font-size: inherit; }
+
+.au-input-wrap { position: relative; }
+
+.au-eye {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+    font-size: 1.1rem;
+    cursor: pointer;
+    color: color-mix(in oklab, var(--color-base-content) 50%, transparent);
+}
+
+.au-chip {
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    max-width: 100%;
+    padding: 0.3rem 0.35rem 0.3rem 0.85rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, var(--color-base-content) 14%, transparent);
+    font-size: 0.875rem;
+}
+
+.au-chip-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.au-chip-edit {
+    display: grid;
+    place-content: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: color-mix(in oklab, var(--color-base-content) 62%, transparent);
+    cursor: pointer;
+}
+
+.au-chip-edit:hover { background: color-mix(in oklab, var(--color-base-content) 8%, transparent); }
+
+.au-error,
+.au-notice {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.82rem;
+}
+
+.au-error {
+    color: var(--color-error);
+    background: color-mix(in oklab, var(--color-error) 12%, transparent);
+    border: 1px solid color-mix(in oklab, var(--color-error) 25%, transparent);
+}
+
+.au-notice {
+    color: var(--color-success);
+    background: color-mix(in oklab, var(--color-success) 12%, transparent);
+    border: 1px solid color-mix(in oklab, var(--color-success) 25%, transparent);
+}
+
+/* Footer is separated by a hairline only — no fill, per the no-background design. */
+.au-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid color-mix(in oklab, var(--color-base-content) 10%, transparent);
+    text-align: center;
+    font-size: 0.875rem;
+    color: color-mix(in oklab, var(--color-base-content) 62%, transparent);
+}
+
+.au-link {
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    font-weight: 500;
+    color: var(--color-primary);
+    cursor: pointer;
+}
+
+.au-link:hover { text-decoration: underline; }

@@ -1,0 +1,5 @@
+- app: chứa các component nội bộ, chỉ được dùng bởi component khác trong package này (không tự mount trực tiếp ở page/layout nào)
+- css: chứa style cho các component
+- service: chứa xử lý dữ liệu cũng như state cho component
+- tool: chứa các helper, constant, other ... 
+- worker: nơi cấu hình cũng như chạy độc lập cloudflare (dev, setup, deploy) bên trong nó sẽ có package.json và chạy riêng như 1 source

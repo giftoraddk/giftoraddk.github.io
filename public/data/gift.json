@@ -1,0 +1,377 @@
+{
+  "name": "Giftora DDK — kho kiến thức",
+  "about": "Kiến thức về sản phẩm, dịch vụ, giá theo ngân sách, giao hàng, thanh toán, đổi trả và liên hệ của Giftora DDK (giftoraddk.com) cho trợ lý chọn quà svc-aide, viết bằng tiếng Việt (ngôn ngữ gốc — trợ lý vẫn trả lời theo ngôn ngữ của khách). Nạp ở ⚙ của trợ lý trên giftoraddk.com → Nạp từ API & MCP. Mỗi mục có id / title / content / tags. Nội dung giữ tiếng Việt; tags kèm cả từ khoá tiếng Anh (gift, logo, shipping…) và tiếng Việt không dấu vì tìm kiếm từ khoá so khớp đúng chữ khách gõ.",
+  "site": "https://giftoraddk.com",
+  "updated": "2026-10-14",
+  "items": [
+    {
+      "id": "overview-vi",
+      "title": "Giftora DDK là gì?",
+      "content": "Giftora DDK (giftoraddk.com, Công ty TNHH Giftora DDK, TP. HCM) chuyên cung cấp giải pháp quà tặng doanh nghiệp: giúp doanh nghiệp chọn đúng quà, đúng ngân sách và đúng dấu ấn thương hiệu — từ món quà nhỏ đến những kết nối lớn. Giftora DDK có quà tặng cho nhân viên, khách hàng, sự kiện, tri ân đối tác và quà Tết; nhận in logo theo yêu cầu, thiết kế bộ quà tặng riêng, gift box, đóng gói và giao hàng số lượng lớn trên toàn quốc. Khách có thể chọn quà theo đối tượng, theo ngân sách (dưới 200k, 200–500k, 500k–1 triệu, cao cấp) hoặc mua trực tiếp tại cửa hàng online giftoraddk.com/gift/shop.",
+      "tags": [
+        "giới thiệu",
+        "gioi thieu",
+        "about",
+        "overview",
+        "giftora",
+        "quà tặng doanh nghiệp",
+        "corporate gifts"
+      ]
+    },
+    {
+      "id": "contact-vi",
+      "title": "Liên hệ Giftora DDK và giờ làm việc",
+      "content": "Công ty TNHH Giftora DDK — mã số thuế 0319681025. Địa chỉ: 670/59/10 Đoàn Văn Bơ, Khu phố 16, Phường Xóm Chiếu, TP. HCM. Hotline/Zalo: 093 456 1501. Email: sales@giftoraddk.com. Facebook: facebook.com/giftoraddk. Giờ làm việc: 8:00–17:30 từ thứ 2 đến thứ 6, thứ 7 từ 8:00–12:00; nghỉ chủ nhật và các ngày lễ. Muốn nhận báo giá nhanh, khách nhắn Zalo 093 456 1501 kèm dịp tặng, số lượng và ngân sách.",
+      "tags": [
+        "liên hệ",
+        "lien he",
+        "contact",
+        "hotline",
+        "zalo",
+        "email",
+        "địa chỉ",
+        "address",
+        "giờ làm việc",
+        "opening hours"
+      ]
+    },
+    {
+      "id": "quote-vi",
+      "title": "Cách nhận báo giá quà tặng doanh nghiệp",
+      "content": "Để nhận báo giá, khách gửi yêu cầu qua hotline/Zalo 093 456 1501 hoặc email sales@giftoraddk.com, cho biết: dịp tặng (nhân viên, khách hàng, sự kiện, tri ân, Tết…), số lượng người nhận, ngân sách mỗi phần quà, có cần in logo hay không, và ngày cần giao. Đội ngũ tư vấn gợi ý set quà phù hợp ngân sách và nhận diện thương hiệu, báo giá trong vòng 24 giờ. Đơn có in logo được gửi mockup để duyệt trước khi sản xuất.",
+      "tags": [
+        "báo giá",
+        "bao gia",
+        "quote",
+        "pricing",
+        "giá",
+        "tư vấn",
+        "đặt hàng"
+      ]
+    },
+    {
+      "id": "order-process-vi",
+      "title": "Quy trình đặt quà tặng doanh nghiệp 5 bước",
+      "content": "Đặt quà tại Giftora DDK gồm 5 bước. 1. Gửi yêu cầu: dịp tặng, người nhận, số lượng và ngân sách qua hotline/Zalo 093 456 1501 hoặc email sales@giftoraddk.com. 2. Tư vấn và báo giá: gợi ý set quà phù hợp ngân sách và thương hiệu, báo giá trong 24 giờ. 3. Duyệt mẫu: nhận mockup logo trên sản phẩm thật, chỉnh đến khi ưng ý; đơn tuỳ chỉnh đặt cọc trước khi sản xuất. 4. Sản xuất và đóng gói: in UV, ép nhiệt hoặc khắc laser tuỳ chất liệu, kiểm tra 100% rồi đóng gói, thêm thiệp và ruy băng theo yêu cầu. 5. Giao hàng toàn quốc: nội thành TP. HCM 1–2 ngày, tỉnh thành khác 3–5 ngày làm việc; khách được kiểm hàng trước khi nhận.",
+      "tags": [
+        "quy trình",
+        "quy trinh",
+        "process",
+        "order",
+        "đặt hàng",
+        "cách đặt"
+      ]
+    },
+    {
+      "id": "categories-vi",
+      "title": "Các danh mục quà tặng doanh nghiệp",
+      "content": "Giftora DDK chia quà tặng doanh nghiệp thành 5 danh mục theo đối tượng và dịp tặng, mỗi danh mục có trang riêng: Quà nhân viên (giftoraddk.com/gift/employee), Quà khách hàng (/gift/customer), Quà sự kiện (/gift/event), Quà tri ân (/gift/appreciation) và Quà Tết (/gift/tet). Mỗi trang lọc sẵn sản phẩm của danh mục đó; mọi sản phẩm đều nhận in logo theo yêu cầu.",
+      "tags": [
+        "danh mục",
+        "danh muc",
+        "categories",
+        "occasions",
+        "dịp tặng",
+        "quà tặng doanh nghiệp"
+      ]
+    },
+    {
+      "id": "cat-employee-vi",
+      "title": "Quà tặng nhân viên",
+      "content": "Quà tặng nhân viên của Giftora DDK là quà ý nghĩa, tinh tế cho các dịp lễ, Tết, khen thưởng, sinh nhật hay kỷ niệm thành lập công ty — giúp gắn kết đội ngũ. Quà chất lượng, in logo doanh nghiệp theo yêu cầu, giao số lượng lớn toàn quốc, kể cả giao đến nhiều chi nhánh. Xem mẫu tại giftoraddk.com/gift/employee.",
+      "tags": [
+        "quà nhân viên",
+        "qua nhan vien",
+        "employee",
+        "employee gifts",
+        "khen thưởng",
+        "nhân viên"
+      ]
+    },
+    {
+      "id": "cat-customer-vi",
+      "title": "Quà tặng khách hàng",
+      "content": "Quà tặng khách hàng của Giftora DDK là quà cao cấp, tinh tế giúp doanh nghiệp giữ chân và tri ân khách hàng thân thiết. Đa dạng mẫu mã, đóng gói sang trọng, in logo thương hiệu, giao hàng nhanh. Xem mẫu tại giftoraddk.com/gift/customer.",
+      "tags": [
+        "quà khách hàng",
+        "qua khach hang",
+        "customer",
+        "customer gifts",
+        "khách hàng thân thiết"
+      ]
+    },
+    {
+      "id": "cat-event-vi",
+      "title": "Quà tặng sự kiện doanh nghiệp",
+      "content": "Quà tặng sự kiện của Giftora DDK dành cho khai trương, hội nghị, hội thảo, roadshow, ra mắt sản phẩm… ấn tượng và đúng thương hiệu. Giftora DDK hỗ trợ in logo, đóng gói và giao hàng đúng tiến độ sự kiện, có thể giao thẳng đến địa điểm tổ chức. Xem mẫu tại giftoraddk.com/gift/event.",
+      "tags": [
+        "quà sự kiện",
+        "qua su kien",
+        "event",
+        "event gifts",
+        "hội nghị",
+        "khai trương",
+        "roadshow"
+      ]
+    },
+    {
+      "id": "cat-appreciation-vi",
+      "title": "Quà tặng tri ân đối tác",
+      "content": "Quà tri ân của Giftora DDK giúp doanh nghiệp thể hiện sự trân trọng và gắn kết lâu dài với khách hàng, đối tác. Set quà tri ân cao cấp, in logo theo yêu cầu, giao hàng toàn quốc. Xem mẫu tại giftoraddk.com/gift/appreciation.",
+      "tags": [
+        "quà tri ân",
+        "qua tri an",
+        "appreciation",
+        "đối tác",
+        "partner gifts",
+        "cảm ơn"
+      ]
+    },
+    {
+      "id": "cat-tet-vi",
+      "title": "Quà Tết doanh nghiệp",
+      "content": "Quà Tết doanh nghiệp của Giftora DDK là các set quà sang trọng, ý nghĩa, đậm bản sắc để biếu tặng nhân viên, khách hàng và đối tác dịp Tết. Đa dạng set quà Tết cao cấp, in logo theo yêu cầu, giao tận nơi kịp đón năm mới. Nên đặt sớm vì mùa Tết đơn in logo cần thêm thời gian sản xuất. Xem mẫu tại giftoraddk.com/gift/tet.",
+      "tags": [
+        "quà tết",
+        "qua tet",
+        "tet",
+        "tet gifts",
+        "lunar new year",
+        "năm mới",
+        "hộp quà tết"
+      ]
+    },
+    {
+      "id": "budget-vi",
+      "title": "Chọn quà tặng theo ngân sách",
+      "content": "Giftora DDK có 4 mức ngân sách cho mỗi phần quà, mỗi mức có trang lọc sẵn sản phẩm theo giá: Dưới 200.000đ — đẹp, tiết kiệm, phù hợp số lượng lớn (giftoraddk.com/gift/under-200k). 200.000đ–500.000đ — tinh tế, vừa túi tiền, tặng nhân viên, khách hàng, đối tác (/gift/200-500k). 500.000đ–1.000.000đ — sang trọng, set quà cao cấp đóng gói tinh tế (/gift/500k-1m). Cao cấp trên 1.000.000đ — đẳng cấp cho đối tác, khách hàng VIP, tư vấn set quà theo yêu cầu riêng (/gift/premium). Trên trang có thể đổi sang mức khác ngay.",
+      "tags": [
+        "ngân sách",
+        "ngan sach",
+        "budget",
+        "giá",
+        "price",
+        "dưới 200k",
+        "500k",
+        "1 triệu",
+        "cao cấp",
+        "premium"
+      ]
+    },
+    {
+      "id": "svc-logo-vi",
+      "title": "Dịch vụ in logo lên quà tặng",
+      "content": "Giftora DDK in logo thương hiệu lên quà tặng doanh nghiệp: sổ tay, bình nước, túi xách, hộp quà… sắc nét, bền màu, giao số lượng lớn đúng tiến độ. Công nghệ in UV, ép nhiệt hoặc khắc laser tuỳ chất liệu. Quy trình 4 bước: 1. Tiếp nhận yêu cầu — gửi logo, màu thương hiệu và số lượng, báo giá trong 24 giờ. 2. Duyệt bản in mẫu — nhận mockup trên sản phẩm thật, chỉnh đến khi ưng ý. 3. Sản xuất và kiểm tra 100% trước khi đóng gói. 4. Giao hàng đúng hẹn đến kho hoặc thẳng đến sự kiện. Chi tiết: giftoraddk.com/gift/service/in-logo.",
+      "tags": [
+        "in logo",
+        "logo",
+        "logo printing",
+        "khắc laser",
+        "in uv",
+        "ép nhiệt",
+        "cá nhân hóa",
+        "dịch vụ"
+      ]
+    },
+    {
+      "id": "svc-design-vi",
+      "title": "Dịch vụ thiết kế bộ quà tặng theo yêu cầu",
+      "content": "Giftora DDK tư vấn và thiết kế bộ quà tặng doanh nghiệp riêng theo nhận diện thương hiệu, ngân sách và mục đích tặng — từ ý tưởng đến sản phẩm hoàn chỉnh. Quy trình: 1. Tiếp nhận brief — mục đích tặng, người nhận, ngân sách. 2. Đề xuất 2–3 concept phối set quà hợp nhận diện thương hiệu. 3. Làm mẫu thật để kiểm tra chất lượng, màu sắc trước khi đặt số lượng lớn. 4. Chốt mẫu, sản xuất hàng loạt và bàn giao đúng tiến độ. Chi tiết: giftoraddk.com/gift/service/thiet-ke-qua-tang.",
+      "tags": [
+        "thiết kế quà tặng",
+        "thiet ke",
+        "gift design",
+        "custom gift set",
+        "set quà",
+        "theo yêu cầu",
+        "dịch vụ"
+      ]
+    },
+    {
+      "id": "svc-giftbox-vi",
+      "title": "Gift box — hộp quà tặng doanh nghiệp",
+      "content": "Giftora DDK có nhiều mẫu gift box cao cấp bằng giấy, gỗ hoặc kim loại, tuỳ chỉnh kích thước và phong cách theo thương hiệu, phù hợp tặng khách hàng, đối tác và sự kiện. Cách làm: 1. Chọn mẫu hộp. 2. Tuỳ chỉnh nội dung — sắp xếp sản phẩm theo chủ đề, thêm thiệp và phụ kiện trang trí. 3. Cá nhân hoá — in logo, dán tem hoặc khắc tên lên hộp. 4. Đóng hộp, niêm phong sẵn sàng vận chuyển hoặc trao tặng trực tiếp. Chi tiết: giftoraddk.com/gift/service/gift-box.",
+      "tags": [
+        "gift box",
+        "hộp quà",
+        "hop qua",
+        "giftbox",
+        "hộp quà cao cấp",
+        "dịch vụ"
+      ]
+    },
+    {
+      "id": "svc-packing-vi",
+      "title": "Dịch vụ đóng gói quà tặng",
+      "content": "Giftora DDK đóng gói quà tặng doanh nghiệp tỉ mỉ, thẩm mỹ, bảo vệ sản phẩm khi vận chuyển, nhận đóng gói số lượng lớn theo yêu cầu. Quy trình 4 bước: kiểm tra chất lượng và số lượng sản phẩm; bọc lót chống sốc và xếp đặt gọn gàng; trang trí bằng ruy băng, thiệp chúc và phụ kiện theo yêu cầu; niêm phong và dán nhãn sẵn sàng giao hoặc lưu kho. Chi tiết: giftoraddk.com/gift/service/dong-goi.",
+      "tags": [
+        "đóng gói",
+        "dong goi",
+        "packaging",
+        "packing",
+        "ruy băng",
+        "thiệp",
+        "dịch vụ"
+      ]
+    },
+    {
+      "id": "svc-delivery-vi",
+      "title": "Dịch vụ giao hàng doanh nghiệp số lượng lớn",
+      "content": "Giftora DDK giao quà tặng doanh nghiệp số lượng lớn đúng hẹn trên toàn quốc, đến một hoặc nhiều địa điểm, kể cả đúng ngày sự kiện và ngoài giờ hành chính. Quy trình: xác nhận số lượng, địa điểm và thời gian giao; lên lịch phương tiện phù hợp khối lượng và khoảng cách; giao hàng; khách kiểm tra và xác nhận tình trạng hàng khi nhận. Chi tiết: giftoraddk.com/gift/service/giao-hang-doanh-nghiep.",
+      "tags": [
+        "giao hàng doanh nghiệp",
+        "giao hang",
+        "corporate delivery",
+        "số lượng lớn",
+        "bulk",
+        "dịch vụ"
+      ]
+    },
+    {
+      "id": "shipping-fee-vi",
+      "title": "Phạm vi giao hàng và phí vận chuyển",
+      "content": "Giftora DDK giao hàng toàn quốc cho đơn từ 1 triệu đồng trở lên, và miễn phí vận chuyển toàn quốc cho đơn từ 5 triệu đồng trở lên (giao tiêu chuẩn). Giao nhanh trong 2 giờ tại TP. HCM hoặc giao gấp trong ngày được tính phí giao nhanh riêng theo từng đơn.",
+      "tags": [
+        "phí vận chuyển",
+        "phi ship",
+        "shipping fee",
+        "free shipping",
+        "miễn phí vận chuyển",
+        "giao hàng",
+        "đơn tối thiểu"
+      ]
+    },
+    {
+      "id": "shipping-time-vi",
+      "title": "Thời gian giao hàng và đơn vị vận chuyển",
+      "content": "Thời gian giao hàng của Giftora DDK: nội thành TP. HCM 1–2 ngày làm việc; ngoại thành và các tỉnh thành khác 3–5 ngày làm việc. Sau khi đơn được xác nhận, hàng được chuẩn bị và bàn giao cho đơn vị vận chuyển trong 1–2 ngày làm việc; đơn in logo cộng thêm thời gian sản xuất, thời gian cụ thể được báo khi tư vấn và báo giá. Đơn vị vận chuyển: Bưu điện Việt Nam (VNPost), J&T Express, Viettel Post, hoặc xe tải, xe khách cho đơn lớn. Nhân viên giao hàng gọi trước để hẹn giờ và địa điểm. Nếu giao chậm, Giftora DDK báo trước; chậm do thiên tai, dịch bệnh, sự cố đơn vị vận chuyển là bất khả kháng.",
+      "tags": [
+        "thời gian giao hàng",
+        "bao lâu",
+        "delivery time",
+        "shipping",
+        "vnpost",
+        "viettel post",
+        "j&t"
+      ]
+    },
+    {
+      "id": "shipping-duty-vi",
+      "title": "Kiểm hàng khi nhận, hàng hư hỏng và từ chối nhận hàng",
+      "content": "Mọi đơn của Giftora DDK đều được kiểm hàng trước khi nhận: số lượng, mẫu mã, chất lượng và bản in có đúng như mẫu in, hình ảnh hoặc video đã duyệt. Giftora DDK chịu trách nhiệm hàng hoá suốt quá trình vận chuyển; hàng hư hại, bể vỡ khi vận chuyển được đổi hoặc hoàn tiền theo chính sách. Khách phải cung cấp đúng họ tên, số điện thoại, địa chỉ nhận — sai thông tin dẫn tới thất lạc hay giao chậm thì Giftora DDK không chịu trách nhiệm. Khách từ chối nhận hàng không vì sản phẩm lỗi thì chịu phí vận chuyển hai chiều.",
+      "tags": [
+        "kiểm hàng",
+        "kiem hang",
+        "inspection",
+        "hư hỏng",
+        "bể vỡ",
+        "từ chối nhận hàng",
+        "giao hàng"
+      ]
+    },
+    {
+      "id": "payment-vi",
+      "title": "Hình thức thanh toán: COD và chuyển khoản",
+      "content": "Giftora DDK nhận thanh toán tiền mặt khi nhận hàng (COD) và chuyển khoản ngân hàng. COD: kiểm tra sản phẩm rồi mới thanh toán; không hưởng một số ưu đãi dành cho chuyển khoản; Giftora DDK có thể từ chối COD hoặc yêu cầu đặt cọc với đơn giá trị lớn, ở xa hoặc khách từng từ chối nhận hàng nhiều lần. Chuyển khoản: liên hệ hotline/Zalo 093 456 1501 hoặc sales@giftoraddk.com để nhận đúng số tài khoản trước khi chuyển, nội dung ghi Tên người chuyển + Mã đơn hàng, rồi báo lại qua Zalo để xác nhận nhanh. Đơn chỉ được xử lý sau khi xác minh thanh toán; Giftora DDK không chịu trách nhiệm với tiền chuyển vào tài khoản không do mình cung cấp.",
+      "tags": [
+        "thanh toán",
+        "thanh toan",
+        "payment",
+        "cod",
+        "chuyển khoản",
+        "bank transfer"
+      ]
+    },
+    {
+      "id": "deposit-vi",
+      "title": "Đặt cọc cho đơn in logo, khắc tên, tuỳ chỉnh",
+      "content": "Với đơn tuỳ chỉnh — in logo, khắc tên, đóng gói riêng theo yêu cầu — Giftora DDK có thể yêu cầu đặt cọc tối thiểu trước khi sản xuất. Khi sản phẩm đã bắt đầu được cá nhân hoá, tiền cọc không được hoàn nếu khách đơn phương huỷ đơn vì lý do không thuộc về Giftora DDK.",
+      "tags": [
+        "đặt cọc",
+        "dat coc",
+        "deposit",
+        "huỷ đơn",
+        "in logo",
+        "thanh toán"
+      ]
+    },
+    {
+      "id": "invoice-vi",
+      "title": "Xuất hoá đơn VAT",
+      "content": "Sau khi thanh toán, Giftora DDK xuất hoá đơn bán hàng hoặc hoá đơn giá trị gia tăng (VAT) theo yêu cầu. Để nhận hoá đơn VAT, khách cung cấp tên công ty hoặc cá nhân, địa chỉ và mã số thuế khi đặt hàng hoặc trước khi xác nhận thanh toán. Thông tin xuất hoá đơn không sửa được sau khi hoá đơn đã phát hành, theo quy định thuế.",
+      "tags": [
+        "hoá đơn",
+        "hóa đơn",
+        "hoa don",
+        "vat",
+        "invoice",
+        "mã số thuế"
+      ]
+    },
+    {
+      "id": "returns-vi",
+      "title": "Chính sách đổi trả hàng",
+      "content": "Khách được yêu cầu đổi trả trong 5 ngày kể từ ngày nhận hàng nếu: sản phẩm lỗi từ nhà sản xuất, hư hỏng do vận chuyển, giao sai mẫu mã, kích thước hoặc màu sắc, hoặc thiếu phụ kiện. Điều kiện: sản phẩm còn nguyên vẹn, chưa sử dụng, còn tem nhãn và bao bì; yêu cầu phải kèm hình ảnh hoặc video rõ ràng. Hàng bể vỡ khi vận chuyển phải báo kèm hình ảnh trong 24 giờ kể từ khi nhận. Xử lý trong 3–5 ngày làm việc. Không đổi trả khi khách đổi ý. Quà đã cá nhân hoá (in logo, khắc tên, đóng gói theo mẫu khách) không đổi trả vì lý do chủ quan, trừ lỗi nhà sản xuất hoặc hư hỏng do vận chuyển. Giftora DDK xem xét bằng chứng và quyết định cuối cùng. Toàn văn: giftoraddk.com/gift/policy/doi-tra-hoan-tien.",
+      "tags": [
+        "đổi trả",
+        "doi tra",
+        "return",
+        "returns",
+        "đổi hàng",
+        "hàng lỗi",
+        "bảo hành"
+      ]
+    },
+    {
+      "id": "refund-vi",
+      "title": "Chính sách hoàn tiền",
+      "content": "Giftora DDK hoàn tiền khi: sản phẩm cần đổi không còn hàng thay thế (hoàn 100% số tiền đã thanh toán); hoặc không thể giao hàng do hết hàng hay lỗi hệ thống (hoàn trong vòng 7 ngày kể từ ngày nhận tiền). Hoàn qua chuyển khoản ngân hàng hoặc tiền mặt tại văn phòng Giftora DDK. Phí vận chuyển đổi trả: Giftora DDK chịu nếu lỗi thuộc về mình, khách chịu nếu lỗi thuộc về khách.",
+      "tags": [
+        "hoàn tiền",
+        "hoan tien",
+        "refund",
+        "trả tiền",
+        "đổi trả"
+      ]
+    },
+    {
+      "id": "privacy-vi",
+      "title": "Chính sách bảo mật thông tin khách hàng",
+      "content": "Giftora DDK thu thập thông tin cá nhân (tên, địa chỉ, email, số điện thoại) khi khách đăng ký hoặc mua hàng, thông tin giao dịch (đơn hàng, thanh toán, lịch sử mua) và thông tin thiết bị (IP, trình duyệt, hệ điều hành). Thông tin dùng để xử lý đơn, cải thiện dịch vụ, phân tích và — nếu khách đồng ý — gửi khuyến mãi. Không chia sẻ cho bên thứ ba, trừ đối tác thanh toán, giao hàng và khi pháp luật yêu cầu. Khách có quyền xem, sửa, yêu cầu xoá thông tin và huỷ nhận email tiếp thị. Site dùng cookies để nâng cao trải nghiệm. Liên hệ về bảo mật: sales@giftoraddk.com. Toàn văn: giftoraddk.com/gift/policy/bao-mat.",
+      "tags": [
+        "bảo mật",
+        "bao mat",
+        "privacy",
+        "dữ liệu cá nhân",
+        "cookies",
+        "thông tin cá nhân"
+      ]
+    },
+    {
+      "id": "shop-vi",
+      "title": "Mua quà online tại cửa hàng giftoraddk.com",
+      "content": "Cửa hàng online của Giftora DDK ở giftoraddk.com/gift/shop: tìm kiếm, lọc theo danh mục và mức giá, xem chi tiết từng sản phẩm, thêm vào giỏ hàng và đặt hàng. Toàn bộ sản phẩm cũng có ở giftoraddk.com/product/ (theo danh mục ở /product/tag/). Đơn số lượng lớn, có in logo hoặc cần set quà riêng nên liên hệ hotline/Zalo 093 456 1501 để được báo giá theo số lượng.",
+      "tags": [
+        "cửa hàng",
+        "cua hang",
+        "shop",
+        "mua online",
+        "giỏ hàng",
+        "cart",
+        "sản phẩm",
+        "products"
+      ]
+    },
+    {
+      "id": "links-vi",
+      "title": "Các trang hữu ích của Giftora DDK",
+      "content": "giftoraddk.com — trang chủ: dịch vụ, quà bán chạy, quy trình đặt quà, câu hỏi thường gặp. giftoraddk.com/gift/shop — cửa hàng online. giftoraddk.com/product/ — toàn bộ sản phẩm. giftoraddk.com/post/ — bài viết, ý tưởng quà tặng. Danh mục: /gift/employee, /gift/customer, /gift/event, /gift/appreciation, /gift/tet. Ngân sách: /gift/under-200k, /gift/200-500k, /gift/500k-1m, /gift/premium. Dịch vụ: /gift/service/in-logo, /gift/service/thiet-ke-qua-tang, /gift/service/gift-box, /gift/service/dong-goi, /gift/service/giao-hang-doanh-nghiep. Chính sách: /gift/policy/thanh-toan, /gift/policy/van-chuyen, /gift/policy/doi-tra-hoan-tien, /gift/policy/bao-mat.",
+      "tags": [
+        "links",
+        "trang",
+        "website",
+        "giftora"
+      ]
+    }
+  ]
+}

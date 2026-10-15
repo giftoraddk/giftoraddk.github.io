@@ -1,0 +1,323 @@
+---
+// Trang chi tiết catalog — post & product, biến thể SSG (pages/<loại>/[slug].astro) lẫn ISR (_render-modes).
+// Khung dùng chung: ảnh hero + thanh nổi (quay lại / chia sẻ), sheet bo tròn đè lên hero chứa nguồn (tag) ·
+// tiêu đề · khối meta · tóm tắt · nội dung · ảnh · tag · (FAQ) · record liên quan.
+// Rẽ nhánh theo `kind.id`:
+//   post    → ngày đăng/cập nhật, tác giả, phút đọc, svc-engage (lượt thích/xem — chỉ bảng posts); JSON-LD BlogPosting
+//   product → giá / đơn vị, tồn kho, VAT, SKU, nút đặt mua (/gift/shop) + copy caption TikTok, FAQ (meta.faq);
+//             JSON-LD Product + Offer (+ AggregateRating, FAQPage)
+// Đăng mạng xã hội (Chrome Extension, hook/ZAP-SHARE.rst §3): data-post-field="title|description|tags|media" đánh dấu chỗ
+// extension đọc nội dung mặc định; media lấy từ data-post-media (JSON URL tuyệt đối) vì carousel không render hết ảnh.
+// SEO/GEO: <article> ngữ nghĩa, <time datetime>, breadcrumb hiển thị, đoạn tóm tắt đầu bài (AI hay trích),
+// JSON-LD @graph (+ WebPage, BreadcrumbList, Organization) trong <body> vì Core.astro không có slot <head>.
+import './catalog.css';
+import '@/packages/adopted/css/prose-mirror.css';
+import Share from './Share.astro';
+import Icon from './Icon.astro';
+import Media from './Media.astro';
+import I18nText from '@/components/I18nText.astro';
+import { pickLang } from '@/services/tools/util';
+import { site } from '@/services/tools/site';
+import {
+	base, toView, asMeta, relatedOf, tagUrl, initialsOf, fmtDate, compactNum, absUrl, jsonLdHtml, publisherLd, breadcrumbLd,
+} from './lib';
+import type { Kind } from './kinds';
+
+interface Props { kind: Kind; item: any; allItems: any[] }
+
+const { kind, item: raw, allItems } = Astro.props;
+const { t: T } = kind;
+const isProduct = kind.id === 'product';
+const p = toView(raw, kind);
+const summary = String(raw.description ?? '').trim(); // chỉ hiện ô tóm tắt khi có mô tả thật (không lặp đoạn đầu nội dung)
+const extraPics = p.pics.slice(1);
+const pageUrl = `${base}${p.url}`;
+const L = (en: string, vi: string) => pickLang({ en, vi });
+const sameDay = p.published.slice(0, 10) === p.modified.slice(0, 10);
+const related = relatedOf(p, allItems.map(r => toView(r, kind)));
+
+// FAQ (product) — meta.faq = [{ q, a }] người bán tự nhập; không bịa câu hỏi mặc định
+const faq: { q: string; a: string }[] = isProduct
+	? (Array.isArray(asMeta(raw.meta).faq) ? asMeta(raw.meta).faq : []).filter((f: any) => f?.q && f?.a)
+	: [];
+// Caption chia sẻ TikTok (product) — TikTok index chữ trong caption/video, không crawl backlink như Google
+const caption = isProduct && p.tags.length
+	? [p.title, p.tags.map(x => `#${x.replace(/\s+/g, '')}`).join(' '), p.excerpt].filter(Boolean).join('\n')
+	: '';
+
+const crumbs = [
+	{ name: L('Home', 'Trang chủ'), href: '/' },
+	{ name: pickLang(T.crumb), href: kind.base },
+	...(p.tag ? [{ name: p.tag, href: tagUrl(kind, p.tag) }] : []),
+	{ name: p.title },
+];
+
+const webPageLd = {
+	'@type': isProduct ? 'ItemPage' : 'WebPage',
+	'@id': `${pageUrl}#page`,
+	url: pageUrl,
+	name: p.title,
+	description: p.excerpt,
+	inLanguage: site.lang,
+	isPartOf: { '@type': 'WebSite', name: site.subtitle, url: site.domain },
+	breadcrumb: { '@id': `${pageUrl}#breadcrumb` },
+	...(p.published && { datePublished: p.published }),
+	...(p.modified && { dateModified: p.modified }),
+	...(p.image && { primaryImageOfPage: { '@type': 'ImageObject', url: absUrl(p.image) } }),
+};
+
+const mainLd = isProduct
+	? {
+		'@type': 'Product',
+		'@id': `${pageUrl}#product`,
+		mainEntityOfPage: { '@id': `${pageUrl}#page` },
+		name: p.title,
+		description: p.excerpt,
+		sku: p.sku,
+		...(p.pics.length && { image: p.pics.map(absUrl) }),
+		...(p.tag && { category: p.tags.join(' > ') }),
+		brand: { '@type': 'Brand', name: site.subtitle },
+		offers: {
+			'@type': 'Offer',
+			url: pageUrl,
+			...(p.price > 0 && { price: p.price, priceCurrency: 'VND' }),
+			availability: p.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+			itemCondition: 'https://schema.org/NewCondition',
+			seller: { '@id': `${base}/#organization` },
+		},
+		...(p.scoreCount > 0 && {
+			aggregateRating: { '@type': 'AggregateRating', ratingValue: p.scoreAvg.toFixed(1), reviewCount: p.scoreCount },
+		}),
+	}
+	: {
+		'@type': 'BlogPosting',
+		'@id': `${pageUrl}#article`,
+		mainEntityOfPage: { '@id': `${pageUrl}#page` },
+		url: pageUrl,
+		headline: p.title.slice(0, 110),
+		description: p.excerpt,
+		inLanguage: site.lang,
+		...(p.pics.length && { image: p.pics.map(absUrl) }),
+		...(p.published && { datePublished: p.published }),
+		...(p.modified && { dateModified: p.modified }),
+		author: { '@id': `${base}/#organization` },
+		publisher: { '@id': `${base}/#organization` },
+		...(p.tags.length && { keywords: p.tags.join(', '), articleSection: p.tag, about: p.tags.map(name => ({ '@type': 'Thing', name })) }),
+		...(p.words && { wordCount: p.words }),
+		timeRequired: `PT${p.readMin}M`,
+		...(p.location && { contentLocation: { '@type': 'Place', name: p.location } }),
+		interactionStatistic: [
+			{ '@type': 'InteractionCounter', interactionType: 'https://schema.org/ReadAction', userInteractionCount: p.views },
+			{ '@type': 'InteractionCounter', interactionType: 'https://schema.org/LikeAction', userInteractionCount: p.likes },
+		],
+	};
+
+const faqLd = faq.length ? {
+	'@type': 'FAQPage',
+	'@id': `${pageUrl}#faq`,
+	mainEntity: faq.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+} : null;
+
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@graph': [
+		publisherLd(),
+		webPageLd,
+		mainLd,
+		...(faqLd ? [faqLd] : []),
+		{ ...breadcrumbLd(crumbs, pageUrl), '@id': `${pageUrl}#breadcrumb` },
+	],
+};
+---
+
+<script type="application/ld+json" is:inline set:html={jsonLdHtml(jsonLd)} />
+
+<div class={`pf pf-detail pf-tone-${p.tone}`}>
+	<div class="pf-hero" data-post-field="media" data-post-media={JSON.stringify(p.pics.map(absUrl))}>
+		{p.image
+			? <Media images={p.pics} alt={p.title} eager autoplay={4200} blur />
+			: <div class="pf-hero-fallback" aria-hidden="true">{initialsOf(p.tag || p.title)}</div>}
+		<div class="pf-hero-bar">
+			<a class="pf-circle is-glass" href={p.tag ? tagUrl(kind, p.tag) : kind.base} aria-label={L('Back', 'Quay lại')}>
+				<Icon name="back" />
+			</a>
+			<span class="pf-hero-label">{p.tag || pickLang(T.crumb)}</span>
+			<button type="button" class="pf-circle is-glass" data-share={p.url} data-title={p.title}
+				aria-haspopup="menu" aria-controls="pf-share-menu" aria-expanded="false" aria-label={L('Share', 'Chia sẻ')}>
+				<Icon name="share" />
+			</button>
+		</div>
+	</div>
+
+	<article class="pf-sheet" aria-labelledby="pf-title">
+		<header class="pf-sheet-head">
+			<nav class="pf-crumbs" aria-label={L('Breadcrumb', 'Đường dẫn')}>
+				<ol>
+					{crumbs.slice(0, -1).map(c => <li><a href={c.href}>{c.name}</a></li>)}
+					<li class="sr-only"><span aria-current="page">{p.title}</span></li>
+				</ol>
+			</nav>
+
+			<div class="pf-card-head">
+				<span class="pf-avatar" aria-hidden="true">{initialsOf(p.tag || site.subtitle)}</span>
+				<div class="pf-src">
+					{p.tag
+						? <a class="pf-src-name" href={tagUrl(kind, p.tag)} rel="tag">{p.tag}<Icon name="check" size={14} class="pf-verified" /></a>
+						: <span class="pf-src-name">{site.subtitle}</span>}
+					{p.published && <time class="pf-time" datetime={p.published} data-rel>{fmtDate(p.published)}</time>}
+				</div>
+				<button type="button" class="pf-circle is-sm" data-share={p.url} data-title={p.title}
+					aria-haspopup="menu" aria-controls="pf-share-menu" aria-expanded="false" aria-label={L('Share', 'Chia sẻ')}>
+					<Icon name="share" size={17} />
+				</button>
+			</div>
+
+			<h1 class="pf-d-title" id="pf-title" data-post-field="title">{p.title}</h1>
+
+			{isProduct ? (
+				<div class="pf-buy">
+					<p class="pf-price-lg">
+						{p.priceText
+							? <><data value={p.price}>{p.priceText}</data>{p.unit && <span class="pf-unit">/ {p.unit}</span>}</>
+							: <I18nText text={{ en: 'Contact for price', vi: 'Liên hệ báo giá' }} />}
+					</p>
+					<ul class="pf-d-meta">
+						<li class={`pf-stock ${p.inStock ? 'is-ok' : 'is-off'}`}>
+							<span class="pf-dot" aria-hidden="true" />
+							<I18nText text={p.inStock ? { en: 'In stock', vi: 'Còn hàng' } : { en: 'Contact us', vi: 'Liên hệ' }} />
+						</li>
+						{p.vat > 0 && <li><I18nText text={{ en: 'VAT included', vi: 'Đã gồm VAT' }} />&nbsp;{Math.round(p.vat * 100)}%</li>}
+						{p.scoreCount > 0 && (
+							<li><Icon name="star" size={15} />{p.scoreAvg.toFixed(1)} ({p.scoreCount} <I18nText text={{ en: 'reviews', vi: 'đánh giá' }} />)</li>
+						)}
+						<li>SKU&nbsp;<b>{p.sku}</b></li>
+					</ul>
+					<div class="pf-buy-actions">
+						<a class="pf-btn is-primary" href="/gift/shop">
+							<Icon name="bag" size={18} /><I18nText text={{ en: 'Buy on our store', vi: 'Đặt mua trên cửa hàng' }} />
+						</a>
+						{caption && (
+							<button type="button" class="pf-btn" data-copy={caption}>
+								<Icon name="tiktok" size={16} /><span data-copy-label><I18nText text={{ en: 'Copy TikTok caption', vi: 'Copy caption TikTok' }} /></span>
+							</button>
+						)}
+					</div>
+				</div>
+			) : (
+				<>
+					{p.published && (
+						<p class="pf-d-date">
+							<Icon name="calendar" size={15} />
+							<time datetime={p.published}>{fmtDate(p.published, true)}</time>
+							{!sameDay && p.modified && (
+								<span>· <I18nText text={{ en: 'Updated', vi: 'Cập nhật' }} /> <time datetime={p.modified}>{fmtDate(p.modified)}</time></span>
+							)}
+						</p>
+					)}
+					<ul class="pf-d-meta">
+						<li><I18nText text={{ en: 'By', vi: 'Bởi' }} />&nbsp;<b>{site.subtitle}</b></li>
+						<li><Icon name="clock" size={15} />{p.readMin} <I18nText text={{ en: 'min read', vi: 'phút đọc' }} /></li>
+						{p.location && <li><Icon name="pin" size={15} />{p.location}</li>}
+						{p.scoreCount > 0 && (
+							<li><Icon name="star" size={15} />{p.scoreAvg.toFixed(1)} ({p.scoreCount} <I18nText text={{ en: 'reviews', vi: 'đánh giá' }} />)</li>
+						)}
+					</ul>
+					<div class="pf-engage">
+						<svc-engage postId={raw.id} initialViews={p.views} initialLikes={p.likes} lang={site.defaultLang}></svc-engage>
+					</div>
+				</>
+			)}
+		</header>
+
+		{summary && (
+			<p class="pf-lead"><strong><I18nText text={T.lead} /></strong><span data-post-field="description">{summary}</span></p>
+		)}
+
+		{p.content && <div class="Editor ProseMirror pf-prose !px-0" set:html={p.content} />}
+
+		{extraPics.length > 0 && (
+			<section class="pf-sec" aria-labelledby="pf-gallery-h">
+				<h2 class="pf-h2" id="pf-gallery-h" style="margin-bottom:12px"><I18nText text={{ en: 'Photos', vi: 'Hình ảnh' }} /></h2>
+				<ul class="pf-gallery">
+					{extraPics.map((src, i) => (
+						<li><img src={src} alt={`${p.title} — ${i + 2}`} loading="lazy" decoding="async" /></li>
+					))}
+				</ul>
+			</section>
+		)}
+
+		{faq.length > 0 && (
+			<section class="pf-sec" aria-labelledby="pf-faq-h">
+				<h2 class="pf-h2" id="pf-faq-h" style="margin-bottom:12px"><I18nText text={{ en: 'Frequently asked questions', vi: 'Câu hỏi thường gặp' }} /></h2>
+				<div class="pf-faq">
+					{faq.map((f, i) => (
+						<details open={i === 0}>
+							<summary>{f.q}</summary>
+							<p>{f.a}</p>
+						</details>
+					))}
+				</div>
+			</section>
+		)}
+
+		{p.tags.length > 0 && (
+			<section class="pf-sec" aria-labelledby="pf-tags-h">
+				<h2 class="pf-h2" id="pf-tags-h" style="margin-bottom:12px"><I18nText text={T.topics} /></h2>
+				<div class="pf-chip-row" data-post-field="tags">
+					{p.tags.map(x => <a class="pf-chip" href={tagUrl(kind, x)} rel="tag"># {x}</a>)}
+				</div>
+			</section>
+		)}
+
+		{related.length > 0 && (
+			<section class="pf-sec" aria-labelledby="pf-rel-h">
+				<div class="pf-sec-head">
+					<h2 class="pf-h2" id="pf-rel-h"><I18nText text={T.related} /></h2>
+					<a class="pf-link" href={kind.base}><I18nText text={{ en: 'See all', vi: 'Xem tất cả' }} /></a>
+				</div>
+				<ul class="pf-rel">
+					{related.map(r => (
+						<li class={`pf-tone-${r.tone}`}>
+							<div class="pf-rel-item">
+								<span class="pf-rel-thumb" aria-hidden="true">
+									{r.image ? <img src={r.image} alt="" loading="lazy" decoding="async" /> : initialsOf(r.tag || r.title)}
+								</span>
+								<div class="pf-rel-body">
+									<h3 class="pf-rel-title"><a href={r.url}>{r.title}</a></h3>
+									<span class="pf-time">
+										{r.tag && <>{r.tag} · </>}
+										{isProduct
+											? (r.priceText ? <b class="pf-rel-price">{r.priceText}</b> : <I18nText text={{ en: 'Contact', vi: 'Liên hệ' }} />)
+											: <>{r.published && <time datetime={r.published}>{fmtDate(r.published)}</time>}{' · '}{compactNum(r.views)} <I18nText text={{ en: 'views', vi: 'lượt xem' }} /></>}
+									</span>
+								</div>
+							</div>
+						</li>
+					))}
+				</ul>
+			</section>
+		)}
+	</article>
+
+	<Share />
+</div>
+
+<script>
+	import '@/packages/adopted/svc-engage.js';
+	import '@/packages/adopted/svc-player.js';
+
+	// Copy caption TikTok (product) — delegation: module chỉ chạy 1 lần dù ClientRouter chuyển trang
+	document.addEventListener('click', async (e) => {
+		const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-copy]');
+		if (!btn) return;
+		const label = btn.querySelector<HTMLElement>('[data-copy-label]');
+		try {
+			await navigator.clipboard.writeText(btn.dataset.copy || '');
+			if (!label) return;
+			// innerHTML: nhãn là <I18nText> (2 span vi/en ẩn/hiện theo [lang]) — textContent sẽ gộp cả span đang ẩn
+			const original = label.innerHTML;
+			label.textContent = document.documentElement.lang === 'en' ? 'Copied!' : 'Đã copy!';
+			setTimeout(() => { label.innerHTML = original; }, 1500);
+		} catch { /* Clipboard API không khả dụng (http không secure context) — bỏ qua */ }
+	});
+</script>

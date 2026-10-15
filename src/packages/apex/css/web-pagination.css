@@ -1,0 +1,78 @@
+:host {
+	display: block;
+	user-select: none;
+	--core-font: var(--font-sans, 'system-ui');
+}
+
+.web-pagination {
+	font-family: var(--core-font);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+}
+
+.page-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 36px;
+	height: 36px;
+	padding: 0 8px;
+	background: var(--color-base-100, #0d0d0d);
+	color: var(--color-base-content, #ffffff);
+	border: 1px solid var(--color-base-300, #393939);
+	border-radius: 10px;
+	font-size: .875rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-btn.active {
+	box-shadow: 0 4px 15px color-mix(in oklab, var(--color-primary, #34ace0) 50%, transparent);
+	background: var(--color-primary, #34ace0) !important;
+	color: #ffffff !important;
+	border-color: var(--color-primary, #34ace0) !important;
+}
+
+.page-btn:hover:not(:disabled) {
+	background: color-mix(in oklab, var(--color-primary, #34ace0) 5%, transparent);
+	color: var(--color-primary, #34ace0);
+	border-color: var(--color-primary, #34ace0);
+	transform: translateY(-2px);
+}
+
+.page-btn:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+.dots {
+	color: var(--color-base-content, #ffffff);
+	opacity: 0.5;
+	padding: 0 4px;
+}
+
+.arrow {
+	width: 20px;
+	height: 20px;
+}
+
+/* ── Pastel (token --pastel-* ở pastel.css) ─────────────────────────────── */
+.pastel.web-pagination .page-btn {
+	background: var(--pastel-corner);
+	border: 1px solid var(--pastel-line);
+	border-radius: var(--radius-selector);
+}
+.pastel.web-pagination .page-btn:hover:not(:disabled) {
+	background: var(--pastel-corner-hi);
+	color: var(--color-base-content);
+	border-color: var(--pastel-line-hi);
+}
+.pastel.web-pagination .page-btn.active {
+	background: var(--pastel-grad) !important;
+	color: var(--pastel-ink) !important;
+	border-color: transparent !important;
+	box-shadow: var(--pastel-glow);
+}

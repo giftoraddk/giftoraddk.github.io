@@ -2,10 +2,12 @@
 export const prerender = false;
 
 import Core from '@/layouts/Core.astro';
-import PostDetailBody from '@/components/Common/PostDetail.astro';
-import { fetchCollection, fetchDoc } from '@/services/firestore.server.ts';
-import { pickLang } from '@/services/helper.js';
-import { menuItems, policies, socials } from '@/modules/landing/home.js';
+import { KINDS } from '@/components/Catalog/kinds';
+import PostDetailBody from '@/components/Catalog/Detail.astro';
+import { fetchCollection, fetchDoc } from '@/services/core/fetcher.server.js';
+import { pickLang } from '@/services/tools/util';
+import { menuItems, policies, socials } from '@/modules/gift/shop.js'; // footer chung giftoraddk.com
+import { menu as postMenu, tints } from '@/modules/post/index.js';
 import I18nText from '@/components/I18nText.astro';
 
 // Biến thể ISR của src/pages/post/[slug].astro — xem
@@ -27,13 +29,14 @@ const heroImg = pics[0] || '';
 const description = post
 	? (post.description || String(post.content || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().slice(0, 160) || '')
 	: '';
+const tags = post ? String(post.tags || '').split('|').map((t: string) => t.trim()).filter(Boolean) : [];
 const pageTitle = post?.title || pickLang({ en: 'Post', vi: 'Bài viết' });
-const bg = { blur: true, gradient: true, tint: "#00c7d4", total: 3, blobType: "circleOverlap", blobMove: 'swap', deg: 180 };
+const bg = null;
 ---
 
-<Core title={pageTitle} description={description} image={heroImg} articleDate={post?.created_at} noindex={!post} footer={{ columns: menuItems, policies, socials, bg }}>
+<Core menu={postMenu} tints={tints} title={pageTitle} description={description} image={heroImg} articleDate={post?.created_at} articleModified={post?.updated_at} articleTags={tags} noindex={!post} footer={{ columns: menuItems, policies, socials, bg }}>
 	{post ? (
-		<PostDetailBody post={post} allPosts={allPosts} />
+		<PostDetailBody kind={KINDS.post} item={post} allItems={allPosts} />
 	) : (
 		<div class="mx-auto max-w-6xl px-4 py-24 text-center opacity-60">
 			<I18nText text={{ en: 'Post not found.', vi: 'Không tìm thấy bài viết.' }} />

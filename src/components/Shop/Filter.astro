@@ -1,0 +1,141 @@
+---
+// Bộ lọc cửa hàng — 1 markup cho cả 2 khổ (shop.css): mobile = bottom sheet mở bằng nút "Bộ lọc" (mobile first),
+// desktop (≥1024px) = cột trái sticky, tự cuộn riêng. Nhóm = <details> (đóng/mở không cần JS).
+// Nhóm `link` ("Quà tặng theo dịp" / "Quà tặng theo ngân sách") là link thật sang mọi trang danh mục / ngân sách, nhóm
+// ngân sách kèm khoảng giá (ô nhập + thanh trượt); nhóm còn lại là checkbox — shop.client.ts lọc trên DOM + đếm lại số
+// ở [data-facet-count].
+import Icon from '@/components/Catalog/Icon.astro';
+import I18nText from '@/components/I18nText.astro';
+
+interface Props {
+	facets: any;   // shopPageData().facets
+	total: number; // số sản phẩm của trang
+	allHref: string;
+}
+
+const { facets, total, allHref } = Astro.props;
+const { groups, price, rating, stock } = facets;
+const fmt = (n: number) => n.toLocaleString('vi-VN');
+const range = price; // { lo, hi, step } — modules/gift/catalog.js priceRange
+---
+
+<aside id="gs-filter" class="gs-filter" aria-labelledby="gs-filter-h" data-filter>
+	<div class="gs-filter-head">
+		<h2 id="gs-filter-h" class="gs-filter-title"><Icon name="filter" size={20} /><I18nText text={{ vi: 'Bộ lọc tìm kiếm', en: 'Filters' }} /></h2>
+		<button type="button" class="gs-link-btn" data-clear data-clear-auto hidden><I18nText text={{ vi: 'Xoá lọc', en: 'Reset' }} /></button>
+		<button type="button" class="gs-icon-btn gs-mobile" data-filter-close aria-label="Đóng bộ lọc"><Icon name="close" size={20} /></button>
+	</div>
+
+	<div class="gs-filter-body">
+		<label class="gs-search">
+			<Icon name="search" size={17} />
+			<span class="sr-only"><I18nText text={{ vi: 'Tìm trong cửa hàng', en: 'Search the shop' }} /></span>
+			<input type="search" data-q autocomplete="off" enterkeyhint="search" placeholder={`Tìm trong ${total} sản phẩm…`} />
+		</label>
+
+		{groups.map((g: any) => (
+			<details class="gs-group" open>
+				<summary><I18nText text={g.title} /><Icon name="down" size={18} class="gs-chev" /></summary>
+
+				{g.link ? (
+					<ul class="gs-links">
+						<li>
+							<a href={allHref} aria-current={g.allCurrent ? 'page' : undefined}>
+								<span class="gs-radio" aria-hidden="true" /><span><I18nText text={g.all} /></span>
+							</a>
+						</li>
+						{g.options.map((o: any) => (
+							<li>
+								<a href={o.href} aria-current={o.current ? 'page' : undefined}>
+									<span class="gs-radio" aria-hidden="true" /><span><I18nText text={o.label} /></span><small>{o.count}</small>
+								</a>
+							</li>
+						))}
+					</ul>
+				) : g.group === 'tag' ? (
+					<div class="gs-chips">
+						{g.options.map((o: any) => (
+							<label class="gs-chip">
+								<input type="checkbox" class="sr-only" data-group="tag" value={o.value} data-label={o.label} />
+								<span>{o.label}</span><small data-facet-count>{o.count}</small>
+							</label>
+						))}
+					</div>
+				) : g.group === 'color' ? (
+					<div class="gs-chips">
+						{g.options.map((o: any) => (
+							<label class="gs-chip">
+								<input type="checkbox" class="sr-only" data-group="color" value={o.value} data-label={o.label.vi} data-label-en={o.label.en} />
+								<span class="gs-swatch" style={`--sw:${o.hex}`} aria-hidden="true" /><span><I18nText text={o.label} /></span>
+								<small data-facet-count>{o.count}</small>
+							</label>
+						))}
+					</div>
+				) : (
+					<ul class="gs-checks">
+						{g.options.map((o: any) => (
+							<li>
+								<label class="gs-check">
+									<input type="checkbox" data-group={g.group} value={o.value} data-label={o.label.vi} data-label-en={o.label.en} />
+									<span><I18nText text={o.label} /></span><small data-facet-count>{o.count}</small>
+								</label>
+							</li>
+						))}
+					</ul>
+				)}
+
+				{g.group === 'tier' && range && (
+					<div class="gs-range" data-range data-lo={range.lo} data-hi={range.hi}>
+						<p class="gs-range-hint"><I18nText text={{ vi: 'Hoặc nhập khoảng giá phù hợp:', en: 'Or enter your own range:' }} /></p>
+						<div class="gs-range-inputs">
+							<label>
+								<span class="sr-only"><I18nText text={{ vi: 'Giá từ', en: 'Min price' }} /></span>
+								<input type="text" inputmode="numeric" data-price-min placeholder={fmt(range.lo)} />
+								<span class="gs-cur" aria-hidden="true">đ</span>
+							</label>
+							<span aria-hidden="true">~</span>
+							<label>
+								<span class="sr-only"><I18nText text={{ vi: 'Giá đến', en: 'Max price' }} /></span>
+								<input type="text" inputmode="numeric" data-price-max placeholder={fmt(range.hi)} />
+								<span class="gs-cur" aria-hidden="true">đ</span>
+							</label>
+						</div>
+						<div class="gs-slider">
+							<span class="gs-slider-fill" data-range-fill aria-hidden="true" />
+							<input type="range" min={range.lo} max={range.hi} step={range.step} value={range.lo} data-range-min aria-label="Giá thấp nhất" />
+							<input type="range" min={range.lo} max={range.hi} step={range.step} value={range.hi} data-range-max aria-label="Giá cao nhất" />
+						</div>
+					</div>
+				)}
+			</details>
+		))}
+
+		{rating && (
+			<details class="gs-group" open>
+				<summary><I18nText text={{ vi: 'Đánh giá', en: 'Rating' }} /><Icon name="down" size={18} class="gs-chev" /></summary>
+				<div class="gs-chips" role="radiogroup">
+					{[0, 4, 3].map((n) => (
+						<label class="gs-chip">
+							<input type="radio" class="sr-only" name="gs-rating" value={n} checked={n === 0} />
+							{n ? <><Icon name="star" size={14} /><span><I18nText text={{ vi: `Từ ${n} sao`, en: `${n}+ stars` }} /></span></> : <span><I18nText text={{ vi: 'Tất cả', en: 'All' }} /></span>}
+						</label>
+					))}
+				</div>
+			</details>
+		)}
+
+		{stock && (
+			<label class="gs-check gs-toggle">
+				<input type="checkbox" data-stock />
+				<span><I18nText text={{ vi: 'Chỉ hiện hàng có sẵn', en: 'In stock only' }} /></span>
+			</label>
+		)}
+	</div>
+
+	<div class="gs-filter-foot gs-mobile">
+		<button type="button" class="gs-btn is-ghost" data-clear><I18nText text={{ vi: 'Xoá lọc', en: 'Reset' }} /></button>
+		<button type="button" class="gs-btn" data-filter-close>
+			<I18nText text={{ vi: 'Xem', en: 'Show' }} /> <span data-count>{total}</span> <I18nText text={{ vi: 'kết quả', en: 'results' }} />
+		</button>
+	</div>
+</aside>

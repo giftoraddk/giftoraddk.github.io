@@ -2,12 +2,13 @@
 export const prerender = false;
 
 import Core from '@/layouts/Core.astro';
-import List from '@/components/Common/List.astro';
-import { config as cardConfig } from '@/sections/another/_cardPost.js';
-import { fetchCollection } from '@/services/firestore.server.ts';
-import { postSlug, tagSlugMap, pickLang } from '@/services/helper.js';
-import { site } from '@/services/constants/site.js';
-import { menuItems, policies, socials } from '@/modules/landing/home.js';
+import { KINDS } from '@/components/Catalog/kinds';
+import Feed from '@/components/Catalog/Feed.astro';
+import { fetchCollection } from '@/services/core/fetcher.server.js';
+import { tagSlugMap, pickLang } from '@/services/tools/util';
+import { site } from '@/services/tools/site';
+import { menuItems, policies, socials } from '@/modules/gift/shop.js'; // footer chung giftoraddk.com
+import { menu as postMenu, tints } from '@/modules/post/index.js';
 import I18nText from '@/components/I18nText.astro';
 
 // Biến thể ISR của src/pages/post/tag/[tag].astro — xem
@@ -15,54 +16,33 @@ import I18nText from '@/components/I18nText.astro';
 // (renderModeIntegration, astro.config.mjs).
 
 const tagSlug = Astro.params.tag as string;
-const posts = await fetchCollection('posts');
-const entry = tagSlugMap(posts).get(tagSlug);
+const allPosts = await fetchCollection('posts');
+const entry = tagSlugMap(allPosts).get(tagSlug);
 
 if (!entry) Astro.response.status = 404;
 
 const tag = entry?.label ?? '';
-const taggedPosts = (entry?.items ?? []).map((p: any) => ({
-	...p,
-	meta: { ...(p.meta ?? {}), url: `/post/${postSlug(p)}/` },
-}));
+const posts = entry?.items ?? [];
 
-const pageTitle = entry
-	? `${pickLang({ en: 'Post', vi: 'Bài viết' })} ${tag}`
-	: pickLang({ en: 'Not found', vi: 'Không tìm thấy' });
+const pageTitle = entry ? tag : pickLang({ en: 'Not found', vi: 'Không tìm thấy' });
 const pageDescription = entry ? pickLang({
-	en: `Explore posts in the "${tag}" category on ${site.subtitle}.`,
-	vi: `Khám phá các bài viết thuộc danh mục "${tag}" tại ${site.subtitle}.`,
+	en: `${posts.length} posts about "${tag}" on ${site.subtitle}.`,
+	vi: `${posts.length} bài viết về "${tag}" tại ${site.subtitle}.`,
 }) : '';
-const canonicalUrl = `${site.domain.replace(/\/$/, '')}/post/tag/${tagSlug}/`;
-const bg = { blur: true, gradient: true, tint: '#00c7d4', total: 3, blobType: 'circleOverlap', blobMove: 'swap', deg: 180 };
-
-const sortOptions = [
-	{ label: 'Mới nhất', value: 'newest', field: 'created_at', transform: 'date', order: 'desc' },
-	{ label: 'Nhiều xem nhất', value: 'views', field: 'meta.views', transform: 'int', order: 'desc' },
-	{ label: 'Nhiều like nhất', value: 'likes', field: 'meta.likes', transform: 'int', order: 'desc' },
+const breadcrumb = [
+	{ label: pickLang({ en: 'Home', vi: 'Trang chủ' }), href: '/' },
+	{ label: pickLang({ en: 'Posts', vi: 'Bài viết' }), href: '/post/' },
+	{ label: pickLang({ en: 'Topics', vi: 'Chủ đề' }), href: '/post/tag/' },
+	{ label: tag },
 ];
+const image = posts.map((p: any) => String(p.pics || '').split('|').find(Boolean)).find(Boolean);
+const bg = null;
 ---
 
-<Core title={pageTitle} description={pageDescription} noindex={!entry} footer={{ columns: menuItems, policies, socials, bg }}>
+<Core menu={postMenu} tints={tints} title={entry ? `${pageTitle} • ${pickLang({ en: 'Posts', vi: 'Bài viết' })}` : pageTitle} description={pageDescription} image={image} noindex={!entry} footer={{ columns: menuItems, policies, socials, bg }}>
 	{entry ? (
-		<List
-			pageTitle={pageTitle}
-			pageDescription={pageDescription}
-			breadcrumb={[
-				{ label: pickLang({ en: 'Home', vi: 'Trang chủ' }), href: '/' },
-				{ label: pickLang({ en: 'Posts', vi: 'Bài viết' }), href: '/post/' },
-				{ label: tag },
-			]}
-			canonicalUrl={canonicalUrl}
-			items={taggedPosts}
-			cardConfig={cardConfig}
-			dataTable="posts"
-			urlPrefix="/post/"
-			searchPlaceholder="Tìm kiếm bài viết..."
-			sortOptions={sortOptions}
-			emptyLabel={pickLang({ vi: 'Chưa có bài viết nào.', en: 'No posts yet.' })}
-			bottomCta={{ href: '/post/', label: pickLang({ vi: 'Xem tất cả bài viết', en: 'View all posts' }) }}
-		/>
+		<Feed kind={KINDS.post} items={posts} allItems={allPosts} title={pageTitle} description={pageDescription}
+			path={`/post/tag/${tagSlug}/`} activeTag={tagSlug} breadcrumb={breadcrumb} />
 	) : (
 		<div class="mx-auto max-w-6xl px-4 py-24 text-center opacity-60">
 			<I18nText text={{ en: 'Category not found.', vi: 'Không tìm thấy danh mục này.' }} />

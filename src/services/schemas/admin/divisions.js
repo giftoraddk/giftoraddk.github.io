@@ -1,21 +1,17 @@
 // src/services/schemas/admin/divisions.js
 //
-// Field phẳng cho <svc-admin dataTable='divisions'> — chuyên môn thật (meta.steps/meta.output,
-// xem hook/superpowers/specs/2026-09-05-division-talk-design.md) KHÔNG có field editor riêng ở
-// đây (cấu hình do dev soạn, quá lồng sâu cho web-table's row editor); sửa qua Xuất/Nhập CSV
-// (svc-admin.js's _dfExportCsv/_dfImportCsv tự gộp `meta` thành 1 cột JSON khi không có field con
-// nào khai `key: 'meta.x'` khớp — xem hook/CRUD.rst).
+// Field phẳng cho <svc-resources dataTable='divisions'> — chỉ "face" của phòng ban (tên, mô tả, avatar, ngôn ngữ, bật/tắt,
+// thứ tự). Chuyên môn (override patch trong `meta`) KHÔNG sửa ở đây: Worker giấu + khoá cột meta/ai trên /v1/data
+// (tablePolicy privateCols/lockedCols) — persona sửa trong <svc-division>, các bước là code ở Worker (fn/base, fn/sectors).
 const TXT = {
     vi: {
         status: 'Trạng thái', title: 'Tên phòng ban', description: 'Mô tả chuyên môn',
-        pics: 'Avatar', lang: 'Ngôn ngữ mặc định', ai: 'Model AI riêng (bỏ trống = dùng mặc định)',
-        hotline: 'Hotline (chỉ dùng cho Sale — xem hook/SALE.rst)',
+        pics: 'Avatar', lang: 'Ngôn ngữ mặc định',
         active: 'Đang hoạt động', inactive: 'Tạm ẩn',
     },
     en: {
         status: 'Status', title: 'Division name', description: 'Specialty description',
-        pics: 'Avatar', lang: 'Default language', ai: 'AI model override (blank = use default)',
-        hotline: 'Hotline (Sale division only — see hook/SALE.rst)',
+        pics: 'Avatar', lang: 'Default language',
         active: 'Active', inactive: 'Inactive',
     },
 };
@@ -64,18 +60,6 @@ export default (lang = 'vi') => {
                 { value: 'vi', label: 'Tiếng Việt' },
                 { value: 'en', label: 'English' },
             ],
-        },
-        {
-            label: t.ai,
-            field: 'ai',
-            type: 'text',
-            width: '160px',
-        },
-        {
-            label: t.hotline,
-            field: 'hotline',
-            type: 'text',
-            width: '140px',
         },
         {
             label: 'Order',

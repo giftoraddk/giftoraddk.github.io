@@ -1,46 +1,27 @@
 ---
 import Core from '@/layouts/Core.astro';
-import List from '@/components/Common/List.astro';
-import { config as cardConfig } from '@/sections/another/_cardProductSeo.js';
-import { fetchCollection } from '@/services/firestore.server.ts';
-import { productSlug } from '@/services/helper.js';
-import { menuItems, policies, socials } from '@/modules/landing/home.js';
+import { KINDS } from '@/components/Catalog/kinds';
+import Feed from '@/components/Catalog/Feed.astro';
+import { fetchCollection } from '@/services/core/fetcher.server.js';
+import { pickLang } from '@/services/tools/util';
+import { site } from '@/services/tools/site';
+import { menuItems, policies, socials } from '@/modules/gift/shop.js'; // footer chung giftoraddk.com
+import { menu as productMenu, tints } from '@/modules/product/index.js';
 
-// Trang catalog CRAWLABLE cho products — song song với /shop (cart UI 100% client-side, xem
-// hook/geo-platform-plan.md §B0). Cùng khung với src/pages/post/index.astro — UI/hạ tầng
-// search+sort+infinite-scroll dùng chung qua Common/List.astro. KHÔNG có add-to-cart ở đây —
-// trang này chỉ để crawl/đọc, mua hàng vẫn qua /shop.
+// Catalog sản phẩm CRAWLABLE — cùng giao diện với /post/ (components/Catalog/Feed.astro, kind product).
+// Mọi sản phẩm render sẵn trong HTML lúc build (SEO/GEO); tìm kiếm/sắp xếp/xem thêm chạy trên DOM đã có.
+// KHÔNG có add-to-cart ở đây — mua hàng vẫn qua /gift/shop (giỏ hàng client-side, xem hook/geo-platform-plan.md §B0).
+const products = await fetchCollection('products');
 
-const pageTitle = 'Danh sách sản phẩm';
-const pageDescription = 'Khám phá toàn bộ sản phẩm';
-
-// meta.url được inject để _cardProductSeo.js tạo link /product/{slug} (từ khoá, xem productSlug)
-const products = (await fetchCollection('products')).map((p) => ({
-	...p,
-	meta: { ...(p.meta ?? {}), url: `/product/${productSlug(p)}/`, ctaLabel: 'Xem chi tiết' },
-}));
-
-const sortOptions = [
-	{ label: 'Mới nhất', value: 'newest', field: 'created_at', transform: 'date', order: 'desc' },
-	{ label: 'Giá tăng dần', value: 'price_asc', field: 'pricing', transform: 'pipeFirstNum', order: 'asc' },
-	{ label: 'Giá giảm dần', value: 'price_desc', field: 'pricing', transform: 'pipeFirstNum', order: 'desc' },
-	{ label: 'Đánh giá cao nhất', value: 'rating', field: 'score', transform: 'pipeFirstNum', order: 'desc' },
-];
-
-const bg = { blur: true, gradient: true, tint: '#2ebd85', total: 3, blobType: 'circleOverlap', blobMove: 'swap', deg: 180 };
+const pageTitle = pickLang({ en: 'Gifts & Products', vi: 'Quà tặng & Sản phẩm' });
+const pageDescription = pickLang({
+	en: `Every gift and product from ${site.subtitle} — browse by category, compare prices or search.`,
+	vi: `Toàn bộ quà tặng và sản phẩm của ${site.subtitle} — xem theo danh mục, so sánh giá hoặc tìm kiếm.`,
+});
+const image = products.map((p: any) => String(p.pics || '').split('|').find(Boolean)).find(Boolean);
+const bg = null;
 ---
 
-<Core title={pageTitle} description={pageDescription} footer={{ columns: menuItems, policies, socials, bg }}>
-	<List
-		pageTitle={pageTitle}
-		pageDescription={pageDescription}
-		items={products}
-		cardConfig={cardConfig}
-		dataTable="products"
-		urlPrefix="/product/"
-		extraMeta={{ ctaLabel: 'Xem chi tiết' }}
-		searchPlaceholder="Tìm kiếm sản phẩm..."
-		sortOptions={sortOptions}
-		bottomCta={{ href: '/gift/shop', label: 'Đặt mua trên cửa hàng' }}
-	/>
+<Core menu={productMenu} tints={tints} title={pageTitle} description={pageDescription} image={image} footer={{ columns: menuItems, policies, socials, bg }}>
+	<Feed kind={KINDS.product} items={products} title={pageTitle} description={pageDescription} path="/product/" />
 </Core>

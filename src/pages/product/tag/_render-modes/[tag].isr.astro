@@ -2,70 +2,47 @@
 export const prerender = false;
 
 import Core from '@/layouts/Core.astro';
-import List from '@/components/Common/List.astro';
-import { config as cardConfig } from '@/sections/another/_cardProductSeo.js';
-import { fetchCollection } from '@/services/firestore.server.ts';
-import { productSlug, tagSlugMap, pickLang } from '@/services/helper.js';
-import { site } from '@/services/constants/site.js';
-import { menuItems, policies, socials } from '@/modules/landing/home.js';
+import { KINDS } from '@/components/Catalog/kinds';
+import Feed from '@/components/Catalog/Feed.astro';
+import { fetchCollection } from '@/services/core/fetcher.server.js';
+import { tagSlugMap, pickLang } from '@/services/tools/util';
+import { site } from '@/services/tools/site';
+import { menuItems, policies, socials } from '@/modules/gift/shop.js'; // footer chung giftoraddk.com
+import { menu as productMenu, tints } from '@/modules/product/index.js';
 import I18nText from '@/components/I18nText.astro';
 
 // Biến thể ISR của src/pages/product/tag/[tag].astro — xem
 // src/pages/product/_render-modes/[slug].isr.astro để biết cơ chế swap (renderModeIntegration,
-// astro.config.mjs). Không có getStaticPaths — mỗi request tự fetch collection + tra tagSlugMap()
-// theo đúng slug param, y hệt cách getStaticPaths làm ở biến thể SSG.
+// astro.config.mjs). Không có getStaticPaths — mỗi request tự fetch collection + tra tagSlugMap().
 
 const tagSlug = Astro.params.tag as string;
-const products = await fetchCollection('products');
-const entry = tagSlugMap(products).get(tagSlug);
+const allProducts = await fetchCollection('products');
+const entry = tagSlugMap(allProducts).get(tagSlug);
 
 if (!entry) Astro.response.status = 404;
 
 const tag = entry?.label ?? '';
-const taggedProducts = (entry?.items ?? []).map((p: any) => ({
-	...p,
-	meta: { ...(p.meta ?? {}), url: `/product/${productSlug(p)}/`, ctaLabel: 'Xem chi tiết' },
-}));
+const products = entry?.items ?? [];
 
-const pageTitle = entry
-	? `${pickLang({ en: 'Product', vi: 'Sản phẩm' })} ${tag}`
-	: pickLang({ en: 'Not found', vi: 'Không tìm thấy' });
+const pageTitle = entry ? tag : pickLang({ en: 'Not found', vi: 'Không tìm thấy' });
 const pageDescription = entry ? pickLang({
-	en: `Explore products in the "${tag}" category at ${site.subtitle}.`,
-	vi: `Khám phá các sản phẩm thuộc danh mục "${tag}" tại ${site.subtitle}.`,
+	en: `${products.length} products in "${tag}" at ${site.subtitle}.`,
+	vi: `${products.length} sản phẩm thuộc danh mục "${tag}" tại ${site.subtitle}.`,
 }) : '';
-const canonicalUrl = `${site.domain.replace(/\/$/, '')}/product/tag/${tagSlug}/`;
-const bg = { blur: true, gradient: true, tint: '#2ebd85', total: 3, blobType: 'circleOverlap', blobMove: 'swap', deg: 180 };
-
-const sortOptions = [
-	{ label: 'Mới nhất', value: 'newest', field: 'created_at', transform: 'date', order: 'desc' },
-	{ label: 'Giá tăng dần', value: 'price_asc', field: 'pricing', transform: 'pipeFirstNum', order: 'asc' },
-	{ label: 'Giá giảm dần', value: 'price_desc', field: 'pricing', transform: 'pipeFirstNum', order: 'desc' },
-	{ label: 'Đánh giá cao nhất', value: 'rating', field: 'score', transform: 'pipeFirstNum', order: 'desc' },
+const breadcrumb = [
+	{ label: pickLang({ en: 'Home', vi: 'Trang chủ' }), href: '/' },
+	{ label: pickLang({ en: 'Products', vi: 'Sản phẩm' }), href: '/product/' },
+	{ label: pickLang({ en: 'Categories', vi: 'Danh mục' }), href: '/product/tag/' },
+	{ label: tag },
 ];
+const image = products.map((p: any) => String(p.pics || '').split('|').find(Boolean)).find(Boolean);
+const bg = null;
 ---
 
-<Core title={pageTitle} description={pageDescription} noindex={!entry} footer={{ columns: menuItems, policies, socials, bg }}>
+<Core menu={productMenu} tints={tints} title={entry ? `${pageTitle} • ${pickLang({ en: 'Products', vi: 'Sản phẩm' })}` : pageTitle} description={pageDescription} image={image} noindex={!entry} footer={{ columns: menuItems, policies, socials, bg }}>
 	{entry ? (
-		<List
-			pageTitle={pageTitle}
-			pageDescription={pageDescription}
-			breadcrumb={[
-				{ label: pickLang({ en: 'Home', vi: 'Trang chủ' }), href: '/' },
-				{ label: pickLang({ en: 'Products', vi: 'Sản phẩm' }), href: '/product/' },
-				{ label: tag },
-			]}
-			canonicalUrl={canonicalUrl}
-			items={taggedProducts}
-			cardConfig={cardConfig}
-			dataTable="products"
-			urlPrefix="/product/"
-			extraMeta={{ ctaLabel: 'Xem chi tiết' }}
-			searchPlaceholder="Tìm kiếm sản phẩm..."
-			sortOptions={sortOptions}
-			emptyLabel={pickLang({ vi: 'Chưa có sản phẩm nào.', en: 'No products yet.' })}
-			bottomCta={{ href: '/product/', label: pickLang({ vi: 'Xem tất cả sản phẩm', en: 'View all products' }) }}
-		/>
+		<Feed kind={KINDS.product} items={products} allItems={allProducts} title={pageTitle} description={pageDescription}
+			path={`/product/tag/${tagSlug}/`} activeTag={tagSlug} breadcrumb={breadcrumb} />
 	) : (
 		<div class="mx-auto max-w-6xl px-4 py-24 text-center opacity-60">
 			<I18nText text={{ en: 'Category not found.', vi: 'Không tìm thấy danh mục này.' }} />

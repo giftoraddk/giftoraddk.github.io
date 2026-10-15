@@ -1,0 +1,67 @@
+---
+// Layout app mobile — bản rút gọn của Core.astro cho trang kiểu ứng dụng (vd /radar/*): CHỈ thanh menu đáy
+// (Nav/Mobile.astro, bottom sheet cho mục có menu con) trên mọi kích thước màn hình. Không NavTop, không footer,
+// không UtilityBar, không svc-underlay, không variant màu — nền do chính trang vẽ (vd svc-everyday có gradient riêng).
+// Trang cuộn bằng document (không bọc h-dvh overflow như Core) nên window scroll / position: fixed của trang con chạy
+// đúng như trang thường. Giữ nguyên phần dùng chung với Core: <Head> (SEO), ClientRouter, chống nháy theme/lang.
+// `aside` (vd /admin/*): từ lg trở lên thanh đáy nhường chỗ cho menu trái Nav/Aside.astro (cùng menuItems).
+import "../styles/themes/default.css";
+import { ClientRouter, fade } from "astro:transitions";
+import Head from "@/components/Head/Base.astro";
+import NavMobile from "@/components/Nav/Mobile.astro";
+import NavAside from "@/components/Nav/Aside.astro";
+import { COOKIE_CONFIG } from "@/services/core/cookier.js";
+import { site } from "@/services/tools/site";
+import { layoutTints } from "@/services/tools/page.js";
+
+const {
+	title,
+	description,
+	image,
+	noindex = false,
+	// viewport-fit=cover để env(safe-area-inset-*) có giá trị — thanh menu đáy cần chừa vùng home indicator.
+	viewport = "width=device-width,initial-scale=1,viewport-fit=cover",
+	menuItems = [], // cùng định dạng menuItems của Core `menu` (text song ngữ, href, iconMobile, items?)
+	tints = null, // [a, b] tên màu theme như Core — chỉ đặt --layout-tint-a/b (bottom sheet của Nav/Mobile.astro đọc)
+	theme = "light",
+	aside = null, // { title, icon?, home? } — bật menu trái desktop (Nav/Aside.astro)
+} = Astro.props;
+
+// Layout này không có svc-underlay — chỉ lấy cặp tints (dùng chung Core/CoreShop, xem services/tools/page.js)
+const { tintStyle } = layoutTints(tints, null);
+---
+
+<html lang={site.defaultLang} class="scroll-smooth" data-theme={theme}>
+	<head>
+		<ClientRouter />
+		<Head title={title} description={description} ogImage={image} noindex={noindex} viewport={viewport} />
+		<!-- Theme/lang đã lưu áp trước lần vẽ đầu (chống nháy) + giữ qua chuyển trang SPA — giống Core.astro -->
+		<script define:vars={{ themeCookie: COOKIE_CONFIG.THEME, langCookie: COOKIE_CONFIG.LANGUAGE }} is:inline>
+			(function() {
+				const m = document.cookie.match(new RegExp('(?:^|; )' + themeCookie + '=([^;]*)'));
+				const t = m ? decodeURIComponent(m[1]) : null;
+				if (t) document.documentElement.setAttribute('data-theme', t);
+				const lm = document.cookie.match(new RegExp('(?:^|; )' + langCookie + '=([^;]*)'));
+				const l = lm ? decodeURIComponent(lm[1]) : null;
+				if (l) document.documentElement.setAttribute('lang', l);
+			})();
+			document.addEventListener('astro:before-swap', function(e) {
+				const theme = document.documentElement.getAttribute('data-theme');
+				if (theme) e.newDocument.documentElement.setAttribute('data-theme', theme);
+				const lang = document.documentElement.getAttribute('lang');
+				if (lang) e.newDocument.documentElement.setAttribute('lang', lang);
+			});
+		</script>
+	</head>
+
+	<body class="bg-base-100" transition:animate={fade({ duration: "0.5s" })}>
+		<div id="main-wrap" class="min-h-dvh" style={tintStyle}>
+			<!-- Chừa chỗ cho thanh menu đáy cố định (h-18 + safe area) để nội dung cuối trang không bị che -->
+			<main id="main" class:list={["text-base-content pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))]", { "lg:pb-0 lg:pl-[calc(16rem+12px)]": aside }]}>
+				<slot />
+			</main>
+			{aside && <NavAside items={menuItems} {...aside} />}
+			<NavMobile items={menuItems} isMenu={false} class={aside ? "lg:hidden" : ""} />
+		</div>
+	</body>
+</html>

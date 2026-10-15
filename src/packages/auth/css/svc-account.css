@@ -1,0 +1,24 @@
+:host {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+/* Standalone (not embedded): the fab + popover float over the page — the host box itself takes no room. */
+:host(:not([embedded])) { display: contents; }
+
+/* Floating (not embedded): the fab is position:fixed and the panel a fixed popover — nothing here belongs to the page
+   flow, but <web-popover> is inline-block, so even empty it leaves one line box (a strip of white space where this
+   element sits, e.g. under the last section). A 0-height block takes no room; its fixed children still show. */
+:host(:not([embedded])) web-popover { display: block; height: 0; }
+
+/* One scroll region only: the popover's own content box (web-popover.css — explicit height + overflow-y). Its height
+   cap goes through --web-popover-max-height so web-popover.js places the box with it; the panel itself never scrolls. */
+web-popover { --web-popover-max-height: min(640px, calc(100dvh - 6rem)); }
+
+.acc-pop {
+    box-sizing: border-box;
+    width: min(380px, calc(100vw - 2rem));
+    display: flex; justify-content: center;
+}

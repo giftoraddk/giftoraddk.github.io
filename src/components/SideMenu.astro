@@ -1,0 +1,135 @@
+---
+// Thanh bên dùng chung cho trang tĩnh (/system/legal, /system/docs …): 1 thẻ mặt trung tính, viền hairline, ánh góc rất
+// nhẹ; màu nhấn chỉ ở glyph, số đếm, mục đang mở. Desktop dính bên trái, mobile thành hàng chip cuộn ngang.
+// items[].current = trang đang mở (aria-current="page"). spy = các href là #anchor → tự đánh dấu mục đang đọc khi cuộn
+// (aria-current="location").
+import I18nText from '@/components/I18nText.astro';
+
+type Text = string | { en: string; vi?: string };
+export interface Props {
+	label: string;
+	title: Text;
+	icon: string;
+	items: { href: string; icon: string; text: Text; current?: boolean }[];
+	back?: { href: string; text: Text };
+	spy?: boolean;
+}
+
+const { label, title, icon, items, back, spy = false } = Astro.props;
+---
+
+<aside class="side" aria-label={label}>
+	<nav class="side-card" data-spy={spy ? '' : undefined}>
+		<p class="side-head">
+			<iconify-icon icon={icon}></iconify-icon>
+			<I18nText text={title} />
+			<span class="side-count">{items.length}</span>
+		</p>
+		<ul>
+			{items.map((it) => (
+				<li>
+					<a href={it.href} aria-current={it.current ? 'page' : undefined}>
+						<span class="side-glyph"><iconify-icon icon={it.icon}></iconify-icon></span>
+						<span class="side-label"><I18nText text={it.text} /></span>
+					</a>
+				</li>
+			))}
+		</ul>
+	</nav>
+
+	{back && (
+		<a class="side-back" href={back.href}>
+			<iconify-icon icon="ri:arrow-left-line" class="mb-0.5"></iconify-icon>
+			<I18nText text={back.text} />
+      <span></span>
+		</a>
+	)}
+</aside>
+
+<script>
+	import 'iconify-icon';
+
+	// Scroll-spy: mục có section chạm dải trên của viewport là mục đang đọc.
+	for (const nav of document.querySelectorAll<HTMLElement>('.side-card[data-spy]')) {
+		const links = new Map<Element, HTMLAnchorElement>();
+		for (const a of nav.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')) {
+			const target = document.getElementById(decodeURIComponent(a.hash.slice(1)));
+			if (target) links.set(target, a);
+		}
+		if (!links.size) continue;
+		const io = new IntersectionObserver((entries) => {
+			const hit = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+			const cur = hit && links.get(hit.target);
+			if (!cur) return;
+			for (const a of links.values()) a === cur ? a.setAttribute('aria-current', 'location') : a.removeAttribute('aria-current');
+		}, { rootMargin: '-20% 0px -70% 0px' });
+		for (const el of links.keys()) io.observe(el);
+	}
+</script>
+
+<style>
+	.side {
+		--s-line: color-mix(in oklab, var(--color-base-content) 12%, transparent);
+		--s-surface: color-mix(in oklab, var(--color-base-content) 4%, transparent);
+		position: sticky; top: 6rem; align-self: start; display: flex; flex-direction: column; gap: .75rem; margin-bottom: 2rem;
+	}
+	.side-card {
+		position: relative; overflow: hidden; padding: .9rem .6rem .6rem;
+		border: 1px solid var(--s-line); border-radius: 1rem;
+		background:
+			radial-gradient(220px 140px at 100% 0%, color-mix(in oklab, var(--color-primary) 7%, transparent), transparent 70%),
+			radial-gradient(200px 120px at 0% 0%, color-mix(in oklab, var(--color-secondary) 5%, transparent), transparent 70%),
+			var(--color-base-100);
+	}
+	.side-head {
+		display: flex; align-items: center; gap: .45rem; margin: 0 .45rem .6rem;
+		font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; opacity: .7;
+	}
+	.side-head iconify-icon { font-size: .95rem; color: var(--color-primary); }
+	.side-count {
+		margin-left: auto; min-width: 1.35rem; height: 1.35rem; padding: 0 .35rem; display: grid; place-items: center;
+		border-radius: 1rem; font-size: .68rem; letter-spacing: 0;
+		background: color-mix(in oklab, var(--color-primary) 14%, transparent); color: var(--color-primary);
+	}
+	.side-card ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .15rem; }
+	.side-card a {
+		position: relative; display: flex; align-items: center; gap: .65rem; padding: .45rem .5rem;
+		border-radius: .7rem; font-size: .87rem; line-height: 1.3; text-decoration: none; color: inherit;
+		transition: background-color .15s ease, color .15s ease;
+	}
+	.side-card a:hover { background: var(--s-surface); }
+	.side-glyph {
+		flex: none; width: 1.9rem; height: 1.9rem; display: grid; place-items: center; border-radius: .6rem;
+		font-size: 1rem; color: color-mix(in oklab, var(--color-base-content) 70%, transparent);
+		background: var(--s-surface); border: 1px solid var(--s-line);
+		transition: background .15s ease, color .15s ease, border-color .15s ease;
+	}
+	.side-label { opacity: .78; }
+	.side-card a:hover .side-label { opacity: 1; }
+	.side-card a[aria-current] { background: color-mix(in oklab, var(--color-primary) 12%, transparent); color: var(--color-primary); font-weight: 600; }
+	.side-card a[aria-current]::before {
+		content: ''; position: absolute; left: -.6rem; top: .55rem; bottom: .55rem; width: 3px; border-radius: 0 3px 3px 0; background: var(--color-primary);
+	}
+	.side-card a[aria-current] .side-label { opacity: 1; }
+	.side-card a[aria-current] .side-glyph {
+		color: var(--color-primary); border-color: transparent;
+		background: linear-gradient(135deg, color-mix(in oklab, var(--color-primary) 22%, transparent), color-mix(in oklab, var(--color-secondary) 14%, transparent));
+	}
+
+	.side-back {
+		display: inline-flex; align-items: center; gap: .4rem; align-self: center; padding: .35rem .75rem;
+		width: 100%; border-radius: 2rem; font-size: .82rem; text-decoration: none; color: inherit; opacity: .7;
+	}
+	.side-back:hover { opacity: 1; background: var(--s-surface); }
+
+	/* Mobile: hàng chip cuộn ngang. */
+	@media (max-width: 1023px) {
+		.side { position: static; }
+		.side-card { padding: .5rem; }
+		.side-head { display: none; }
+		.side-card ul { flex-direction: row; overflow-x: auto; scrollbar-width: none; gap: .3rem; }
+		.side-card a { white-space: nowrap; padding: .3rem .7rem .3rem .3rem; border-radius: 2rem; }
+		.side-card a[aria-current]::before { display: none; }
+		.side-glyph { width: 1.6rem; height: 1.6rem; border-radius: 50%; font-size: .85rem; }
+	}
+</style>

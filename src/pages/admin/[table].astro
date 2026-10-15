@@ -1,0 +1,316 @@
+---
+import CoreMobile from '@/layouts/CoreMobile.astro';
+import I18nText from '@/components/I18nText.astro';
+import { PAGES, TINTS, pageOf, pagePath, menuItems } from '@/modules/admin/index.js';
+import { plainText } from '@/services/tools/util';
+
+// Trang DUY NHẤT của khu quản trị: /admin/<slug>/ cho mọi trang trong modules/admin PAGES.
+// Khung kiểu /radar/ (layouts/CoreMobile.astro: thanh menu đáy trên mobile) + menu trái trên desktop (`aside`). Nội dung
+// = panel của node tương ứng trong group "Hệ thống AI" (svc-records / svc-roles / svc-finance-report…), mount bằng
+// <svc-overlay-component> của svc-node ở script bên dưới — cấu hình panel nằm trong JS (schema là hàm) nên không đi
+// qua HTML. Đăng nhập ngay tại trang bằng <svc-account> (như node `account` trên canvas): panel chỉ mount khi đã đăng
+// nhập và có quyền trang này. /admin/ → /admin/users/ (redirects trong astro.config.mjs).
+export function getStaticPaths() {
+	return PAGES.map((p) => ({ params: { table: p.slug } }));
+}
+
+const page = pageOf(Astro.params.table);
+const ADMIN = { vi: 'Quản trị', en: 'Admin' };
+const SIGNIN = { vi: 'Đăng nhập để quản lý', en: 'Sign in to manage' };
+const DENIED = { vi: 'Tài khoản này không có quyền vào khu quản trị.', en: 'This account has no access to the admin area.' };
+---
+
+<CoreMobile menuItems={menuItems} tints={TINTS} title={`${plainText(page.title)} — Admin`} description={plainText(page.desc)} noindex
+	aside={{ title: ADMIN, icon: 'ri:shield-keyhole-line', home: pagePath(PAGES[0].slug) }}>
+
+	<!-- data-state: loading (chưa biết user) → signin | denied | ready. -->
+	<div class="adm" data-admin-page={page.slug} data-state="loading">
+		<div class="adm-bg" aria-hidden="true"></div>
+		<header class="adm-head">
+			<span class="adm-glyph" aria-hidden="true"><iconify-icon icon={page.icon} /></span>
+			<div class="adm-titles">
+				<p class="adm-kicker"><I18nText text={ADMIN} /></p>
+				<h1><I18nText text={page.title} /></h1>
+				<p class="adm-desc adm-only-ready"><I18nText text={page.desc} /></p>
+				<p class="adm-desc adm-only-signin"><I18nText text={SIGNIN} /></p>
+			</div>
+			<!-- Nút tài khoản (khi đã vào được trang): <web-popover> mở hồ sơ — đổi theme / ngôn ngữ, đăng xuất. -->
+			<web-popover class="adm-me-pop" data-admin-pop ui="modern" placement="bottom-end" placementGap="8">
+				<button slot="trigger" type="button" class="adm-me" data-admin-me aria-haspopup="dialog">
+					<iconify-icon icon="ri:user-3-line" aria-hidden="true"></iconify-icon>
+					<span class="sr-only"><I18nText text={{ vi: 'Tài khoản', en: 'Account' }} /></span>
+				</button>
+				<div class="adm-account-pop" data-account-pop></div>
+			</web-popover>
+		</header>
+
+		<p class="adm-note adm-only-denied"><iconify-icon icon="ri:lock-line" aria-hidden="true"></iconify-icon><I18nText text={DENIED} /></p>
+
+		<!-- Cổng giữa trang khi chưa đăng nhập / không có quyền. Chỉ 1 <svc-account> (nó giữ trạng thái đăng nhập): vào
+		     được trang thì script chuyển nó vào popover của nút tài khoản, đăng xuất thì đưa về đây. -->
+		<section class="adm-panel adm-account" data-account-gate>
+			<svc-account ui="pastel" embedded></svc-account>
+		</section>
+
+		{page.panels.map(() => <section class="adm-panel adm-only-ready" data-admin-panel></section>)}
+	</div>
+
+	<svc-talk id="svc-talk" transition:persist="svc-talk" no-verdict></svc-talk>
+
+	<!-- Trong body, không ở frontmatter: frontmatter chỉ chạy lúc build nên customElements.define() không bao giờ
+	     chạy trên trình duyệt. Component của từng panel tải khi mount (overlay.load), như lần mở panel đầu trên canvas. -->
+	<script>
+		import 'iconify-icon';
+		import '@/packages/apex/web-popover.js';
+		import '@/packages/auth/svc-account.js';
+		import '@/packages/node/app/overlay-component.js';
+		import '@/services/app.js';
+		import '@/packages/llm/svc-talk.js';
+		import { parseRoles, hasAccess } from '@/packages/auth/tool/roles.js';
+		import { lingo } from '@/packages/node/tool/lingo.js';
+		import { PAGES, pageOf, pagePath } from '@/modules/admin/index.js';
+
+		type Overlay = { properties?: Record<string, unknown> } & Record<string, unknown>;
+		type Host = HTMLElement & { overlay: Overlay; activate(): void; _el?: HTMLElement & { _dhReset?: () => void } };
+		type User = { status?: string; roles?: string; avatar?: string; display_name?: string; email?: string } | null;
+
+		const html = document.documentElement;
+
+		// Như preset/mount.js làm cho canvas: text { vi, en } của props (vd `heading`) nói theo ngôn ngữ trang + theme/lang.
+		const said = (overlay: Overlay): Overlay => {
+			const lang = html.getAttribute('lang') || 'vi';
+			const props = Object.fromEntries(Object.entries(overlay.properties ?? {}).map(([k, v]) => [k, lingo(v, lang)]));
+			return { ...overlay, properties: { ...props, lang, theme: html.getAttribute('data-theme') || 'light' } };
+		};
+
+		// Trang user mở được: Super Admin mọi trang, còn lại theo token quyền (require null = chỉ Super Admin).
+		const allowedPages = (user: User) => {
+			if (user?.status !== 'active') return [];
+			const { roles, isAdmin } = parseRoles(user);
+			return PAGES.filter((p) => isAdmin || hasAccess(roles, p.require));
+		};
+
+		// Ẩn mục menu (thanh đáy + menu trái) không mở được. Chỉ là giao diện — Worker vẫn chặn từng request.
+		function filterMenu(allowed: { slug: string }[]) {
+			for (const p of PAGES) {
+				const on = allowed.some((a) => a.slug === p.slug);
+				document.querySelectorAll<HTMLElement>(`[data-nav-href="${pagePath(p.slug)}"]`).forEach((a) => {
+					(a.closest<HTMLElement>('li, .snap-start') ?? a).hidden = !on;
+				});
+			}
+		}
+
+		// Mặt nút tài khoản: ảnh / chữ cái đầu của user.
+		function paintMe(btn: HTMLButtonElement, user: User) {
+			const name = (user?.display_name || user?.email || '').trim();
+			const initials = name.split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+			const face = user?.avatar ? Object.assign(document.createElement('img'), { src: user.avatar, alt: '' })
+				: initials ? Object.assign(document.createElement('span'), { textContent: initials })
+				: Object.assign(document.createElement('iconify-icon'), { icon: 'ri:user-3-line' });
+			btn.firstElementChild?.replaceWith(face);
+			btn.title = name;
+		}
+
+		function setupPage() {
+			const root = document.querySelector<HTMLElement>('[data-admin-page]');
+			const page = pageOf(root?.dataset.adminPage);
+			if (!root || !page) return;
+
+			const slots = root.querySelectorAll<HTMLElement>('[data-admin-panel]');
+			const me = root.querySelector<HTMLButtonElement>('[data-admin-me]')!;
+			const pop = root.querySelector('[data-admin-pop]') as HTMLElement & { open: boolean };
+			const account = root.querySelector('svc-account')!;
+			// Gắn lại vào chỗ khác → svc-account kết nối lại và báo user lần nữa (cùng user → place() không đổi gì).
+			const place = (box: Element) => { if (account.parentElement !== box) box.append(account); };
+			let panels: { host: Host; overlay: Overlay }[] = [];
+
+			const mount = () => {
+				if (panels.length) return;
+				panels = page.panels.map((overlay: Overlay, i: number) => {
+					const host = document.createElement('svc-overlay-component') as Host;
+					slots[i].replaceChildren(host);
+					host.overlay = said(overlay);
+					host.activate();
+					return { host, overlay };
+				});
+			};
+			// Đăng xuất / đổi sang tài khoản không có quyền → gỡ panel (overlay-component destroy) để không còn dữ liệu cũ.
+			const unmount = () => {
+				slots.forEach((s) => s.replaceChildren());
+				panels = [];
+			};
+
+			// <svc-account> báo user mỗi lần biết / đổi (lần kiểm tra đầu, đăng nhập, lưu hồ sơ, đăng xuất → null).
+			const onAccount = (e: Event) => {
+				const user = (e as CustomEvent<{ user: User }>).detail.user;
+				const allowed = allowedPages(user);
+				filterMenu(allowed);
+				paintMe(me, user);
+
+				if (user && allowed.some((p) => p.slug === page.slug)) {
+					mount();
+					place(root.querySelector('[data-account-pop]')!);
+					root.dataset.state = 'ready';
+					return;
+				}
+				unmount();
+				pop.open = false;
+				if (allowed.length) { location.replace(pagePath(allowed[0].slug)); return; }
+				place(root.querySelector('[data-account-gate]')!);
+				root.dataset.state = user ? 'denied' : 'signin';
+			};
+			current = onAccount;
+			if (lastAccount) onAccount(lastAccount);
+
+			// Đổi ngôn ngữ / theme (BtnTheme, hồ sơ trong <svc-account>… đổi thuộc tính <html>) → gửi lại props cho panel đang mở.
+			const observer = new MutationObserver(() => panels.forEach(({ host, overlay }) => { host.overlay = said(overlay); }));
+			observer.observe(html, { attributes: true, attributeFilter: ['lang', 'data-theme'] });
+
+			// <svc-learn> vừa nạp know/rel → tải lại các lưới cùng trang (reset RAM section của conductor, như nút 🔄).
+			const onLearn = () => panels.forEach(({ host }) => host._el?._dhReset?.());
+			root.addEventListener('learn:done', onLearn);
+
+			document.addEventListener('astro:before-swap', () => {
+				observer.disconnect();
+				current = null;
+				root.removeEventListener('learn:done', onLearn);
+			}, { once: true });
+		}
+
+		// Nghe ở document ngay khi module chạy: svc-account (import ở trên) có thể báo user trước astro:page-load —
+		// giữ lần báo cuối để trang vừa dựng xử lý ngay; svc-account của trang mới vẫn báo lại sau đó.
+		let current: ((e: Event) => void) | null = null;
+		let lastAccount: Event | null = null;
+		document.addEventListener('account-change', (e) => { lastAccount = e; current?.(e); });
+		document.addEventListener('astro:page-load', setupPage);
+	</script>
+</CoreMobile>
+
+<style>
+	.adm {
+		--a: var(--layout-tint-a, var(--color-info));
+		--b: var(--layout-tint-b, var(--color-accent));
+		--line: color-mix(in oklab, var(--color-base-content) 9%, transparent);
+		--surface: color-mix(in oklab, var(--color-base-content) 6%, transparent);
+		--muted: color-mix(in oklab, var(--color-base-content) 60%, transparent);
+		position: relative;
+		isolation: isolate;
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 0 16px 24px;
+		color: var(--color-base-content);
+	}
+
+	/* Nền mềm cố định như svc-everyday — quầng theo px (không %) để màn rộng vẫn nhạt. */
+	.adm-bg {
+		position: fixed;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		background:
+			radial-gradient(720px 420px at 100% 0%, color-mix(in oklab, var(--a) 14%, transparent), transparent 70%),
+			radial-gradient(560px 360px at 0% 0%, color-mix(in oklab, var(--b) 10%, transparent), transparent 70%),
+			var(--color-base-200);
+	}
+
+	.adm-head {
+		display: flex;
+		align-items: flex-start;
+		gap: 14px;
+		padding: calc(20px + env(safe-area-inset-top, 0px)) 0 18px;
+	}
+	.adm-titles { flex: 1; min-width: 0; }
+	.adm-glyph {
+		display: grid;
+		place-items: center;
+		flex-shrink: 0;
+		width: 52px;
+		height: 52px;
+		margin-top: 4px;
+		border-radius: 16px;
+		background: linear-gradient(135deg, color-mix(in oklab, var(--a) 16%, transparent), color-mix(in oklab, var(--b) 16%, transparent));
+		font-size: 1.6rem;
+	}
+	.adm-kicker { margin: 0; font-size: 13px; font-weight: 600; color: var(--muted); }
+	.adm-head h1 {
+		margin: 2px 0 0;
+		font-size: clamp(28px, 7vw, 40px);
+		font-weight: 800;
+		line-height: 1.05;
+		letter-spacing: -0.025em;
+	}
+	.adm-desc { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
+
+	/* Nút tài khoản — tròn như nút kính của ed-header; chữ cái đầu gradient a→b, ảnh đại diện phủ kín. */
+	.adm-me {
+		display: grid;
+		place-items: center;
+		flex-shrink: 0;
+		width: 44px;
+		height: 44px;
+		margin-top: 4px;
+		overflow: hidden;
+		border-radius: 999px;
+		border: 1px solid var(--line);
+		background: var(--surface);
+		color: var(--color-base-content);
+		font-size: 0.8rem;
+		font-weight: 700;
+		cursor: pointer;
+	}
+	/* Mặt nút do paintMe() tạo bằng JS (không mang attribute scope của Astro) → :global */
+	.adm-me > :global(iconify-icon) { font-size: 1.25rem; }
+	.adm-me > :global(img) { width: 100%; height: 100%; object-fit: cover; }
+	.adm-me > :global(span:not(.sr-only)) {
+		display: grid;
+		place-items: center;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(135deg, color-mix(in oklab, var(--a) 18%, transparent), color-mix(in oklab, var(--b) 18%, transparent));
+	}
+	.adm-me:focus-visible { outline: none; box-shadow: 0 0 0 2px color-mix(in oklab, var(--a) 50%, transparent); }
+
+	.adm-note {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin: 0 0 16px;
+		padding: 12px 14px;
+		border-radius: 16px;
+		border: 1px dashed var(--line);
+		color: var(--muted);
+		font-size: 14px;
+	}
+
+	/* Khung panel = khung panel svc-node (svc-popover .chrome): quầng tints 2 góc trên base-100, viền mảnh, không shadow.
+	   --color-tint-a/b để svc-records tô ô sticky của svc-list cùng cặp màu như trên canvas. */
+	.adm-panel {
+		--color-tint-a: var(--a);
+		--color-tint-b: var(--b);
+		overflow: hidden;
+		border-radius: 24px;
+		border: 1px solid var(--line);
+		background:
+			radial-gradient(420px 260px at 100% 0%, color-mix(in oklab, var(--a) 12%, transparent), transparent 70%),
+			radial-gradient(320px 220px at 0% 0%, color-mix(in oklab, var(--b) 9%, transparent), transparent 70%),
+			var(--color-base-100);
+	}
+	.adm-panel + .adm-panel { margin-top: 16px; }
+	.adm-account { max-width: 30rem; margin-inline: auto; padding: 8px 0; }
+	.adm-account-pop { width: min(24rem, calc(100vw - 32px)); }
+	/* Popover hồ sơ không cao quá 70% màn hình (tối đa 32rem) — dài hơn thì cuộn trong popover. */
+	.adm-me-pop { --web-popover-max-height: min(70dvh, 32rem); }
+
+	/* Hiện theo trạng thái — mặc định (loading) chưa hiện gì ngoài đầu trang. */
+	.adm-only-ready, .adm-only-signin, .adm-only-denied, .adm-account, .adm-me-pop { display: none; }
+	.adm[data-state='ready'] .adm-only-ready { display: block; }
+	.adm[data-state='signin'] .adm-only-signin { display: block; }
+	.adm[data-state='denied'] .adm-only-denied { display: flex; }
+	.adm[data-state='ready'] .adm-me-pop { display: inline-block; flex-shrink: 0; }
+	.adm:is([data-state='signin'], [data-state='denied']) .adm-account { display: block; }
+
+	@media (min-width: 1024px) {
+		.adm { padding: 0 24px 32px; }
+		.adm-head { padding-top: 28px; }
+	}
+</style>

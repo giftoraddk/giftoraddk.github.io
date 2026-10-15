@@ -16,12 +16,13 @@
 	}
 	.lang-btn:not([aria-pressed='true']) {
 		color: rgba(255, 255, 255, 0.75);
+    cursor: pointer;
 	}
 </style>
 
 <script>
-	import { ClientCookies, COOKIE_CONFIG } from '@/services/storeCookie.js';
-	import { site } from '@/services/constants/site.js';
+	import { ClientCookies, COOKIE_CONFIG } from '@/services/core/cookier.js';
+	import { site } from '@/services/tools/site';
 
 	const initBtnLang = () => {
 		const toggles = document.querySelectorAll<HTMLElement>('.lang-toggle');

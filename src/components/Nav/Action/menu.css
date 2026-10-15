@@ -3,7 +3,6 @@
   @apply flex flex-col flex-wrap p-2;
   --menu-active-fg: #ffffff;
   --menu-active-bg: var(--color-primary);
-  --core-blur: var(--haze-blur, 12px);
   font-size: 0.875rem;
 
   :where(li ul) {
@@ -153,8 +152,6 @@
     @apply absolute ms-0 mt-4 py-2 px-2;
     min-width: 172px;
     background-color: color-mix(in oklab, var(--color-base-100) 90%, transparent);
-    /* backdrop-filter: blur(var(--core-blur));
-    -webkit-backdrop-filter: blur(var(--core-blur)); */
     border: 1px solid var(--color-base-300);
     border-radius: var(--radius-box);
     box-shadow: 0 0 4px rgba(0, 0, 0, 0.08);
@@ -162,6 +159,53 @@
 
   &.menu-bottom > li:not(.menu-title) > details > ul {
     @apply bottom-full top-auto mb-4 mt-0;
+  }
+}
+
+/* Biến thể "float" / "minimal" (opt-in: Core/CoreShop menu.variant → class menu-float | menu-minimal, đi cùng
+   thanh tương ứng của Nav/Top.astro) — link chữ thuần, không nền; mục đang mở: chữ đậm + chấm gradient tints
+   nhỏ bên dưới (thay cho gạch chân primary). */
+.menu-horizontal:is(.menu-float, .menu-minimal) {
+  gap: 2px;
+
+  & > li { margin-top: 0; }
+
+  & > li > a,
+  & > li > details > summary {
+    min-height: 36px;
+    padding: 0 12px;
+    border-radius: 10px;
+    font-weight: 550;
+    color: color-mix(in oklab, var(--color-base-content) 60%, transparent);
+    transition: color 0.18s ease, background-color 0.18s ease;
+  }
+
+  & > li > a:not(.menu-active):hover,
+  & > li > details > summary:not(.menu-active):hover {
+    color: var(--color-base-content);
+    background-color: color-mix(in oklab, var(--color-base-content) 5%, transparent);
+  }
+
+  & > li > a.menu-active,
+  & > li > details > summary.menu-active {
+    color: var(--color-base-content);
+    font-weight: 650;
+    background-color: transparent;
+    background-image: none;
+
+    &::after {
+      bottom: 2px;
+      width: 5px;
+      height: 5px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--layout-tint-a, var(--color-info)), var(--layout-tint-b, var(--color-accent)));
+    }
+  }
+
+  & > li > a:focus-visible,
+  & > li > details > summary:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-primary) 45%, transparent);
   }
 }
 
@@ -259,4 +303,12 @@
 }
 .menu-char-icon.text-primary > * {
   color: var(--color-primary);
+}
+/* Mục root đang mở trên thanh mobile (Nav/Mobile.astro) — nền gradient tints a→b nhạt + viền a, cùng ý
+   .mnav-item.is-active trong bottom sheet (--layout-tint-a/b của Core/CoreShop, mặc định primary/secondary). */
+.menu-char-icon.is-active {
+  background: linear-gradient(135deg,
+    color-mix(in oklab, var(--layout-tint-a, var(--color-primary)) 22%, transparent),
+    color-mix(in oklab, var(--layout-tint-b, var(--color-secondary)) 22%, transparent));
+  box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--layout-tint-a, var(--color-primary)) 45%, transparent);
 }

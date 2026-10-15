@@ -1,0 +1,104 @@
+:host {
+	display: inline-block;
+	outline: none;
+	--toggle-width: 44px;
+	--toggle-height: 24px;
+	--toggle-thumb: 18px;
+	--core-font: var(--font-sans, 'system-ui');
+}
+
+/* role=switch + tabindex on the host (web-toggle.js) — a keyboard focus ring, not a mouse one. */
+:host(:focus-visible) .toggle-track {
+	outline: 2px solid var(--color-primary, #6366f1);
+	outline-offset: 2px;
+}
+
+.web-toggle {
+	font-family: var(--core-font);
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	cursor: pointer;
+	user-select: none;
+	font-size: .875rem;
+	color: var(--color-base-content, #ffffff);
+	transition: opacity 0.3s ease;
+}
+
+.web-toggle.disabled {
+	cursor: not-allowed;
+	opacity: 0.4;
+}
+
+.toggle-track {
+	position: relative;
+	width: var(--toggle-width);
+	height: var(--toggle-height);
+	background: var(--color-base-300, #393939);
+	border-radius: 999px;
+	transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+	border: 1px solid transparent;
+}
+
+.web-toggle.active .toggle-track {
+	background: var(--tg-color, var(--color-primary, #34ace0));
+}
+
+/* color="primary|secondary|accent|info|warning|success|error" — modern tô đặc màu đó, pastel tô gradient màu đó → nhạt dần
+   (như web-button); không đặt thì modern = primary, pastel = cặp tint a/b. */
+.color-primary   { --tg-color: var(--color-primary, #34ace0); }
+.color-secondary { --tg-color: var(--color-secondary, #706fd3); }
+.color-accent    { --tg-color: var(--color-accent, #a855f7); }
+.color-info      { --tg-color: var(--color-info, #00c7d4); }
+.color-warning   { --tg-color: var(--color-warning, #fbbf24); }
+.color-success   { --tg-color: var(--color-success, #2ebd85); }
+.color-error,
+.color-danger    { --tg-color: var(--color-error, #f5465c); }
+
+
+.toggle-thumb {
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	width: var(--toggle-thumb);
+	height: var(--toggle-thumb);
+	background: #ffffff;
+	border-radius: 50%;
+	transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.web-toggle.active .toggle-thumb {
+	transform: translateX(calc(var(--toggle-width) - var(--toggle-thumb) - 6px));
+}
+
+.label {
+	font-weight: 500;
+}
+
+/* ── Pastel (token --pastel-* ở pastel.css) ─────────────────────────────── */
+/* như switch của Node Builder: track xám nhạt → bật thì gradient tint (hoặc gradient của color), thumb trắng */
+.pastel.web-toggle {
+	--tg-a: var(--pastel-a);
+	--tg-b: var(--pastel-b);
+}
+.pastel.web-toggle[class*="color-"] {
+	--tg-a: var(--tg-color);
+	--tg-b: color-mix(in oklab, var(--tg-color) 62%, #ffffff);
+}
+.pastel .toggle-track {
+	box-sizing: border-box;
+	background: var(--pastel-hover);
+	border: 1px solid transparent;
+}
+.pastel.web-toggle:hover:not(.disabled) .toggle-track {
+	background: color-mix(in oklab, var(--color-base-content, #1f1f1f) 14%, transparent);
+}
+.pastel.active .toggle-track,
+.pastel.web-toggle.active:hover:not(.disabled) .toggle-track {
+	background: linear-gradient(110deg, var(--tg-a), var(--tg-b)) border-box;
+}
+.pastel .toggle-thumb {
+	background: #ffffff;
+	box-shadow: 0 1px 4px rgb(0 0 0 / 0.22);
+}

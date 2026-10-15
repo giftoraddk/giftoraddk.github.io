@@ -1,0 +1,78 @@
+/* web-lightbox — nền tối toàn màn hình, ảnh trọn khung (contain), điều khiển kính mờ trắng. */
+:host { display: contents; }
+
+dialog.lb {
+	position: fixed;
+	inset: 0;
+	width: 100vw;
+	max-width: 100vw;
+	height: 100dvh;
+	max-height: 100dvh;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: rgba(0, 0, 0, 0.9);
+	color: #fff;
+	overscroll-behavior: contain;
+}
+dialog.lb[open] { display: grid; place-items: center; animation: lb-in 0.22s ease; }
+dialog.lb::backdrop { display: none; }
+@keyframes lb-in { from { opacity: 0; } to { opacity: 1; } }
+
+.lb-inner {
+	display: grid;
+	grid-template-rows: auto minmax(0, 1fr) auto;
+	gap: 12px;
+	width: min(94vw, 1080px);
+	height: min(92dvh, 860px);
+	padding: max(8px, env(safe-area-inset-top)) 0 max(8px, env(safe-area-inset-bottom));
+}
+
+.lb-top { display: flex; align-items: center; justify-content: space-between; min-height: 40px; }
+.lb-count { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.04em; opacity: 0.85; font-variant-numeric: tabular-nums; }
+
+.lb-stage { position: relative; min-height: 0; touch-action: pan-y; user-select: none; }
+.lb-stage web-glide { --glide-fit: contain; }
+
+.lb-btn {
+	display: inline-grid;
+	place-items: center;
+	width: 40px;
+	height: 40px;
+	padding: 0;
+	border-radius: 999px;
+	border: 1.5px solid rgba(255, 255, 255, 0.3);
+	background: rgba(255, 255, 255, 0.1);
+	color: #fff;
+	cursor: pointer;
+	backdrop-filter: blur(8px);
+	transition: background 0.2s ease, border-color 0.2s ease;
+}
+.lb-btn:hover { background: rgba(255, 255, 255, 0.22); border-color: rgba(255, 255, 255, 0.6); }
+.lb-btn:focus-visible, .lb-dot:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+.lb-nav { position: absolute; top: 50%; z-index: 2; transform: translateY(-50%); width: 44px; height: 44px; }
+.lb-nav.is-prev { left: 8px; }
+.lb-nav.is-next { right: 8px; }
+
+.lb-dots { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; }
+.lb-dot {
+	width: 8px;
+	height: 8px;
+	padding: 0;
+	border: 0;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.4);
+	cursor: pointer;
+	transition: width 0.2s ease, background 0.2s ease;
+}
+.lb-dot.is-on { width: 22px; background: #fff; }
+
+@media (min-width: 768px) {
+	.lb-nav.is-prev { left: -4px; }
+	.lb-nav.is-next { right: -4px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	dialog.lb[open] { animation: none; }
+}

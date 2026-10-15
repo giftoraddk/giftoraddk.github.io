@@ -1,0 +1,74 @@
+---
+// Khung ảnh catalog — 1 ảnh: <img> thường. Nhiều ảnh: slideshow apex/web-glide.js (mặc định hiệu ứng flipX),
+// nạp theo kiểu tăng cường dần:
+//   - SSR luôn in ảnh đầu tiên (<img> thật, alt, lazy/eager) → crawler & trình duyệt không JS vẫn thấy ảnh
+//   - JS chỉ dựng <web-glide> đè lên khi khung vào màn hình (IntersectionObserver) — card bị ẩn (xem thêm,
+//     lọc) không tải ảnh phụ; ra khỏi màn hình thì tạm dừng autoplay
+//   - prefers-reduced-motion → giữ ảnh tĩnh, không dựng slideshow
+// Nhịp autoplay lệch ngẫu nhiên vài trăm ms mỗi khung để các card trong lưới không lật cùng lúc.
+import Icon from './Icon.astro';
+
+interface Props {
+	images: string[];
+	alt: string;
+	eager?: boolean;   // ảnh màn hình đầu (LCP) — không lazy
+	effect?: 'flipX' | 'flipY' | 'fade' | 'slide' | 'cube3d';
+	autoplay?: number; // ms giữa 2 lần chuyển
+	blur?: boolean;    // nền blur lấp letterbox (ảnh khác tỉ lệ khung)
+}
+
+const { images, alt, eager = false, effect = 'flipX', autoplay = 3600, blur = false } = Astro.props;
+const [first] = images;
+const multi = images.length > 1;
+---
+
+{first && (multi ? (
+	<div class="pf-glide" data-glide={JSON.stringify(images)} data-effect={effect} data-autoplay={autoplay}
+		data-blur={blur ? '' : undefined}>
+		<img src={first} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" fetchpriority={eager ? 'high' : 'auto'} />
+		<span class="pf-glide-n" aria-hidden="true"><Icon name="layers" size={12} />{images.length}</span>
+	</div>
+) : (
+	<img src={first} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" fetchpriority={eager ? 'high' : 'auto'} />
+))}
+
+<script>
+	const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+	let io: IntersectionObserver | null = null;
+
+	function mount(box: HTMLElement) {
+		box.dataset.ready = '';
+		let images: string[] = [];
+		try { images = JSON.parse(box.dataset.glide || '[]'); } catch { return; }
+		const img = box.querySelector('img');
+		const glide = document.createElement('web-glide') as HTMLElement & Record<string, unknown>;
+		glide.images = images;
+		glide.effect = box.dataset.effect || 'flipX';
+		glide.autoplay = 0; // bật khi đang hiển thị (observer bên dưới)
+		glide.blur = 'blur' in box.dataset;
+		// web-glide tự render <img alt=""> trong shadow DOM — đặt tên truy cập ở host
+		glide.setAttribute('role', 'img');
+		glide.setAttribute('aria-label', img?.alt ?? '');
+		box.dataset.ms = String(Number(box.dataset.autoplay || 3600) + Math.round(Math.random() * 900));
+		box.appendChild(glide);
+	}
+
+	function sync(entries: IntersectionObserverEntry[]) {
+		for (const { target, isIntersecting } of entries) {
+			const box = target as HTMLElement;
+			if (isIntersecting && !('ready' in box.dataset)) mount(box);
+			const glide = box.querySelector('web-glide') as (HTMLElement & { autoplay?: number }) | null;
+			if (glide) glide.autoplay = isIntersecting ? Number(box.dataset.ms) || 3600 : 0;
+		}
+	}
+
+	document.addEventListener('astro:page-load', async () => {
+		const boxes = document.querySelectorAll<HTMLElement>('.pf-glide:not([data-ready])');
+		if (!boxes.length || reduced() || !('IntersectionObserver' in window)) return;
+		await import('@/packages/apex/web-glide.js');
+		io?.disconnect();
+		io = new IntersectionObserver(sync, { rootMargin: '160px' });
+		boxes.forEach(b => io!.observe(b));
+	});
+	document.addEventListener('astro:before-swap', () => { io?.disconnect(); io = null; });
+</script>

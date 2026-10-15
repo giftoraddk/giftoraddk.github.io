@@ -1,0 +1,7 @@
+- Ở đây sẽ là các services dùng chung
+- app.js là điểm vào duy nhất — nối DOM event của từng domain lên bus
+- core là lõi cơ bản nhất điều tiết dữ liệu: bus.js (Event Bus Global + orchestrator), conductor, crud, requester, storager, ...
+- node là phần services dành riêng cho <svc-node> (node-events.js — router event của canvas)
+- tools là hàm dùng chung, không gắn domain: util.js, site.ts, motion.js
+- shared là client bên ngoài dùng chung (tensor-api, supabase, telegram, tags)
+- test: node --test "src/services/**/*.test.js"

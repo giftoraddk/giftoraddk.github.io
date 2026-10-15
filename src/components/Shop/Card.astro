@@ -1,0 +1,99 @@
+---
+// 1 sản phẩm trong lưới cửa hàng (components/Shop/Shop.astro) — <li> mang sẵn mọi chiều lọc ở data-* để
+// shop.client.ts lọc / sắp xếp ngay trên DOM (dữ liệu tính lúc build, modules/gift/catalog.js toItem).
+// HTML ngữ nghĩa thuần: h3 + a (stretched link — cả card bấm được), <data value> cho giá, ảnh có width/height.
+// Nhiều ảnh: .gs-media[data-glide] — shop.client.ts dựng slideshow flipX (web-glide) khi card vào màn hình; SSR vẫn in ảnh đầu.
+// Bấm ảnh → popup ảnh lớn (data-zoom → shop.client.ts → <web-lightbox>; nhiều ảnh → slider flipX), nằm trên stretched link.
+// Nút giỏ hàng phát `cell-action` { action: 'add-to-cart' } — cùng sự kiện <svc-pay> (CoreShop) đang nghe;
+// sản phẩm chưa có giá → nút "Nhận báo giá" (Zalo) thay vì giỏ hàng.
+import Icon from '@/components/Catalog/Icon.astro';
+import I18nText from '@/components/I18nText.astro';
+import { categoryLabel } from '@/services/shared/tags';
+
+interface Props {
+	item: any;          // phần tử của shopPageData().items
+	quote: string;      // link nhận báo giá (Zalo)
+	eager?: boolean;    // ảnh hàng đầu — không lazy (LCP)
+	later?: boolean;    // ngoài trang đầu — ẩn tới khi bấm "Xem thêm" (vẫn nằm trong HTML)
+}
+
+const { item: p, quote, eager = false, later = false } = Astro.props;
+const cart = JSON.stringify({ id: p.id, title: p.title, pricing: p.pricing, pics: p.image });
+const stars = Math.round(p.scoreAvg * 2) / 2;
+---
+
+<li
+	class="gs-item"
+	data-later={later ? '' : undefined}
+	data-price={p.price}
+	data-tag={p.extra.map((t: any) => t.slug).join(' ')}
+	data-color={p.colors.map((c: any) => c.key).join(' ')}
+	data-rating={p.scoreAvg}
+	data-stock={p.inStock ? '1' : '0'}
+	data-time={Date.parse(p.published) || 0}
+	data-feat={p.feat}
+	data-search={p.search}
+>
+	<article class="gs-card">
+		<div class="gs-media" data-glide={p.pics.length > 1 ? JSON.stringify(p.pics) : undefined}>
+			{p.image ? (
+				<>
+					<img src={p.image} alt={p.title} width="480" height="480" loading={eager ? 'eager' : 'lazy'}
+						decoding="async" fetchpriority={eager ? 'high' : undefined} />
+					<button type="button" class="gs-zoom" data-zoom={p.pics.join('|')} data-alt={p.title} aria-label={`Xem ảnh lớn: ${p.title}`}>
+						{p.pics.length > 1 && <span class="gs-zoom-count"><Icon name="layers" size={12} />{p.pics.length}</span>}
+					</button>
+				</>
+			) : (
+				<span class="gs-media-empty"><Icon name="bag" size={36} /></span>
+			)}
+			{!p.inStock && <span class="gs-flag"><I18nText text={{ vi: 'Đặt trước', en: 'Pre-order' }} /></span>}
+		</div>
+
+		<div class="gs-body">
+			{p.cats.length > 0 && (
+				<ul class="gs-pills" aria-label="Dịp tặng">
+					{p.cats.slice(0, 2).map((k: any) => <li><I18nText text={categoryLabel(k)} /></li>)}
+				</ul>
+			)}
+
+			<p class="gs-price">
+				{p.price > 0
+					? <><data value={p.price}>{p.priceText}</data>{p.unit && <span class="gs-unit">/ {p.unit}</span>}</>
+					: <span class="gs-contact"><I18nText text={{ vi: 'Liên hệ báo giá', en: 'Price on request' }} /></span>}
+			</p>
+
+			<h3 class="gs-title"><a href={p.url}>{p.title}</a></h3>
+
+			{(p.scoreCount > 0 || p.colors.length > 0) && (
+				<div class="gs-meta">
+					{p.scoreCount > 0 && (
+						<span class="gs-rate" title={`${p.scoreAvg.toFixed(1)}/5`}>
+							<Icon name="star" size={13} />{stars.toFixed(1)}<span class="gs-muted">({p.scoreCount})</span>
+						</span>
+					)}
+					{p.colors.length > 0 && (
+						<span class="gs-swatches">
+							{p.colors.slice(0, 5).map((c: any) => <span class="gs-swatch" style={`--sw:${c.hex}`} title={c.label}><span class="sr-only">{c.label}</span></span>)}
+						</span>
+					)}
+				</div>
+			)}
+
+			{p.excerpt && <p class="gs-excerpt">{p.excerpt}</p>}
+		</div>
+
+		<footer class="gs-foot">
+			{p.price > 0 ? (
+				<button type="button" class="gs-btn" data-cart={cart}>
+					<Icon name="cart" size={16} />
+					<span data-cart-text><I18nText text={{ vi: 'Thêm vào giỏ', en: 'Add to cart' }} /></span>
+				</button>
+			) : (
+				<a class="gs-btn" href={quote} target="_blank" rel="noopener">
+					<Icon name="chat" size={16} /><I18nText text={{ vi: 'Nhận báo giá', en: 'Get a quote' }} />
+				</a>
+			)}
+		</footer>
+	</article>
+</li>

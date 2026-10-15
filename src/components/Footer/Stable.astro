@@ -1,12 +1,12 @@
 ---
 import "iconify-icon";
-import { site } from '@/services/constants/site'
+import { site } from '@/services/tools/site'
 import I18nText from '@/components/I18nText.astro'
 
 const today = new Date()
 
 const {
-	logo = '/logo.png',
+	logo = '/logo.avif',
 	columns = [],
 	policies = [],
 	socials  = [], // [{ icon, href, text }] — icon là tên iconify (vd: ri:facebook-fill)
@@ -19,7 +19,7 @@ const {
 <footer class='relative w-full border-t border-base-content/10 py-6'>
   {bg && (
     <>
-      <script src="@/webs/underlay/svc-underlay.js"></script>
+      <script src="@/packages/adopted/svc-underlay.js"></script>
       <svc-underlay id="footer-bg" class="-mt-1" transition:persist="footer-bg" {...bg}></svc-underlay>
     </>
   )}

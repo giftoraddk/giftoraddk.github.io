@@ -5,10 +5,13 @@
 
 # Node artifact files
 node_modules/
-dist/
+dist*
 dest/
+# Embed bundles — vite.standalone.mjs builds them before every `pnpm build`
+public/embed/
+# Chrome extension builds — zap-* (vite.zap-share.mjs, …)
+dist-zap/
 logs/
-doc/
 docs/
 
 # Claude
@@ -28,7 +31,6 @@ docs/
 
 # Maven
 target/
-dist/
 
 # JetBrains IDE
 .idea/
@@ -58,16 +60,9 @@ Thumbs.db
 # Astro
 .astro
 
-# astro.config.mjs excludePages — temp stash while `pnpm build` runs, restored automatically
-.astro-build-stash/
-
 # ENV
-.env
-
-# Cloudflare Worker (worker/ — pnpm workspace, 2 deployable packages, see hook/WORKER.rst)
-worker/packages/*/.dev.vars
-worker/packages/*/.dev.vars.*
-worker/packages/*/.wrangler/
-worker/packages/*/.secrets-bulk.tmp.json
+.en*
 
 .superpowers
+# Vercel adapter output (PUBLIC_RENDER=isr pnpm build)
+.vercel/

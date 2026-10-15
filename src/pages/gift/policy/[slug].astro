@@ -1,30 +1,36 @@
 ---
+// /gift/policy/<slug> — 4 chính sách công ty (thanh toán, vận chuyển, đổi trả/hoàn tiền, bảo mật), nội dung song ngữ ở
+// modules/gift/policies.js — HTML tĩnh (article bên dưới), crawler đọc thẳng, không cần outline của web-board.
 import Core from '@/layouts/Core.astro';
 import I18nText from '@/components/I18nText.astro';
-// dùng nguồn từ modules/shop/gift vì hrefs của menuItems/footerMenuItems ở đây đã tuyệt đối
-// ('/gift#...') — an toàn khi tái sử dụng trên trang khác /gift, khác với landing/gift.js chỉ
-// dùng hash tương đối ('#...') vì chỉ phục vụ 1 trang index.astro duy nhất
-import { variant, bar, menuItems, footerMenuItems, policies as footerPolicies, socials, contact } from '@/modules/shop/gift';
-import { policies as policyDocs } from '@/modules/policies';
+import GiftAide from '@/components/Gift/Aide.astro';
+import { chrome } from '@/modules/gift/shop.js';
+import { policies } from '@/modules/gift/policies.js';
+import { GIFT_LANG, GIFT_HOME } from '@/modules/gift/meta.js';
+import { breadcrumbJsonLd } from '@/packages/apex/tool/board-seo.js';
 
 export function getStaticPaths() {
-	return policyDocs.map((doc) => ({ params: { slug: doc.slug }, props: { doc } }));
+	return policies.map((doc) => ({ params: { slug: doc.slug }, props: { doc } }));
 }
 
 const { doc } = Astro.props;
-const bg = { blur: true };
+
+// Nội dung đã là HTML tĩnh — chỉ cần WebPage + BreadcrumbList.
+const base = Astro.site ?? Astro.url;
+const jsonLd = [
+	{
+		'@context': 'https://schema.org',
+		'@type': 'WebPage',
+		name: doc.title.vi,
+		description: doc.intro?.vi,
+		url: new URL(Astro.url.pathname, base).href,
+		inLanguage: GIFT_LANG,
+	},
+	breadcrumbJsonLd([GIFT_HOME, { name: doc.title.vi, path: Astro.url.pathname }], base),
+];
 ---
 
-<Core
-	title={`${doc.title.vi} — Giftora DDK`}
-	description={doc.intro.vi}
-	menu={{ type: 'top', position: 'prefix', menuItems }}
-	footer={{ columns: footerMenuItems, policies: footerPolicies, socials, contact, bg, grid: 'grid-cols-1 sm:grid-cols-3' }}
-	bg={variant.bg}
-	theme={variant.theme}
-	variant={variant}
-	bar={bar}
->
+<Core {...chrome} title={doc.title.vi} description={doc.intro?.vi} lang={GIFT_LANG} jsonLd={jsonLd}>
 	<article class='mx-auto max-w-3xl px-4 py-16'>
 		<h1 class='text-3xl font-bold text-base-content mb-4'><I18nText text={doc.title} /></h1>
 		{doc.intro && <p class='text-base-content/70 mb-10'><I18nText text={doc.intro} /></p>}
@@ -49,4 +55,6 @@ const bg = { blur: true };
 			</section>
 		))}
 	</article>
+
+	<GiftAide theme={chrome.theme} lang={GIFT_LANG} />
 </Core>

@@ -1,109 +1,30 @@
 ---
+// /gift/<danh mục> — 1 trang static / danh mục quà tặng doanh nghiệp (services/shared/tags.ts): HTML chỉ chứa sản phẩm
+// gắn tag của danh mục (nguyên văn hoặc theo từ khoá — categoriesOfTag), nhóm "Danh mục" của bộ lọc là link sang danh mục
+// khác, các nhóm còn lại lọc ngay trên trang. Giao diện: components/Shop/Shop.astro; dữ liệu + SEO/GEO:
+// modules/gift/catalog.js shopPageData.
 import CoreShop from '@/layouts/CoreShop.astro';
-import { variant, views, menuItems, footerMenuItems, policies, socials, shop, bar, contact } from '@/modules/shop/gift';
-import { corporateGiftCategories } from '@/services/constants/tags.js';
-import { normText } from '@/services/helper.js';
+import Shop from '@/components/Shop/Shop.astro';
+import GiftAide from '@/components/Gift/Aide.astro';
+import { tintsChrome, shop } from '@/modules/gift/shop.js';
+import { shopPageData } from '@/modules/gift/catalog.js';
+import { CATEGORY_KEYS, isCategoryKey } from '@/services/shared/tags';
 
-// Build đúng 5 danh mục quà tặng doanh nghiệp (xem tags.js) — mỗi danh mục 1 trang static,
-// lọc cứng sản phẩm theo 3 dạng tag coi như tương đương: key ('employee'), nhãn tiếng Việt có dấu
-// ('Quà nhân viên') và không dấu ('qua nhan vien') — dữ liệu sản phẩm có thể lưu tag ở bất kỳ dạng nào.
-// getStaticPaths() được compiler tách ra scope riêng, chỉ giữ lại import — không đọc được const
-// khai báo bên ngoài — nên phải tính CATEGORY_KEYS ngay trong hàm này.
+// getStaticPaths() được compiler tách ra scope riêng, chỉ giữ lại import — dùng thẳng CATEGORY_KEYS đã import.
 export function getStaticPaths() {
-	const CATEGORY_KEYS = Object.keys(corporateGiftCategories.vi);
 	return CATEGORY_KEYS.map((key) => ({ params: { occasions: key } }));
 }
 
-const { occasions: categoryKey } = Astro.params;
-const labelVi = corporateGiftCategories.vi[categoryKey];
-const labelEn = corporateGiftCategories.en[categoryKey];
+// Astro.params là `string | undefined` — isCategoryKey thu hẹp về CategoryKey (getStaticPaths chỉ sinh các key
+// này, nên nhánh throw chỉ chạy khi dữ liệu/route lệch nhau — báo lỗi build thay vì ra trang rỗng).
+const { occasions: key } = Astro.params;
+if (!isCategoryKey(key)) throw new Error(`[gift/[occasions]] danh mục không tồn tại: ${key}`);
 
-// SEO/GEO copy riêng cho từng danh mục (thay vì 1 title/description chung) — giúp mỗi trang trả
-// lời đúng intent tìm kiếm/AI Search theo danh mục cụ thể thay vì nội dung trùng lặp giữa các
-// trang /gift/[occasions]. Cover đúng 5 khóa build sẵn ở getStaticPaths ở trên.
-const CATEGORY_SEO: Record<string, { title: string; description: string }> = {
-	'employee': {
-		title: 'Quà Tặng Nhân Viên Ý Nghĩa – Gắn Kết Đội Ngũ',
-		description: 'Gợi ý quà tặng nhân viên ý nghĩa, tinh tế cho các dịp lễ, Tết, khen thưởng. Giftora DDK cung cấp quà tặng chất lượng, in logo theo yêu cầu, giao số lượng lớn toàn quốc.',
-	},
-	'customer': {
-		title: 'Quà Tặng Khách Hàng Sang Trọng – Tri Ân & Kết Nối',
-		description: 'Quà tặng khách hàng cao cấp, tinh tế, giúp doanh nghiệp giữ chân và tri ân khách hàng thân thiết. Giftora DDK có đa dạng mẫu mã, đóng gói sang trọng, giao hàng nhanh.',
-	},
-	'event': {
-		title: 'Quà Tặng Sự Kiện Doanh Nghiệp – Ấn Tượng & Chuyên Nghiệp',
-		description: 'Quà tặng sự kiện doanh nghiệp (khai trương, hội nghị, roadshow...) ấn tượng, đúng thương hiệu. Giftora DDK hỗ trợ in logo, đóng gói và giao hàng đúng tiến độ sự kiện.',
-	},
-	'appreciation': {
-		title: 'Quà Tặng Tri Ân Đối Tác – Chuyên Nghiệp & Tinh Tế',
-		description: 'Quà tặng tri ân khách hàng, đối tác thể hiện sự trân trọng và gắn kết lâu dài. Giftora DDK cung cấp set quà tri ân cao cấp, in logo theo yêu cầu, giao hàng toàn quốc.',
-	},
-	'tet': {
-		title: 'Quà Tết Doanh Nghiệp – Sang Trọng, Đậm Đà Bản Sắc',
-		description: 'Gợi ý quà Tết doanh nghiệp sang trọng, ý nghĩa để biếu tặng nhân viên, khách hàng và đối tác dịp Tết. Giftora DDK có đa dạng set quà Tết cao cấp, giao hàng tận nơi kịp đón năm mới.',
-	},
-};
-const seo = CATEGORY_SEO[categoryKey] ?? {
-	title: `Quà Tặng ${labelVi} Ý Nghĩa & Tinh Tế`,
-	description: `Gợi ý quà tặng ${labelVi} ý nghĩa, sang trọng tại Giftora DDK — đa dạng mẫu mã, đóng gói tinh tế, giao hàng nhanh toàn quốc. Chọn ngay món quà phù hợp nhất cho ${labelVi}.`,
-};
-// Dữ liệu tags từ API có thể lưu danh mục ở bất kỳ dạng nào trong số này — key (dạng dash, vd
-// "client-partner"), key dạng underscore cũ (tương thích ngược data tag từ trước khi đổi sang
-// dash), nhãn tiếng Việt có dấu, không dấu có khoảng trắng/underscore/dash, không dấu liền không
-// khoảng trắng, hoặc nhãn tiếng Anh.
-const normVi = normText(labelVi);
-const tagVariants = [...new Set([
-	categoryKey,
-	categoryKey.replace(/-/g, '_'),
-	categoryKey.replace(/-/g, ' '),
-	labelVi,
-	normVi,
-	normVi.replace(/\s+/g, ''),
-	normVi.replace(/\s+/g, '_'),
-	normVi.replace(/\s+/g, '-'),
-	labelEn,
-].filter(Boolean))];
-
-const currentView = views.find(v => v.href === '/') ?? views[0];
-
-// Chỉ hard-filter đúng section sản phẩm (dataTable: 'products'); section hero đầu tiên
-// (showcaseModernSlideNeat) ghi thêm tên danh mục vào trước title có sẵn — vd "Quà nhân viên • Giftora DDK".
-// title là field đa ngôn ngữ (xem web-cell.js's _resolveLocale) nên phải build đủ { vi, en },
-// không chỉ 1 string — nếu không trang sẽ luôn hiện tiếng Việt kể cả khi đổi ngôn ngữ sang en.
-const sections = currentView.sections.map((sec: any) => {
-	if (sec.dataTable === 'products') {
-		return { ...sec, filterState: { ...(sec.filterState || {}), active: tagVariants } };
-	}
-	if (sec.id === 'showcaseModernSlideNeat' && sec.data?.[0]) {
-		const baseTitle = sec.data[0].title;
-		const baseVi = typeof baseTitle === 'object' ? (baseTitle.vi ?? Object.values(baseTitle)[0]) : baseTitle;
-		const baseEn = typeof baseTitle === 'object' ? (baseTitle.en ?? baseVi) : baseTitle;
-		const title = { vi: `${labelVi} • ${baseVi}`, en: `${labelEn} • ${baseEn}` };
-		return { ...sec, data: [{ ...sec.data[0], title }, ...sec.data.slice(1)] };
-	}
-	return sec;
-});
-
-const bg = { blur: true }
+const data = await shopPageData({ type: 'cat', key });
+const { page } = data;
 ---
 
-<CoreShop
-	title={seo.title}
-  description={seo.description}
-  image="/images/common/gift-light.webp"
-	menu={{ type: 'top', position: 'prefix', menuItems: menuItems }}
-	footer={{ columns: footerMenuItems, policies, socials, contact, bg, grid: 'grid-cols-1 sm:grid-cols-3' }}
-	bg={variant.bg}
-	theme={variant.theme}
-	variant={variant}
-  shop={shop}
-  bar={bar}
->
-	<script src='@/webs/apex/web-board.js'></script>
-	<div>
-		<web-board
-			unlock={import.meta.env.PUBLIC_EXP}
-			variant={JSON.stringify(variant)}
-		><script type="application/json" is:inline set:html={JSON.stringify(sections)}></script></web-board>
-	</div>
+<CoreShop {...tintsChrome} shop={shop} title={page.title} description={page.description} lang={page.lang} jsonLd={data.jsonLd} image={page.image}>
+	<Shop data={data} />
+	<GiftAide theme={tintsChrome.theme} lang={page.lang} />
 </CoreShop>

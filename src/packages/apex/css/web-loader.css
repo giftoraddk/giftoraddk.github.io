@@ -1,0 +1,11 @@
+:host { display: block; width: 100%; }
+.sk {
+    border-radius: 4px;
+    background: linear-gradient(90deg, #f1f1f1, #ccc, #eee);
+    background-size: 200% 100%;
+    animation: shim 2s infinite;
+}
+@keyframes shim {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}

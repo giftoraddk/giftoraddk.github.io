@@ -1,7 +1,7 @@
 // src/services/schemas/admin/rel.js
 //
-// Field phẳng cho <svc-admin dataTable='rel' server='DB_LLMD1'> — quan hệ giữa 2 `know` entry
-// (hook/knowledge_database_cloudflare_d1_vectorize.md §5/§18, xem worker/packages/llm-worker/src/search.ts's
+// Field phẳng cho <svc-resources dataTable='rel' server='DB_LLMD1'> — quan hệ giữa 2 `know` entry
+// (hook/knowledge_database_cloudflare_d1_vectorize.md §5/§18, xem worker/packages/llm/src/search.ts's
 // _expandViaRelations, chạy server-side khi svc-aide.js gọi POST /v1/search). `from_id`/`to_id` là
 // text tự do — admin tự gõ id của `know` (xem bảng know
 // ngay phía trên cùng trang /admin/knowledge để tra id) — chưa có dynamic-select tra cứu theo

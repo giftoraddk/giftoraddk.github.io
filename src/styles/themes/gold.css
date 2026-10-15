@@ -15,20 +15,18 @@
 	--color-warning: #e19d69;
 	--color-success: #70daa3;
 	--color-error: #e57e70;
-	--color-primary-content: var(--color-primary);
-	--color-secondary-content: var(--color-secondary);
-	--color-accent-content: var(--color-accent);
-	--color-info-content: var(--color-info);
-	--color-warning-content: var(--color-warning);
-	--color-success-content: var(--color-success);
-	--color-error-content: var(--color-error);
+	--color-primary-content: color-mix(in oklab, var(--color-primary), black 60%);
+	--color-secondary-content: color-mix(in oklab, var(--color-secondary), black 60%);
+	--color-accent-content: color-mix(in oklab, var(--color-accent), black 60%);
+	--color-info-content: color-mix(in oklab, var(--color-info), black 60%);
+	--color-warning-content: color-mix(in oklab, var(--color-warning), black 60%);
+	--color-success-content: color-mix(in oklab, var(--color-success), black 60%);
+	--color-error-content: color-mix(in oklab, var(--color-error), black 60%);
 
-	--haze-blur: 12px;
-	--haze-glass: 20%;
   --height-selector: 2.25rem;
 	/* Border radius utilities */
-	--radius-selector: 0.25rem;
-	--radius-box: 0.75rem;
+	--radius-selector: 0.5rem;
+	--radius-box: 1rem;
 
 	--font-sans: "Reddit Sans", system-ui, sans-serif;
 	--font-display: "Merienda", serif;
