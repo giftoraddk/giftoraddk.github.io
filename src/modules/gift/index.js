@@ -7,6 +7,7 @@
 import { fetchCollection } from '@/services/core/fetcher.server.js';
 import { productSlug, postSlug } from '@/services/tools/util';
 import { CTA } from './meta.js';
+import { tintsSections } from './shop.js';
 
 // ── Best-selling gifts (data thật từ database) ─────────────────────────────────
 // "Bán chạy nhất" = ưu tiên theo `index` (thứ tự thủ công admin đặt ở products, số nhỏ ưu tiên
@@ -58,25 +59,6 @@ const latestPosts = await _fetchLatestPosts(6);
 
 const tint = { backgroundColor: 'color-mix(in oklab, var(--color-base-content) 3%, transparent)' };
 
-// ── Kiểu tints ────────────────────────────────────────────────────────────────
-// Nền trang chỉ còn 1 lớp glow tints của layout (modules/gift/shop.js tintsChrome) — bỏ mọi `bg` (blob <svc-underlay>,
-// web-board/web-box render từ config.bg) của section. `bg` ở card (`each`) hoặc khung con (vd khung slider) đổi thành
-// bề mặt trung tính: base-100 gần đặc + viền mảnh, bo góc theo bg.rounded, không đổ bóng (giống panel svc-node).
-const PANEL = {
-	background: 'color-mix(in oklab, var(--color-base-100) 92%, transparent)',
-	border: '1px solid color-mix(in oklab, var(--color-base-content) 9%, transparent)',
-};
-function tintsConfig(node, isRoot = true) {
-	if (Array.isArray(node)) return node.map((n) => tintsConfig(n, false));
-	if (!node || typeof node !== 'object') return node;
-	const { bg, children, ...rest } = node;
-	const out = children === undefined ? rest : { ...rest, children: tintsConfig(children, false) };
-	// bg ở gốc config không có `each` = nền cả section (recursive-render.js sectionBg) → bỏ hẳn, glow layout xuyên qua.
-	const sectionBg = isRoot && node.each === undefined;
-	if (bg && !sectionBg) out.style = { ...PANEL, borderRadius: bg.rounded ?? '1rem', ...node.style };
-	return out;
-}
-const tintsSections = (sections) => sections.map((sec) => (sec.config ? { ...sec, config: tintsConfig(sec.config) } : sec));
 
 // ── Views ─────────────────────────────────────────────────────────────────────
 export const views = [

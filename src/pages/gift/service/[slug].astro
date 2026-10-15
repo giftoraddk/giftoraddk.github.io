@@ -3,7 +3,7 @@
 import CoreShop from '@/layouts/CoreShop.astro';
 import BoardOutline from '@/components/Seo/BoardOutline.astro';
 import GiftAide from '@/components/Gift/Aide.astro';
-import { chrome, shop } from '@/modules/gift/shop.js';
+import { tintsChrome, tintsSections, shop } from '@/modules/gift/shop.js';
 import { services } from '@/modules/gift/services.js';
 import { SITE, GIFT_LANG, GIFT_HOME } from '@/modules/gift/meta.js';
 import { company } from '@/modules/company.js';
@@ -16,6 +16,8 @@ export function getStaticPaths() {
 const { svc } = Astro.props;
 const page = { path: Astro.url.pathname, lang: GIFT_LANG, ...svc.seo };
 const base = SITE.replace(/\/$/, '');
+// Kiểu tints như trang chủ: tắt <svc-underlay> + ảnh nền bg-wrap của layout (tintsChrome) và bg của từng section.
+const sections = tintsSections(svc.sections);
 
 // SEO/GEO — outline + WebPage/BreadcrumbList/HowTo (section quy trình `steps`) từ chính sections của dịch vụ, thêm
 // Service (provider = Organization của Head/Base.astro, cùng @id) để AI Search hiểu đây là 1 dịch vụ cung cấp,
@@ -38,14 +40,14 @@ const jsonLd = [
 ];
 ---
 
-<CoreShop {...chrome} shop={shop} title={page.title} description={page.description} lang={page.lang} jsonLd={jsonLd} image="/images/common/gift-light.webp">
+<CoreShop {...tintsChrome} shop={shop} title={page.title} description={page.description} lang={page.lang} jsonLd={jsonLd} image="/images/common/gift-light.webp">
 	<script src='@/packages/apex/web-board.js'></script>
 	<div>
 		<web-board
 			unlock={import.meta.env.PUBLIC_EXP}
-			variant={JSON.stringify(chrome.variant)}
-		><script type="application/json" is:inline set:html={JSON.stringify(svc.sections)}></script><BoardOutline outline={seo.outline} /></web-board>
+			variant={JSON.stringify(tintsChrome.variant)}
+		><script type="application/json" is:inline set:html={JSON.stringify(sections)}></script><BoardOutline outline={seo.outline} /></web-board>
 	</div>
 
-	<GiftAide theme={chrome.theme} lang={page.lang} />
+	<GiftAide theme={tintsChrome.theme} lang={page.lang} />
 </CoreShop>

@@ -4,7 +4,7 @@
 import Core from '@/layouts/Core.astro';
 import I18nText from '@/components/I18nText.astro';
 import GiftAide from '@/components/Gift/Aide.astro';
-import { chrome } from '@/modules/gift/shop.js';
+import { tintsChrome } from '@/modules/gift/shop.js'; // kiểu tints: không <svc-underlay>, không ảnh nền bg-wrap
 import { policies } from '@/modules/gift/policies.js';
 import { GIFT_LANG, GIFT_HOME } from '@/modules/gift/meta.js';
 import { breadcrumbJsonLd } from '@/packages/apex/tool/board-seo.js';
@@ -30,7 +30,7 @@ const jsonLd = [
 ];
 ---
 
-<Core {...chrome} title={doc.title.vi} description={doc.intro?.vi} lang={GIFT_LANG} jsonLd={jsonLd}>
+<Core {...tintsChrome} title={doc.title.vi} description={doc.intro?.vi} lang={GIFT_LANG} jsonLd={jsonLd}>
 	<article class='mx-auto max-w-3xl px-4 py-16'>
 		<h1 class='text-3xl font-bold text-base-content mb-4'><I18nText text={doc.title} /></h1>
 		{doc.intro && <p class='text-base-content/70 mb-10'><I18nText text={doc.intro} /></p>}
@@ -56,5 +56,5 @@ const jsonLd = [
 		))}
 	</article>
 
-	<GiftAide theme={chrome.theme} lang={GIFT_LANG} />
+	<GiftAide theme={tintsChrome.theme} lang={GIFT_LANG} />
 </Core>

@@ -1,6 +1,6 @@
 // Khung chung của giftoraddk.com (trang chủ, /gift/*, /product/*, /post/*): giao diện (variant), bar, menu, footer — gom
 // trong `chrome` để trang chỉ cần <Core {...chrome}> / <CoreShop {...chrome} shop={shop}>. Kèm cấu hình cửa hàng (`shop`) và
-// khung `tintsChrome` (trang chủ + 3 trang mua sắm). Công ty + mạng xã hội: modules/company.js.
+// khung `tintsChrome` (trang chủ, trang mua sắm, dịch vụ, chính sách). Công ty + mạng xã hội: modules/company.js.
 // Menu và getStaticPaths của từng route tĩnh dùng chung nguồn — luôn khớp nhau:
 // [occasions].astro ↔ CATEGORY_KEYS (services/shared/tags.ts), [budget].astro ↔ budgetTiers,
 // service/[slug].astro ↔ giftServices, policy/[slug].astro ↔ policyDocs.
@@ -118,10 +118,11 @@ export const chrome = {
 	variant,
 };
 
-// Khung kiểu tints — trang chủ '/' và 3 trang mua sắm (/gift/shop, /gift/<danh mục>, /gift/<ngân sách>): chỉ 1 lớp glow
+// Khung kiểu tints — trang chủ '/', 3 trang mua sắm (/gift/shop, /gift/<danh mục>, /gift/<ngân sách>), /gift/service/<slug>,
+// /gift/policy/<slug>: chỉ 1 lớp glow
 // tints [primary, secondary] trên nền base-100 — tắt <svc-underlay> của layout (bg: null) và của footer (footer.bg: null),
 // bỏ ảnh nền bg-wrap (bỏ bgImage khỏi variant → không có --bg-wrap-image, xem services/tools/page.js themeCSS).
-// Underlay theo từng section của <web-board> tắt riêng ở nội dung trang (modules/gift/index.js tintsConfig).
+// Underlay theo từng section của <web-board> tắt riêng ở nội dung trang — bọc sections bằng tintsSections() bên dưới.
 const withoutBgImage = ({ bgImage, ...cfg }) => cfg;
 export const tintsChrome = {
 	...chrome,
@@ -130,3 +131,23 @@ export const tintsChrome = {
 	tints: ['primary', 'secondary'],
 	variant: { ...variant, light: withoutBgImage(variant.light), dark: withoutBgImage(variant.dark) },
 };
+
+// ── Kiểu tints ────────────────────────────────────────────────────────────────
+// Nền trang chỉ còn 1 lớp glow tints của layout (tintsChrome ở trên) — bỏ mọi `bg` (blob <svc-underlay>,
+// web-board/web-box render từ config.bg) của section. `bg` ở card (`each`) hoặc khung con (vd khung slider) đổi thành
+// bề mặt trung tính: base-100 gần đặc + viền mảnh, bo góc theo bg.rounded, không đổ bóng (giống panel svc-node).
+const PANEL = {
+	background: 'color-mix(in oklab, var(--color-base-100) 92%, transparent)',
+	border: '1px solid color-mix(in oklab, var(--color-base-content) 9%, transparent)',
+};
+function tintsConfig(node, isRoot = true) {
+	if (Array.isArray(node)) return node.map((n) => tintsConfig(n, false));
+	if (!node || typeof node !== 'object') return node;
+	const { bg, children, ...rest } = node;
+	const out = children === undefined ? rest : { ...rest, children: tintsConfig(children, false) };
+	// bg ở gốc config không có `each` = nền cả section (recursive-render.js sectionBg) → bỏ hẳn, glow layout xuyên qua.
+	const sectionBg = isRoot && node.each === undefined;
+	if (bg && !sectionBg) out.style = { ...PANEL, borderRadius: bg.rounded ?? '1rem', ...node.style };
+	return out;
+}
+export const tintsSections = (sections) => sections.map((sec) => (sec.config ? { ...sec, config: tintsConfig(sec.config) } : sec));
