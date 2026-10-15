@@ -127,6 +127,18 @@ export const views = [
         stys: tint,
 			},
 
+			// Bài viết mới nhất — cùng khuôn slider với best-seller; chỉ có khi đã đăng bài (xem _fetchLatestPosts).
+			...(latestPosts.length ? [{
+				id: 'giftsLatestPosts',
+				zoom: true, // bấm ảnh → popup ảnh lớn (web-lightbox; nhiều ảnh → slider flipX)
+				data: latestPosts,
+				config: (await import('@/sections/another/posts/latestPosts.js')).config,
+				sort: 4,
+				col: '12',
+				container: true,
+        stys: tint,
+			}] : []),
+
 			// ── Quy trình đặt quà doanh nghiệp → HowTo ─────────────────────────────────
 			{
 				id: 'giftsProcessTimeline',
@@ -142,7 +154,7 @@ export const views = [
 					],
 				}],
 				config: (await import('@/sections/steps/processTimeline.js')).config,
-				sort: 4,
+				sort: 5,
 				col: '12',
 				container: true,
 			},
@@ -151,7 +163,7 @@ export const views = [
 				id: 'giftsModernGalleryStrip',
 				data: (await import('@/sections/sliders/showcaseGalleryStrip.js')).data,
 				config: (await import('@/sections/sliders/showcaseGalleryStrip.js')).config,
-				sort: 5,
+				sort: 6,
 				col: '12',
 				container: true,
 			},
@@ -160,22 +172,11 @@ export const views = [
 				id: 'giftsModernSlideTestimonials',
 				data: (await import('@/sections/sliders/testimonial.js')).data,
 				config: (await import('@/sections/sliders/testimonial.js')).config,
-				sort: 6,
+				sort: 7,
 				col: '12',
 				container: true,
         stys: tint,
 			},
-
-			// Bài viết mới nhất — cùng khuôn slider với best-seller; chỉ có khi đã đăng bài (xem _fetchLatestPosts).
-			...(latestPosts.length ? [{
-				id: 'giftsLatestPosts',
-				zoom: true, // bấm ảnh → popup ảnh lớn (web-lightbox; nhiều ảnh → slider flipX)
-				data: latestPosts,
-				config: (await import('@/sections/another/posts/latestPosts.js')).config,
-				sort: 8,
-				col: '12',
-				container: true,
-			}] : []),
 
 			// ── Câu hỏi thường gặp → FAQPage (cùng nội dung public/data/gift.json của trợ lý) ─────────
 			{
@@ -204,7 +205,7 @@ export const views = [
 				id: 'giftsModernSlideBrands',
 				data: (await import('@/sections/sliders/trustedBrands.js')).data,
 				config: (await import('@/sections/sliders/trustedBrands.js')).config,
-				sort: 7,
+				sort: 8,
 				col: '12',
 				container: true,
 			},

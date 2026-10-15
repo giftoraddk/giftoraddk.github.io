@@ -97,10 +97,7 @@ export const config = {
                             "style": {
                                 "height": "2.5rem",
                                 "flexShrink": "0",
-                                "borderRadius": "1.75rem",
                                 "color": "var(--color-primary)",
-                                "background": "color-mix(in oklab, var(--color-base-100) 70%, transparent)",
-                                "backdropFilter": "blur(25px)",
                                 "padding": "0 1rem",
                                 "display": "flex",
                                 "justifyContent": "center",

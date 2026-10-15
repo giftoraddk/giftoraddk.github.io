@@ -839,7 +839,9 @@ a.pf-src-name:hover { text-decoration: underline; text-underline-offset: 3px; te
 	.pf-feed > li:first-child > .pf-card:has(.pf-card-media) > .pf-card-title { grid-area: title; font-size: clamp(1.1rem, 2.2vw, 1.45rem); line-height: 1.3; letter-spacing: -0.01em; }
 	/* Khung ảnh giữ tỉ lệ 4:3, canh trên — không kéo cao theo khối chữ (ảnh bị cắt + phóng to thêm, mờ với ảnh nhỏ) */
 	.pf-feed > li:first-child > .pf-card:has(.pf-card-media) > .pf-card-media { grid-area: media; aspect-ratio: 4 / 3; align-self: start; }
-	.pf-feed > li:first-child > .pf-card:has(.pf-card-media) > .pf-card-excerpt { grid-area: excerpt; -webkit-line-clamp: 4; line-clamp: 4; font-size: 0.88rem; }
+	/* align-self: start — hàng excerpt là 1fr (kéo cao theo ảnh); nếu stretch, line-clamp chỉ chèn "…" ở dòng 4
+	   nhưng các dòng sau vẫn lộ ra và bị cắt ngang ở đáy hộp */
+	.pf-feed > li:first-child > .pf-card:has(.pf-card-media) > .pf-card-excerpt { grid-area: excerpt; align-self: start; -webkit-line-clamp: 4; line-clamp: 4; font-size: 0.88rem; }
 	.pf-feed > li:first-child > .pf-card:has(.pf-card-media) > .pf-card-foot { grid-area: foot; }
 }
 

@@ -204,8 +204,10 @@ export class WebBox extends LitElement {
         return this[EACH_BUILDERS[this.node.render] || '_eachGrid'](list, template, props, ctx);
     }
 
+    // props.stretch → mọi item cao bằng item cao nhất cùng hàng (card style cần thêm height:'100%', xem .gi-stretch)
     _eachGrid(list, template, props, ctx, style = '') {
-        return html`<div class="gi-wrap" style="${style}">${this._mountAll(list, template, ctx, `gi gi-col-${props.col || 12}`)}</div>`;
+        const cls = `gi gi-col-${props.col || 12}${props.stretch ? ' gi-stretch' : ''}`;
+        return html`<div class="gi-wrap" style="${style}">${this._mountAll(list, template, ctx, cls)}</div>`;
     }
 
     _eachCards(list, template, props, ctx) {

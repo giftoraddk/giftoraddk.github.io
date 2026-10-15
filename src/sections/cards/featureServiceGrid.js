@@ -3,8 +3,12 @@
 // Ported from astro-micro's src/sections/features/modernServiceGrid.js — schema converted from the old
 // tiers/groupCol/makes shape to the recursive node schema via
 // src/packages/apex/tool/legacy-migrate.js. Catalog id: featureServiceGrid (see sections/index.js).
+//
+// Ảnh đã có sẵn chữ tiêu đề → card chỉ là ảnh. Khung giữ đúng tỉ lệ ảnh gốc (1312×816) để không cắt mất chữ;
+// viền mảnh kiểu tints thay cho bóng chồng 3 lớp. `meta.url` → bấm ảnh mở trang dịch vụ (không có url → không link).
 
 import { getStyleOpts } from '../helper.js';
+import { shopPage } from '@/modules/gift/meta.js';
 
 export const hashtags = ["gifts","modern","service","image","overlay","grid","cards"];
 
@@ -16,6 +20,7 @@ export const data = [
         },
         "pics": "/images/common/gift-service.webp",
         "meta": {
+            "url": shopPage.path,
             "label": {
                 "vi": "Dịch vụ",
                 "en": "Service"
@@ -29,6 +34,7 @@ export const data = [
         },
         "pics": "/images/common/gift-custom.webp",
         "meta": {
+            "url": "/gift/service/in-logo",
             "label": {
                 "vi": "Hộp quà",
                 "en": "Gift box"
@@ -42,6 +48,7 @@ export const data = [
         },
         "pics": "/images/common/gift-ship.webp",
         "meta": {
+            "url": "/gift/service/giao-hang-doanh-nghiep",
             "label": {
                 "vi": "Vận chuyển",
                 "en": "Delivery"
@@ -65,7 +72,7 @@ export const data = [
 
 export const config = {
     "style": {
-        "padding": "3rem 0"
+        "padding": "1rem 0 3rem"
     },
     "bg": { ...getStyleOpts({
             "rounded": "0",
@@ -79,12 +86,12 @@ export const config = {
                 "position": "relative",
                 "overflow": "hidden",
                 "borderRadius": "1.75rem",
-                "aspectRatio": "16/9",
-                "boxShadow": "color-mix(in srgb, var(--color-error) 60%, transparent) 5px 5px,\n                      color-mix(in srgb, var(--color-error) 40%, transparent) 10px 10px,\n                      color-mix(in srgb, var(--color-error) 20%, transparent) 15px 15px"
+                "aspectRatio": "1312 / 816",
+                "border": "1px solid color-mix(in oklab, var(--color-base-content) 9%, transparent)"
             },
             "props": {
                 "col": 6,
-                "gap": "1.5rem",
+                "gap": "1.25rem",
                 "anime": "fade-in",
                 "animeQueue": "100ms"
             },
@@ -110,6 +117,9 @@ export const config = {
                                 "height": "100%",
                                 "objectFit": "cover",
                                 "display": "block"
+                            },
+                            "props": {
+                                "org": "$item.meta.url"
                             }
                         }
                     ]

@@ -54,6 +54,10 @@
   position: relative;
 }
 
+/* each props.stretch (cards/grid): wrapper .gi đã giãn theo hàng grid — cho <web-box> con (mặc định inline) lấp đầy nó
+   để style height:'100%' của card có chiều cao xác định → các card cùng hàng cao bằng nhau. Opt-in, không đụng config cũ. */
+.gi-stretch > web-box { display: block; height: 100%; }
+
 /* ── Column Spans — MẶC ĐỊNH (giống web-box-old.css) ─────────────────────────
    Full-width dưới 1024px viewport, đúng span config từ 1024px trở lên. */
 .gi-col-1, .gi-col-2, .gi-col-3, .gi-col-4, .gi-col-5, .gi-col-6,
