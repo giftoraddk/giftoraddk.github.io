@@ -37,9 +37,11 @@ export function parseCsvText(text) {
  * Rows → CSV text. Importable columns export their RAW value (render is display formatting and loses
  * data on the round-trip); only truly read-only columns use render. `meta.*` columns fold back into one
  * "meta" JSON column; headers are storage keys (not translated labels) so a re-import matches.
+ * Every column but passwords — form-only columns (no `width`: pics, caption, promos.scope…) and photor URLs
+ * ('|'-joined string) are data too, and csvWriteCols() imports them back.
  */
 export function recordsToCsv(data, schema) {
-    const allCols = schema.filter(c => c.type !== 'photor' && c.type !== 'password' && c.width);
+    const allCols = schema.filter(c => c.type !== 'password');
     const metaCols  = allCols.filter(c => (c.key || '').startsWith('meta.'));
     const plainCols = allCols.filter(c => !metaCols.includes(c));
     const dateCols  = DATE_FIELDS.map(f => ({ __dateField: f }));
@@ -53,11 +55,13 @@ export function recordsToCsv(data, schema) {
                 return `"${raw.replace(/"/g, '""')}"`;
             }
             if (col.__dateField) return `"${formatDateTime(row[col.__dateField])}"`;
-            const v          = getPath(row, col.key || col.field) ?? '';
+            const val        = getPath(row, col.key || col.field) ?? '';
+            // jsonb/array value (vd users.notes) → JSON text, không phải "[object Object]"
+            const v          = typeof val === 'object' ? JSON.stringify(val) : val;
             const importable = col.write !== false || col.csvWrite;
             const raw = importable
                 ? (col.suffix && v !== '' ? `${v} ${col.suffix}` : v)
-                : (col.render ? col.render(v, row) : v);
+                : (col.render ? col.render(val, row) : v);
             return `"${String(raw).replace(/"/g, '""')}"`;
         }).join(',')
     ).join('\n');
