@@ -9,7 +9,7 @@ import { shopPage } from '@/modules/gift/meta.js';
 import { GIFT_GROUPS } from '@/modules/gift/nav.js';
 
 // GIFT_GROUPS (modules/gift/nav.js) — danh mục, ngân sách, dịch vụ, chính sách: cùng nguồn getStaticPaths() của
-// src/pages/gift/[occasions].astro / [budget].astro / service/[slug].astro / policy/[slug].astro, nên URL luôn khớp.
+// src/pages/gift/[group].astro / service/[slug].astro / policy/[slug].astro, nên URL luôn khớp.
 // Chính sách (nhóm cuối) ít đổi, ưu tiên thấp.
 const GROUP_RANK: [changefreq: string, priority: string][] = [['weekly', '0.8'], ['weekly', '0.7'], ['monthly', '0.6'], ['yearly', '0.3']];
 

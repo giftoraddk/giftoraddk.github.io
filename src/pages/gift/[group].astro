@@ -1,0 +1,44 @@
+---
+// /gift/<danh mục> và /gift/<mức ngân sách> — 1 trang / nhóm, HTML chỉ chứa sản phẩm của nhóm:
+//   danh mục (services/shared/tags.ts CATEGORY_KEYS): sản phẩm gắn tag của danh mục (nguyên văn hoặc theo từ khoá —
+//     categoriesOfTag), nhóm "Danh mục" của bộ lọc là link sang danh mục khác.
+//   mức ngân sách (modules/gift/budget.js budgetTiers): sản phẩm có giá trong khoảng của mức (min <= giá < max), nhóm
+//     "Mức giá" của bộ lọc là link sang các mức khác.
+// Các nhóm còn lại của bộ lọc lọc ngay trên trang. Giao diện: components/Shop/Shop.astro; dữ liệu + SEO/GEO:
+// modules/gift/catalog.js shopPageData.
+//
+// 1 route cho cả 2 loại (không tách [occasions] / [budget]): 2 route động cùng cấp chỉ phân biệt được nhờ getStaticPaths
+// — ở PUBLIC_RENDER=isr (on-demand, astro.config.mjs PUBLIC_RENDER_PAGES) Astro bỏ qua getStaticPaths, route xếp trước
+// nuốt mọi URL /gift/<x> và trả 404 cho nhóm của route kia. Key 2 loại không trùng nhau (vd 'employee' / 'under-200k').
+import CoreShop from '@/layouts/CoreShop.astro';
+import Shop from '@/components/Shop/Shop.astro';
+import GiftAide from '@/components/Gift/Aide.astro';
+import { tintsChrome, shop } from '@/modules/gift/shop.js';
+import { budgetTiers } from '@/modules/gift/budget.js';
+import { shopPageData } from '@/modules/gift/catalog.js';
+import { CATEGORY_KEYS, isCategoryKey } from '@/services/shared/tags';
+
+// getStaticPaths() được compiler tách ra scope riêng, chỉ giữ lại import — dùng thẳng CATEGORY_KEYS / budgetTiers.
+export function getStaticPaths() {
+	return [...CATEGORY_KEYS, ...budgetTiers.map((tier) => tier.key)].map((group) => ({ params: { group } }));
+}
+
+// Nhóm lạ: lúc build nghĩa là dữ liệu/route lệch nhau — báo lỗi build thay vì ra trang rỗng; on-demand
+// (getStaticPaths bị bỏ qua) thì đó là URL lạ → 404.
+const { group: key } = Astro.params;
+const spec = isCategoryKey(key) ? { type: 'cat' as const, key }
+	: budgetTiers.some((t) => t.key === key) ? { type: 'tier' as const, key: key as string }
+	: null;
+if (!spec) {
+	if (!Astro.isPrerendered) return new Response(null, { status: 404 });
+	throw new Error(`[gift/[group]] danh mục / mức ngân sách không tồn tại: ${key}`);
+}
+
+const data = await shopPageData(spec);
+const { page } = data;
+---
+
+<CoreShop {...tintsChrome} shop={shop} title={page.title} description={page.description} lang={page.lang} jsonLd={data.jsonLd} image={page.image}>
+	<Shop data={data} />
+	<GiftAide theme={tintsChrome.theme} lang={page.lang} />
+</CoreShop>

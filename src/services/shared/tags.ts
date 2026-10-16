@@ -1,5 +1,5 @@
 // src/services/shared/tags.ts — danh mục quà tặng doanh nghiệp + bảng màu: NGUỒN DUY NHẤT cho menu, route tĩnh
-// src/pages/gift/[occasions].astro, sitemap.xml/llms.txt và bộ lọc sản phẩm theo tag. Trang nào cần danh mục
+// src/pages/gift/[group].astro, sitemap.xml/llms.txt và bộ lọc sản phẩm theo tag. Trang nào cần danh mục
 // thì import hàm ở đây thay vì tự tính lại (Object.keys, nhãn, biến thể tag...).
 //
 // 5 danh mục — site định vị quà tặng doanh nghiệp B2B (thay hẳn occasions cá nhân cũ: sinh nhật, valentine...).
@@ -33,7 +33,7 @@ export const corporateGiftCategories: Localized<CategoryKey> = {
 };
 
 // SEO/GEO copy riêng từng danh mục (thay vì 1 title/description chung) — mỗi trang trả lời đúng intent tìm
-// kiếm/AI Search của danh mục đó, không trùng lặp nội dung giữa các trang /gift/[occasions].
+// kiếm/AI Search của danh mục đó, không trùng lặp nội dung giữa các trang /gift/[group].
 const CATEGORY_SEO: Record<CategoryKey, { title: string; description: string }> = {
 	employee: {
 		title: 'Quà Tặng Nhân Viên Ý Nghĩa – Gắn Kết Đội Ngũ',
@@ -67,7 +67,7 @@ export const categoryLabel = (key: CategoryKey) => ({
 	en: corporateGiftCategories.en[key],
 });
 
-/** URL trang danh mục — khớp route src/pages/gift/[occasions].astro. */
+/** URL trang danh mục — khớp route src/pages/gift/[group].astro. */
 export const categoryPath = (key: CategoryKey) => `/gift/${key}`;
 
 /** title/description SEO của trang danh mục. */

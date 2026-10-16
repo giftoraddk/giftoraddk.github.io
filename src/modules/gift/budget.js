@@ -1,4 +1,4 @@
-// 4 mức ngân sách — NGUỒN DUY NHẤT cho menu "Theo ngân sách", route tĩnh src/pages/gift/[budget].astro, sitemap.xml,
+// 4 mức ngân sách — NGUỒN DUY NHẤT cho menu "Theo ngân sách", route tĩnh src/pages/gift/[group].astro, sitemap.xml,
 // llms.txt và SiteNavigationElement của trang chủ (modules/gift/nav.js).
 // Bucket rule: min <= price < max (tier cuối max = Infinity, không giới hạn trên).
 // price lấy từ field `pricing` dạng "price~cost~unit" (xem src/sections/another/products/bold.js).
@@ -46,5 +46,5 @@ export const budgetTiers = [
 	},
 ];
 
-/** URL trang mức ngân sách — khớp route src/pages/gift/[budget].astro. */
+/** URL trang mức ngân sách — khớp route src/pages/gift/[group].astro. */
 export const budgetPath = (key) => `/gift/${key}`;

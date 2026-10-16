@@ -2,7 +2,7 @@
 // trong `chrome` để trang chỉ cần <Core {...chrome}> / <CoreShop {...chrome} shop={shop}>. Kèm cấu hình cửa hàng (`shop`) và
 // khung `tintsChrome` (trang chủ, trang mua sắm, dịch vụ, chính sách). Công ty + mạng xã hội: modules/company.js.
 // Menu và getStaticPaths của từng route tĩnh dùng chung nguồn — luôn khớp nhau:
-// [occasions].astro ↔ CATEGORY_KEYS (services/shared/tags.ts), [budget].astro ↔ budgetTiers,
+// [group].astro ↔ CATEGORY_KEYS (services/shared/tags.ts) + budgetTiers,
 // service/[slug].astro ↔ giftServices, policy/[slug].astro ↔ policyDocs.
 import { categoryMenuItems } from '@/services/shared/tags';
 import { company, companyBar, companyContact, companySocials } from '@/modules/company.js';
