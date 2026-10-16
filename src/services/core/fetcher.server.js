@@ -23,9 +23,13 @@ async function _get(path) {
 
 const _isActive = (r) => r.deleted_at == null && r.status === 'active';
 
-// Nhiều trang trong CÙNG 1 lần build gọi cùng collection → chia sẻ đúng 1 fetch. Chỉ khi build: `astro dev` giữ module
-// suốt vòng đời server — memo ở đây sẽ đóng băng dữ liệu (thêm/sửa sản phẩm không hiện cho tới khi restart).
-const _buildCache = new Map();
+// Nhiều trang gọi cùng collection trong thời gian ngắn (1 lần build; vài request ISR liền nhau) → chia sẻ 1 fetch.
+// Memo CÓ HẠN (MEMO_TTL): function ISR trên Vercel giữ module suốt vòng đời instance "ấm" — memo vĩnh viễn sẽ đóng
+// băng dữ liệu (bài/sản phẩm mới không hiện cho tới khi instance chết). Fetch lỗi không được memo (thử lại lần sau).
+// `astro dev` bỏ qua memo hoàn toàn.
+const MEMO_TTL = 60_000;
+/** @type {Map<string, { at: number, rows: Promise<object[]> }>} */
+const _memo = new Map();
 
 /**
  * Tất cả row của 1 table.
@@ -37,16 +41,20 @@ export function fetchCollection(table, opts = {}) {
     const activeOnly = opts.activeOnly ?? true;
     if (import.meta.env.DEV) return _fetchAll(table, activeOnly);
     const key = `${table}::${activeOnly}`;
-    if (!_buildCache.has(key)) _buildCache.set(key, _fetchAll(table, activeOnly));
-    return _buildCache.get(key);
+    const hit = _memo.get(key);
+    if (hit && Date.now() - hit.at < MEMO_TTL) return hit.rows;
+    const entry = { at: Date.now(), rows: _fetchAll(table, activeOnly, () => _memo.get(key) === entry && _memo.delete(key)) };
+    _memo.set(key, entry);
+    return entry.rows;
 }
 
-async function _fetchAll(table, activeOnly) {
+async function _fetchAll(table, activeOnly, onFail) {
     try {
         const rows = await _get(activeOnly ? `${table}?status=active` : table);
         return Array.isArray(rows) ? rows : [];
     } catch (e) {
         console.warn(`[fetcher.server] fetchCollection("${table}") lỗi:`, e?.message);
+        onFail?.();
         return [];
     }
 }

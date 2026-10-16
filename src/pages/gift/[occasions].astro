@@ -16,9 +16,13 @@ export function getStaticPaths() {
 }
 
 // Astro.params là `string | undefined` — isCategoryKey thu hẹp về CategoryKey (getStaticPaths chỉ sinh các key
-// này, nên nhánh throw chỉ chạy khi dữ liệu/route lệch nhau — báo lỗi build thay vì ra trang rỗng).
+// này, nên nhánh throw chỉ chạy khi dữ liệu/route lệch nhau — báo lỗi build thay vì ra trang rỗng). On-demand
+// (PUBLIC_RENDER=isr, getStaticPaths bị bỏ qua) thì key lạ là URL lạ → 404.
 const { occasions: key } = Astro.params;
-if (!isCategoryKey(key)) throw new Error(`[gift/[occasions]] danh mục không tồn tại: ${key}`);
+if (!isCategoryKey(key)) {
+	if (!Astro.isPrerendered) return new Response(null, { status: 404 });
+	throw new Error(`[gift/[occasions]] danh mục không tồn tại: ${key}`);
+}
 
 const data = await shopPageData({ type: 'cat', key });
 const { page } = data;

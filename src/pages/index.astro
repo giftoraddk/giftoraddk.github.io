@@ -8,13 +8,14 @@
 import Core from '@/layouts/Core.astro';
 import BoardOutline from '@/components/Seo/BoardOutline.astro';
 import GiftAide from '@/components/Gift/Aide.astro';
-import { views } from '@/modules/gift/index.js';
+import { getViews } from '@/modules/gift/index.js';
 import { tintsChrome } from '@/modules/gift/shop.js';
 import { page } from '@/modules/gift/meta.js';
 import { GIFT_GROUPS, siteNavLd } from '@/modules/gift/nav.js';
 import { company, companyHours, companyPostalAddress } from '@/modules/company.js';
 import { boardPageSeo } from '@/packages/apex/tool/board-seo.js';
 
+const views = await getViews();
 const currentView = views.find((v) => v.href === '/') ?? views[0];
 
 // SEO/GEO — web-board chỉ render ở client; outline + JSON-LD dựng từ CHÍNH sections để crawler không chạy JS đọc được

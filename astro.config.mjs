@@ -26,6 +26,25 @@ const PUBLIC_RENDER_ROUTES = [
 	'post/tag/[tag].astro',
 ];
 
+// Trang đọc posts/products (fetchCollection) mà CÙNG 1 file chạy được cả 2 chế độ (không dùng props của getStaticPaths)
+// — PUBLIC_RENDER=isr chỉ cần bật on-demand qua hook astro:route:setup, không cần biến thể .isr.astro. Thiếu các trang
+// này thì trang chủ / danh sách / shop / sitemap đứng yên ở dữ liệu lúc build: bài/sản phẩm mới không có link nào dẫn tới.
+// Trang có getStaticPaths ở đây chỉ dùng nó để liệt kê params — on-demand thì Astro bỏ qua nó, trang tự trả 404 với
+// params lạ (Astro.isPrerendered).
+const PUBLIC_RENDER_PAGES = [
+	'index.astro',
+	'product/index.astro',
+	'product/tag/index.astro',
+	'post/index.astro',
+	'post/tag/index.astro',
+	'gift/shop.astro',
+	'gift/[budget].astro',
+	'gift/[occasions].astro',
+	'sitemap.xml.ts',
+	'rss.xml.ts',
+	'llms.txt.ts',
+];
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pagesDir = path.join(__dirname, 'src/pages');
 
@@ -65,6 +84,11 @@ function renderModeIntegration() {
 
 				process.once('exit', restore);
 				process.once('SIGINT', () => { restore(); process.exit(1); });
+			},
+			/** @param {{ route: import('astro').RouteOptions }} opts */
+			'astro:route:setup': ({ route }) => {
+				if (PUBLIC_RENDER !== 'isr') return;
+				if (PUBLIC_RENDER_PAGES.some((rel) => route.component === `src/pages/${rel}`)) route.prerender = false;
 			},
 			'astro:build:done': restore,
 		},

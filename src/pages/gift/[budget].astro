@@ -14,9 +14,13 @@ export function getStaticPaths() {
 	return budgetTiers.map((tier) => ({ params: { budget: tier.key } }));
 }
 
-// Không tìm thấy mức nghĩa là dữ liệu/route lệch nhau — báo lỗi build thay vì ra trang rỗng/crash khó lần.
+// Không tìm thấy mức: lúc build nghĩa là dữ liệu/route lệch nhau — báo lỗi build thay vì ra trang rỗng/crash khó lần;
+// on-demand (PUBLIC_RENDER=isr, getStaticPaths bị bỏ qua) thì đó là URL lạ → 404.
 const key = Astro.params.budget;
-if (!budgetTiers.some((t) => t.key === key)) throw new Error(`[gift/[budget]] mức ngân sách không tồn tại: ${key}`);
+if (!budgetTiers.some((t) => t.key === key)) {
+	if (!Astro.isPrerendered) return new Response(null, { status: 404 });
+	throw new Error(`[gift/[budget]] mức ngân sách không tồn tại: ${key}`);
+}
 
 const data = await shopPageData({ type: 'tier', key });
 const { page } = data;
