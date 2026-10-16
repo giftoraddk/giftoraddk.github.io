@@ -120,12 +120,16 @@
 	height: 42px;
 	margin-bottom: 4px;
 	padding: 0 12px;
+	border: 1px solid transparent;
 	border-radius: 12px;
 	background: var(--gs-surface);
 	color: var(--gs-muted);
+	transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
 }
-.gs-search:focus-within { box-shadow: 0 0 0 2px var(--gs-ring); }
+/* Focus vẽ ở khung (cùng kiểu ô khoảng giá): viền màu nhấn + quầng mềm — input bên trong không tự vẽ vòng nữa. */
+.gs-search:focus-within { border-color: var(--gs-ring); background: var(--color-base-100); box-shadow: 0 0 0 3px var(--gs-soft-a); color: var(--gs-a); }
 .gs-search input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: none; color: var(--gs-ink); font: inherit; font-size: 0.9rem; }
+.gs-search input::-webkit-search-cancel-button { cursor: pointer; }
 
 .gs-group { border-bottom: 1px solid var(--gs-line); padding: 4px 0 12px; }
 .gs-group > summary {
@@ -219,9 +223,13 @@ details[open] > summary .gs-chev { transform: rotate(180deg); }
 	border: 1px solid var(--gs-line-strong);
 	border-radius: 10px;
 	background: var(--color-base-100);
+	transition: border-color 0.15s, box-shadow 0.15s;
 }
-.gs-range-inputs label:focus-within { border-color: var(--gs-ring); box-shadow: 0 0 0 2px var(--gs-soft-a); }
+.gs-range-inputs label:focus-within { border-color: var(--gs-ring); box-shadow: 0 0 0 3px var(--gs-soft-a); }
 .gs-range-inputs input { width: 100%; min-width: 0; border: 0; outline: 0; background: none; color: var(--gs-ink); font: inherit; font-size: 0.88rem; text-align: right; }
+/* Ô nhập nằm trong khung đã có focus riêng (:focus-within ở trên) — tắt vòng chung `.gs :focus-visible`, kẻo ra 2 vòng lồng nhau. */
+.gs-search input:focus-visible,
+.gs-range-inputs input:focus-visible { box-shadow: none; border-radius: 0; }
 .gs-cur { margin-left: 2px; font-size: 0.82rem; color: var(--gs-muted); }
 
 .gs-slider { position: relative; height: 26px; margin: 12px 8px 0; }

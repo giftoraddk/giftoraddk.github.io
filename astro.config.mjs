@@ -153,8 +153,10 @@ export default defineConfig({
 	},
 	// Chỉ route `export const prerender = false` (các route ISR do renderModeIntegration chép vào) chạy qua adapter —
 	// mọi route khác vẫn build tĩnh. Adapter chỉ gắn ở chế độ ISR nên `pnpm build` mặc định không nạp nó.
-	// expiration 1 giờ — dữ liệu sản phẩm / bài viết cập nhật trong vòng 1 giờ.
-	adapter: PUBLIC_RENDER === 'isr' ? vercel({ isr: { expiration: 60 * 60 } }) : undefined,
+	// expiration 60 giây — sửa/thêm sản phẩm, bài viết hiện trên site sau ~1 phút. Vercel ISR là stale-while-revalidate:
+	// request đầu tiên sau khi hết hạn vẫn nhận bản cũ (tức thì) và kích hoạt render lại ở nền, request sau nhận bản mới —
+	// nên mỗi trang chỉ chạy function tối đa ~1 lần / phút dù traffic nhiều cỡ nào (1 giờ cũ quá chậm cho người quản trị).
+	adapter: PUBLIC_RENDER === 'isr' ? vercel({ isr: { expiration: 60 } }) : undefined,
 	// Uncomment the line below if you want to deploy to a subdirectory like /mvp/
 	// base: '/mvp/',
 	server: {

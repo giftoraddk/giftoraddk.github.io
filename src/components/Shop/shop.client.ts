@@ -252,7 +252,8 @@ export function initShop(root: HTMLElement) {
 
 	// ── Controls ← state ──
 	function syncControls() {
-		if (qInput && qInput.value !== state.q) qInput.value = state.q;
+		// So bản đã trim (state.q luôn trim) — so nguyên văn thì đang gõ "quà " sẽ bị ghi đè thành "quà", nuốt mất dấu cách.
+		if (qInput && qInput.value.trim() !== state.q) qInput.value = state.q;
 		for (const c of checks) c.checked = state.sets[c.dataset.group as Group].has(c.value);
 		for (const b of trends) b.setAttribute('aria-pressed', String(state.sets.tag.has(b.dataset.trend!)));
 		for (const b of sortBtns) b.setAttribute('aria-pressed', String(b.dataset.sort === state.sort));

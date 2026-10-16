@@ -1,0 +1,369 @@
+---
+// 404 dùng chung mọi site/nhánh (không logo, không menu, không đụng modules/ riêng của site) — Astro tự dùng trang này cho
+// URL không khớp route: build tĩnh xuất 404.html (Vercel tự trả), chế độ ISR (PUBLIC_RENDER=isr) cũng render trang này
+// cho route on-demand trả 404 (vd /gift/<nhóm lạ>). Màu lấy từ token theme (styles/themes/default.css) nên theo đúng
+// palette + sáng/tối của site; ngôn ngữ: song ngữ I18nText, chọn theo cookie ngôn ngữ (cùng cookie BtnLang.astro / Core)
+// hoặc site.defaultLang. Đường dẫn bị lỗi điền ở client (trang tĩnh không biết URL thật lúc build).
+import '../styles/themes/default.css';
+import Head from '@/components/Head/Base.astro';
+import I18nText from '@/components/I18nText.astro';
+import { COOKIE_CONFIG } from '@/services/core/cookier.js';
+import { site } from '@/services/tools/site';
+import { pickLang } from '@/services/tools/util';
+---
+
+<!doctype html>
+<html lang={site.defaultLang} data-theme="light">
+	<head>
+		<Head title={pickLang({ en: 'Page not found', vi: 'Không tìm thấy trang' })} description={pickLang({ en: 'The page you are looking for does not exist or has moved.', vi: 'Trang bạn tìm không tồn tại hoặc đã được chuyển đi.' })} noindex />
+		<!-- Theme/ngôn ngữ đã lưu áp trước khi vẽ (giống Core.astro) — không nháy sáng/tối, không nháy sai ngôn ngữ. -->
+		<script define:vars={{ themeCookie: COOKIE_CONFIG.THEME, langCookie: COOKIE_CONFIG.LANGUAGE }} is:inline>
+			(function () {
+				const read = (name) => {
+					const m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+					return m ? decodeURIComponent(m[1]) : null;
+				};
+				const t = read(themeCookie);
+				if (t) document.documentElement.setAttribute('data-theme', t);
+				const l = read(langCookie);
+				if (l) document.documentElement.setAttribute('lang', l);
+			})();
+		</script>
+	</head>
+	<body class="nf">
+		<div class="nf-bg" aria-hidden="true">
+			<span class="nf-blob nf-blob-a"></span>
+			<span class="nf-blob nf-blob-b"></span>
+			<span class="nf-blob nf-blob-c"></span>
+			<span class="nf-grid"></span>
+		</div>
+
+		<div class="nf-lang" role="group" aria-label="Language">
+			<button type="button" data-lang="vi" aria-label="Tiếng Việt">VI</button>
+			<button type="button" data-lang="en" aria-label="English">EN</button>
+		</div>
+
+		<main class="nf-main">
+			<p class="nf-eyebrow nf-in" style="--d: 0ms">
+				<span class="nf-dot"></span>
+				<I18nText text={{ en: 'Error 404', vi: 'Lỗi 404' }} />
+			</p>
+
+			<h1 class="nf-code nf-in" style="--d: 80ms" aria-label="404">
+				<span class="nf-digit" style="--f: 0s">4</span>
+				<span class="nf-zero" aria-hidden="true">
+					<span class="nf-ring"></span>
+					<span class="nf-orbit"><span class="nf-moon"></span></span>
+					<span class="nf-core"></span>
+				</span>
+				<span class="nf-digit" style="--f: -1.6s">4</span>
+			</h1>
+
+			<h2 class="nf-title nf-in" style="--d: 160ms">
+				<I18nText text={{ en: 'This page drifted off into space', vi: 'Trang này đã trôi lạc mất rồi' }} />
+			</h2>
+			<p class="nf-desc nf-in" style="--d: 220ms">
+				<I18nText text={{
+					en: 'The link may be broken, or the page has been moved or removed. Let’s get you back on track.',
+					vi: 'Có thể đường dẫn bị sai, hoặc trang đã được chuyển đi hay gỡ bỏ. Cùng quay lại nơi quen thuộc nhé.',
+				}} />
+			</p>
+
+			<code class="nf-path nf-in" style="--d: 280ms" data-path hidden></code>
+
+			<div class="nf-actions nf-in" style="--d: 340ms">
+				<a class="nf-btn nf-btn-primary" href="/">
+					<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 3.2 2.5 11h2.7v9.3h5.3v-6h3v6h5.3V11h2.7L12 3.2Z" /></svg>
+					<I18nText text={{ en: 'Back to home', vi: 'Về trang chủ' }} />
+				</a>
+				<button type="button" class="nf-btn nf-btn-ghost" data-back hidden>
+					<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20v-2Z" /></svg>
+					<I18nText text={{ en: 'Go back', vi: 'Quay lại' }} />
+				</button>
+			</div>
+		</main>
+
+		<script define:vars={{ langCookie: COOKIE_CONFIG.LANGUAGE, defaultLang: site.defaultLang }} is:inline>
+			(function () {
+				const root = document.documentElement;
+
+				// URL bị lỗi — trang tĩnh không biết lúc build, điền từ location (bỏ qua khi chính là /404).
+				const path = decodeURI(location.pathname + location.search);
+				const pathEl = document.querySelector('[data-path]');
+				if (pathEl && !/^\/404(\.html)?\/?$/.test(location.pathname)) {
+					pathEl.textContent = path;
+					pathEl.hidden = false;
+				}
+
+				// "Quay lại" chỉ hiện khi có trang trước cùng site để quay về.
+				const back = document.querySelector('[data-back]');
+				let sameOrigin = false;
+				try { sameOrigin = !!document.referrer && new URL(document.referrer).origin === location.origin; } catch (_) {}
+				if (back && (sameOrigin || history.length > 1)) {
+					back.hidden = false;
+					back.addEventListener('click', () => history.back());
+				}
+
+				// Nút VI/EN — cùng cookie với BtnLang.astro nên chọn ở đây cũng giữ khi về trang chủ.
+				const btns = document.querySelectorAll('.nf-lang [data-lang]');
+				const sync = (l) => btns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === l)));
+				sync(root.getAttribute('lang') || defaultLang);
+				btns.forEach((b) => b.addEventListener('click', () => {
+					const l = b.dataset.lang;
+					root.setAttribute('lang', l);
+					document.cookie = langCookie + '=' + encodeURIComponent(l) + '; path=/; max-age=31536000; samesite=lax';
+					sync(l);
+				}));
+			})();
+		</script>
+
+		<style is:global>
+			.nf {
+				--nf-a: var(--color-primary);
+				--nf-b: var(--color-secondary);
+				--nf-c: var(--color-accent);
+				--nf-ink: var(--color-base-content);
+				--nf-muted: color-mix(in oklab, var(--color-base-content) 62%, transparent);
+				--nf-line: color-mix(in oklab, var(--color-base-content) 10%, transparent);
+				--nf-glass: color-mix(in oklab, var(--color-base-100) 72%, transparent);
+				position: relative;
+				min-height: 100vh;
+				min-height: 100dvh;
+				margin: 0;
+				display: grid;
+				place-items: center;
+				background: var(--color-base-100);
+				color: var(--nf-ink);
+				font-family: inherit;
+			}
+
+			/* ── Nền: 3 quầng màu theme trôi chậm + lưới mờ dần ra mép ── */
+			.nf-bg { position: fixed; inset: 0; overflow: hidden; pointer-events: none; }
+			.nf-blob {
+				position: absolute;
+				width: 46vmax;
+				aspect-ratio: 1;
+				border-radius: 50%;
+				filter: blur(70px);
+				opacity: 0.38;
+				animation: nf-drift 18s ease-in-out infinite alternate;
+			}
+			.nf-blob-a { top: -18vmax; left: -12vmax; background: var(--nf-a); }
+			.nf-blob-b { bottom: -22vmax; right: -14vmax; background: var(--nf-b); animation-duration: 22s; animation-delay: -6s; }
+			.nf-blob-c { top: 30%; left: 55%; width: 26vmax; background: var(--nf-c); opacity: 0.26; animation-duration: 26s; animation-delay: -12s; }
+			[data-theme='dark'] .nf-blob { opacity: 0.24; }
+			.nf-grid {
+				position: absolute;
+				inset: 0;
+				background-image:
+					linear-gradient(var(--nf-line) 1px, transparent 1px),
+					linear-gradient(90deg, var(--nf-line) 1px, transparent 1px);
+				background-size: 44px 44px;
+				mask-image: radial-gradient(ellipse at center, #000 10%, transparent 68%);
+				-webkit-mask-image: radial-gradient(ellipse at center, #000 10%, transparent 68%);
+			}
+
+			/* ── Nút ngôn ngữ ── */
+			.nf-lang {
+				position: absolute;
+				top: 16px;
+				right: 16px;
+				z-index: 2;
+				display: flex;
+				gap: 2px;
+				padding: 3px;
+				border: 1px solid var(--nf-line);
+				border-radius: 999px;
+				background: var(--nf-glass);
+				backdrop-filter: blur(10px);
+			}
+			.nf-lang button {
+				padding: 6px 11px;
+				border: 0;
+				border-radius: 999px;
+				background: none;
+				color: var(--nf-muted);
+				font: inherit;
+				font-size: 11px;
+				font-weight: 700;
+				letter-spacing: 0.04em;
+				cursor: pointer;
+				transition: background-color 0.2s, color 0.2s;
+			}
+			.nf-lang button[aria-pressed='true'] { background: var(--nf-ink); color: var(--color-base-100); }
+
+			/* ── Nội dung ── */
+			.nf-main {
+				position: relative;
+				z-index: 1;
+				width: min(100% - 32px, 620px);
+				padding: 72px 0 48px;
+				text-align: center;
+			}
+			.nf-in { opacity: 0; animation: nf-rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) var(--d, 0ms) forwards; }
+
+			.nf-eyebrow {
+				display: inline-flex;
+				align-items: center;
+				gap: 8px;
+				margin: 0 0 8px;
+				padding: 6px 14px;
+				border: 1px solid var(--nf-line);
+				border-radius: 999px;
+				background: var(--nf-glass);
+				backdrop-filter: blur(10px);
+				color: var(--nf-muted);
+				font-size: 0.8rem;
+				font-weight: 600;
+				letter-spacing: 0.06em;
+				text-transform: uppercase;
+			}
+			.nf-dot {
+				width: 7px;
+				height: 7px;
+				border-radius: 50%;
+				background: var(--nf-a);
+				box-shadow: 0 0 0 0 color-mix(in oklab, var(--nf-a) 60%, transparent);
+				animation: nf-ping 2s ease-out infinite;
+			}
+
+			/* 404: hai số 4 chữ gradient trôi lệch nhịp, số 0 là vòng tròn có "mặt trăng" quay quanh. */
+			.nf-code {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				gap: clamp(4px, 2vw, 14px);
+				margin: 0;
+				font-size: clamp(6.5rem, 26vw, 11.5rem);
+				font-weight: 800;
+				line-height: 1;
+				letter-spacing: -0.04em;
+			}
+			.nf-digit {
+				display: inline-block;
+				background: linear-gradient(120deg, var(--nf-a), var(--nf-b), var(--nf-c), var(--nf-a));
+				background-size: 300% 100%;
+				-webkit-background-clip: text;
+				background-clip: text;
+				color: transparent;
+				animation: nf-float 3.2s ease-in-out var(--f, 0s) infinite, nf-shine 8s linear infinite;
+			}
+			.nf-zero {
+				position: relative;
+				display: inline-block;
+				width: 0.7em;
+				height: 0.9em;
+				animation: nf-float 3.2s ease-in-out -0.8s infinite;
+			}
+			.nf-ring {
+				position: absolute;
+				inset: 0.06em 0.02em;
+				border-radius: 50%;
+				background: conic-gradient(from 0deg, var(--nf-a), var(--nf-b), var(--nf-c), var(--nf-a));
+				-webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 0.13em), #000 calc(100% - 0.12em));
+				mask: radial-gradient(farthest-side, transparent calc(100% - 0.13em), #000 calc(100% - 0.12em));
+				animation: nf-spin 6s linear infinite;
+			}
+			.nf-core {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				width: 0.16em;
+				aspect-ratio: 1;
+				border-radius: 50%;
+				background: radial-gradient(circle at 30% 30%, color-mix(in oklab, var(--nf-b) 40%, white), var(--nf-b));
+				box-shadow: 0 0 0.25em color-mix(in oklab, var(--nf-b) 55%, transparent);
+				transform: translate(-50%, -50%);
+				animation: nf-pulse 3s ease-in-out infinite;
+			}
+			.nf-orbit {
+				position: absolute;
+				inset: -0.04em -0.08em;
+				border-radius: 50%;
+				animation: nf-spin 4.5s linear infinite reverse;
+			}
+			.nf-moon {
+				position: absolute;
+				top: 0;
+				left: 50%;
+				width: 0.1em;
+				aspect-ratio: 1;
+				border-radius: 50%;
+				background: var(--nf-c);
+				box-shadow: 0 0 0.18em var(--nf-c);
+				transform: translate(-50%, -50%);
+			}
+
+			.nf-title {
+				margin: 18px 0 10px;
+				font-size: clamp(1.35rem, 4.4vw, 1.9rem);
+				font-weight: 700;
+				line-height: 1.25;
+				letter-spacing: -0.01em;
+			}
+			.nf-desc { margin: 0 auto; max-width: 30rem; color: var(--nf-muted); font-size: 1rem; line-height: 1.6; }
+
+			.nf-path {
+				display: inline-block;
+				max-width: 100%;
+				margin-top: 18px;
+				padding: 6px 12px;
+				overflow: hidden;
+				border: 1px dashed var(--nf-line);
+				border-radius: 8px;
+				background: var(--nf-glass);
+				color: var(--nf-muted);
+				font-size: 0.82rem;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+			.nf-path[hidden] { display: none; }
+
+			.nf-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 28px; }
+			.nf-btn {
+				display: inline-flex;
+				align-items: center;
+				gap: 8px;
+				height: 46px;
+				padding: 0 22px;
+				border-radius: 999px;
+				font: inherit;
+				font-size: 0.95rem;
+				font-weight: 600;
+				text-decoration: none;
+				cursor: pointer;
+				transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s, border-color 0.2s;
+			}
+			.nf-btn[hidden] { display: none; }
+			.nf-btn-primary {
+				border: 0;
+				background: linear-gradient(120deg, var(--nf-a), var(--nf-b));
+				color: #fff;
+				box-shadow: 0 10px 28px -10px color-mix(in oklab, var(--nf-b) 70%, transparent);
+			}
+			.nf-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 16px 34px -12px color-mix(in oklab, var(--nf-b) 80%, transparent); }
+			.nf-btn-ghost { border: 1px solid var(--nf-line); background: var(--nf-glass); color: var(--nf-ink); backdrop-filter: blur(10px); }
+			.nf-btn-ghost:hover { transform: translateY(-2px); border-color: color-mix(in oklab, var(--nf-ink) 22%, transparent); }
+			.nf-btn:active { transform: translateY(0); }
+			.nf-btn:focus-visible,
+			.nf-lang button:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in oklab, var(--nf-a) 45%, transparent); }
+
+			@keyframes nf-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+			@keyframes nf-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-0.06em); } }
+			@keyframes nf-shine { to { background-position: 300% 0; } }
+			@keyframes nf-spin { to { transform: rotate(360deg); } }
+			@keyframes nf-pulse { 0%, 100% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.25); } }
+			@keyframes nf-ping { 0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--nf-a) 55%, transparent); } 100% { box-shadow: 0 0 0 9px transparent; } }
+			@keyframes nf-drift {
+				0% { transform: translate(0, 0) scale(1); }
+				50% { transform: translate(6vmax, 4vmax) scale(1.08); }
+				100% { transform: translate(-4vmax, 7vmax) scale(0.95); }
+			}
+
+			@media (prefers-reduced-motion: reduce) {
+				.nf *, .nf *::before, .nf *::after { animation: none !important; transition: none !important; }
+				.nf-in { opacity: 1; }
+			}
+		</style>
+	</body>
+</html>
