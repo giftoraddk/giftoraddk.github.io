@@ -36,25 +36,45 @@ import styles from './css/svc-learn.css?inline'
 const productSvc = createService('products', '', serverOf('products'))
 
 const BATCH = 50 // tối đa mục mỗi lần gọi /v1/hubs/items (Worker nhận ≤ 200)
-// tối đa byte JSON mỗi lần gọi — dưới xa HUBS_ITEMS_BODY_MAX (2 MB, worker lib/body.ts): nội dung sản phẩm dài cỡ nào
-// cũng chia nhỏ lượt thay vì bị 413 "Body too large"
+// tối đa byte JSON mỗi lần gọi — dưới xa HUBS_ITEMS_BODY_MAX (2 MB, worker lib/body.ts), phòng dữ liệu bất thường
 const BATCH_BYTES = 512 * 1024
-const DESC_MAX = 20_000 // ký tự mô tả tối đa của 1 mục — đủ cho bài dài, chặn nội dung dán nhầm (base64…) làm phình lượt
+// 1 sản phẩm = 1 đoạn: Worker cắt mỗi mục thành đoạn ~900 ký tự (vectorize.ts CHUNK_CHARS) và tìm kiếm trả về TỪNG đoạn
+// — gọn trong 1 đoạn thì trợ lý luôn thấy mô tả + giá + link cùng lúc, đọc nhanh, embedding rẻ.
+const DESC_MAX = 850
+const BODY_MIN = 280 // phần mô tả luôn giữ tối thiểu chừng này dù dòng giá/khuyến mãi dài
 const SOURCE_PRODUCTS = 'sync:products' // tên lượt đồng bộ — `prune` chỉ đụng các mục của nó, không đụng CSV / API khác
 // Kho chung của nền tảng: sản phẩm thuộc ngành thương mại điện tử, phòng sản phẩm (cùng scopeOf của know-sync.js) —
 // trợ lý tư vấn ngành khác không trả lời từ danh mục của shop. Kho riêng 1 site: mọi ngành ('').
 const PLATFORM_PRODUCT_SCOPE = { sector: 'ecommerce', fn: 'product' }
 
-const plain = (html) => String(html ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+// Hình ảnh không phải kiến thức: bỏ thẻ <img>/<picture>/<svg>, ảnh markdown, data URI (data:…;base64,…) và chuỗi
+// base64 dài trần (≥ 200 ký tự liền — không từ / link thường nào dài vậy) — vừa nặng body vừa làm bẩn chỉ mục + vector.
+const noImages = (s) => String(s ?? '')
+    .replace(/<svg[\s\S]*?<\/svg>/gi, ' ')
+    .replace(/<(?:img|picture|source)\b[^>]*>/gi, ' ')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+    .replace(/data:[\w.+-]+\/[\w.+-]+(?:;[\w-]+=[\w.-]+)*;base64,[A-Za-z0-9+/=]*/gi, ' ')
+    .replace(/[A-Za-z0-9+/]{200,}={0,2}/g, ' ')
+const plain = (html) => noImages(html).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+/** Cắt `text` ≤ `max` ký tự ở ranh giới câu (nếu câu cuối không quá ngắn), không thì ở ranh giới từ, kèm "…". */
+const clip = (text, max) => {
+    if (text.length <= max) return text
+    const cut = text.slice(0, max - 1)
+    const end = Math.max(...['. ', '! ', '? ', '… ', '; '].map((m) => cut.lastIndexOf(m)))
+    if (end >= max * 0.6) return cut.slice(0, end + 1)
+    const sp = cut.lastIndexOf(' ')
+    return `${(sp > max * 0.6 ? cut.slice(0, sp) : cut).replace(/[\s,;:–-]+$/, '')}…`
+}
 const metaOf = (m) => {
     if (m && typeof m === 'object') return m
     try { return typeof m === 'string' && m.trim().startsWith('{') ? JSON.parse(m) : {} } catch { return {} }
 }
 
 /**
- * 1 sản phẩm → 1 mục kiến thức. Chỉ GIÁ BÁN (phần đầu của pricing "giá~vốn~đơn vị") — giá vốn không bao giờ rời admin,
- * kể cả vào kho tri thức (không trông vào redactPricing của Worker search.ts).
- * Câu ngắn, tự đủ nghĩa (trợ lý trích nguyên câu); dòng "Link:" cuối = trang sản phẩm.
+ * 1 sản phẩm → 1 mục kiến thức gọn trong 1 đoạn (DESC_MAX): mô tả ngắn (description, rồi phần đầu content nếu còn chỗ —
+ * content trùng description thì bỏ) + dòng dữ kiện LUÔN đủ (giá, khuyến mãi, tình trạng, link) — chỉ phần mô tả bị cắt.
+ * Chỉ GIÁ BÁN (phần đầu của pricing "giá~vốn~đơn vị") — giá vốn không bao giờ rời admin, kể cả vào kho tri thức
+ * (không trông vào redactPricing của Worker search.ts).
  */
 function productItem(p, base) {
     const [rawPrice = '', , rawUnit = ''] = String(p.pricing ?? '').split('~')
@@ -63,19 +83,20 @@ function productItem(p, base) {
     const meta = metaOf(p.meta)
     const stock = meta.stock ?? p.quantity
     const url = base ? `${base}/product/${productSlug(p)}/` : ''
-    const description = [
-        String(p.description ?? '').trim(),
-        plain(p.content),
-        `Giá: ${price ? `${price}${unit ? ` / ${unit}` : ''}` : 'Liên hệ để nhận báo giá theo số lượng'}.`,
-        p.promo ? `Khuyến mãi: ${plain(p.promo)}.` : '',
+    const facts = [
+        `Giá: ${price ? `${price}${unit ? ` / ${unit}` : ''}` : 'liên hệ để nhận báo giá theo số lượng'}.`,
+        p.promo ? `Khuyến mãi: ${clip(plain(p.promo), 160)}` : '',
         stock !== undefined && stock !== null && stock !== '' && Number(stock) === 0 ? 'Tình trạng: tạm hết hàng.' : '',
         url ? `Link: ${url}` : '',
-    ].filter(Boolean).join('\n\n')
+    ].filter(Boolean).join('\n')
+    const desc = plain(p.description)
+    const content = plain(p.content)
+    const body = content && !desc.includes(content.slice(0, 80)) ? [desc, content].filter(Boolean).join(' ') : desc || content
     return {
         id: String(p.id),
         type: 'product',
         title: String(p.title ?? '').trim(),
-        description: description.length > DESC_MAX ? `${description.slice(0, DESC_MAX)}…${url ? `\n\nLink: ${url}` : ''}` : description,
+        description: [clip(body, Math.max(BODY_MIN, DESC_MAX - facts.length - 2)), facts].filter(Boolean).join('\n\n'),
         tags: String(p.tags ?? '').split('|').map((t) => t.trim()).filter(Boolean),
         // pricing cùng dạng "giá~vốn~đơn vị" mà Worker chatPrompt.ts formatPrice đọc (dòng PRICE) — ô vốn để TRỐNG
         meta: { ...(url && { url }), ...(price && { pricing: `${Number(rawPrice)}~~${unit}` }) },
