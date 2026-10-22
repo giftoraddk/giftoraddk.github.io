@@ -10,6 +10,13 @@ import { compareRank } from '@/services/tools/rank.js';
 import { CTA } from './meta.js';
 import { tintsSections } from './shop.js';
 
+// Thẻ slider chỉ cần ảnh + tiêu đề + mô tả — bỏ `content` (HTML đầy đủ, có thể chứa ảnh base64 nặng vài MB) khỏi JSON
+// nhúng trong trang: trang chủ từng phình tới 18MB → Vercel trả 413. Record không có description thì giữ đoạn chữ ngắn
+// của content cho outline SEO (board-seo.js entry() chỉ lấy 200 ký tự đầu khi có meta.url).
+const _plain = (v) => typeof v === 'string' ? v.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300)
+	: v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, _plain(x)])) : v;
+const _card = ({ content, ...p }) => (p.description ? p : { ...p, content: _plain(content) });
+
 // ── Best-selling gifts (data thật từ database) ─────────────────────────────────
 // "Bán chạy nhất" = cùng thứ tự admin thấy ở products: hàng ưu tiên theo `rank` (kéo-thả, tools/rank.js) rồi tới
 // hàng tự động theo `updated_at` (mới cập nhật lên trước), build-time fetch giống product/index.astro (bake data thật
@@ -21,7 +28,7 @@ async function _fetchBestSellers(limit = 4) {
 		.slice()
 		.sort(compareRank)
 		.slice(0, limit)
-		.map((p) => ({ ...p, meta: { ...(p.meta ?? {}), url: `/product/${productSlug(p)}/` } }));
+		.map((p) => ({ ..._card(p), meta: { ...(p.meta ?? {}), url: `/product/${productSlug(p)}/` } }));
 }
 
 // ── Bài viết mới nhất (data thật, bảng posts) ─────────────────────────────────
@@ -38,7 +45,7 @@ async function _fetchLatestPosts(limit = 6) {
 		.map((p) => {
 			const created = new Date(p.created_at);
 			return {
-				...p,
+				..._card(p),
 				meta: {
 					...(typeof p.meta === 'object' && p.meta ? p.meta : {}),
 					url: `/post/${postSlug(p)}/`,
