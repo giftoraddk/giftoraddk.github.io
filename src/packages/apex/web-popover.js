@@ -69,6 +69,7 @@ export class WebPopover extends LitElement {
 		this._fullscreen = false;
 		this._handleOutsideClick = this._handleOutsideClick.bind(this);
 		this._updatePosition = this._updatePosition.bind(this);
+		this._onScroll = () => this._updatePosition(false);
 		this._markDragged = this._markDragged.bind(this);
 		this._toggleFullscreen = this._toggleFullscreen.bind(this);
 		this._close = this._close.bind(this);
@@ -83,7 +84,7 @@ export class WebPopover extends LitElement {
 	connectedCallback() {
 		super.connectedCallback();
 		window.addEventListener('mousedown', this._handleOutsideClick);
-		window.addEventListener('scroll', this._updatePosition, true);
+		window.addEventListener('scroll', this._onScroll, true);
 		window.addEventListener('resize', this._updatePosition);
 		this.addEventListener('drag', this._updatePosition);
 		this.addEventListener('drag', this._markDragged);
@@ -92,7 +93,7 @@ export class WebPopover extends LitElement {
 	disconnectedCallback() {
 		super.disconnectedCallback();
 		window.removeEventListener('mousedown', this._handleOutsideClick);
-		window.removeEventListener('scroll', this._updatePosition, true);
+		window.removeEventListener('scroll', this._onScroll, true);
 		window.removeEventListener('resize', this._updatePosition);
 		this.removeEventListener('drag', this._updatePosition);
 		this.removeEventListener('drag', this._markDragged);
@@ -205,18 +206,26 @@ export class WebPopover extends LitElement {
 		content.style.height = `${window.innerHeight - inset * 2}px`;
 	}
 
-	_updatePosition() {
+	// remeasure = false (trang cuộn — _onScroll): chỉ dời theo trigger, giữ nguyên chiều cao đã đo. Đo lại = xoá height
+	// inline rồi đọc scrollHeight — panel bên trong (height:100%, vd .aid-panel / .tlk-panel) co giãn theo và vùng tin
+	// nhắn mất vị trí cuộn (nhảy lên đầu) mỗi lần cuộn body. Mở / resize / kéo / fullscreen vẫn đo lại (gọi kèm Event
+	// hoặc không tham số → truthy).
+	_updatePosition(remeasure = true) {
 		if (!this.open) return;
 		const content = this.shadowRoot.querySelector('.web-popover-content');
 		if (!content) return;
+		if (remeasure === false && this._fullscreen) return; // fullscreen bám viewport, cuộn trang không đổi gì
+		const measure = remeasure !== false || !this._naturalH;
 
 		// Clear any size cap left from a previous run before measuring — otherwise scrollHeight/
 		// offsetWidth would reflect the already-clamped layout instead of the content's true,
 		// unconstrained size (e.g. a slotted panel using height:100% would already have collapsed
 		// to fit the previous clamp, so its natural full height could never be re-measured). Width
 		// is only ever set inline by _applyFullscreen() below — normal mode needs it back at auto.
-		content.style.height = '';
-		content.style.width = '';
+		if (measure) {
+			content.style.height = '';
+			content.style.width = '';
+		}
 
 		if (this._fullscreen) {
 			this._applyFullscreen(content);
@@ -238,7 +247,8 @@ export class WebPopover extends LitElement {
 		// Trần chiều cao do trang đặt qua --web-popover-max-height (max-height của .web-popover-content) — tính vào đây
 		// để vị trí (vd lật lên trên: top = trigger.top - ch) khớp đúng chiều cao thật đang hiển thị.
 		const maxH = parseFloat(getComputedStyle(content).maxHeight) || Infinity;
-		const naturalH = Math.min(((content.scrollHeight || content.offsetHeight) + 8) * HEIGHT_BOOST, maxH);
+		if (measure) this._naturalH = Math.min(((content.scrollHeight || content.offsetHeight) + 8) * HEIGHT_BOOST, maxH);
+		const naturalH = this._naturalH;
 		const gap = parseFloat(this.placementGap || 4);
 		const margin = 8;
 		const vw = window.innerWidth;
