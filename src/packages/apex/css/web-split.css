@@ -1,0 +1,147 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.web-split {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+}
+
+/* ── Pastel (token --pastel-* ở pastel.css) ─────────────────────────────── */
+.web-split.pastel {
+	gap: 4px;
+}
+.pastel.horizontal > .resizer {
+	width: 6px;
+}
+.pastel.vertical > .resizer {
+	height: 6px;
+}
+
+.web-split.horizontal {
+  flex-direction: row;
+}
+
+.web-split.vertical {
+  flex-direction: column;
+}
+
+.pane {
+  overflow: auto;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pastel .pane {
+  background: var(--pastel-corner);
+  border: 1px solid var(--pastel-line);
+  border-radius: var(--radius-box);
+}
+
+.pane-primary {
+  flex: 0 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pane-secondary {
+  flex: 1 1 0%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.resizer {
+  flex: 0 0 auto;
+  background-color: var(--color-base-200, #232323);
+  transition: background-color 0.2s, width 0.2s, height 0.2s;
+  position: relative;
+  z-index: 10;
+}
+
+.pastel > .resizer {
+  background-color: var(--pastel-line);
+  border-radius: var(--radius-selector);
+}
+
+.resizer:hover {
+  background-color: var(--color-primary, #34ace0);
+}
+
+.horizontal > .resizer {
+  width: 4px;
+  cursor: col-resize;
+  background-clip: padding-box;
+}
+
+.vertical > .resizer {
+  height: 4px;
+  cursor: row-resize;
+  background-clip: padding-box;
+}
+
+.resizer .toggle-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: 50%;
+  background-color: var(--color-base-100, #0d0d0d);
+  border: 1px solid var(--color-base-300, #333);
+  color: var(--color-base-content, #fff);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  opacity: 0;
+  transition: opacity 0.2s, background-color 0.2s, transform 0.2s;
+  pointer-events: auto;
+}
+
+.resizer:hover .toggle-btn {
+  opacity: 1;
+}
+
+.toggle-btn:hover {
+  background-color: var(--color-primary, #34ace0);
+  color: #fff;
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.horizontal > .resizer .toggle-btn {
+  margin-left: 0;
+}
+
+.vertical > .resizer .toggle-btn {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.vertical > .resizer .toggle-btn:hover {
+  transform: translate(-50%, -50%) rotate(90deg) scale(1.1);
+}
+
+.toggle-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+:host(.resizing) .pane {
+  pointer-events: none;
+  user-select: none;
+  transition: none !important;
+  will-change: width, height;
+}
+
+:host(.resizing) .resizer {
+  transition: none !important;
+}

@@ -5,7 +5,8 @@
 // phòng 1 dòng thấp (chấm trạng thái trên avatar, mức · trạng thái, vạch tiến độ mảnh khi đang chạy), phòng còn chờ bàn
 // giao gom 1 dòng gập/mở. Bấm card → `open-job` job Thư ký (bối cảnh + bảng phân công); bấm 1 dòng → `open-job` job
 // của phòng đó; job phòng ban xong chờ duyệt có nút Duyệt nhanh (`approve-job`), job lỗi giữa chừng có nút Thử lại
-// (`retry-job`). Thuần hiển thị — svc-talk đưa task view + job trong nhật ký + face/outline từng phòng.
+// (`retry-job`), mọi dòng đã duyệt (kể cả Thư ký) có icon tải PDF (`pdf-job`) cạnh dấu check; dòng đã duyệt của phòng có
+// bảng output (outline.recordable) có thêm icon lưu vào bảng (`record-job`) — đã lưu (createdPostId) thì màu success, disabled. Thuần hiển thị — svc-talk đưa task view + job trong nhật ký + face/outline từng phòng.
 import { LitElement, html, unsafeCSS } from 'lit'
 import { styleMap } from 'lit/directives/style-map.js'
 import 'iconify-icon'
@@ -30,6 +31,7 @@ export class SvcTaskCard extends LitElement {
         faces: { type: Object },    // { [fn]: { title, pics } } — tên/ảnh phòng trong nhóm chat
         outlines: { type: Object }, // { [fn]: outline } — để tính tiến độ từng job
         pending: { type: Object },  // Set<jobId> đang có hành động dở
+        pdfJob: { type: String },   // job đang xuất PDF ('' = không)
         lang: { type: String }, ui: { type: String }, theme: { type: String },
         noVerdict: { type: Boolean, attribute: 'no-verdict' }, // ẩn chip quyết định của Tích hợp (svc-talk `no-verdict`)
         _unfold: { state: true },   // đang mở nhóm phòng chờ bàn giao
@@ -37,7 +39,7 @@ export class SvcTaskCard extends LitElement {
 
     constructor() {
         super()
-        this.view = null; this.jobs = []; this.topic = ''; this.faces = {}; this.outlines = {}; this.pending = new Set()
+        this.view = null; this.jobs = []; this.topic = ''; this.faces = {}; this.outlines = {}; this.pending = new Set(); this.pdfJob = ''
         this.lang = 'vi'; this.ui = 'pastel'; this.theme = ''; this.noVerdict = false
         this._unfold = false
     }
@@ -123,6 +125,32 @@ export class SvcTaskCard extends LitElement {
         `
     }
 
+    // Icon tải PDF 1 dòng đã duyệt (Thư ký: bối cảnh + phân công; phòng ban: bàn giao) — chỉ phát `pdf-job`, svc-talk dựng file (service/pdf.js).
+    _pdf(job, t) {
+        if (!job) return ''
+        const busy = this.pdfJob === job.id
+        return html`
+            <button class="cd-pdf" title=${t.pdf} aria-label=${t.pdf} ?disabled=${!!this.pdfJob}
+                @click=${(e) => { e.stopPropagation(); this._emit('pdf-job', job.id) }}>
+                <iconify-icon class=${busy ? 'is-spin' : ''} icon=${busy ? 'ri:loader-4-line' : 'ri:file-pdf-2-line'}></iconify-icon>
+            </button>
+        `
+    }
+
+    // Icon lưu 1 dòng đã duyệt vào bảng output của phòng (products, posts…) — chỉ phát `record-job`, svc-talk gọi service/talk.js.
+    _record(job, outline, t) {
+        if (!job?.approved || !outline?.recordable) return ''
+        const saved = !!job.createdPostId
+        const busy = !saved && this.pending?.has(job.id)
+        const label = (saved ? t.recorded : t.record).replace('{table}', outline.output?.table ?? '')
+        return html`
+            <button class="cd-pdf cd-record ${saved ? 'is-saved' : ''}" title=${label} aria-label=${label} ?disabled=${saved || busy}
+                @click=${(e) => { e.stopPropagation(); this._emit('record-job', job.id) }}>
+                <iconify-icon class=${busy ? 'is-spin' : ''} icon=${busy ? 'ri:loader-4-line' : 'ri:database-2-line'}></iconify-icon>
+            </button>
+        `
+    }
+
     _row(row, r, t) {
         const { fn, state, job, missing } = row
         const name = this._name(fn)
@@ -165,7 +193,7 @@ export class SvcTaskCard extends LitElement {
                 <div class="cd-row-side">
                     ${state === 'error' ? act(t.retry, 'error', 'soft', 'ri:refresh-line', 'retry-job')
                         : quick ? act(t.approve, 'primary', 'fill', 'ri:check-line', 'approve-job')
-                        : state === 'approved' ? html`<iconify-icon class="cd-ok" icon="ri:checkbox-circle-fill"></iconify-icon>`
+                        : state === 'approved' ? html`${this._record(job, outline, t)}${this._pdf(job, t)}<iconify-icon class="cd-ok" icon="ri:checkbox-circle-fill"></iconify-icon>`
                         : job ? html`<iconify-icon class="cd-go" icon="ri:arrow-right-s-line"></iconify-icon>` : ''}
                 </div>
             </div>

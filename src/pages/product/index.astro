@@ -4,24 +4,21 @@ import { KINDS } from '@/components/Catalog/kinds';
 import Feed from '@/components/Catalog/Feed.astro';
 import { fetchCollection } from '@/services/core/fetcher.server.js';
 import { pickLang } from '@/services/tools/util';
-import { site } from '@/services/tools/site';
 import { menuItems, policies, socials } from '@/modules/gift/shop.js'; // footer chung giftoraddk.com
-import { menu as productMenu, tints } from '@/modules/product/index.js';
+import { menu as productMenu, tints, productSeo } from '@/modules/product/index.js';
 
 // Catalog sản phẩm CRAWLABLE — cùng giao diện với /post/ (components/Catalog/Feed.astro, kind product).
 // Mọi sản phẩm render sẵn trong HTML lúc build (SEO/GEO); tìm kiếm/sắp xếp/xem thêm chạy trên DOM đã có.
 // KHÔNG có add-to-cart ở đây — mua hàng vẫn qua /gift/shop (giỏ hàng client-side, xem hook/geo-platform-plan.md §B0).
 const products = await fetchCollection('products');
 
-const pageTitle = pickLang({ en: 'Gifts & Products', vi: 'Quà tặng & Sản phẩm' });
-const pageDescription = pickLang({
-	en: `Every gift and product from ${site.subtitle} — browse by category, compare prices or search.`,
-	vi: `Toàn bộ quà tặng và sản phẩm của ${site.subtitle} — xem theo danh mục, so sánh giá hoặc tìm kiếm.`,
-});
+const { heading, title, description } = productSeo.list;
+const pageTitle = pickLang(heading);
+const pageDescription = pickLang(description);
 const image = products.map((p: any) => String(p.pics || '').split('|').find(Boolean)).find(Boolean);
 const bg = null;
 ---
 
-<Core menu={productMenu} tints={tints} title={pageTitle} description={pageDescription} image={image} footer={{ columns: menuItems, policies, socials, bg }}>
+<Core menu={productMenu} tints={tints} title={pickLang(title)} description={pageDescription} image={image} footer={{ columns: menuItems, policies, socials, bg }}>
 	<Feed kind={KINDS.product} items={products} title={pageTitle} description={pageDescription} path="/product/" />
 </Core>

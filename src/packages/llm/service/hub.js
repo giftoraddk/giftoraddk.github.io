@@ -48,6 +48,10 @@ export const hub = {
     issue: (rotate = false) => requester({ timeoutMs: 20_000 }).post(`${API}/issue`, { rotate }),
     /** Nạp 1 API JSON vào kiến thức: { url, type, owner?, sector?, fn?, itemsPath?, fields?, dryRun? } */
     importApi: (params) => requester({ timeoutMs: 60_000 }).post(`${API}/import`, params),
+    /** Nạp các mục tự dựng (≤ 200/lần): { items, source, type?, owner?, sector?, fn?, prune?, since? } → { created, updated,
+     *  unchanged, indexed, related, pruned, startedAt } — trùng key thì đè, mới thì thêm; `prune` (lượt cuối, `since` =
+     *  startedAt của lượt đầu) xoá mềm các mục của `source` không còn được gửi. */
+    importItems: (params) => requester({ timeoutMs: 120_000 }).post(`${API}/items`, params),
     removeSource: (id) => requester().post(`${API}/remove-source`, { id }),
     /** Site được chạy trợ lý nhúng của hub: { owner?, domains: string[] } ([] = mọi site) → { owner, domains } */
     setDomains: (params) => requester().post(`${API}/domains`, params),

@@ -1,0 +1,113 @@
+{
+  "food_beverage": {
+    "lang": { "en": "Food & Beverage", "vi": "Ẩm thực & Đồ uống" },
+    "items": [
+      { "id": "cafe", "lang": { "en": "Café", "vi": "Cà phê" } },
+      { "id": "milk_tea", "lang": { "en": "Bubble Tea", "vi": "Trà sữa" } },
+      { "id": "juice_smoothie", "lang": { "en": "Juice & Smoothie", "vi": "Nước ép & Sinh tố" } },
+      { "id": "breakfast_combo", "lang": { "en": "Breakfast Combo", "vi": "Combo Ăn sáng" } },
+      { "id": "noodles_pho", "lang": { "en": "Noodle Soup (Pho/Bun)", "vi": "Phở / Bún / Mì" } },
+      { "id": "rice_meals", "lang": { "en": "Rice Meals", "vi": "Cơm phần / Cơm văn phòng" } },
+      { "id": "hotpot_bbq_set", "lang": { "en": "Hotpot & BBQ Set", "vi": "Set Lẩu & Nướng" } },
+      { "id": "restaurant_booking", "lang": { "en": "Restaurant Reservation/Set", "vi": "Đặt bàn / Set Menu Nhà hàng" } },
+      { "id": "buffet_ticket", "lang": { "en": "Buffet Ticket", "vi": "Vé Buffet" } },
+      { "id": "vegetarian_food", "lang": { "en": "Vegetarian Food", "vi": "Món Chay" } },
+      { "id": "bakery_cake", "lang": { "en": "Bakery & Cake", "vi": "Bánh ngọt & Bánh kem" } },
+      { "id": "fast_food", "lang": { "en": "Fast Food", "vi": "Thức ăn nhanh" } },
+      { "id": "snacks_street_food", "lang": { "en": "Snacks & Street Food", "vi": "Đồ ăn vặt" } }
+    ]
+  },
+
+  "shopping_retail": {
+    "lang": { "en": "Shopping & Retail", "vi": "Mua sắm & Bán lẻ" },
+    "items": [
+      { "id": "grocery_minimart", "lang": { "en": "Grocery & FMCG", "vi": "Bách hóa & Tiêu dùng" } },
+      { "id": "clothing_apparel", "lang": { "en": "Clothing & Apparel", "vi": "Quần áo thời trang" } },
+      { "id": "shoes_bags", "lang": { "en": "Shoes & Bags", "vi": "Giày dép & Túi xách" } },
+      { "id": "cosmetics_skincare", "lang": { "en": "Cosmetics & Skincare", "vi": "Mỹ phẩm & Chăm sóc da" } },
+      { "id": "mom_and_baby", "lang": { "en": "Mom & Baby Products", "vi": "Sản phẩm Mẹ & Bé" } },
+      { "id": "pet_supplies", "lang": { "en": "Pet Food & Supplies", "vi": "Thức ăn & Phụ kiện thú cưng" } },
+      { "id": "electronics_appliances", "lang": { "en": "Electronics & Appliances", "vi": "Đồ điện tử & Gia dụng" } },
+      { "id": "mobile_accessories", "lang": { "en": "Mobile & Accessories", "vi": "Điện thoại & Phụ kiện" } },
+      { "id": "books_stationery", "lang": { "en": "Books & Stationery", "vi": "Sách & Văn phòng phẩm" } },
+      { "id": "flowers_gifts", "lang": { "en": "Flowers & Gifts", "vi": "Hoa & Quà tặng" } },
+      { "id": "jewelry_watches", "lang": { "en": "Jewelry & Watches", "vi": "Trang sức & Đồng hồ" } },
+      { "id": "eyewear", "lang": { "en": "Eyewear & Glasses", "vi": "Mắt kính" } }
+    ]
+  },
+
+  "health_beauty_services": {
+    "lang": { "en": "Health & Beauty", "vi": "Sức khỏe & Làm đẹp" },
+    "items": [
+      { "id": "pharmacy_supplements", "lang": { "en": "Supplements", "vi": "Thực phẩm chức năng" } },
+      { "id": "gym_fitness_pass", "lang": { "en": "Gym & Fitness Pass", "vi": "Thẻ tập Gym & Fitness" } },
+      { "id": "yoga_pilates_course", "lang": { "en": "Yoga & Pilates Course", "vi": "Khóa học Yoga & Pilates" } },
+      { "id": "hair_salon_voucher", "lang": { "en": "Hair Service Voucher", "vi": "Voucher Làm tóc" } },
+      { "id": "nail_eyelash_voucher", "lang": { "en": "Nail & Eyelash Voucher", "vi": "Voucher Làm Nail & Nối mi" } },
+      { "id": "spa_massage_voucher", "lang": { "en": "Spa & Massage Voucher", "vi": "Voucher Spa & Massage" } },
+      { "id": "herbal_hair_wash", "lang": { "en": "Herbal Hair Wash Package", "vi": "Gói Gội đầu dưỡng sinh" } },
+      { "id": "skincare_treatment", "lang": { "en": "Skincare Treatment Package", "vi": "Gói Chăm sóc da / Thẩm mỹ" } }
+    ]
+  },
+
+  "education_courses": {
+    "lang": { "en": "Education & Courses", "vi": "Giáo dục & Khóa học" },
+    "items": [
+      { "id": "language_course", "lang": { "en": "Language Course", "vi": "Khóa học Ngoại ngữ" } },
+      { "id": "it_programming_course", "lang": { "en": "IT & Programming Course", "vi": "Khóa học Tin học & Lập trình" } },
+      { "id": "tutoring_test_prep", "lang": { "en": "Tutoring & Test Prep", "vi": "Khóa Luyện thi & Gia sư" } },
+      { "id": "arts_music_course", "lang": { "en": "Arts & Music Course", "vi": "Khóa học Nghệ thuật & Âm nhạc" } },
+      { "id": "vocational_course", "lang": { "en": "Vocational Course", "vi": "Khóa học Nghề" } },
+      { "id": "driving_license_course", "lang": { "en": "Driving License Course", "vi": "Khóa học Lái xe" } }
+    ]
+  },
+
+  "home_cleaning_services": {
+    "lang": { "en": "Home & Cleaning Services", "vi": "Dọn dẹp & Gia đình" },
+    "items": [
+      { "id": "house_cleaning_package", "lang": { "en": "House Cleaning Package", "vi": "Gói Dịch vụ Dọn nhà" } },
+      { "id": "ac_cleaning_service", "lang": { "en": "AC Cleaning & Maintenance", "vi": "Gói Vệ sinh Máy lạnh" } },
+      { "id": "upholstery_cleaning", "lang": { "en": "Sofa & Mattress Cleaning", "vi": "Gói Vệ sinh Sofa & Nệm" } },
+      { "id": "pest_control_package", "lang": { "en": "Pest Control Package", "vi": "Gói Dịch vụ Diệt côn trùng" } }
+    ]
+  },
+
+  "personal_utilities": {
+    "lang": { "en": "Personal Utilities", "vi": "Tiện ích cá nhân" },
+    "items": [
+      { "id": "laundry_service", "lang": { "en": "Laundry Service (Per Kg/Item)", "vi": "Giặt ủi (Theo Kg/Món)" } },
+      { "id": "car_wash_package", "lang": { "en": "Car Wash & Detailing Package", "vi": "Gói Rửa xe & Chăm sóc xe" } },
+      { "id": "photo_studio_package", "lang": { "en": "Photography Studio Package", "vi": "Gói Chụp ảnh Studio" } },
+      { "id": "printing_service", "lang": { "en": "Document & Photo Printing", "vi": "Dịch vụ In ấn & Photocopy" } }
+    ]
+  },
+
+  "vehicle_rental": {
+    "lang": { "en": "Vehicle Rental", "vi": "Thuê xe" },
+    "items": [
+      { "id": "motorbike_rental", "lang": { "en": "Motorbike Rental", "vi": "Thuê xe máy" } },
+      { "id": "car_rental", "lang": { "en": "Car Rental", "vi": "Thuê xe ô tô" } }
+    ]
+  },
+
+  "entertainment_sports": {
+    "lang": { "en": "Entertainment & Sports", "vi": "Giải trí & Thể thao" },
+    "items": [
+      { "id": "cinema_ticket", "lang": { "en": "Cinema Ticket", "vi": "Vé xem phim" } },
+      { "id": "amusement_park_ticket", "lang": { "en": "Amusement Park Ticket", "vi": "Vé Khu vui chơi & Công viên" } },
+      { "id": "sports_pitch_booking", "lang": { "en": "Sports Pitch Booking", "vi": "Đặt sân bóng đá" } },
+      { "id": "court_booking", "lang": { "en": "Court Booking (Tennis/Badminton)", "vi": "Đặt sân (Cầu lông/Tennis/Pickleball)" } },
+      { "id": "swimming_pool_ticket", "lang": { "en": "Swimming Pool Ticket", "vi": "Vé Hồ bơi" } }
+    ]
+  },
+
+  "travel_tourism": {
+    "lang": { "en": "Travel & Tourism", "vi": "Du lịch & Lưu trú" },
+    "items": [
+      { "id": "hotel_booking", "lang": { "en": "Hotel Booking", "vi": "Đặt phòng Khách sạn" } },
+      { "id": "homestay_booking", "lang": { "en": "Homestay & Villa Booking", "vi": "Đặt phòng Homestay & Villa" } },
+      { "id": "tour_package", "lang": { "en": "Tour Package", "vi": "Mua Tour du lịch" } },
+      { "id": "flight_bus_ticket", "lang": { "en": "Flight & Bus Ticket", "vi": "Vé Máy bay & Xe khách" } }
+    ]
+  }
+}

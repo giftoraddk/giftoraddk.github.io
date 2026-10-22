@@ -511,8 +511,23 @@ button:focus-visible { outline: none; box-shadow: var(--sl-ring); }
     transform: translateX(2px);
 }
 
-.sl-moves { display: flex; }
+.sl-moves { display: flex; gap: 0.25rem; }
 .sl-move { width: 32px; height: 32px; font-size: 1.1rem; }
+.sl-move.is-pinned { color: var(--color-primary); }
+.sl-move:disabled { opacity: 0.35; cursor: default; }
+
+/* Reorder drag — touch-action: none keeps a finger on the handle from scrolling the page instead */
+.sl-handle { cursor: grab; touch-action: none; }
+.is-sorting { user-select: none; -webkit-user-select: none; }
+.is-sorting .sl-handle { cursor: grabbing; }
+.is-sorting > .sl-row:not(.is-drag) { transition: background 0.12s, transform 0.16s ease; }
+.sl-row.is-drag {
+    position: relative;
+    z-index: 3;
+    --sl-tint: 12%;
+    background: var(--sl-row-solid);
+    box-shadow: 0 8px 24px color-mix(in oklab, var(--color-base-content, #000) 18%, transparent);
+}
 .sl-doc { width: 34px; height: 34px; color: var(--color-primary); }
 
 /* Header row */
@@ -623,6 +638,11 @@ button:focus-visible { outline: none; box-shadow: var(--sl-ring); }
 
 /* slot "new-actions" — nút phụ bên phải tiêu đề form "Thêm mới" (svc-records: Tạo bằng AI) */
 .sl-detail-actions { display: flex; align-items: center; gap: 0.4rem; margin-left: auto; flex-shrink: 0; }
+
+/* Delete — right edge of the detail header; its confirm opens right under the header */
+.sl-del { color: var(--color-error); }
+.sl-del.is-on { background: color-mix(in oklab, var(--color-error) 14%, transparent); }
+.sl-detail-head + .sl-confirm { margin-top: 0.75rem; }
 
 .sl-form-wrap { position: relative; }
 
@@ -814,5 +834,5 @@ button:focus-visible { outline: none; box-shadow: var(--sl-ring); }
 
 @media (prefers-reduced-motion: reduce) {
     .sl-detail, .sl-menu { animation: none; }
-    .sl-row, .sl-chevron { transition: none; }
+    .sl-row, .sl-chevron, .is-sorting > .sl-row:not(.is-drag) { transition: none; }
 }

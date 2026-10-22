@@ -28,6 +28,7 @@ import '@/packages/adopted/svc-editor.js'
 import './svc-routing.js'
 import { IMAGE_SUBSTEP_LABELS, buildImagePrompt } from '../service/image.js'
 import { hideCodes } from '../tool/codes.js'
+import { textBlocks } from '../tool/report.js'
 import { COPYABLE, copyText } from '../tool/copy.js'
 import { txtLingo, toastEmit } from '@/services/tools/util.js'
 import styles from '../css/svc-progress.css?inline'
@@ -575,7 +576,19 @@ export class SvcProgress extends LitElement {
             return html`<web-textarea .value=${raw} ui="modern" rows="2"
                 @input=${e => this._dhFieldChange(f.key, e)}></web-textarea>`
         }
-        return html`<div class="prg-value">${hideCodes(raw)}</div>`
+        return this._rfText(hideCodes(raw))
+    }
+
+    /** Chữ thuần AI viết → đúng các khối như PDF (tool/report.js textBlocks): đoạn, tiêu đề nhỏ, danh sách chấm / số —
+     *  nhóm "tên thành phần + nhãn: giá trị" thành tiêu đề + danh sách chấm tròn (2026-10-20, "Cụ thể hoá thành phần"). */
+    _rfText(text) {
+        const spans = (list) => list.map((s) => (s.bold ? html`<strong>${s.text}</strong>` : s.text))
+        const items = (list) => list.map((it) => html`<li>${spans(it)}</li>`)
+        return html`<div class="prg-value prg-blocks">${textBlocks(text).map((b) => (
+            b.type === 'h' ? html`<div class="prg-h">${spans(b.spans)}</div>`
+                : b.type === 'p' ? html`<p>${spans(b.spans)}</p>`
+                    : b.type === 'ol' ? html`<ol>${items(b.items)}</ol>` : html`<ul>${items(b.items)}</ul>`
+        ))}</div>`
     }
 
     _rfImageSubContent(step, key) {

@@ -12,7 +12,7 @@ import { dirname, join } from 'node:path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_ENV = join(__dirname, '..', '..', '..', '..', '..', '.env');
 const PKG_DIR = join(__dirname, '..');
-const FIELDS = ['SUPABASE_SERVICE_ROLE_KEY', 'OPER_KEY', 'GROQ_KEY', 'NVID_KEY', 'HUGGIN_KEY', 'PRO_KEY', 'RESEND_API_KEY', 'BILLING_SERVICE_KEY'];
+const FIELDS = ['SUPABASE_SERVICE_ROLE_KEY', 'OPER_KEY', 'CLOU_KEY', 'NVID_KEY', 'PRO_KEY', 'RESEND_API_KEY', 'BILLING_SERVICE_KEY'];
 const WORKER_LABEL = 'llm';
 
 const MASK_MARKER = '~k!t@d~';
@@ -46,9 +46,8 @@ function deriveSecretsFromRootEnv(rootEnvText) {
         SUPABASE_URL: pick('PUBLIC_SUPABASE_URL'),
         SUPABASE_SERVICE_ROLE_KEY: pick('SUPABASE_SERVICE_ROLE_KEY'),
         OPER_KEY: unmask(pick('PUBLIC_OPER_KEY', 'OPER_KEY')),
-        GROQ_KEY: unmask(pick('PUBLIC_GROQ_KEY', 'GROQ_KEY')),
+        CLOU_KEY: unmask(pick('PUBLIC_CLOU_KEY', 'CLOU_KEY')),
         NVID_KEY: unmask(pick('PUBLIC_NVID_KEY', 'NVID_KEY')),
-        HUGGIN_KEY: unmask(pick('PUBLIC_HUGGIN_KEY', 'HUGGIN_KEY')),
         PRO_KEY: pick('PRO_KEY'),
         RESEND_API_KEY: pick('RESEND_API_KEY'),
         BILLING_SERVICE_KEY: pick('BILLING_SERVICE_KEY'),

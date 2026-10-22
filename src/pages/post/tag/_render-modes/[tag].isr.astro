@@ -6,9 +6,8 @@ import { KINDS } from '@/components/Catalog/kinds';
 import Feed from '@/components/Catalog/Feed.astro';
 import { fetchCollection } from '@/services/core/fetcher.server.js';
 import { tagSlugMap, pickLang } from '@/services/tools/util';
-import { site } from '@/services/tools/site';
 import { menuItems, policies, socials } from '@/modules/gift/shop.js'; // footer chung giftoraddk.com
-import { menu as postMenu, tints } from '@/modules/post/index.js';
+import { menu as postMenu, tints, postSeo } from '@/modules/post/index.js';
 import I18nText from '@/components/I18nText.astro';
 
 // Biến thể ISR của src/pages/post/tag/[tag].astro — xem
@@ -24,11 +23,9 @@ if (!entry) Astro.response.status = 404;
 const tag = entry?.label ?? '';
 const posts = entry?.items ?? [];
 
-const pageTitle = entry ? tag : pickLang({ en: 'Not found', vi: 'Không tìm thấy' });
-const pageDescription = entry ? pickLang({
-	en: `${posts.length} posts about "${tag}" on ${site.subtitle}.`,
-	vi: `${posts.length} bài viết về "${tag}" tại ${site.subtitle}.`,
-}) : '';
+const seo = entry ? postSeo.tag(tag, posts.length) : null;
+const pageTitle = seo ? pickLang(seo.heading) : pickLang({ en: 'Not found', vi: 'Không tìm thấy' });
+const pageDescription = seo ? pickLang(seo.description) : '';
 const breadcrumb = [
 	{ label: pickLang({ en: 'Home', vi: 'Trang chủ' }), href: '/' },
 	{ label: pickLang({ en: 'Posts', vi: 'Bài viết' }), href: '/post/' },
@@ -39,7 +36,7 @@ const image = posts.map((p: any) => String(p.pics || '').split('|').find(Boolean
 const bg = null;
 ---
 
-<Core menu={postMenu} tints={tints} title={entry ? `${pageTitle} • ${pickLang({ en: 'Posts', vi: 'Bài viết' })}` : pageTitle} description={pageDescription} image={image} noindex={!entry} footer={{ columns: menuItems, policies, socials, bg }}>
+<Core menu={postMenu} tints={tints} title={seo ? pickLang(seo.title) : pageTitle} description={pageDescription} image={image} noindex={!entry} footer={{ columns: menuItems, policies, socials, bg }}>
 	{entry ? (
 		<Feed kind={KINDS.post} items={posts} allItems={allPosts} title={pageTitle} description={pageDescription}
 			path={`/post/tag/${tagSlug}/`} activeTag={tagSlug} breadcrumb={breadcrumb} />

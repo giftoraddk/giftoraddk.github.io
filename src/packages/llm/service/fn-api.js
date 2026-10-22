@@ -11,7 +11,7 @@ import requester from '@/services/core/requester.js'
 const BASE = `${import.meta.env.PUBLIC_LLM_URL ?? ''}/v1/fn`
 // 1 call = tối đa 6 lượt qua chuỗi model free + key pro ở Worker (trần 70s, fn/generate.ts) — lâu hơn nhiều mức 10s mặc định
 const AI_MS = 90_000
-const APPROVE_MS = 30_000 // ghi bảng nền tảng qua auth + đánh thức job chờ sản phẩm
+const APPROVE_MS = 30_000 // duyệt (ghi bàn giao của task) / ghi bảng nền tảng qua auth
 const TRIAL_HEADERS = { 'X-Fn-Trial': '1' }
 const enc = (v) => encodeURIComponent(v)
 
@@ -41,7 +41,8 @@ function makeFnApi(headers) {
         /** Khung step/call/field của 1 phòng (không role/task/desc) — cần đăng nhập. */
         spec: (division) => quick.get(`${BASE}/spec/${enc(division)}`),
         log: (sector) => quick.get(`${BASE}/log`, { sector }),
-        appendLog: (sector, from, content) => quick.post(`${BASE}/log`, { sector, from, content }),
+        /** `task` (tuỳ chọn) — gắn câu Thư ký vào 1 task của chính người gọi (vd "Xong cả kế hoạch" → nút PDF). */
+        appendLog: (sector, from, content, task = '') => quick.post(`${BASE}/log`, { sector, from, content, ...(task ? { task } : {}) }),
         /** { division, content, lang } → { lang, reply, isTask, topic } */
         chat: (body) => slow.post(`${BASE}/chat`, body),
         /** Public: { division, content, history, owner, types, lang } → { lang, reply, sources } */
@@ -54,8 +55,10 @@ function makeFnApi(headers) {
         image: (jobId, body) => quick.post(`${BASE}/jobs/${enc(jobId)}/image`, body),
         fields: (jobId, fields) => quick.post(`${BASE}/jobs/${enc(jobId)}/fields`, { fields }),
         /** expertReview = { confirmed: true, by } khi outline.review đòi chuyên gia duyệt (Worker từ chối nếu thiếu)
-         *  → { approved, table, recordId, fields, artifacts[] } */
+         *  → { approved, artifacts[] } */
         approve: (jobId, expertReview = null) => approver.post(`${BASE}/jobs/${enc(jobId)}/approve`, expertReview ? { expertReview } : {}),
+        /** Job đã duyệt → ghi 1 lần vào bảng output (products/posts…, chỉ nhân viên nền tảng) → { table, recordId } */
+        record: (jobId) => approver.post(`${BASE}/jobs/${enc(jobId)}/record`, {}),
         /** { sector, topic, language } → task view + `created` (job context vừa mở) */
         createTask: (body) => quick.post(`${BASE}/tasks`, body),
         /** stage, routing, plan, preview, fns, next, jobs, artifacts, titles, kinds, trial */

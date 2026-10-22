@@ -56,6 +56,28 @@ const STAGE_RETRY_MS = 15000
 // _dfPostGuest()'s stageTimer.
 const STAGE_ROTATE_MS = 2500
 
+// Hỏi lại khi khách im lặng (như Zap Support, hook/ZAP-SUPPORT.rst §2.2): trợ lý trả lời xong mà khách im → câu hỏi lại soạn
+// sẵn (TXT_STD.follow — câu thứ n, bốc ngẫu nhiên 1 trong 3), chờ gấp đôi mỗi lần: `follow` giây · 2^n (90 → 180 → 360 s),
+// ≤ FOLLOW_MAX lần / lịch sử / ngày. Chỉ ở trình duyệt: không gọi Worker, không tốn lượt AI, không gửi lên AI làm ngữ cảnh.
+const FOLLOW_SEC = 90
+const FOLLOW_MAX = 3
+const FOLLOW_RESUME_MS = 5 * 60_000 // khách xen ngang rồi lại im → hỏi tiếp sau ≥ 5 phút, không đếm lại (vẫn ≤ 3 / ngày)
+const FOLLOW_RETRY_MS = 15_000      // tới giờ mà tab đang ẩn / đang chờ AI → hoãn
+const FOLLOW_STALE_MS = 60_000      // mở lại trang khi đã quá giờ hỏi → bỏ, không gửi câu hỏi lại cũ ngay khi vào
+const VI_MARKS = /[ăâđêôơưàáảãạằắẳẵặầấẩẫậèéẻẽẹềếểễệìíỉĩịòóỏõọồốổỗộờớởỡợùúủũụừứửữựỳýỷỹỵ]/i
+
+/**
+ * Ngôn ngữ của câu hỏi lại = ngôn ngữ khách đang dùng, không phải ngôn ngữ giao diện: tin cuối của khách có dấu tiếng Việt →
+ * 'vi'; không thì câu trả lời thật cuối của trợ lý (AI trả lời theo ngôn ngữ khách — khách gõ không dấu vẫn ra tiếng Việt)
+ * có dấu → 'vi'; còn lại có chữ → 'en'; không đoán được → `fallback`.
+ */
+const _chatLang = (log, fallback) => {
+    const guest = log.findLast(m => m.from === 'guest')?.content ?? ''
+    const reply = log.findLast(m => m.from === 'aide' && !m.follow && !m.error)?.content ?? ''
+    if (VI_MARKS.test(guest) || VI_MARKS.test(reply)) return 'vi'
+    return /\p{L}/u.test(guest + reply) ? 'en' : fallback
+}
+
 const TXT_STD = {
     vi: {
         panelTitle: 'Trợ lý tri thức',
@@ -69,6 +91,18 @@ const TXT_STD = {
         },
         errGeneric: 'Có lỗi xảy ra, thử lại giúp mình nhé',
         sourcesPrefix: 'Nguồn',
+        // Hỏi lại khi khách im lặng — [lần 1, lần 2, lần 3] × 3 cách nói (hỏi còn thắc mắc → gỡ băn khoăn → chào kết)
+        follow: [
+            ['Bạn còn thắc mắc gì thêm không ạ? Mình sẵn sàng giải đáp ngay cho bạn nhé!',
+                'Thông tin vừa rồi đã giúp được bạn chưa ạ? Bạn còn băn khoăn điểm nào không?',
+                'Bạn ơi, mình có thể giúp gì thêm cho bạn không ạ?'],
+            ['Bạn đang cân nhắc giữa các lựa chọn nào ạ? Cho mình biết nhu cầu của bạn, mình tư vấn giúp bạn chọn cái phù hợp nhất nhé!',
+                'Bạn còn lưỡng lự điều gì không ạ? Mình giải thích kỹ hơn giúp bạn nhé!',
+                'Bạn có cần mình gửi thêm thông tin chi tiết không ạ?'],
+            ['Nếu bạn cần thêm thời gian suy nghĩ cũng không sao ạ — khi nào cần cứ nhắn mình nhé. Chúc bạn một ngày tốt lành!',
+                'Khi bạn sẵn sàng, mình hướng dẫn bạn bắt đầu ngay ạ. Còn cần thêm thời gian thì cứ nhắn mình bất cứ lúc nào nhé!',
+                'Cảm ơn bạn đã quan tâm! Khi nào cần hỗ trợ, bạn cứ nhắn mình nhé.'],
+        ],
     },
     en: {
         panelTitle: 'Knowledge assistant',
@@ -82,6 +116,17 @@ const TXT_STD = {
         },
         errGeneric: 'Something went wrong, please try again',
         sourcesPrefix: 'Source',
+        follow: [
+            ['Is there anything else you would like to know? I am happy to help!',
+                'Did that answer your question? Is anything still unclear?',
+                'Can I help you with anything else?'],
+            ['Are you comparing a few options? Tell me what you need and I will help you pick the best fit!',
+                'Is anything still holding you back? I can explain it in more detail!',
+                'Would you like me to share more details?'],
+            ['No rush if you need more time to think — just message me whenever you are ready. Have a great day!',
+                'Whenever you are ready, I can help you get started. And if you need more time, just message me anytime!',
+                'Thanks for stopping by! Message me whenever you need help.'],
+        ],
     },
 }
 
@@ -119,6 +164,8 @@ export class SvcAide extends LitElement {
         // Chế độ dùng thử (page /system/<sector>): ngành chưa phát hành vẫn trả lời người ĐÃ đăng nhập, mỗi câu tính vào
         // lượt tin nhắn thử của ngành — Worker tự quyết và đếm (fn/trial.ts); ngành đã mở thì như thường.
         trial: { type: Boolean },
+        // Hỏi lại khi khách im lặng: số giây chờ lần đầu (gấp đôi mỗi lần), 0 = tắt — <svc-aide follow="0">. Xem _dfArmFollow().
+        follow: { type: Number },
 
         _division: { state: true },
         _log:      { state: true }, // chat entries, sorted created_at asc — cached in IndexedDB via cacheGet/cacheSet, see _dfPersistLog()
@@ -144,6 +191,8 @@ export class SvcAide extends LitElement {
         this.embedded = false
         this.command = null
         this.trial = false
+        this.follow = FOLLOW_SEC
+        this._followTimer = null // setTimeout id của lần hỏi lại kế tiếp — xem _dfArmFollow()
         this._division  = null
         this._log        = []
         this._draft      = ''
@@ -181,6 +230,7 @@ export class SvcAide extends LitElement {
         super.disconnectedCallback()
         this._offOwner?.()
         this._offOwner = null
+        this._dfStopFollow()
     }
 
     willUpdate(changed) {
@@ -193,6 +243,7 @@ export class SvcAide extends LitElement {
             this._dcLoadLog() // kho khác → lịch sử khác (_logKey scope)
         }
         if (changed.has('command')) this._dhCommand()
+        if (changed.has('follow') && changed.get('follow') !== undefined && this.isConnected) this._dfArmFollow()
     }
 
     // Nút ⚙ (quản lý phòng ban + kho kiến thức) chỉ cho người đăng nhập quản lý được trợ lý này: admin, người có quyền
@@ -222,6 +273,7 @@ export class SvcAide extends LitElement {
         if (this._logKey !== key) return // đã đổi người/phòng lần nữa trong lúc đọc
         this._log = log
         this._draft = ''
+        this._dfArmFollow() // lịch sử khác → hẹn hỏi lại theo lịch sử đó (quá giờ thì bỏ)
     }
 
     // Face + quyền chạy: owner gán cứng thì ẩn tới khi Worker trả lời (không nháy nút rồi mới ẩn); owner tự động (hub
@@ -324,9 +376,11 @@ export class SvcAide extends LitElement {
     async _dfPostGuest(content) {
         const now = Date.now()
         const doc = { id: crypto.randomUUID(), visitorId: this._visitorId, from: 'guest', content, created_at: now, updated_at: now }
-        // Bỏ các dòng lỗi-mặc-định (errGeneric fallback của lượt trước) — đưa câu báo lỗi vào history chỉ làm AI bối rối.
-        const history = this._log.filter(m => !m.error).slice(-6).map(m => ({ from: m.from === 'guest' ? 'guest' : 'aide', content: m.content }))
+        // Bỏ các dòng lỗi-mặc-định (errGeneric fallback của lượt trước) và câu hỏi lại soạn sẵn (không mang thông tin) — đưa
+        // vào history chỉ làm AI bối rối / lặp lại.
+        const history = this._log.filter(m => !m.error && !m.follow).slice(-6).map(m => ({ from: m.from === 'guest' ? 'guest' : 'aide', content: m.content }))
         const key = this._logKey // lượt này thuộc người/phòng lúc gửi — đổi tài khoản giữa chừng thì câu trả lời bỏ đi
+        this._dfStopFollow() // khách nhắn → dừng lần hỏi lại đang hẹn
         this._log = [...this._log, doc]
         await this._dfPersistLog(key)
         this._busy = true
@@ -355,6 +409,7 @@ export class SvcAide extends LitElement {
             if (this._logKey !== key) return
             this._log = [...this._log, reply]
             await this._dfPersistLog(key)
+            this._dfArmFollow()
         } catch (err) {
             // err?.message (không err.message trần) — lỗi tới đây có thể KHÔNG phải Error thật.
             console.error('[llm/svc-aide] reply failed:', err?.message ?? err)
@@ -374,6 +429,47 @@ export class SvcAide extends LitElement {
     _dfStage(stage) {
         this._stage = stage
         this._stageIdx = 0
+    }
+
+    _dfStopFollow() {
+        clearTimeout(this._followTimer)
+        this._followTimer = null
+    }
+
+    /**
+     * Hẹn lần hỏi lại kế tiếp theo _log hiện tại: tin cuối là câu trả lời thật của trợ lý (không lỗi; câu hỏi lại trước cũng
+     * tính) và hôm nay chưa hỏi đủ FOLLOW_MAX lần. Lần n (0, 1, 2 — đếm cả ngày) chờ `follow` · 2^n giây kể từ tin cuối; khách
+     * vừa xen ngang (chưa hỏi lại lần nào sau tin của khách) mà hôm nay đã hỏi → chờ ≥ FOLLOW_RESUME_MS. Tới giờ: tin cuối
+     * vẫn là tin đó (khách chưa nhắn, chưa đổi lịch sử) mới gửi; tab ẩn / đang chờ AI → hoãn FOLLOW_RETRY_MS.
+     */
+    _dfArmFollow() {
+        this._dfStopFollow()
+        const sec = Number(this.follow) || 0
+        const last = this._log.at(-1)
+        if (sec <= 0 || this._access !== 'ok' || !last || last.from !== 'aide' || last.error) return
+        const dayStart = new Date().setHours(0, 0, 0, 0)
+        const today = this._log.filter(m => m.follow && m.created_at >= dayStart).length
+        if (today >= FOLLOW_MAX) return
+        const since = this._log.slice(this._log.findLastIndex(m => m.from === 'guest') + 1).filter(m => m.follow).length
+        const wait = sec * 1000 * 2 ** today
+        const due = Number(last.created_at) + (today > 0 && since === 0 ? Math.max(FOLLOW_RESUME_MS, wait) : wait)
+        if (due < Date.now() - FOLLOW_STALE_MS) return
+        const key = this._logKey
+        const fire = () => {
+            this._followTimer = null
+            if (this._logKey !== key || this._log.at(-1) !== last) return
+            if (this._busy || document.visibilityState === 'hidden') { this._followTimer = setTimeout(fire, FOLLOW_RETRY_MS); return }
+            // Theo ngôn ngữ khách đang chat (_chatLang); txt riêng không khai follow → mẫu chuẩn
+            const lang = _chatLang(this._log, this.lang)
+            const steps = txtLingo(this.txt, TXT_STD, lang).follow ?? (TXT_STD[lang] ?? TXT_STD.vi).follow
+            const options = steps?.[today] ?? []
+            const content = options[Math.floor(Math.random() * options.length)]
+            if (!content) return // để trống câu lần n = dừng chuỗi ở đó
+            const at = Date.now()
+            this._log = [...this._log, { id: crypto.randomUUID(), visitorId: this._visitorId, from: 'aide', content, follow: true, created_at: at, updated_at: at }]
+            this._dfPersistLog(key).then(() => this._dfArmFollow())
+        }
+        this._followTimer = setTimeout(fire, Math.max(0, due - Date.now()))
     }
 
     // ── Computed ───────────────────────────────────────────────────────────────

@@ -7,10 +7,11 @@
 
 import { supabase } from '@/services/shared/supabase.js';
 
-// Chỉ gắn token cho 2 Worker của app — không lộ JWT sang URL ngoài (dataSrc của crud.js)
+// Chỉ gắn token cho 3 Worker của app — không lộ JWT sang URL ngoài (dataSrc của crud.js)
 const _AUTH_BASES = [
     import.meta.env.PUBLIC_AUTH_URL,
     import.meta.env.PUBLIC_LLM_URL,
+    import.meta.env.PUBLIC_RADAR_URL,
 ].filter(Boolean);
 // By origin, not by prefix — 'https://llm.example.dev' is a prefix of 'https://llm.example.dev.evil.tld' too.
 const _originOf = (url) => { try { return new URL(url, globalThis.location?.href).origin } catch { return null } };

@@ -30,7 +30,7 @@ import { txtLingo } from '@/services/tools/util.js';
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const FORMAT      = 2;
-const SYSTEM      = new Set(['id', 'created_at', 'updated_at', 'deleted_at', 'actors', 'index']);
+const SYSTEM      = new Set(['id', 'created_at', 'updated_at', 'deleted_at', 'actors', 'index', 'rank']);
 const LIST_FIELDS = new Set(['tags', 'pics']);
 const TEXT_FIELDS = new Set(['content', 'description']);
 const LCS_MAX     = 1_000_000; // ô dp tối đa (m·n token ở giữa, sau khi cắt phần đầu/cuối giống nhau)

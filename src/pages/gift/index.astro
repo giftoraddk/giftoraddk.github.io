@@ -1,0 +1,27 @@
+---
+// /gift/ — trang chủ Giftora DDK đã chuyển về gốc '/' (src/pages/index.astro): gốc domain là URL nhận nhiều link + tìm
+// kiếm thương hiệu nhất. Giữ URL này cho link / bookmark cũ: canonical trỏ '/' + <meta http-equiv="refresh"> (Core
+// `redirectTo`, xem Head/Base.astro) — chạy trên output:'static', không cần adapter. Nội dung + link thật bên dưới cho
+// crawler không theo refresh. Các trang con /gift/<danh mục>, /gift/<ngân sách>, /gift/service/*, /gift/policy/*,
+// /gift/shop giữ nguyên.
+import Core from '@/layouts/Core.astro';
+import { page, shopPage } from '@/modules/gift/meta.js';
+---
+
+<Core title={page.title} description={page.description} lang={page.lang} redirectTo={page.path}>
+	<div class="min-h-[60vh] flex flex-col items-center justify-center text-center px-6 py-16 gap-6">
+		<h1 class="text-3xl md:text-5xl font-bold">{page.title}</h1>
+		<p class="max-w-xl opacity-70">{page.description}</p>
+		<div class="flex flex-wrap justify-center gap-3">
+			<a href={page.path}
+				class="inline-flex items-center justify-center px-7 py-3 rounded-2xl font-semibold
+					border border-primary text-primary-content hover:opacity-90 transition-opacity">
+				{page.name}
+			</a>
+			<a href={shopPage.path}
+				class="inline-flex items-center justify-center px-7 py-3 rounded-2xl font-semibold opacity-80 hover:opacity-100 transition-opacity">
+				{shopPage.name}
+			</a>
+		</div>
+	</div>
+</Core>

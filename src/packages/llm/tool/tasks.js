@@ -57,6 +57,9 @@ export function planSummary(view, faceTitle, lang = 'vi', draft = false) {
 export const previewSummary = (view, faceTitle, lang = 'vi') =>
     (view?.preview ? planSummary({ ...view, ...view.preview }, faceTitle, lang, true) : '')
 
+/** Câu "Xong cả kế hoạch" (mọi ngôn ngữ) — nhận ra cả câu cũ chưa mang id task (trước khi /log nhận `task`). */
+export const isPlanDoneLine = (content) => Object.values(TXT).some((t) => String(content ?? '').startsWith(t.done))
+
 /** Câu Thư ký khi giai đoạn task đổi (prev → view.stage); '' khi không có gì mới để báo. `verdict: false` = không
  *  báo quyết định của Tích hợp (svc-talk `no-verdict`). */
 export function stageLine(prev, view, faceTitle, lang = 'vi', { verdict = true } = {}) {

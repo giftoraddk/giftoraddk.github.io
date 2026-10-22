@@ -10,7 +10,7 @@
  *     know → know_chunks, know_fts, rel (index tìm kiếm + quan hệ dựng từ know) · talks → artifacts (bàn giao của task)
  * CHỈ --local: không có cờ --remote, không bao giờ chạm D1 thật trên Cloudflare. Vectorize (index thật trên
  * Cloudflare) không bị xoá — vector mồ côi của dữ liệu cũ bị search bỏ qua vì không còn know_chunks.
- * Binding nào có bộ đếm trong storage Durable Object local (DO_KEYS) thì xoá kèm khi wipe bảng tương ứng (hoặc wipe hết).
+ * RADAR_DB còn xoá bộ đếm ngày trong storage Durable Object local (DO_KEYS) khi wipe radar_items (hoặc wipe hết).
  * Luôn dọn thêm cache của worker (CACHES): tài khoản Cloudflare Wrangler đã ghim (node_modules/.cache/wrangler — đổi
  * account thì không đi nhầm account cũ) và Cache API / KV giả lập của `wrangler dev` (.wrangler/state/v3/cache, kv —
  * không worker nào có binding KV, nên không mất dữ liệu). D1 / DO / R2 local không nằm trong danh sách này.
@@ -27,9 +27,9 @@ const WRANGLER = join(CWD, 'node_modules', 'wrangler', 'bin', 'wrangler.js');
 // Bảng dựng ra từ bảng khác — xoá bảng gốc thì xoá luôn, không để index / bàn giao trỏ vào dòng không còn.
 const DERIVED = { know: ['know_chunks', 'know_fts', 'rel'], talks: ['artifacts'] };
 // Bộ đếm nằm trong storage Durable Object LOCAL (không phải D1) nhưng đếm theo dữ liệu D1 — xoá bảng `tables` thì xoá
-// luôn các key này, kẻo sau wipe quota vẫn coi như đã dùng. Dạng { BINDING: { className, tables, keys } } — hiện không
-// worker nào dùng (radar đã gỡ khỏi nhánh giftoraddk.com).
-const DO_KEYS = {};
+// luôn các key này, kẻo sau wipe quota vẫn coi như đã dùng. RADAR_DB: RadarControl 'day' = suất ngày (trang, AI,
+// item nhận, perCountry…), nạp lại thành emptyDay ở lần DO khởi động tới.
+const DO_KEYS = { RADAR_DB: { className: 'RadarControl', tables: ['radar_items'], keys: ['day'] } };
 const DO_DIR = join(CWD, '.wrangler', 'state', 'v3', 'do');
 // Cache dọn kèm mỗi lần wipe — [đường dẫn trong thư mục worker, mô tả]. Wrangler tự tạo lại khi cần.
 const CACHES = [

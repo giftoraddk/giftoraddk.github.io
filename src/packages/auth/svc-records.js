@@ -5,7 +5,7 @@
 // search/filter/sort, save / soft-delete / reorder / delete-all, CSV import/export, revisions (svc-diffs),
 // permissions — all svc-resources's own. What changes is only the view:
 //   - Shadow DOM + static styles (svc-resources is Light DOM + injected CSS, which can't reach into a popover)
-//   - a panel header (icon, title, record count, import / delete-all / reload / add) above <svc-list>
+//   - a panel header (icon, title, record count, import / export / delete-all / reload / add) above <svc-list>
 //     (mobile-first, extends app/record-table.js) instead of svc-resources's own toolbar
 //   - dialogs as bottom sheets
 //
@@ -95,8 +95,8 @@ export class SvcRecords extends SvcResources {
         this._fnOpen = false;
     }
 
-    // Worker already wrote the record (status draft) — drop the half-filled New form, reload so the row shows up.
-    _dhFnApproved() {
+    // Worker just saved the approved result as a record (status draft) — drop the half-filled New form, reload so the row shows up.
+    _dhFnRecorded() {
         this._fnOpen = false;
         this._tableEl?.closeEdit();
         this._dhReset();
@@ -129,7 +129,7 @@ export class SvcRecords extends SvcResources {
                     <div class="sys-fn">
                         <svc-fn embedded division=${this.fnDivision} .command=${this._fnCommand}
                             ui=${this.ui} theme=${this.theme} lang=${this.lang}
-                            @fn-approved=${this._dhFnApproved}></svc-fn>
+                            @fn-recorded=${this._dhFnRecorded}></svc-fn>
                     </div>` : nothing}
             </web-dialog>
         `;
@@ -157,14 +157,17 @@ export class SvcRecords extends SvcResources {
                                 <iconify-icon class=${this._importing ? 'sys-spin' : ''}
                                     icon=${this._importing ? 'ri:loader-4-line' : p.edit ? 'ri:upload-cloud-2-line' : 'ri:lock-line'}></iconify-icon>
                             </button>` : nothing}
-                        ${this.btnDeleteAll ? html`
-                            <button type="button" class="sys-icon-btn is-danger" title=${p.delete ? t.deleteAll : t.noPerm} aria-label=${t.deleteAll}
-                                ?disabled=${!p.delete || !this._data.length || this._deletingAll} @click=${() => { this._deleteAllOpen = true; }}>
-                                <iconify-icon icon=${p.delete ? 'ri:delete-bin-2-line' : 'ri:lock-line'}></iconify-icon>
-                            </button>` : nothing}
+                        <button type="button" class="sys-icon-btn" title=${t.export} aria-label=${t.export} @click=${this._dfExportCsv}>
+                            <iconify-icon icon="ri:download-cloud-2-line"></iconify-icon>
+                        </button>
                         <button type="button" class="sys-icon-btn" title=${t.reload} aria-label=${t.reload} ?disabled=${busy} @click=${this._dhReset}>
                             <iconify-icon icon="ri:refresh-line"></iconify-icon>
                         </button>
+                        ${this.btnDeleteAll && p.deleteAll ? html`
+                            <button type="button" class="sys-icon-btn is-danger" title=${t.deleteAll} aria-label=${t.deleteAll}
+                                ?disabled=${!this._data.length || this._deletingAll} @click=${() => { this._deleteAllOpen = true; }}>
+                                <iconify-icon icon="ri:delete-bin-2-line"></iconify-icon>
+                            </button>` : nothing}
                         ${this.creatable ? html`
                             <button type="button" class="sys-add" title=${p.edit ? t.add : t.noPerm} ?disabled=${!p.edit || this._loading} @click=${this._dhOpenNew}>
                                 <iconify-icon icon=${p.edit ? 'ri:add-line' : 'ri:lock-line'}></iconify-icon><span>${t.add}</span>
@@ -196,9 +199,6 @@ export class SvcRecords extends SvcResources {
                 @wt-save=${this._dfSave} @wt-delete=${this._dfDeleteExec} @wt-move=${this._dfMove}
                 @wt-open-history=${this._dhOpenHistory}
                 @wt-query-change=${this._dhQueryChange}>
-                <button slot="actions" type="button" class="sys-icon-btn" title=${t.export} aria-label=${t.export} @click=${this._dfExportCsv}>
-                    <iconify-icon icon="ri:download-2-line"></iconify-icon>
-                </button>
                 ${this.fnDivision && this._perms.edit ? html`
                     <button slot="new-actions" type="button" class="sys-fn-btn" title=${t.fnRunHint} @click=${this._dhOpenFn}>
                         <iconify-icon icon="ri:sparkling-2-line"></iconify-icon><span>${t.fnRun}</span>

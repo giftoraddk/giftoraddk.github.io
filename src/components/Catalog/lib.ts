@@ -161,6 +161,45 @@ export const tagStats = (views: ItemView[], kind: Kind): TagStat[] => {
 	return [...map.values()].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
 };
 
+export interface TagCard {
+	key: string;      // id record đại diện
+	title: string;    // record đại diện — heading của card
+	url: string;
+	cover: string;
+	tags: TagStat[];  // tag card này giữ — số lượng ↓ rồi A–Z
+	count: number;    // số record khác nhau mà các tag của card dẫn tới
+	views: number;    // của record đại diện (như tiêu đề / ảnh bìa) — card bài viết
+	likes: number;
+	scoreAvg: number; // đánh giá của record đại diện — card sản phẩm
+	scoreCount: number;
+	tone: string;
+	latest: string;   // ISO — record đại diện
+}
+
+/**
+ * Card cho trang tags — KHÔNG lặp: mỗi record tối đa 1 card, mỗi tag đúng 1 card. Duyệt record mới nhất trước, record
+ * nhận các tag của nó chưa card nào giữ (tag dùng chung về record mới nhất có nó); record không còn tag mới → không có card.
+ * Sắp theo `count` giảm dần rồi mới nhất trước (khớp "Phổ biến" của Tags.astro).
+ */
+export const tagCards = (views: ItemView[], kind: Kind): TagCard[] => {
+	const stats = new Map(tagStats(views, kind).map(t => [t.slug, t]));
+	const slugsOf = new Map(views.map(v => [v.id, new Set(v.tags.map(slugify).filter(Boolean))]));
+	const taken = new Set<string>();
+	const cards: TagCard[] = [];
+	for (const v of [...views].sort(byNewest)) {
+		const own = [...slugsOf.get(v.id)!].filter(s => !taken.has(s) && stats.has(s));
+		if (!own.length) continue;
+		own.forEach(s => taken.add(s));
+		const tags = own.map(s => stats.get(s)!).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+		const count = views.filter(x => own.some(s => slugsOf.get(x.id)!.has(s))).length;
+		cards.push({
+			key: v.id, title: v.title, url: v.url, cover: v.image, tags, count,
+			views: v.views, likes: v.likes, scoreAvg: v.scoreAvg, scoreCount: v.scoreCount, tone: toneOf(tags[0].label), latest: v.published,
+		});
+	}
+	return cards.sort((a, b) => b.count - a.count || b.latest.localeCompare(a.latest));
+};
+
 /** Record liên quan: chung nhiều tag nhất, hoà thì mới hơn; thiếu thì bù bằng record mới nhất. */
 export const relatedOf = (item: ItemView, all: ItemView[], max = 6): ItemView[] => {
 	const others = all.filter(x => x.id !== item.id);

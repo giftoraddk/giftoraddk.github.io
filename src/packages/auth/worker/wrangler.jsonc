@@ -10,17 +10,12 @@
   "vars": {
     "ALLOWED_ORIGIN": "https://chatzui.com,https://www.chatzui.com,https://giftoraddk.com,https://www.giftoraddk.com,http://localhost:5000",
     "SUPABASE_URL": "https://epiwtyryvbqnsvcossjb.supabase.co",
-    // Gốc của PayPal return_url / cancel_url (/system/pricing) — đổi sang domain thật trước khi deploy.
-    // Local dev lấy APP_URL từ .dev.vars (scripts/setup-dev.mjs).
-    "APP_URL": "http://localhost:5000",
+    // Gốc của PayPal return_url / cancel_url (/system/pricing) + link dự phòng trong tin Telegram Zap Share (zap.ts lấy
+    // Origin của trang nếu có trong ALLOWED_ORIGIN). Local dev lấy APP_URL từ .dev.vars (scripts/setup-dev.mjs).
+    "APP_URL": "https://chatzui.com",
     // 'sandbox' | 'live' — chọn host API PayPal + planIds trong purchase/tool/plans.js; phải khớp
     // loại app của PAYPAL_CLIENT_ID. Local dev lấy từ .dev.vars.
-    "PAYPAL_ENV": "sandbox",
-    // Người bán được xử lý đơn của chính mình (invoices.ts) — danh sách user id, phẩy ngăn cách. seller_id trên hoá đơn
-    // do trình duyệt gửi, nên chỉ id có ở đây mới được quyền người bán (không thì người mua tự đặt seller_id = mình
-    // rồi tự xác nhận "đã thanh toán"). Admin / quyền `invoices.*` luôn xử lý được mọi đơn.
-    // Khớp `shop.sellerId` ở src/modules/gift/shop.js (giao diện) — đổi người bán thì sửa cả 2 nơi.
-    "SELLER_IDS": "01JUU9AA1EB3J1NRZEGPQXJY3B"
+    "PAYPAL_ENV": "sandbox"
   },
   
   // Bảng nội dung của app (DB_ALL) — document store, schema ở db/schema.sql (tự đồng bộ khi dev/deploy) + quyền ở src/tables.ts

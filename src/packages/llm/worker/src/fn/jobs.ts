@@ -6,7 +6,6 @@ import type { FnEnv } from './routes';
 import { parseDivisionId } from './registry.ts';
 import { knowFromApproved } from './know.ts';
 import { HUB_JOBS_PER_DAY, sinceIso } from './access.ts';
-import { now } from './util.ts';
 import type { FnSpec, OutputSpec, Rec } from './types.ts';
 
 /**
@@ -35,13 +34,15 @@ export async function assertJobQuota(env: FnEnv, caller: Caller, adding = 1): Pr
   if (Number(row?.n) + adding > HUB_JOBS_PER_DAY) throw new HttpError(429, `At most ${HUB_JOBS_PER_DAY} jobs a day — try again tomorrow`);
 }
 
+/** The knowledge id of a job's result — platform staff: the job's id, the same id its record takes when /record writes
+ *  it (so the record's own know-sync updates that row instead of duplicating it); a hub: '' (knowId of the job). */
+export const recordKnowId = (caller: Caller, job: Rec): string => (caller.owner === '' ? String(job.id) : '');
+
 /**
  * After a job is approved: its result becomes knowledge of the caller's owner, in the background (never fails the
- * approve, P2-18), and createdPostId is stamped. `recordId` = the platform record written ('' for a hub). Handing work
- * on to the next department is the task scheduler's job (fn/tasks.ts, P3-14) — nothing waits on a product job.
+ * approve, P2-18). Writing it to the platform table is a separate step the boss takes (/record, which stamps
+ * createdPostId). Handing work on to the next department is the task scheduler's job (fn/tasks.ts, P3-14).
  */
-export async function afterApprove(env: FnEnv, ctx: ExecutionContext, caller: Caller, job: Rec, spec: FnSpec, recordId: string): Promise<void> {
-  if (spec.output) syncKnow(env, ctx, caller, job, spec.output, job.fields ?? {}, recordId);
-
-  await env.LLM_DB.prepare('UPDATE talks SET createdPostId = ?, updated_at = ? WHERE id = ?').bind(recordId, now(), job.id).run();
+export function afterApprove(env: FnEnv, ctx: ExecutionContext, caller: Caller, job: Rec, spec: FnSpec): void {
+  if (spec.output) syncKnow(env, ctx, caller, job, spec.output, job.fields ?? {}, recordKnowId(caller, job));
 }

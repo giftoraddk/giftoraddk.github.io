@@ -133,9 +133,9 @@ const P = (x: { en: string; vi: string }) => pickLang(x);
 						<Icon name="next" size={18} />
 					</button>
 				</div>
-				<div class="pf-stack">
+				<div class="pf-stack" role="group" aria-roledescription={P({ en: 'carousel', vi: 'băng chuyền' })} aria-labelledby="pf-featured-h">
 					{featured.map((v, i) => (
-						<Card kind={kind} item={v} eager={i === 0} attrs={{ 'data-pos': i, inert: i > 0 ? true : undefined }} />
+						<Card kind={kind} item={v} eager={i === 0} attrs={{ 'data-pos': i, inert: i > 0 ? true : undefined, 'aria-hidden': i > 0 ? 'true' : undefined }} />
 					))}
 				</div>
 			</section>
@@ -290,34 +290,123 @@ const P = (x: { en: string; vi: string }) => pickLang(x);
 
 		if (q) apply();
 		initStack(root);
+		initChips(root);
 		const today = root.querySelector<HTMLElement>('[data-today]');
 		if (today) today.textContent = new Intl.DateTimeFormat(document.documentElement.lang || 'vi', {
 			weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
 		}).format(new Date());
 	}
 
-	// Stack nổi bật: card trước → ra sau; card sau → inert (không focus/đọc được khi đang bị che)
+	// Stack nổi bật — cùng cách <ed-stack> (radar/everyday/ed-stack.js): card trên bay ra cạnh (OUT_MS = transition
+	// .pf-stack > .pf-card ở catalog.css) rồi về đáy; card sau inert + aria-hidden (bị che, không focus/đọc được).
+	// Lật: nút ›, vuốt/kéo ngang (card bám theo tay), ← → khi focus trong stack, bấm vào mép card đang ló phía sau.
+	// Danh mục ở sidebar desktop (khung cuộn dọc, catalog.css .pf-side .pf-chips): độ mờ mép trên/dưới = phần còn khuất
+	// (tối đa CHIP_FADE). Dưới desktop chip cuộn ngang — 2 biến này không được CSS dùng tới; thay vào đó con lăn chuột
+	// (lăn dọc) cuộn hàng chip sang ngang, tới đầu/cuối hàng thì trả lại cho trang cuộn tiếp.
+	const CHIP_FADE = 24;
+	function initChips(root: HTMLElement) {
+		const box = root.querySelector<HTMLElement>('.pf-side .pf-chips');
+		if (!box) return;
+		const update = () => {
+			const rest = box.scrollHeight - box.clientHeight - box.scrollTop;
+			box.style.setProperty('--fade-t', `${Math.max(0, Math.min(box.scrollTop, CHIP_FADE))}px`);
+			box.style.setProperty('--fade-b', `${Math.max(0, Math.min(rest, CHIP_FADE))}px`);
+		};
+		box.addEventListener('scroll', update, { passive: true });
+		new ResizeObserver(update).observe(box);
+		update();
+
+		box.addEventListener('wheel', e => {
+			const horizontal = box.scrollWidth > box.clientWidth + 1 && box.scrollHeight <= box.clientHeight + 1;
+			if (!horizontal || e.ctrlKey || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return; // touchpad vuốt ngang tự cuộn rồi
+			const delta = e.deltaMode === 1 ? e.deltaY * 32 : e.deltaY; // chế độ "dòng" (Firefox) → px
+			const max = box.scrollWidth - box.clientWidth;
+			if ((delta < 0 && box.scrollLeft <= 0) || (delta > 0 && box.scrollLeft >= max - 1)) return;
+			e.preventDefault();
+			box.scrollLeft += delta;
+		}, { passive: false });
+	}
+
+	const OUT_MS = 300;
+	const SWIPE_PX = 60;
+	const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 	function initStack(root: HTMLElement) {
 		const sec = root.querySelector<HTMLElement>('[data-stack]');
-		if (!sec) return;
-		const cards = [...sec.querySelectorAll<HTMLElement>('.pf-stack > .pf-card')];
+		const stack = sec?.querySelector<HTMLElement>('.pf-stack');
+		if (!sec || !stack) return;
+		const cards = [...stack.querySelectorAll<HTMLElement>(':scope > .pf-card')];
 		const dots = [...sec.querySelectorAll<HTMLElement>('.pf-stack-dots span')];
-		let front = 0;
+		const n = cards.length;
+		let front = 0, busy = false, swiped = false;
+		let drag: { id: number; x: number; y: number; horizontal: boolean | null } | null = null;
+
 		const render = () => cards.forEach((c, i) => {
-			const pos = (i - front + cards.length) % cards.length;
+			const pos = (i - front + n) % n;
 			c.dataset.pos = String(pos);
 			c.inert = pos !== 0;
+			if (pos === 0) c.removeAttribute('aria-hidden'); else c.setAttribute('aria-hidden', 'true');
 			dots[i]?.classList.toggle('is-on', pos === 0);
 		});
-		const next = (dir = 1) => { front = (front + dir + cards.length) % cards.length; render(); };
-		sec.querySelector('[data-stack-next]')?.addEventListener('click', () => next());
-		let x0 = 0;
-		const stack = sec.querySelector<HTMLElement>('.pf-stack')!;
-		stack.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
-		stack.addEventListener('touchend', (e) => {
-			const dx = e.changedTouches[0].clientX - x0;
-			if (Math.abs(dx) > 48) next(dx < 0 ? 1 : -1);
+		const top = () => cards[front];
+		const setDx = (dx: number | null) => {
+			const c = top();
+			c.classList.toggle('is-dragging', dx != null);
+			if (dx == null) c.style.removeProperty('--dx'); else c.style.setProperty('--dx', String(Math.round(dx)));
+		};
+		const go = (dir: number) => {
+			if (n < 2 || busy) return;
+			const c = top();
+			const land = () => {
+				c.classList.remove('is-out-next', 'is-out-prev');
+				front = (front + dir + n) % n;
+				busy = false;
+				render();
+			};
+			setDx(null);
+			if (reduced()) return land();
+			busy = true;
+			c.classList.add(dir > 0 ? 'is-out-next' : 'is-out-prev');
+			setTimeout(land, OUT_MS);
+		};
+
+		sec.querySelector('[data-stack-next]')?.addEventListener('click', () => go(1));
+		stack.addEventListener('keydown', e => {
+			if (e.key === 'ArrowRight') { e.preventDefault(); go(1); }
+			else if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
 		});
+		// capture: nuốt click sinh ra ngay sau khi kéo (không mở link của card); bấm trúng mép card sau → lật tới
+		stack.addEventListener('click', e => {
+			if (swiped) { e.preventDefault(); e.stopPropagation(); swiped = false; return; }
+			if (!top().contains(e.target as Node)) go(1);
+		}, true);
+		stack.addEventListener('pointerdown', e => {
+			if (n < 2 || busy || (e.pointerType === 'mouse' && e.button !== 0)) return;
+			drag = { id: e.pointerId, x: e.clientX, y: e.clientY, horizontal: null };
+			swiped = false;
+		});
+		stack.addEventListener('pointermove', e => {
+			if (!drag || e.pointerId !== drag.id) return;
+			const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+			if (drag.horizontal == null && Math.hypot(dx, dy) > 8) {
+				drag.horizontal = Math.abs(dx) > Math.abs(dy);
+				if (drag.horizontal) try { stack.setPointerCapture(e.pointerId); } catch { /* pointer đã mất */ }
+			}
+			if (drag.horizontal && !reduced()) setDx(dx);
+		});
+		const end = (e: PointerEvent, commit: boolean) => {
+			if (!drag || e.pointerId !== drag.id) return;
+			const { horizontal, x } = drag;
+			drag = null;
+			const dx = e.clientX - x;
+			swiped = Boolean(horizontal) && commit;
+			if (swiped) setTimeout(() => { swiped = false; }, 350); // không nuốt nhầm 1 lần Enter bằng bàn phím về sau
+			if (commit && horizontal && Math.abs(dx) >= SWIPE_PX) go(dx < 0 ? 1 : -1);
+			else setDx(null);
+		};
+		stack.addEventListener('pointerup', e => end(e, true));
+		stack.addEventListener('pointercancel', e => end(e, false));
+		stack.addEventListener('dragstart', e => e.preventDefault()); // kéo ảnh/link không thành drag-and-drop của trình duyệt
 	}
 
 	document.addEventListener('astro:page-load', () => {

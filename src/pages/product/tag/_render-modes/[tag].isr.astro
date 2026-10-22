@@ -6,9 +6,8 @@ import { KINDS } from '@/components/Catalog/kinds';
 import Feed from '@/components/Catalog/Feed.astro';
 import { fetchCollection } from '@/services/core/fetcher.server.js';
 import { tagSlugMap, pickLang } from '@/services/tools/util';
-import { site } from '@/services/tools/site';
 import { menuItems, policies, socials } from '@/modules/gift/shop.js'; // footer chung giftoraddk.com
-import { menu as productMenu, tints } from '@/modules/product/index.js';
+import { menu as productMenu, tints, productSeo } from '@/modules/product/index.js';
 import I18nText from '@/components/I18nText.astro';
 
 // Biến thể ISR của src/pages/product/tag/[tag].astro — xem
@@ -24,11 +23,9 @@ if (!entry) Astro.response.status = 404;
 const tag = entry?.label ?? '';
 const products = entry?.items ?? [];
 
-const pageTitle = entry ? tag : pickLang({ en: 'Not found', vi: 'Không tìm thấy' });
-const pageDescription = entry ? pickLang({
-	en: `${products.length} products in "${tag}" at ${site.subtitle}.`,
-	vi: `${products.length} sản phẩm thuộc danh mục "${tag}" tại ${site.subtitle}.`,
-}) : '';
+const seo = entry ? productSeo.tag(tag, products.length) : null;
+const pageTitle = seo ? pickLang(seo.heading) : pickLang({ en: 'Not found', vi: 'Không tìm thấy' });
+const pageDescription = seo ? pickLang(seo.description) : '';
 const breadcrumb = [
 	{ label: pickLang({ en: 'Home', vi: 'Trang chủ' }), href: '/' },
 	{ label: pickLang({ en: 'Products', vi: 'Sản phẩm' }), href: '/product/' },
@@ -39,7 +36,7 @@ const image = products.map((p: any) => String(p.pics || '').split('|').find(Bool
 const bg = null;
 ---
 
-<Core menu={productMenu} tints={tints} title={entry ? `${pageTitle} • ${pickLang({ en: 'Products', vi: 'Sản phẩm' })}` : pageTitle} description={pageDescription} image={image} noindex={!entry} footer={{ columns: menuItems, policies, socials, bg }}>
+<Core menu={productMenu} tints={tints} title={seo ? pickLang(seo.title) : pageTitle} description={pageDescription} image={image} noindex={!entry} footer={{ columns: menuItems, policies, socials, bg }}>
 	{entry ? (
 		<Feed kind={KINDS.product} items={products} allItems={allProducts} title={pageTitle} description={pageDescription}
 			path={`/product/tag/${tagSlug}/`} activeTag={tagSlug} breadcrumb={breadcrumb} />

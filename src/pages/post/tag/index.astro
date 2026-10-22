@@ -4,19 +4,16 @@ import { KINDS } from '@/components/Catalog/kinds';
 import Tags from '@/components/Catalog/Tags.astro';
 import { fetchCollection } from '@/services/core/fetcher.server.js';
 import { pickLang } from '@/services/tools/util';
-import { site } from '@/services/tools/site';
 import { menuItems, policies, socials } from '@/modules/gift/shop.js'; // footer chung giftoraddk.com
-import { menu as postMenu, tints } from '@/modules/post/index.js';
+import { menu as postMenu, tints, postSeo } from '@/modules/post/index.js';
 
 // Trang tổng hợp chủ đề bài viết /post/tag/ — mỗi tag 1 tile dẫn tới /post/tag/{slug}/
 // (cùng tagSlugMap/slugify với [tag].astro, sitemap.xml.ts, llms.txt.ts).
 const posts = await fetchCollection('posts');
 
-const pageTitle = pickLang({ en: 'Post topics', vi: 'Chủ đề bài viết' });
-const pageDescription = pickLang({
-	en: `Every topic covered on ${site.subtitle}, with the number of posts in each.`,
-	vi: `Tất cả chủ đề bài viết tại ${site.subtitle}, kèm số bài trong từng chủ đề.`,
-});
+const { heading, title, description } = postSeo.topics;
+const pageTitle = pickLang(heading);
+const pageDescription = pickLang(description);
 const breadcrumb = [
 	{ label: pickLang({ en: 'Home', vi: 'Trang chủ' }), href: '/' },
 	{ label: pickLang({ en: 'Posts', vi: 'Bài viết' }), href: '/post/' },
@@ -25,6 +22,6 @@ const breadcrumb = [
 const bg = null;
 ---
 
-<Core menu={postMenu} tints={tints} title={pageTitle} description={pageDescription} footer={{ columns: menuItems, policies, socials, bg }}>
+<Core menu={postMenu} tints={tints} title={pickLang(title)} description={pageDescription} footer={{ columns: menuItems, policies, socials, bg }}>
 	<Tags kind={KINDS.post} items={posts} title={pageTitle} description={pageDescription} breadcrumb={breadcrumb} />
 </Core>

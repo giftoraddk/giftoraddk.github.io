@@ -4,23 +4,20 @@ import { KINDS } from '@/components/Catalog/kinds';
 import Feed from '@/components/Catalog/Feed.astro';
 import { fetchCollection } from '@/services/core/fetcher.server.js';
 import { pickLang } from '@/services/tools/util';
-import { site } from '@/services/tools/site';
 import { menuItems, policies, socials } from '@/modules/gift/shop.js'; // footer chung giftoraddk.com
-import { menu as postMenu, tints } from '@/modules/post/index.js';
+import { menu as postMenu, tints, postSeo } from '@/modules/post/index.js';
 
 // Danh sách bài viết — giao diện mobile-first pastel (components/Catalog/Feed.astro). Mọi bài render sẵn
 // trong HTML lúc build (SEO/GEO); tìm kiếm/sắp xếp/xem thêm chạy trên DOM đã có, không gọi lại API.
 const posts = await fetchCollection('posts');
 
-const pageTitle = pickLang({ en: 'News & Stories', vi: 'Tin tức & Câu chuyện' });
-const pageDescription = pickLang({
-	en: `Latest posts, gift ideas and stories from ${site.subtitle} — browse by topic or search.`,
-	vi: `Bài viết, ý tưởng quà tặng và câu chuyện mới nhất từ ${site.subtitle} — xem theo chủ đề hoặc tìm kiếm.`,
-});
+const { heading, title, description } = postSeo.list;
+const pageTitle = pickLang(heading);
+const pageDescription = pickLang(description);
 const image = posts.map((p: any) => String(p.pics || '').split('|').find(Boolean)).find(Boolean);
 const bg = null;
 ---
 
-<Core menu={postMenu} tints={tints} title={pageTitle} description={pageDescription} image={image} footer={{ columns: menuItems, policies, socials, bg }}>
+<Core menu={postMenu} tints={tints} title={pickLang(title)} description={pageDescription} image={image} footer={{ columns: menuItems, policies, socials, bg }}>
 	<Feed kind={KINDS.post} items={posts} title={pageTitle} description={pageDescription} path="/post/" />
 </Core>

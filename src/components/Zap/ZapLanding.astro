@@ -1,0 +1,178 @@
+---
+// Trang giới thiệu + bán 1 Chrome extension zap-* (hook/ZAP-SHARE.rst §10, hook/ZAP-SUPPORT.rst §13) — bố cục chung của
+// pages/system/extension/<extension>.astro: hero (nút Chrome Web Store + chip), tính năng, 3 bước, bảng giá
+// <svc-zap-license product=…> (VietQR, khoá của tôi), FAQ. Trang chỉ đưa nội dung; giá / màu / link Store lấy từ
+// zap/products.js. Chữ song ngữ { vi, en } qua <I18nText>.
+import Core from '@/layouts/Core.astro';
+import I18nText from '@/components/I18nText.astro';
+import { variant, bar, menuItems, footerMenuItems, policies, socials, contact } from '@/modules/system/index.js';
+import { legalPath } from '@/modules/system/legal.js';
+import { zapProduct } from '@/packages/zap/products.js';
+
+type Txt = { vi: string; en: string };
+interface Props {
+	product: string;
+	meta: { title: string; description: string; lang: string; indexable: boolean };
+	hero: { title: Txt; lead: Txt };
+	chips: { icon: string; name: string; note: Txt }[];
+	features: { title: Txt; sub?: Txt; items: { icon: string; title: Txt; text: Txt }[] };
+	steps: { icon: string; title: Txt; text: Txt }[];
+	faq: { q: Txt; a: Txt }[];
+}
+
+const { product, meta, hero, chips, features, steps, faq } = Astro.props;
+const p = zapProduct(product)!;
+const eyebrow = `CHROME EXTENSION · ${p.name.toUpperCase()}`;
+const colors = `--zap: ${p.color.fill}; --zap-fg: ${p.color.fg};`;
+---
+
+<Core
+	title={meta.title}
+	description={meta.description}
+	lang={meta.lang}
+	noindex={!meta.indexable}
+	menu={{ type: 'top', position: 'prefix', variant: 'minimal', menuItems: menuItems }}
+	footer={{ columns: footerMenuItems, policies, socials, contact }}
+	bar={bar}
+	bg={variant.bg}
+	theme={variant.theme}
+	variant={variant}
+>
+	<div class="zap mx-auto w-full max-w-6xl px-4 pt-24 pb-20" style={colors}>
+		<header class="zap-hero">
+			<p class="zap-eyebrow"><iconify-icon icon="ri:chrome-line"></iconify-icon> {eyebrow}</p>
+			<h1><I18nText text={hero.title} /></h1>
+			<p class="zap-lead"><I18nText text={hero.lead} /></p>
+			<div class="zap-cta">
+				{p.storeUrl ? (
+					<a class="zap-btn" href={p.storeUrl} target="_blank" rel="noopener noreferrer">
+						<iconify-icon icon="ri:chrome-fill"></iconify-icon><I18nText text={{ vi: 'Thêm vào Chrome — miễn phí', en: 'Add to Chrome — free' }} />
+					</a>
+				) : (
+					<span class="zap-btn is-soon" aria-disabled="true">
+						<iconify-icon icon="ri:chrome-fill"></iconify-icon><I18nText text={{ vi: 'Sắp có trên Chrome Web Store', en: 'Coming soon to the Chrome Web Store' }} />
+					</span>
+				)}
+				<a class="zap-btn ghost" href="#pricing"><iconify-icon icon="ri:price-tag-3-line"></iconify-icon><I18nText text={{ vi: 'Xem bảng giá', en: 'See pricing' }} /></a>
+			</div>
+			<ul class="zap-chips">
+				{chips.map((n) => (
+					<li><iconify-icon icon={n.icon}></iconify-icon><span><strong>{n.name}</strong><small><I18nText text={n.note} /></small></span></li>
+				))}
+			</ul>
+		</header>
+
+		<section class="zap-section">
+			<h2><I18nText text={features.title} /></h2>
+			{features.sub && <p class="zap-sub"><I18nText text={features.sub} /></p>}
+			<div class="zap-features">
+				{features.items.map((f) => (
+					<article class="zap-card">
+						<span class="zap-ico"><iconify-icon icon={f.icon}></iconify-icon></span>
+						<h3><I18nText text={f.title} /></h3>
+						<p><I18nText text={f.text} /></p>
+					</article>
+				))}
+			</div>
+		</section>
+
+		<section class="zap-section">
+			<h2><I18nText text={{ vi: '3 bước là xong', en: 'Done in 3 steps' }} /></h2>
+			<ol class="zap-steps">
+				{steps.map((s, i) => (
+					<li class="zap-card">
+						<span class="zap-num">{i + 1}</span>
+						<h3><iconify-icon icon={s.icon}></iconify-icon><I18nText text={s.title} /></h3>
+						<p><I18nText text={s.text} /></p>
+					</li>
+				))}
+			</ol>
+		</section>
+
+		<section id="pricing" class="zap-section">
+			<h2><I18nText text={{ vi: 'Bảng giá — chuyển khoản VietQR', en: 'Pricing — pay by VietQR transfer' }} /></h2>
+			<p class="zap-sub"><I18nText text={{ vi: 'Trả trước theo tháng hoặc năm, không tự gia hạn. Dành cho khách hàng tại Việt Nam.', en: 'Prepay by the month or year, never auto-renewed. For customers in Vietnam.' }} /></p>
+			<svc-zap-license id="zap-license" product={p.id} lang="vi"></svc-zap-license>
+			<p class="zap-legal">
+				<span class="i18n-vi">Khi thanh toán, bạn đồng ý với <a href={legalPath('terms')}>Điều khoản dịch vụ</a>, <a href={legalPath('refund')}>Chính sách thanh toán &amp; hoàn tiền</a> và <a href={legalPath('privacy')}>Chính sách bảo mật</a>.</span>
+				<span class="i18n-en">By paying you agree to the <a href={legalPath('terms')}>Terms of Service</a>, the <a href={legalPath('refund')}>Billing &amp; Refund Policy</a> and the <a href={legalPath('privacy')}>Privacy Policy</a>.</span>
+			</p>
+		</section>
+
+		<section class="zap-section">
+			<h2><I18nText text={{ vi: 'Câu hỏi thường gặp', en: 'FAQ' }} /></h2>
+			<div class="zap-faq">
+				{faq.map((f) => (
+					<details class="zap-card">
+						<summary><I18nText text={f.q} /></summary>
+						<p><I18nText text={f.a} /></p>
+					</details>
+				))}
+			</div>
+		</section>
+	</div>
+
+	<script>
+		import 'iconify-icon';
+		import '@/packages/zap/svc-zap-license.js';
+		import { watchHtmlAttr } from '@/services/tools/util.js';
+
+		const el = document.getElementById('zap-license') as (HTMLElement & { lang: string; theme: string }) | null;
+		// Khối giá nói theo ngôn ngữ + giao diện của trang (BtnLang / BtnTheme đổi <html>).
+		watchHtmlAttr('lang', (lang: string | null) => { if (el) el.lang = lang === 'vi' ? 'vi' : 'en'; });
+		watchHtmlAttr('data-theme', (theme: string | null) => { if (el) el.theme = theme === 'light' ? 'light' : 'dark'; });
+	</script>
+</Core>
+
+<style>
+	.zap { color: var(--color-base-content); }
+	.zap h2 { margin: 0 0 1.2rem; font-size: clamp(1.3rem, 2.4vw, 1.75rem); font-weight: 700; text-align: center; }
+	.zap h3 { margin: 0; font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: .45rem; }
+	.zap p { margin: 0; }
+
+	.zap-hero { text-align: center; padding: 1rem 0 2.5rem; }
+	.zap-eyebrow { display: inline-flex; align-items: center; gap: .4rem; margin: 0 0 .9rem !important; padding: .3rem .8rem; border-radius: 99px;
+		font-size: .72rem; font-weight: 700; letter-spacing: .12em; background: var(--zap); color: var(--zap-fg); }
+	.zap-hero h1 { margin: 0 auto; max-width: 52rem; font-size: clamp(1.8rem, 4.2vw, 3rem); line-height: 1.15; font-weight: 800; letter-spacing: -.02em; }
+	.zap-lead { margin: 1rem auto 0 !important; max-width: 42rem; font-size: 1.08rem; opacity: .8; }
+	.zap-cta { display: flex; flex-wrap: wrap; justify-content: center; gap: .75rem; margin-top: 1.6rem; }
+	.zap-btn { display: inline-flex; align-items: center; gap: .5rem; padding: .8rem 1.3rem; border-radius: .8rem; font-weight: 700;
+		background: var(--zap); color: var(--zap-fg); text-decoration: none; transition: transform .15s, filter .15s; }
+	.zap-btn:hover { transform: translateY(-1px); filter: brightness(.96); }
+	.zap-btn.ghost { background: transparent; color: inherit; border: 1px solid color-mix(in oklab, var(--color-base-content) 18%, transparent); }
+	.zap-btn.is-soon { opacity: .75; cursor: default; }
+	.zap-btn.is-soon:hover { transform: none; filter: none; }
+	.zap-btn iconify-icon { font-size: 1.25rem; }
+
+	.zap-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: .6rem; margin: 2rem 0 0; padding: 0; list-style: none; }
+	.zap-chips li { display: flex; align-items: center; gap: .55rem; padding: .5rem .9rem .5rem .55rem; border-radius: 99px;
+		border: 1px solid color-mix(in oklab, var(--color-base-content) 12%, transparent); background: var(--color-base-100); text-align: left; }
+	.zap-chips iconify-icon { font-size: 1.6rem; }
+	.zap-chips span { display: grid; line-height: 1.2; }
+	.zap-chips small { font-size: .72rem; opacity: .65; }
+
+	.zap-section { margin-top: 4rem; scroll-margin-top: 6rem; }
+	.zap-sub { text-align: center; opacity: .75; margin: -.6rem 0 1.6rem !important; }
+	.zap-card { padding: 1.25rem; border-radius: 1rem; border: 1px solid color-mix(in oklab, var(--color-base-content) 12%, transparent); background: var(--color-base-100); }
+	.zap-card p { margin-top: .45rem; font-size: .92rem; line-height: 1.55; opacity: .78; }
+
+	.zap-features { display: grid; gap: 1rem; grid-template-columns: minmax(0, 1fr); }
+	@media (min-width: 640px) { .zap-features { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+	@media (min-width: 1024px) { .zap-features { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+	.zap-ico { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; margin-bottom: .8rem; border-radius: .75rem; background: var(--zap); color: var(--zap-fg); font-size: 1.35rem; }
+
+	.zap-steps { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; grid-template-columns: minmax(0, 1fr); }
+	@media (min-width: 768px) { .zap-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+	.zap-steps li { position: relative; padding-top: 2.4rem; }
+	.zap-num { position: absolute; top: -.9rem; left: 1.25rem; width: 2rem; height: 2rem; border-radius: 50%; display: grid; place-items: center;
+		background: var(--zap); color: var(--zap-fg); font-weight: 800; }
+
+	.zap-legal { margin-top: 1rem !important; font-size: .8rem; line-height: 1.55; opacity: .7; text-align: center; }
+	.zap-legal a { color: var(--color-primary); }
+
+	.zap-faq { display: grid; gap: .7rem; max-width: 48rem; margin: 0 auto; }
+	.zap-faq summary { cursor: pointer; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 1rem; }
+	.zap-faq summary::-webkit-details-marker { display: none; }
+	.zap-faq summary::after { content: '+'; font-weight: 700; opacity: .6; }
+	.zap-faq details[open] summary::after { content: '−'; }
+</style>

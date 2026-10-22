@@ -21,13 +21,8 @@ export const shop = {
 	sellerId: '01JUU9AA1EB3J1NRZEGPQXJY3B',
 	// name~phone~address~email~taxCode — format `seller` của svc-pay (pay/service _buildSellerSlot)
 	seller: [company.name.vi, company.hotline, company.address, company.email, company.taxNumber].map(cell).join('~'),
-	// Tài khoản nhận tiền — chủ tài khoản / ngân hàng chỉ có ở đây; số MoMo = hotline công ty
+	// Tài khoản nhận tiền — chủ tài khoản / ngân hàng chỉ có ở đây
 	wallet: {
-		momo: {
-			phone: company.hotline,
-			accountName: 'LE THI KIM DAN',
-			bin: '971025',
-		},
 		bank: {
 			accountNo: '00951018802',
 			accountName: 'LE THI KIM DAN',

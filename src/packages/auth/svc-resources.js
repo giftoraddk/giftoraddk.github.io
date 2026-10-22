@@ -20,7 +20,8 @@ import { LitElement, html } from 'lit';
 import 'iconify-icon';
 import css from './css/svc-resources.css?inline';
 import { auth } from './service/service.js';
-import { can } from './tool/roles.js';
+import { can, parseRoles } from './tool/roles.js';
+import { RANK_FIELD, compareRank, rankPlace } from '@/services/tools/rank.js';
 import { triggerRebuild } from './service/rebuild.js';
 import { ulid, buildNested, injectStyles, txtLingo, toastEmit, isObject } from '@/services/tools/util.js';
 import {
@@ -253,11 +254,11 @@ export class SvcResources extends LitElement {
         const now = await this._svc.now();
         try {
             if (id === null) {
-                //   [3.a] CREATE: id mới, prepend vào _data
+                //   [3.a] CREATE: id mới, prepend vào _data (orderable: ngay sau nhóm ưu tiên)
                 const newId   = ulid();
-                const docData = this._buildNewDoc(flat, this._data.length, now);
+                const docData = this._buildNewDoc(flat, now);
                 await this._svc.set(newId, docData);
-                this._data = [{ id: newId, ...docData }, ...this._data];
+                this._data = this._comOrdered([{ id: newId, ...docData }, ...this._data]);
                 this._dfSyncKnow({ id: newId, ...docData });
                 this._dfCapture(newId, 'created');
             } else {
@@ -268,7 +269,7 @@ export class SvcResources extends LitElement {
                     updated_at: now,
                     actors:     this._comActors(existing?.actors, 'updated'),
                 });
-                this._data = this._data.map(r => r.id === id ? deepMerge(r, buildNested(flat)) : r);
+                this._data = this._comOrdered(this._data.map(r => r.id === id ? { ...deepMerge(r, buildNested(flat)), updated_at: now } : r));
                 this._dfSyncKnow(this._data.find(r => r.id === id));
                 this._dfCapture(id);
             }
@@ -340,7 +341,7 @@ export class SvcResources extends LitElement {
     async _dfDeleteAll() {
         // [1] CHECK: Đóng dialog; thiếu quyền hoặc đang chạy dở thì bỏ qua
         this._deleteAllOpen = false;
-        if (!this._perms.delete || this._deletingAll) return;
+        if (!this._perms.deleteAll || this._deletingAll) return;
         this._deletingAll = true;
 
         try {
@@ -359,28 +360,52 @@ export class SvcResources extends LitElement {
         }
     }
 
+    /**
+     * Flow đổi thứ tự (orderable): wt-move { id, prevId | nextId } (kéo-thả / phím) hoặc { id, direction: 'top'|'unpin' }
+     * -> rank mới (Fractional Indexing, tools/rank.js) chỉ cho row đổi chỗ — không đánh số lại cả bảng
+     */
     async _dfMove(e) {
-        const { id, direction } = e.detail;
-        const idx = this._data.findIndex(r => r.id === id);
-        if (idx === -1) return;
-        const arr = [...this._data];
-        const [row] = arr.splice(idx, 1);
-        switch (direction) {
-            case 'top':    arr.unshift(row); break;
-            case 'up':     arr.splice(Math.max(0, idx - 1), 0, row); break;
-            case 'down':   arr.splice(Math.min(arr.length, idx + 1), 0, row); break;
-            case 'bottom': arr.push(row); break;
+        // [1] CHECK: row còn trong danh sách, có quyền, danh sách đang theo thứ tự rank (không sort theo cột)
+        const { id, prevId, nextId, direction } = e.detail ?? {};
+        const row = this._data.find(r => r.id === id);
+        if (!row || !this._perms.sort || this._serverSort) return;
+
+        // [2] PROCESS: vị trí đích trong danh sách đầy đủ (prevId/nextId = hàng kề trong view đang lọc) → patch rank
+        const rest = this._data.filter(r => r.id !== id);
+        const idxOf = (rid) => rest.findIndex(r => r.id === rid);
+        let patches;
+        if (direction === 'unpin') {
+            if (!row[RANK_FIELD]) return;
+            patches = [{ id, rank: '' }]; // về nhóm tự động — updated_at mới nên đứng đầu nhóm đó
+        } else {
+            if (direction === 'top' && this._data[0]?.id === id && row[RANK_FIELD]) return;
+            const at = direction === 'top' ? 0
+                : prevId ? (idxOf(prevId) + 1 || -1)
+                : nextId ? idxOf(nextId) : -1;
+            if (at < 0) return;
+            patches = rankPlace(rest, id, at);
         }
-        this._data = arr.map((r, i) => ({ ...r, index: i }));
+
+        // [3] EXECUTE: cập nhật lạc quan + ghi các row bị đổi rank (thường 1)
+        const prev  = new Map(this._data.map(r => [r.id, r]));
+        const ranks = new Map(patches.map(p => [p.id, p.rank]));
+        const stamp = new Date().toISOString();
+        this._data = this._data
+            .map(r => ranks.has(r.id) ? { ...r, [RANK_FIELD]: ranks.get(r.id), updated_at: stamp } : r)
+            .sort(compareRank);
         this._syncConductor();
         const now = await this._svc.now();
         try {
-            await this._svc.batch(arr.map((r, i) => ({
-                id:   r.id,
-                data: { index: i, updated_at: now, actors: this._comActors(r.actors, 'updated') },
+            await this._svc.batch(patches.map(p => ({
+                id:   p.id,
+                data: { [RANK_FIELD]: p.rank, updated_at: now, actors: this._comActors(prev.get(p.id)?.actors, 'updated') },
             })));
             this._dfRevalidate();
-        } catch (err) { toastEmit(`${this._txt.saveFail}: ${err.message}`, 'error'); }
+        } catch (err) {
+            //   [3.c] HANDLE_ERR: tải lại thứ tự thật trên DB
+            toastEmit(`${this._txt.saveFail}: ${err.message}`, 'error');
+            this._dcLoad(true);
+        }
     }
 
     _dfExportCsv() {
@@ -416,14 +441,14 @@ export class SvcResources extends LitElement {
             // [3] EXECUTE: Ghi từng dòng, gom kết quả theo dòng
             try {
                 const newId   = ulid();
-                const docData = this._buildNewDoc(flat, this._data.length + okRows.length, now);
+                const docData = this._buildNewDoc(flat, now);
                 await this._svc.set(newId, docData);
                 okRows.push({ id: newId, ...docData });
             } catch (err) { failed.push({ rowNum, reason: err.message }); }
         }
 
         // [4] RETURN: Đồng bộ _data với các dòng ghi thành công + báo cáo
-        if (okRows.length) { this._data = [...this._data, ...okRows]; this._syncConductor(); this._dfRevalidate(); }
+        if (okRows.length) { this._data = this._comOrdered([...this._data, ...okRows]); this._syncConductor(); this._dfRevalidate(); }
         this._importing    = false;
         this._importReport = { ok: okRows.length, failed };
     }
@@ -448,14 +473,13 @@ export class SvcResources extends LitElement {
         // [2] PROCESS: rows đã NESTED — assistSeed làm fallback, row[i] luôn ưu tiên
         const rows  = e.detail.rows;
         const now   = await this._svc.now();
-        const start = this._data.length;
 
-        // [3] EXECUTE: Ghi thẳng từng row (không qua form review), index nối tiếp cuối _data
+        // [3] EXECUTE: Ghi thẳng từng row (không qua form review)
         const created = [];
         try {
             for (let i = 0; i < rows.length; i++) {
                 const newId   = ulid();
-                const docData = this._buildNewDoc({ ...this.assistSeed, ...rows[i] }, start + i, now);
+                const docData = this._buildNewDoc({ ...this.assistSeed, ...rows[i] }, now);
                 await this._svc.set(newId, docData);
                 created.push({ id: newId, ...docData });
             }
@@ -466,7 +490,7 @@ export class SvcResources extends LitElement {
 
         // [4] RETURN: Đồng bộ phần đã ghi được
         if (!created.length) return;
-        this._data = [...this._data, ...created];
+        this._data = this._comOrdered([...this._data, ...created]);
         this._syncConductor();
         this._dfRevalidate();
     }
@@ -539,6 +563,8 @@ export class SvcResources extends LitElement {
             delete: p.delete !== undefined ? Boolean(p.delete) : _can('delete'),
             sort:   p.sort   !== undefined ? Boolean(p.sort)   : _can('update'),
             history: p.history !== undefined ? Boolean(p.history) : _can('view_history'),
+            // Xoá toàn bộ bảng: chỉ role `admin` — `perms` không mở được (Worker data.ts cũng chặn)
+            deleteAll: parseRoles(this._authUser).isAdmin,
         };
     }
 
@@ -580,10 +606,12 @@ export class SvcResources extends LitElement {
         if (this._serverSort?.field) {
             opts.sortBy = this._serverSort.field;
             opts.order  = this._serverSort.dir;
+        } else if (this.orderable) {
+            // Thứ tự thủ công (tools/rank.js) — cả khi đang lọc: kéo-thả cần danh sách đúng thứ tự rank
+            opts.sortBy = RANK_FIELD;
         } else if (!hasFilters && !hasSearch) {
             // Sort mặc định chỉ khi không filter/search — tránh cần index phức hợp phía DB
-            if (this.orderable)       opts.sortBy = 'index';
-            else if (this.orderField) opts.sortBy = this.orderField;
+            if (this.orderField) opts.sortBy = this.orderField;
             else                      { opts.sortBy = 'updated_at'; opts.order = 'desc'; }
         }
 
@@ -591,7 +619,13 @@ export class SvcResources extends LitElement {
         return opts;
     }
 
-    _buildNewDoc(flat, insertIndex, now) {
+    // Bảng orderable: giữ _data đúng thứ tự rank sau mỗi lần ghi cục bộ (row mới/vừa sửa → đầu nhóm tự động)
+    _comOrdered(rows) {
+        return this.orderable && !this._serverSort ? [...rows].sort(compareRank) : rows;
+    }
+
+    // Không ghi `rank` — row mới ở nhóm tự động (rank ''), đứng ngay sau các hàng ưu tiên nhờ updated_at mới nhất
+    _buildNewDoc(flat, now) {
         const data = buildNested(flat);
         // `default` của cột — field hệ thống mà form chung/CSV không điền
         for (const col of this._cols) {
@@ -608,7 +642,6 @@ export class SvcResources extends LitElement {
             user_id: this._comUserId() || null,
             scope:   data.scope  || 'public',
             secure:  data.secure || '',
-            index:   this.orderable ? insertIndex : (data.index ?? 0),
         };
     }
 
@@ -668,7 +701,7 @@ export class SvcResources extends LitElement {
 
     _rbDialogs() {
         return html`
-            ${this.btnDeleteAll ? html`
+            ${this.btnDeleteAll && this._perms.deleteAll ? html`
                 <web-dialog
                     type=${this._dialogType}
                     ?open=${this._deleteAllOpen}
@@ -722,11 +755,11 @@ export class SvcResources extends LitElement {
                         <iconify-icon slot="prefix" icon="ri:download-2-line"></iconify-icon>
                         ${this._txt.export}
                     </web-button>
-                    ${this.btnDeleteAll ? html`
+                    ${this.btnDeleteAll && this._perms.deleteAll ? html`
                         <web-button type="soft" color="error" height="28px"
-                            ?disabled=${!this._perms.delete || !this._data.length || this._deletingAll} ?loading=${this._deletingAll}
+                            ?disabled=${!this._data.length || this._deletingAll} ?loading=${this._deletingAll}
                             @click=${() => { this._deleteAllOpen = true; }}>
-                            <iconify-icon slot="prefix" icon=${this._perms.delete ? 'ri:delete-bin-2-line' : 'ri:lock-line'}></iconify-icon>
+                            <iconify-icon slot="prefix" icon="ri:delete-bin-2-line"></iconify-icon>
                             ${this._txt.deleteAll}
                         </web-button>
                     ` : ''}

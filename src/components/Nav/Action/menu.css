@@ -151,6 +151,9 @@
   &>li:not(.menu-title)>details>ul {
     @apply absolute ms-0 mt-4 py-2 px-2;
     min-width: 172px;
+    /* Dãn theo chữ dài nhất (không xuống dòng sớm theo bề rộng mục cha), tối đa 480px */
+    width: max-content;
+    max-width: 240px;
     background-color: color-mix(in oklab, var(--color-base-100) 90%, transparent);
     border: 1px solid var(--color-base-300);
     border-radius: var(--radius-box);

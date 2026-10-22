@@ -30,7 +30,7 @@ export const companyHours = [
 // Tài khoản chính thức — bar, footer, và `sameAs` của JSON-LD Organization (chỉ link http(s) thật mới vào sameAs).
 export const companySocials = [
 	{ text: 'Facebook', href: 'https://www.facebook.com/giftoraddk', icon: 'ri:facebook-fill' },
-	{ text: 'TikTok', href: '#', icon: 'ri:tiktok-fill' },
+	{ text: 'TikTok', href: '#', icon: 'ri:tiktok-fill' }, // chưa có kênh — '#' không vào sameAs
 ]
 
 /** Footer contact = công ty + đoạn giới thiệu `info` ({ vi, en }) của trang. */

@@ -10,6 +10,7 @@ export const AI_STREAM_BODY_MAX = 256 * 1024; // /v1/ai/stream — AI_LIMITS.cha
 export const AI_IMAGE_BODY_MAX = 64 * 1024; // /v1/ai/image — a prompt + negative prompt, never an upload
 export const MCP_BODY_MAX = 256 * 1024; // /mcp — a JSON-RPC batch of several tool calls
 export const HUBS_BODY_MAX = 64 * 1024; // /v1/hubs/* — small option bodies (rotate, owner, url, field mapping)
+export const HUBS_ITEMS_BODY_MAX = 2 * 1024 * 1024; // /v1/hubs/items — a batch of caller-shaped knowledge rows (svc-learn sends ≤ 50 per call)
 
 /** Streamed read capped at `max` bytes — checked against Content-Length first, then enforced while consuming the
  *  body (a client can omit or lie about that header). Shared by every capped-body reader below. */

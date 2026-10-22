@@ -13,6 +13,16 @@
 .prg-item { display: flex; flex-direction: column; gap: .15rem; }
 .prg-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; opacity: .55; }
 .prg-value { font-size: .8rem; line-height: 1.5; color: var(--color-base-content); white-space: pre-line; }
+/* Chữ AI dựng thành khối như PDF (tool/report.js textBlocks): nhóm thành phần = tiêu đề đậm + danh sách chấm tròn */
+.prg-blocks { white-space: normal; }
+.prg-blocks > :first-child { margin-top: 0; }
+.prg-blocks p { margin: 0 0 .35rem; }
+.prg-blocks .prg-h { font-weight: 700; margin: .6rem 0 .15rem; }
+.prg-blocks ul, .prg-blocks ol { margin: 0 0 .45rem; padding-left: 1.15rem; }
+.prg-blocks ul { list-style: disc; }
+.prg-blocks ol { list-style: decimal; }
+.prg-blocks li { margin: .1rem 0; }
+.prg-blocks li::marker { color: color-mix(in oklab, var(--color-warning, #d97706) 80%, var(--color-base-content)); }
 .prg-copyable { display: flex; flex-direction: column; gap: .3rem; }
 .prg-copy-row { display: flex; justify-content: flex-end; }
 

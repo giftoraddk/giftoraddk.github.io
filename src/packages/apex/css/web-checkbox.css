@@ -1,0 +1,156 @@
+:host {
+    display: inline-block;
+    --checkbox-size: 20px;
+    --checkbox-radius: 6px;
+    --core-font: var(--font-sans, 'system-ui');
+}
+
+.web-checkbox {
+	font-family: var(--core-font);
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+    font-size: .875rem;
+    font-weight: 500;
+    color: var(--color-base-content, #ffffff);
+    transition: all 0.3s ease;
+}
+
+.web-checkbox:focus-visible {
+    outline: none;
+}
+
+.web-checkbox:focus-visible .checkbox-box {
+    border-color: var(--color-primary, #34ace0);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-primary, #34ace0) 20%, transparent);
+}
+
+.web-checkbox.disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.checkbox-box {
+    position: relative;
+    width: var(--checkbox-size);
+    height: var(--checkbox-size);
+    flex-shrink: 0;
+    background: var(--color-base-200, #232323);
+    border: 1px solid color-mix(in oklab, var(--color-base-content, #111) 20%, transparent);
+    border-radius: var(--checkbox-radius);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.web-checkbox:hover:not(.disabled) .checkbox-box {
+    box-shadow: 0 0 2px 2px color-mix(in oklab, var(--color-primary, #34ace0) 60%, transparent);
+}
+
+.web-checkbox.checked .checkbox-box {
+    background: var(--cb-color, var(--color-primary, #34ace0));
+    border-color: var(--cb-color, var(--color-primary, #34ace0));
+    transform: scale(1.05);
+}
+
+.web-checkbox:active:not(.disabled) .checkbox-box {
+    transform: scale(0.9);
+}
+
+.checkmark {
+    width: 14px;
+    height: 14px;
+    color: #ffffff;
+    stroke: currentColor;
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    opacity: 0;
+    transform: scale(0.5) translateY(1px);
+    transition: 
+        stroke-dashoffset 0.35s cubic-bezier(0.2, 0, 0.1, 1) 0.05s,
+        opacity 0.2s ease,
+        transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.web-checkbox.checked .checkmark {
+    stroke-dashoffset: 0;
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+
+/* Add a subtle ring expansion effect on check */
+.checkbox-box::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    border: 2px solid var(--color-primary, #34ace0);
+    opacity: 0;
+    transform: scale(1);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+}
+
+.web-checkbox.checked .checkbox-box::after {
+    opacity: 0;
+    transform: scale(1.4);
+    animation: ring-expand 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes ring-expand {
+    0% { opacity: 0.8; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.5); }
+}
+
+/* color="primary|secondary|accent|info|warning|success|error" — modern tô đặc màu đó, pastel tô gradient màu đó → nhạt dần
+   (như web-button); không đặt thì modern = primary, pastel = cặp tint a/b. */
+.color-primary   { --cb-color: var(--color-primary, #34ace0); }
+.color-secondary { --cb-color: var(--color-secondary, #706fd3); }
+.color-accent    { --cb-color: var(--color-accent, #a855f7); }
+.color-info      { --cb-color: var(--color-info, #00c7d4); }
+.color-warning   { --cb-color: var(--color-warning, #fbbf24); }
+.color-success   { --cb-color: var(--color-success, #2ebd85); }
+.color-error,
+.color-danger    { --cb-color: var(--color-error, #f5465c); }
+
+/* ── Pastel (token --pastel-* ở pastel.css) ─────────────────────────────── */
+.pastel.web-checkbox {
+	--cb-a: var(--pastel-a);
+	--cb-b: var(--pastel-b);
+}
+.pastel.web-checkbox[class*="color-"] {
+	--cb-a: var(--cb-color);
+	--cb-b: color-mix(in oklab, var(--cb-color) 62%, #ffffff);
+}
+.pastel .checkbox-box {
+	background: var(--pastel-corner);
+	border-color: var(--pastel-line);
+}
+.pastel:hover:not(.disabled) .checkbox-box {
+	border-color: var(--pastel-line-hi);
+	box-shadow: 0 0 0 3px color-mix(in oklab, var(--cb-a) 16%, transparent);
+}
+/* gradient phủ cả viền 1px (border-box) — không lặp màu ở mép như background mặc định (padding-box) */
+.pastel.checked .checkbox-box {
+	background: linear-gradient(135deg, var(--cb-a), var(--cb-b)) border-box;
+	border-color: transparent;
+	box-shadow: none;
+}
+.pastel .checkmark {
+	color: #ffffff;
+}
+.pastel .checkbox-box::after {
+	border-color: var(--cb-a);
+}
+.pastel.web-checkbox:focus-visible .checkbox-box {
+	border-color: var(--pastel-a);
+	box-shadow: var(--pastel-ring);
+}

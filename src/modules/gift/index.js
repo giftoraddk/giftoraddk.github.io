@@ -6,24 +6,20 @@
 
 import { fetchCollection } from '@/services/core/fetcher.server.js';
 import { productSlug, postSlug } from '@/services/tools/util';
+import { compareRank } from '@/services/tools/rank.js';
 import { CTA } from './meta.js';
 import { tintsSections } from './shop.js';
 
 // ── Best-selling gifts (data thật từ database) ─────────────────────────────────
-// "Bán chạy nhất" = ưu tiên theo `index` (thứ tự thủ công admin đặt ở products, số nhỏ ưu tiên
-// hơn — xem schemas/admin/products.js's field 'index') rồi tiebreak theo `updated_at` (mới cập
-// nhật lên trước), build-time fetch giống product/index.astro (bake data thật vào HTML, không
-// qua conductor vì trang này prerender tĩnh).
+// "Bán chạy nhất" = cùng thứ tự admin thấy ở products: hàng ưu tiên theo `rank` (kéo-thả, tools/rank.js) rồi tới
+// hàng tự động theo `updated_at` (mới cập nhật lên trước), build-time fetch giống product/index.astro (bake data thật
+// vào HTML, không qua conductor vì trang này prerender tĩnh).
 async function _fetchBestSellers(limit = 4) {
 	const products = await fetchCollection('products');
 
 	return products
 		.slice()
-		.sort((a, b) => {
-			const byIndex = (a.index ?? Infinity) - (b.index ?? Infinity);
-			if (byIndex) return byIndex;
-			return new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
-		})
+		.sort(compareRank)
 		.slice(0, limit)
 		.map((p) => ({ ...p, meta: { ...(p.meta ?? {}), url: `/product/${productSlug(p)}/` } }));
 }
@@ -57,7 +53,7 @@ const tint = { backgroundColor: 'color-mix(in oklab, var(--color-base-content) 3
 
 
 // ── Views ─────────────────────────────────────────────────────────────────────
-// Dựng mỗi lần render (không phải top-level await): '/' chạy on-demand khi PUBLIC_RENDER=isr — instance function
+// Dựng mỗi lần render (không phải top-level await): trang gift chạy on-demand khi PUBLIC_RENDER=isr — instance function
 // giữ module lâu, top-level await sẽ đóng băng best-seller / bài mới ở lần nạp đầu tiên.
 export async function getViews() {
 	const [bestSellers, latestPosts] = await Promise.all([_fetchBestSellers(4), _fetchLatestPosts(6)]);

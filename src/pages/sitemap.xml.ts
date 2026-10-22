@@ -8,9 +8,9 @@ import { productSlug, postSlug, tagSlugMap } from '@/services/tools/util';
 import { shopPage } from '@/modules/gift/meta.js';
 import { GIFT_GROUPS } from '@/modules/gift/nav.js';
 
-// GIFT_GROUPS (modules/gift/nav.js) — danh mục, ngân sách, dịch vụ, chính sách: cùng nguồn getStaticPaths() của
-// src/pages/gift/[group].astro / service/[slug].astro / policy/[slug].astro, nên URL luôn khớp.
-// Chính sách (nhóm cuối) ít đổi, ưu tiên thấp.
+// GIFT_GROUPS (modules/gift/nav.js) — đối tượng, ngân sách, dịch vụ, chính sách: cùng nguồn getStaticPaths() của
+// src/pages/gift/[group].astro / service/[slug].astro / policy/[slug].astro, nên URL luôn khớp URL thật đã build.
+// Thứ tự nhóm = thứ tự GIFT_GROUPS; chính sách (nhóm cuối) ít đổi, ưu tiên thấp.
 const GROUP_RANK: [changefreq: string, priority: string][] = [['weekly', '0.8'], ['weekly', '0.7'], ['monthly', '0.6'], ['yearly', '0.3']];
 
 const escapeXml = (s: string) =>
@@ -49,6 +49,7 @@ export async function GET() {
 
     // [path, lastmod, changefreq, priority] — chỉ URL có build (builtUrl, site.pages) mới vào sitemap.
     const urls: [string, string | null, string, string][] = [
+        // '/' = trang chủ Giftora (pages/index.astro); /gift/ chỉ chuyển về '/' nên không có ở đây.
         ['/', null, 'weekly', '1.0'],
         [shopPage.path, null, 'daily', '0.9'],
         ['/product/', null, 'daily', '0.8'],

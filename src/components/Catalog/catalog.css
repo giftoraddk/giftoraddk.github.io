@@ -14,8 +14,8 @@
 	--pf-ink: var(--color-base-content);
 	--pf-surface: color-mix(in oklab, var(--color-base-content) 4%, transparent);
 	--pf-hover: color-mix(in oklab, var(--color-base-content) 7%, transparent);
-	--pf-line: color-mix(in oklab, var(--color-base-content) 4%, transparent);
-	--pf-line-strong: color-mix(in oklab, var(--color-base-content) 16%, transparent);
+	--pf-line: color-mix(in oklab, var(--color-base-content) 10%, transparent);
+	--pf-line-strong: color-mix(in oklab, var(--color-base-content) 20%, transparent);
 	--pf-muted: color-mix(in oklab, var(--color-base-content) 55%, transparent);
 	--pf-base: color-mix(in oklab, var(--color-base-100) 30%, transparent); /* nền mọi bề mặt — glow tints của layout xuyên qua */
 	--pf-solid: color-mix(in oklab, var(--color-base-100) 92%, transparent); /* phần tử nổi / chồng lên nhau */
@@ -314,13 +314,13 @@ a.pf-src-name:hover { text-decoration: underline; text-underline-offset: 3px; te
 .pf-stat {
 	display: inline-flex;
 	align-items: center;
-	gap: 5px;
+	gap: .25rem;
 	height: 26px;
 	padding: 0 9px;
 	border-radius: 999px;
 	background: var(--pf-surface);
 	color: var(--pf-muted);
-	font-size: 0.72rem;
+	font-size: 0.75rem;
 	font-weight: 600;
 	font-variant-numeric: tabular-nums;
 }
@@ -354,19 +354,48 @@ a.pf-src-name:hover { text-decoration: underline; text-underline-offset: 3px; te
 
 /* ── Featured stack ──────────────────────────────────────────────────────── */
 
-.pf-stack { display: grid; padding-top: 28px; }
+/* Chỉ card trên cùng hiện — card phía sau ẩn hẳn (không thò mép lên trên), đổi card = mờ dần sang nhau */
+/* Stack Nổi bật — cùng kiểu <ed-stack> (radar/everyday/css/ed-stack.css): card trên đầy đủ, tối đa 2 card ló mép phía
+   sau (lệch lên + thu nhỏ) dưới 1 lớp phủ đặc → chữ của card sau không bao giờ lộ, chỉ thấy mép thẻ. Lật (›, vuốt,
+   ← →, bấm mép card sau): card trên bay ra cạnh rồi về đáy stack, card khác dồn lên — chỉ đổi data-pos, CSS lo chuyển động. */
+.pf-stack {
+	display: grid;
+	padding-top: 26px;
+	touch-action: pan-y;
+	user-select: none;
+	-webkit-user-select: none;
+}
 .pf-stack > .pf-card {
 	background: var(--color-base-100); /* đặc: các card chồng lên nhau, nền trong sẽ lộ card phía sau */
 	grid-area: 1 / 1;
 	height: 100%;
 	transform-origin: 50% 0;
-	transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.45s ease;
+	transition: transform 0.3s ease;
 }
-.pf-stack > [data-pos='0'] { z-index: 3; }
-.pf-stack > [data-pos='1'] { z-index: 2; transform: translateY(-14px) scale(0.94); opacity: 0.85; }
-.pf-stack > [data-pos='2'] { z-index: 1; transform: translateY(-28px) scale(0.88); opacity: 0.6; }
-.pf-stack > [data-pos]:not([data-pos='0']) { pointer-events: none; }
-.pf-stack > [data-pos]:not([data-pos='0']) > :not(.pf-card-head) { visibility: hidden; }
+.pf-stack > .pf-card::after {
+	content: '';
+	position: absolute;
+	inset: -1px;
+	z-index: 10;
+	border-radius: inherit;
+	border: 1px solid var(--pf-line-strong);
+	background: var(--color-base-100);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.3s ease;
+}
+.pf-stack > [data-pos='0'] {
+	z-index: 3;
+	transform: translateX(calc(var(--dx, 0) * 1px)) rotate(calc(var(--dx, 0) * 0.025deg));
+}
+.pf-stack > [data-pos='1'] { z-index: 2; transform: translateY(-13px) scale(0.95); cursor: pointer; }
+.pf-stack > [data-pos='2'] { z-index: 1; transform: translateY(-26px) scale(0.9); cursor: pointer; }
+.pf-stack > [data-pos='1']::after,
+.pf-stack > [data-pos='2']::after { opacity: 1; }
+.pf-stack > [data-pos='2']::after { background: color-mix(in oklab, var(--color-base-100), var(--color-base-content) 5%); }
+.pf-stack > [data-pos='0'].is-dragging { transition: none; }
+.pf-stack > [data-pos='0'].is-out-next { transform: translateX(-112%) rotate(-8deg); }
+.pf-stack > [data-pos='0'].is-out-prev { transform: translateX(112%) rotate(8deg); }
 .pf-stack-dots { display: flex; gap: 5px; }
 .pf-stack-dots span { width: 6px; height: 6px; border-radius: 999px; background: var(--pf-line-strong); transition: width 0.3s ease, background 0.3s ease; }
 .pf-stack-dots span.is-on { width: 16px; background: color-mix(in oklab, var(--pf-a) 60%, transparent); }
@@ -535,6 +564,98 @@ a.pf-src-name:hover { text-decoration: underline; text-underline-offset: 3px; te
 	transition: transform 0.15s ease, background 0.15s ease;
 }
 .pf-topic:hover .pf-topic-go { background: var(--pf-soft-a); transform: translateX(2px); }
+
+/* Card nhóm tag (lib.ts tagGroups) — nhiều link bên trong nên là <article>, không phải 1 <a>: heading = tên record,
+   dưới là ĐỦ chip tag (mỗi chip tone riêng theo tag, link tới trang tag) */
+.pf-topic.is-group:active { transform: none; }
+.pf-topic.is-group .pf-topic-cover { display: block; align-self: start; } /* <a> giờ; card cao theo chip — ảnh giữ vuông */
+.pf-topic-name.is-title a {
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+.pf-topic-name.is-title a:hover { color: var(--tint-ink); }
+.pf-topic-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.pf-topic-tag {
+	display: inline-flex;
+	align-items: center;
+	min-height: 26px;
+	padding: 2px 10px;
+	border-radius: 999px;
+	background: var(--pf-soft-a);
+	color: var(--tint-ink);
+	font-size: 0.76rem;
+	font-weight: 600;
+	line-height: 1.3;
+	transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+.pf-topic-tag:hover { background: color-mix(in oklab, var(--pf-a) 22%, transparent); }
+.pf-topic-tag[data-hit] { box-shadow: 0 0 0 1.5px var(--pf-ring); }
+/* Góc phải chân card: lượt xem · lượt thích của record đại diện — 1 viên gọn, 2 số ngăn bởi vạch mảnh,
+   tim mang màu tone của card */
+.pf-topic.is-group .pf-topic-meta {
+	padding-top: 10px;
+	border-top: 1px dashed var(--pf-line-strong);
+}
+.pf-topic-stats {
+	display: inline-flex;
+	align-items: center;
+	height: 26px;
+	padding: 0 4px;
+	border-radius: 999px;
+	flex-shrink: 0;
+}
+.pf-topic-stat {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 0 6px;
+	color: var(--pf-ink);
+	font-size: 0.72rem;
+	font-weight: 650;
+	font-variant-numeric: tabular-nums;
+}
+.pf-topic-stat > .pf-ico { color: var(--pf-muted); }
+.pf-topic-stat.is-like > .pf-ico { color: color-mix(in oklab, var(--pf-a) 75%, var(--pf-ink)); fill: currentColor; }
+.pf-topic-stat.is-rate > .pf-ico { color: var(--color-warning); fill: currentColor; }
+.pf-topic-stat.is-rate.is-empty { color: var(--pf-muted); font-weight: 550; }
+.pf-topic-stat.is-rate.is-empty > .pf-ico { color: var(--pf-muted); fill: none; }
+.pf-topic-stat-sub { color: var(--pf-muted); font-weight: 550; }
+/* Tooltip 2 ngôn ngữ — `title` chỉ có 1 ngôn ngữ lúc build; data-tip-vi / data-tip-en đổi theo <html lang>
+   (cùng quy ước .i18n-vi / .i18n-en của default.css) */
+.pf-topic-stat[data-tip-vi] { position: relative; }
+.pf-topic-stat[data-tip-vi]:hover::after {
+	content: attr(data-tip-vi);
+	position: absolute;
+	bottom: calc(100% + 8px);
+	left: 50%;
+	z-index: 5;
+	transform: translateX(-50%);
+	padding: 3px 8px;
+	border-radius: 8px;
+	background: var(--color-base-content);
+	color: var(--color-base-100);
+	font-size: 0.68rem;
+	font-weight: 600;
+	white-space: nowrap;
+	pointer-events: none;
+}
+html[lang='en'] .pf-topic-stat[data-tip-en]:hover::after { content: attr(data-tip-en); }
+/* Quá SHOW_TAGS (Tags.astro) — gập phần dư sau chip "+N"; bấm thì mở hết và chip "+N" biến mất */
+.pf-topic-tags:not(.is-open) > li[data-extra],
+.pf-topic-tags.is-open > .pf-topic-more-li { display: none; }
+/* <button> — `.pf button { font: inherit }` ghi đè cỡ chữ của .pf-topic-tag, đặt lại cho bằng chip link */
+.pf .pf-topic-tag.is-more {
+	background: var(--pf-surface);
+	color: var(--pf-muted);
+	font-size: 0.76rem;
+	font-weight: 600;
+	line-height: 1.3;
+	font-variant-numeric: tabular-nums;
+}
+.pf .pf-topic-tag.is-more:hover { background: var(--pf-hover); color: var(--pf-ink); }
 
 /* ── Detail ──────────────────────────────────────────────────────────────── */
 
@@ -820,8 +941,10 @@ a.pf-src-name:hover { text-decoration: underline; text-underline-offset: 3px; te
 	.pf-topic-count { left: auto; right: 8px; bottom: auto; top: 8px; }
 	.pf-topic-body { gap: 8px; padding: 12px 6px 4px; }
 	.pf-topic-name { font-size: 1rem; }
+	/* Card cao bằng card dài nhất hàng — phần dư dồn hết vào thân (ảnh + tiêu đề bám đỉnh, meta xuống đáy) */
+	.pf-topic.is-group { grid-template-rows: auto 1fr; }
 	.pf-gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-	.pf-featured { max-width: 520px; }
+	.pf-featured { max-width: 520px; margin-inline: auto; } /* tablet: stack Nổi bật ở giữa (desktop vào sidebar, full cột) */
 	.pf-sheet { padding: 24px 32px 36px; margin-top: -52px; }
 
 	/* Bài đầu feed (có ảnh) = "lead story" nằm ngang, trải 2 cột: ảnh trái, nội dung phải */
@@ -863,11 +986,14 @@ a.pf-src-name:hover { text-decoration: underline; text-underline-offset: 3px; te
 	}
 	.pf-board > .pf-top { grid-area: top; }
 	.pf-board > .pf-main { grid-area: main; }
+	/* Cột phải vừa đúng 1 màn: danh mục co lại + tự cuộn bên trong để Nổi bật luôn lọt trong view. Màn quá thấp
+	   (danh mục đã co tới min-height) thì cả cột mới cuộn. */
 	.pf-board > .pf-side {
 		grid-area: side;
 		position: sticky;
 		top: 20px;
-		display: grid;
+		display: flex;
+		flex-direction: column;
 		gap: 22px;
 		margin-top: 20px;
 		max-height: calc(100dvh - 40px);
@@ -876,16 +1002,26 @@ a.pf-src-name:hover { text-decoration: underline; text-underline-offset: 3px; te
 	}
 	.pf-board > .pf-side::-webkit-scrollbar { display: none; }
 	.pf-side .pf-sec { margin-top: 0; }
-	.pf-side-head { display: flex; }
+	.pf-side-head { display: flex; flex-shrink: 0; }
+	.pf-side .pf-topics { display: flex; flex-direction: column; flex: 0 1 auto; min-height: 180px; }
+	.pf-side .pf-featured { flex-shrink: 0; }
 
-	/* Chip → danh sách dọc kiểu hàng key–value của panel radar */
+	/* Chip → danh sách dọc kiểu hàng key–value của panel radar; dài thì cuộn trong khung. Mép trên/dưới mờ dần theo
+	   phần còn khuất: --fade-t / --fade-b = min(đã cuộn | còn lại, 24px), Feed.astro initChips() cập nhật khi cuộn —
+	   chưa cuộn thì mép trên không mờ, cuộn hết thì mép dưới không mờ. */
 	.pf-side .pf-chips {
+		--fade-t: 0px;
+		--fade-b: 0px;
 		flex-direction: column;
+		flex: 1 1 auto;
+		min-height: 0;
 		gap: 1px;
 		margin: 0;
 		padding: 0;
-		overflow: visible;
-		mask-image: none;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		scrollbar-width: thin;
+		mask-image: linear-gradient(180deg, transparent 0, #000 var(--fade-t), #000 calc(100% - var(--fade-b)), transparent 100%);
 	}
 	.pf-side .pf-chip {
 		justify-content: space-between;
@@ -897,7 +1033,15 @@ a.pf-src-name:hover { text-decoration: underline; text-underline-offset: 3px; te
 		font-size: 0.84rem;
 	}
 	.pf-side .pf-chip:hover { background: var(--pf-surface); }
-	.pf-side .pf-chip[aria-current='page'] { background: var(--pf-soft-a); }
+	/* Chip đang chọn luôn trong tầm mắt: dính mép trên/dưới khung cuộn — ngay trong vùng mờ, nên không bị mờ theo.
+	   Nền đặc (tint chồng lên base-100) để các chip khác trượt khuất bên dưới. */
+	.pf-side .pf-chip[aria-current='page'] {
+		position: sticky;
+		top: var(--fade-t);
+		bottom: var(--fade-b);
+		z-index: 1;
+		background: linear-gradient(var(--pf-soft-a), var(--pf-soft-a)), var(--color-base-100);
+	}
 	.pf-chip-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 
 	.pf-featured { max-width: none; }

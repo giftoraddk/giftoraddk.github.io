@@ -97,6 +97,14 @@
 .cd-row-side { display: flex; align-items: center; gap: .35rem; flex: 0 0 auto; }
 .cd-ok { font-size: 1.15rem; color: var(--color-success); }
 .cd-go { font-size: 1.15rem; opacity: .35; }
+.cd-pdf {
+    display: inline-flex; align-items: center; justify-content: center; padding: .15rem; border: 0; border-radius: .3rem;
+    background: none; color: var(--color-primary); font-size: 1.05rem; line-height: 1; cursor: pointer; opacity: .75;
+}
+.cd-pdf:hover:not(:disabled) { opacity: 1; background: color-mix(in oklab, var(--color-primary) 15%, transparent); }
+.cd-pdf:disabled { cursor: progress; }
+.cd-pdf .is-spin { animation: cd-spin .8s linear infinite; }
+@keyframes cd-spin { to { transform: rotate(360deg); } }
 
 /* Dòng gom các phòng chờ bàn giao (bấm mở/gập) / các phòng Thư ký đề xuất */
 .cd-fold {
@@ -128,6 +136,10 @@ button.cd-fold { cursor: pointer; }
     border: none; border-radius: 50%; cursor: pointer; background: none; color: inherit; font-size: 1.1rem;
 }
 .cd-icon-btn:hover, .cd-icon-btn:focus-visible { outline: none; background: color-mix(in oklab, var(--color-base-content) 10%, transparent); }
+.cd-record { color: var(--color-primary); }
+.cd-record.is-saved, .cd-record.is-saved:disabled { color: var(--color-success); opacity: 1; cursor: default; background: none; }
+.cd-record:disabled:not(.is-saved) { cursor: progress; }
+.cd-spin { animation: cd-spin .8s linear infinite; }
 .cd-action {
     display: flex; align-items: center; justify-content: space-between; gap: .5rem;
     padding: .35rem .35rem .35rem .6rem; border-radius: .6rem;

@@ -5,12 +5,12 @@
 import { LitElement, html, unsafeCSS } from 'lit';
 import 'iconify-icon';
 import css from '../css/svc-pay-booking.css?inline';
-import { PAY_METHODS, hasWalletAccount, resolveAccountNo } from '../tool/constant.js';
+import { PAY_METHODS, hasWalletAccount } from '../tool/constant.js';
 import { parseJson, txtLingo, emit } from '@/services/tools/util.js';
 
 const TXT_STD = {
-    vi: { label: 'Hình thức thanh toán', momo: 'MoMo', bank: 'Chuyển khoản', cash: 'Tiền mặt', cod: 'Thanh toán khi nhận hàng', defaultBank: 'Ngân hàng', vietqr: 'VietQR' },
-    en: { label: 'Payment method', momo: 'MoMo', bank: 'Bank transfer', cash: 'Cash', cod: 'Cash on delivery', defaultBank: 'Bank', vietqr: 'VietQR' }
+    vi: { label: 'Hình thức thanh toán', bank: 'Chuyển khoản', cash: 'Tiền mặt', cod: 'Thanh toán khi nhận hàng', defaultBank: 'Ngân hàng', vietqr: 'VietQR' },
+    en: { label: 'Payment method', bank: 'Bank transfer', cash: 'Cash', cod: 'Cash on delivery', defaultBank: 'Bank', vietqr: 'VietQR' }
 }
 
 /**
@@ -18,9 +18,8 @@ const TXT_STD = {
  * của <svc-pay-order>, xem hook/PAY.rst).
  *
  * Props:
- *   wallet       — { bank: { accountNo, accountName, bankName, bin },
- *                    momo: { phone, accountName, bin } }
- *   method       — phương thức đang chọn từ parent ('cash' | 'momo' | 'bank')
+ *   wallet       — { bank: { accountNo, accountName, bankName, bin } }
+ *   method       — phương thức đang chọn từ parent ('cash' | 'bank')
  *   cashDisabled — true → ẩn hẳn tuỳ chọn 'Tiền mặt' khỏi danh sách (vd shop online không nhận
  *                  tiền mặt tại quầy) — nếu method đang chọn là 'cash' lúc này, tự chuyển sang
  *                  phương thức khả dụng đầu tiên còn lại và emit `payment:select` để đồng bộ lại
@@ -103,8 +102,8 @@ export class SvcPayBooking extends LitElement {
                 html`<iconify-icon icon="ion:cash-outline" class="cash-icon"></iconify-icon>`);
         }
 
-        const name = m === 'momo' ? 'MoMo' : (account.bankName ?? this._txt.defaultBank);
-        const acct = resolveAccountNo(m, account);
+        const name = account.bankName ?? this._txt.defaultBank;
+        const acct = account.accountNo ?? '';
         return this._rfBankItem(name, account.accountName ? `${acct} — ${account.accountName}` : acct, this._txt.vietqr);
     }
 

@@ -36,8 +36,8 @@ const MSG = {
     vi: {
         errGeneric: 'Có lỗi xảy ra, thử lại nhé',
         errInterrupted: 'Việc này bị gián đoạn (trang đã tải lại) — bấm Thử lại nhé',
-        approveOk: 'Đã tạo bài viết mới từ kết quả này', approveFail: 'Tạo bài viết thất bại',
-        approvedOnly: 'Đã duyệt kết quả',
+        approveFail: 'Duyệt thất bại', approvedOnly: 'Đã duyệt kết quả',
+        recordOk: 'Đã lưu kết quả vào dữ liệu', recordFail: 'Lưu vào dữ liệu thất bại',
         sendFail: 'Gửi tin nhắn thất bại',
         errEmpty: 'AI trả về câu trả lời trống — thử lại nhé',
         taskFail: 'Không mở được việc mới',
@@ -46,8 +46,8 @@ const MSG = {
     en: {
         errGeneric: 'Something went wrong, please retry',
         errInterrupted: 'This task was interrupted (page reloaded) — tap Retry',
-        approveOk: 'A new post was created from this result', approveFail: 'Failed to create post',
-        approvedOnly: 'Result approved',
+        approveFail: 'Failed to approve', approvedOnly: 'Result approved',
+        recordOk: 'The result was saved to your data', recordFail: 'Failed to save to your data',
         sendFail: 'Failed to send the message',
         errEmpty: 'The AI returned an empty answer — please retry',
         taskFail: 'Could not start the task',
@@ -76,6 +76,7 @@ class TalkService {
         this._outlines = new Map() // division id → khung step (GET /v1/fn/spec), không phụ thuộc ngôn ngữ
         this._saves = new Map() // "jobId:key" → { timer, jobId, key, value } — field output chưa gửi
         this._flushing = new Map() // jobId → Promise<boolean> — lượt gửi /fields đang bay, chờ trước khi gửi thêm request khác
+        this._stages = new Map() // taskId → giai đoạn lượt _afterTask gần nhất đã xử lý — câu Thư ký không báo trùng
         // owner thật do Worker gán (từ JWT) — biết được qua dòng log đầu tiên trả về; '' = nền tảng. Chưa biết ->
         // coi như KHÔNG PHẢI nền tảng (an toàn hơn: bỏ qua tra cứu products/invoices thay vì lỡ tay đọc nhầm).
         this._isPlatform = false
@@ -164,6 +165,7 @@ class TalkService {
         for (const s of this._saves.values()) clearTimeout(s.timer)
         this._saves.clear()
         this._flushing.clear()
+        this._stages.clear()
         this._queue = Promise.resolve()
         this._loaded = null
         this._sectors = null
@@ -458,7 +460,7 @@ class TalkService {
         }))
     }
 
-    /** Duyệt kết quả — Worker ghi bảng output (hoặc bản ghi được giao), đồng bộ kiến thức, ghi bàn giao nếu job thuộc 1 task.
+    /** Duyệt kết quả — Worker đồng bộ kiến thức, ghi bàn giao nếu job thuộc 1 task (ghi bảng output là bước riêng: record()).
      *  `expertReview` = { confirmed, by } — bắt buộc với phòng mà ngành đòi chuyên gia duyệt (outline.review, <svc-job-card>
      *  hoặc <svc-progress> của svc-fn thu); thiếu thì Worker trả 400 và toast báo lý do. */
     async approve(jobId, expertReview = null) {
@@ -473,17 +475,38 @@ class TalkService {
                 toastEmit(`${this._msg.approveFail}: ${res.message}`, 'error')
                 return
             }
-            const { recordId = '', table = '' } = res.data ?? {}
             // error='' — 1 regenerateCall lỗi trước đó (Worker không tự xoá cột error khi duyệt) không được để lại
             // banner ⚠️ vĩnh viễn trên 1 job đã duyệt xong.
-            this._mapJob(jobId, (d) => ({ ...d, approved: true, createdPostId: recordId, error: '' }))
-            toastEmit(table ? this._msg.approveOk : this._msg.approvedOnly, 'success')
+            this._mapJob(jobId, (d) => ({ ...d, approved: true, error: '' }))
+            toastEmit(this._msg.approvedOnly, 'success')
             // Job của 1 task: Worker vừa ghi bàn giao — hỏi nó phòng nào chạy được tiếp (P3-14). Giai đoạn TRƯỚC khi duyệt
             // giữ lại ngay đây — view đọc lại sau đó (kể cả _refreshTask chen vào trước lượt này) đã là giai đoạn mới.
             if (doc.task) {
                 const prevStage = this.taskOf(doc.task)?.stage
                 this._enqueue(() => this._advanceTask(doc.task, prevStage))
             }
+        } finally {
+            this._pending(jobId, false)
+        }
+    }
+
+    /** Job đã duyệt → lưu kết quả vào bảng output của phòng (outline.output.table — products, posts…), 1 lần. Worker
+     *  chỉ cho nhân viên nền tảng (outline.recordable). Trả recordId mới ('' nếu lỗi / đã lưu / đang bận). */
+    async record(jobId) {
+        if (this.isPending(jobId)) return ''
+        const doc = this._job(jobId)
+        if (!doc?.approved || doc.createdPostId || !this._outline(doc)?.recordable) return ''
+        this._pending(jobId, true)
+        try {
+            const res = await this._api.record(jobId)
+            if (!res.ok) {
+                toastEmit(`${this._msg.recordFail}: ${res.message}`, 'error')
+                return ''
+            }
+            const recordId = res.data?.recordId ?? ''
+            this._mapJob(jobId, (d) => ({ ...d, createdPostId: recordId }))
+            toastEmit(this._msg.recordOk, 'success')
+            return recordId
         } finally {
             this._pending(jobId, false)
         }
@@ -587,10 +610,15 @@ class TalkService {
     }
 
     // View mới → câu Thư ký nếu giai đoạn vừa đổi → job vừa mở vào nhật ký rồi chạy lần lượt → đọc lại view.
+    // Giai đoạn trước = giai đoạn lượt _afterTask trước đã xử lý (nếu có): 2 lần duyệt liền nhau (chế độ Tự động) cùng
+    // giữ prevStage 'running' lúc bấm — lượt sau không được báo lại "Xong cả kế hoạch" mà lượt đầu đã báo.
     async _afterTask(view, prevStage = this.taskOf(view.id)?.stage) {
+        const prev = this._stages.get(view.id) ?? prevStage
+        this._stages.set(view.id, view.stage)
         this._setTask(view)
-        const line = stageLine(prevStage, view, (fn) => this._faceTitle(fn), this.state.lang || 'vi', { verdict: this.showVerdict })
-        if (line && this.secretary) await this._post(this.secretary.id, line)
+        const line = stageLine(prev, view, (fn) => this._faceTitle(fn), this.state.lang || 'vi', { verdict: this.showVerdict })
+        // Câu "Xong cả kế hoạch" mang id task — nhóm chat gắn nút tải PDF tổng vào đúng câu đó.
+        if (line && this.secretary) await this._post(this.secretary.id, line, view.stage === 'done' ? view.id : '')
         const created = view.created ?? []
         for (const job of created) {
             this._append(job)
@@ -627,8 +655,8 @@ class TalkService {
         return !!(outline?.output || outline?.produces?.length)
     }
 
-    async _post(from, content) {
-        const res = await this._api.appendLog(this.sector, from, content)
+    async _post(from, content, task = '') {
+        const res = await this._api.appendLog(this.sector, from, content, task)
         if (res.ok) this._append(res.data)
         else console.error('[llm/talk] failed to post a reply:', res.message)
     }

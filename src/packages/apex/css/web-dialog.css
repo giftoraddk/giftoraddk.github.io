@@ -45,30 +45,12 @@ dialog.web-dialog-overlay::backdrop {
 	border-radius: 20px;
 	box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 	box-sizing: border-box;
-	width: 100%;
+	width: calc(100% - 2rem); /* 1rem gutter each side on desktop — sheet / mobile full-screen reset it to 100% below */
 	max-width: 1200px;
 	max-height: 85vh;
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
-}
-
-.web-dialog-content.is-persistent-fx {
-	animation: persistent-fx 0.15s cubic-bezier(.25,.8,.25,1) !important;
-}
-
-@keyframes persistent-fx {
-	0% {
-		transform: scale(1);
-	}
-
-	50% {
-		transform: scale(1.03);
-	}
-
-	to {
-		transform: scale(1);
-	}
 }
 
 .dialog-header {
@@ -99,27 +81,7 @@ dialog.web-dialog-overlay::backdrop {
 	text-overflow: ellipsis;
 }
 
-.close-btn {
-	background: color-mix(in oklab, var(--color-base-content, #000) 8%, transparent);
-  cursor: pointer;
-  opacity: 0.55;
-  width: 2rem;
-  height: 2rem;
-  color: var(--color-base-content, #111);
-  border-width: medium;
-  border-style: none;
-  border-color: currentcolor;
-  border-image: none;
-  border-radius: 50%;
-  justify-content: center;
-  align-items: center;
-  transition: 0.2s;
-  display: flex;
-}
-
-.close-btn:hover {
-	opacity: 1;
-}
+.close-btn { flex-shrink: 0; } /* <web-button> (web-dialog.js) — never squeezed by a long title */
 
 .dialog-body {
 	padding: 1rem;
@@ -156,51 +118,6 @@ dialog.web-dialog-overlay::backdrop {
 	box-shadow: var(--pastel-shadow);
 }
 
-/* ── Persistent footer buttons ───────────────────────────────────────────────── */
-
-.dialog-btn {
-	display: inline-flex;
-	align-items: center;
-	padding: 8px 20px;
-	border-radius: 8px;
-	border: none;
-	font-size: .875rem;
-	font-weight: 600;
-	font-family: inherit;
-	cursor: pointer;
-	transition: opacity 0.15s;
-}
-
-.dialog-btn-cancel {
-	background: transparent;
-	border: 1px solid var(--color-error, #f5465c);
-	color: var(--color-error, #f5465c);
-	opacity: 0.8;
-}
-
-.dialog-btn-cancel:hover {
-	opacity: 1;
-}
-
-.dialog-btn-confirm {
-	background: transparent;
-	border: 1px solid var(--color-primary, #ffbb24);
-	color: var(--color-primary, #ffbb24);
-	opacity: 1;
-}
-
-.dialog-btn-confirm:hover {
-	opacity: 0.8;
-}
-
-.dialog-btn:disabled {
-	opacity: 0.4;
-	cursor: not-allowed;
-}
-.dialog-btn:disabled:hover {
-	opacity: 0.4;
-}
-
 /* ── Sheet type: bottom sheet with handle, slides up from the bottom ────────────── */
 
 dialog.web-dialog-overlay.sheet-overlay[open] {
@@ -213,6 +130,7 @@ dialog.web-dialog-overlay.sheet-overlay[open] {
 	max-height: 85vh;
 	border-radius: 1.5rem 1.5rem 0 0;
 	animation: web-dialog-sheet-in 0.32s ease-out;
+	transform-origin: 50% 100%; /* persistent nudge (web-dialog.js _fxContent) grows up from the bottom edge — stays put */
 }
 
 /* A gentle settle-in rather than a full off-screen throw — translateY(100%) would travel the
@@ -251,11 +169,6 @@ dialog.web-dialog-overlay.sheet-overlay[open] {
 
 	.dialog-header {
 		padding: 16px 20px;
-	}
-
-	.close-btn {
-		padding: 10px;
-		margin: -10px;
 	}
 
 	.dialog-footer {

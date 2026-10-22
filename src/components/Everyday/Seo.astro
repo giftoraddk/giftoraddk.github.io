@@ -1,0 +1,72 @@
+---
+// SEO/GEO cho các trang /radar/* — cùng cách components/Catalog/Feed.astro + Detail.astro làm cho /post/: JSON-LD @graph
+// (Organization + CollectionPage/ItemList hoặc WebPage/mainEntity + BreadcrumbList) trong <body> vì Core.astro không có
+// slot <head>. Nội dung hiển thị do <svc-everyday> vẽ ở trình duyệt (shadow DOM), nên <noscript> giữ tiêu đề + mô tả +
+// ảnh + link cho crawler không chạy JS.
+//   - hub / list (không `entity`): CollectionPage, ItemList = các mục con Everyday (modules/radar SECTIONS: tên + mô tả
+//     + URL — tín hiệu cho sitelinks của Google), không gồm chính trang đang xem; dữ liệu đổi theo giờ, không bake.
+//   - detail ISR (`entity`): WebPage có mainEntity = entity (Restaurant / Hotel / Recipe … — xem [slug].isr.astro).
+import { base, jsonLdHtml, publisherLd, breadcrumbLd } from '@/components/Catalog/lib';
+import { site } from '@/services/tools/site';
+import { SECTIONS } from '@/modules/radar/index.js';
+
+interface Crumb { label: string; href?: string }
+interface Props {
+	title: string;
+	description: string;
+	path: string;                      // '/radar/' | '/radar/food/' | '/radar/food/<slug>/' — canonical của JSON-LD
+	breadcrumb: Crumb[];               // mục cuối = trang hiện tại (không href)
+	entity?: Record<string, unknown>;  // schema.org của mục đang xem (trang detail)
+	image?: string;                    // ảnh tuyệt đối — chỉ cho <noscript> của trang detail
+}
+
+const { title, description, path, breadcrumb, entity, image } = Astro.props;
+const pageUrl = `${base}${path}`;
+// Hub liệt kê mọi mục con; trang con liệt kê các mục anh em (trừ chính nó) — link nội bộ như chip tag của Feed.
+const links = SECTIONS
+	.filter((m) => m.path !== path)
+	.map((m) => ({ url: m.path, name: m.name, description: m.desc }));
+
+const pageBase = {
+	'@id': `${pageUrl}#page`,
+	url: pageUrl,
+	name: title,
+	description,
+	inLanguage: site.lang,
+	isPartOf: { '@type': 'WebSite', name: site.subtitle, url: site.domain },
+	publisher: { '@id': `${base}/#organization` },
+};
+
+const page = entity
+	? { '@type': 'WebPage', ...pageBase, mainEntity: entity }
+	: {
+		'@type': 'CollectionPage',
+		...pageBase,
+		mainEntity: {
+			'@type': 'ItemList',
+			numberOfItems: links.length,
+			itemListElement: links.map((l, i) => ({
+				'@type': 'ListItem',
+				position: i + 1,
+				item: { '@type': 'WebPage', '@id': `${base}${l.url}#page`, url: `${base}${l.url}`, name: l.name, description: l.description },
+			})),
+		},
+	};
+
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@graph': [publisherLd(), page, breadcrumbLd(breadcrumb.map((b) => ({ name: b.label, href: b.href })), pageUrl)],
+};
+---
+
+<script type="application/ld+json" is:inline set:html={jsonLdHtml(jsonLd)} />
+<noscript>
+	<section class="mx-auto max-w-3xl px-4 py-10">
+		{image && <img src={image} alt={title} class="mb-4 w-full rounded-2xl object-cover" loading="lazy" />}
+		<h1 class="text-2xl font-bold">{title}</h1>
+		{description && <p class="mt-2 opacity-70">{description}</p>}
+		<ul class="mt-4 grid gap-3">
+			{links.map((l) => <li><a class="underline font-semibold" href={l.url}>{l.name}</a><p class="text-sm opacity-70">{l.description}</p></li>)}
+		</ul>
+	</section>
+</noscript>

@@ -9,6 +9,10 @@
  *                                               unindexed rows of ?owner (admin only), else of the caller's hub
  *   POST /v1/hubs/import         { url, type, owner?, sector?, fn?, itemsPath?, fields?, dryRun? } → import a JSON API
  *                                               into `know` (+ `rel`), saved to hub.meta.sources
+ *   POST /v1/hubs/items          { items, source, type?, owner?, sector?, fn?, prune?, since? } → caller-shaped rows into
+ *                                               `know` (+ index + `rel`): same key = overwrite, new key = append; `prune`
+ *                                               soft-deletes this `source`'s rows not written since `since` (svc-learn's
+ *                                               product sync — a product removed from the shop leaves the knowledge too)
  *   POST /v1/hubs/remove-source  { id }       → drop a saved source (its knowledge stays)
  *   POST /v1/hubs/domains        { owner?, domains: string[] } → the sites allowed to run the hub's embedded assistant
  *                                               ([] = any site); own hub, or any hub for an admin
@@ -26,12 +30,12 @@
 import { requireAuth, type VerifiedUser } from './lib/auth';
 import { isAdminCaller, type RolesUser } from './lib/roles';
 import { json } from './lib/http';
-import { readBody, HUBS_BODY_MAX } from './lib/body';
+import { readBody, HUBS_BODY_MAX, HUBS_ITEMS_BODY_MAX } from './lib/body';
 import { D1Client } from './d1';
 import { findCallerProfile } from './lib/profile';
 import { sendMail, mcpTokenMail, siteUrlOf, type EmailEnv } from './email';
 import { planGrants } from '../../../purchase/tool/plans.js';
-import { KNOW_TYPES, ToolError, countKnow, knowScopeOf, pendingIndex, readUrl, reindexKnow, upsertKnow, type KnowImportEnv } from './knowImport';
+import { KNOW_TYPES, ToolError, countKnow, knowScopeOf, pendingIndex, pruneKnow, readUrl, reindexKnow, upsertKnow, type KnowImportEnv } from './knowImport';
 import { MAX_DOMAINS, embedOwnerOk, hubDomains, hubMeta, parseHost } from './fn/access';
 
 export interface HubsEnv extends KnowImportEnv, EmailEnv {
@@ -58,9 +62,9 @@ export async function hashToken(token: string): Promise<string> {
   return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-function newToken(): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(32));
-  return `mcp_${[...bytes].map(b => b.toString(16).padStart(2, '0')).join('')}`;
+function newToken(prefix = 'mcp_', size = 32): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(size));
+  return `${prefix}${[...bytes].map(b => b.toString(16).padStart(2, '0')).join('')}`;
 }
 
 /**
@@ -90,10 +94,11 @@ export async function hubByToken(env: HubsEnv, token: string): Promise<Rec | nul
   return hub;
 }
 
-/** What a client may see of a hub — never token_hash. */
+/** What a client may see of a hub — never token_hash. support_* = columns of the dropped Zap Support reply key
+ *  (2026-10-21, hook/ZAP-SUPPORT.rst §13) that older databases still have (d1-schema never drops a column). */
 function publicHub(hub: Rec | null) {
   if (!hub) return null;
-  const { token_hash: _hash, deleted_at: _deleted, ...rest } = hub;
+  const { token_hash: _hash, deleted_at: _deleted, support_hash: _sh, support_hint: _si, support_issued_at: _sa, support_used_at: _su, ...rest } = hub;
   return { ...rest, has_token: Boolean(hub.token_hash), sources: hub.meta?.sources ?? [] };
 }
 
@@ -224,9 +229,10 @@ export async function handleHubsRoute(request: Request, env: HubsEnv, action: st
     // Gate before spending a body-read on an unauthenticated caller — every action below re-verifies via callerOf()
     // anyway (requireAuth's JWKS lookup is memoized, so this second verify is cheap), never a duplicate query.
     await requireAuth(request, env.SUPABASE_URL);
-    const body = await readBody(request, HUBS_BODY_MAX);
+    const body = await readBody(request, action === 'items' ? HUBS_ITEMS_BODY_MAX : HUBS_BODY_MAX);
     if (action === 'issue') return await issue(request, env, body);
     if (action === 'import') return await importSource(request, env, body);
+    if (action === 'items') return await importItems(request, env, body);
     if (action === 'remove-source') return await removeSource(request, env, body);
     if (action === 'reindex') return await reindex(request, env, body);
     if (action === 'domains') return await setDomains(request, env, body);
@@ -328,6 +334,33 @@ async function importSource(request: Request, env: HubsEnv, body: Rec): Promise<
     await c.client.put('hubs', c.hub.id, { meta: { ...c.hub.meta, sources }, updated_at: c.client.now() });
   }
   return json({ ...result, owner, mapping, sources });
+}
+
+/**
+ * Rows the caller shaped itself (svc-learn: the shop's products, a CSV) → upsertKnow — row id = owner + item id, so a
+ * re-sync overwrites the same rows and appends new ones; FTS, chunks, vectors (unchanged content skipped) and `rel`
+ * tag links come with it. `source` names the sync; `prune` (sent on a sync's LAST batch, `since` = the first batch's
+ * `startedAt`) soft-deletes that source's rows the sync no longer sent. Shared platform knowledge (owner '') keeps the
+ * record id as-is (keepIds) — the same id services/know-sync.js writes when an admin saves one record.
+ */
+async function importItems(request: Request, env: HubsEnv, body: Rec): Promise<Response> {
+  const c = await callerOf(request, env);
+  const wantsOther = body.owner != null && body.owner !== (c.hub?.id ?? c.user.userId);
+  if (wantsOther && !c.isAdmin) return badRequest('You can only import into your own knowledge.', 403);
+  if (!c.isAdmin && !hubActive(c.hub)) return badRequest('No active hub — buy a plan (or reissue your token) first.', 402);
+  const owner = wantsOther ? String(body.owner) : c.user.userId;
+  const source = String(body.source ?? '').trim().slice(0, 200);
+  if (!source) return badRequest('`source` is required — it names the sync, so `prune` only touches its own rows.');
+  const items = Array.isArray(body.items) ? body.items : null;
+  if (!items) return badRequest('`items` must be a list.');
+  const scope = knowScopeOf(body);
+  const startedAt = c.client.now(); // before any write — rows this call writes are stamped >= it
+
+  const result = items.length
+    ? await upsertKnow(env, owner, items, { type: body.type, source, keepIds: owner === '', ...scope })
+    : { created: 0, updated: 0, skipped: 0, indexed: 0, unchanged: 0, related: 0, ids: [] as string[] };
+  const pruned = body.prune ? await pruneKnow(env, owner, source, typeof body.since === 'string' && body.since ? body.since : startedAt) : 0;
+  return json({ ...result, pruned, owner, startedAt });
 }
 
 async function reindex(request: Request, env: HubsEnv, body: Rec): Promise<Response> {

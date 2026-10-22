@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * stack.mjs — điều phối site (Astro) + 2 Cloudflare Worker (auth :8787, llm :8788) từ root.
+ * stack.mjs — điều phối site (Astro) + 3 Cloudflare Worker (auth :8787, llm :8788, radar :8789) từ root.
  *
  *   pnpm run setup          XOÁ SẠCH bản cài cũ (node_modules, .astro, dist, .wrangler = D1 local, .dev.vars)
- *                           rồi cài lại deps root + 2 worker, sinh .dev.vars từ .env, tạo D1 local mới theo db/schema.sql
- *   pnpm run dev            chạy cả 3 (site :5000, auth :8787, llm :8788), Ctrl+C tắt hết
- *   pnpm run check          kiểm tra 3 server local đang trả lời
- *   pnpm run cf:provision   tạo/tìm D1 ALL_DB (auth) + D1/Vectorize (llm) → ghi id vào wrangler.jsonc
- *   pnpm run deploy         provision → đẩy secret + deploy cả 2 worker (site tự build/host riêng)
- *   pnpm run deploy:auth    chỉ 1 worker (cũng :llm) — provision + secret + deploy của riêng worker đó.
+ *                           rồi cài lại deps root + 3 worker, sinh .dev.vars từ .env, tạo D1 local mới theo db/schema.sql
+ *   pnpm run dev            chạy cả 4 (site :5000, auth :8787, llm :8788, radar :8789), Ctrl+C tắt hết
+ *   pnpm run check          kiểm tra 4 server local đang trả lời
+ *   pnpm run cf:provision   tạo/tìm D1 ALL_DB (auth) + D1/Vectorize (llm) + D1 (radar) → ghi id vào wrangler.jsonc
+ *   pnpm run deploy         provision → đẩy secret + deploy cả 3 worker (site tự build/host riêng)
+ *   pnpm run deploy:auth    chỉ 1 worker (cũng :llm, :radar) — provision + secret + deploy của riêng worker đó.
  *                           Gọi qua `pnpm run`: `pnpm deploy` là lệnh có sẵn của pnpm (deploy workspace), không phải script này.
  *
  * Mỗi worker vẫn tự chạy được độc lập trong thư mục của nó — file này chỉ gọi lại script có sẵn
@@ -26,12 +26,18 @@ const WORKERS = {
     // { key, optional, check } (trống thì giữ nguyên + cảnh báo; check(value) trả về cảnh báo nếu giá trị đáng ngờ).
     llm:  {
         dir: join(ROOT, 'src/packages/llm/worker'), port: 8788, color: 36, envKey: 'PUBLIC_LLM_URL',
-        deployVars: { AUTH_URL: 'PUBLIC_AUTH_URL', MAIL_FROM: { key: 'MAIL_FROM', optional: true, check: (v) => mailFromWarning(v) } },
+        // CLOU_ACCOUNT = account của LLM_API_TOKEN — CLOU_KEY chỉ có quyền Workers AI trên account này (chat + ảnh).
+        deployVars: { AUTH_URL: 'PUBLIC_AUTH_URL', CLOU_ACCOUNT: { key: 'LLM_ACCOUNT_ID', optional: true }, MAIL_FROM: { key: 'MAIL_FROM', optional: true, check: (v) => mailFromWarning(v) } },
     },
+    radar: { dir: join(ROOT, 'src/packages/radar/worker'), port: 8789, color: 33, envKey: 'PUBLIC_RADAR_URL' },
 };
 const SITE_PORT = 5000;
+// Render node của radar — Camoufox (Python), KHÔNG phải worker: venv riêng trong thư mục của nó (pnpm run setup:render).
+// `pnpm run dev` chỉ chạy nó khi venv đã có, để máy không có Python vẫn dev được phần còn lại.
+const RENDER = { dir: join(ROOT, 'src/packages/radar/render'), port: 8790, color: 34 };
 const ENV_PROD = join(ROOT, '.env.production');
 const IS_WIN = process.platform === 'win32';
+const RENDER_PY = join(RENDER.dir, '.venv', IS_WIN ? 'Scripts/python.exe' : 'bin/python');
 
 const log = (msg) => console.log(`\x1b[1m[stack]\x1b[0m ${msg}`);
 const fail = (msg) => { console.error(`\x1b[31m[stack] ✗ ${msg}\x1b[0m`); process.exit(1); };
@@ -108,6 +114,7 @@ function setup() {
             '# Điền URL worker thật (wrangler deploy in ra sau lần deploy đầu, dạng https://<tên>.<subdomain>.workers.dev).',
             'PUBLIC_AUTH_URL=',
             'PUBLIC_LLM_URL=',
+            'PUBLIC_RADAR_URL=',
             '',
         ].join('\n'));
         log('đã tạo .env.production (điền URL worker trước khi build site production)');
@@ -121,7 +128,8 @@ function setup() {
 const children = [];
 
 /** Chạy song song, prefix mỗi dòng output theo tên tiến trình. */
-function startProc(name, color, cmd, args, cwd, env = process.env) {
+/** `optional`: tiến trình phụ (render node) — nó dừng thì chỉ báo, các tiến trình khác vẫn chạy. */
+function startProc(name, color, cmd, args, cwd, env = process.env, { optional = false } = {}) {
     const child = spawn(cmd, args, { cwd, shell: true, env: { ...env, FORCE_COLOR: '1' } });
     const tag = `\x1b[${color}m[${name}]\x1b[0m `;
     const pipe = (stream, out) => {
@@ -137,6 +145,7 @@ function startProc(name, color, cmd, args, cwd, env = process.env) {
     // 'close' (không phải 'exit'): đợi stdout/stderr đọc hết — dòng lỗi cuối cùng không bị nuốt.
     child.on('close', code => {
         if (stopping) return;
+        if (optional) { log(`${name} dừng (exit ${code}) — các tiến trình khác vẫn chạy`); return; }
         log(`${name} dừng (exit ${code}) — tắt các tiến trình còn lại`);
         shutdown(code ?? 0);
     });
@@ -155,11 +164,20 @@ function shutdown(code = 0) {
     process.exit(code);
 }
 
-/** `dev` = tất cả; `dev llm` / `dev auth site` = chỉ những phần được liệt kê. */
+/** BROWSER_NODE_SECRET hợp lệ (≥ 32 ký tự, env hoặc root .env) — thiếu thì render node tự thoát ngay khi khởi động. */
+const renderSecretOk = () => (process.env.BROWSER_NODE_SECRET || parseEnv(join(ROOT, '.env')).BROWSER_NODE_SECRET || '').length >= 32;
+const BROWSER_NODE_SECRET_HINT = 'BROWSER_NODE_SECRET trong .env cần ≥ 32 ký tự (vd `openssl rand -hex 32`), dùng chung với radar';
+
+/** `dev` = tất cả (render node nếu đã setup:render + có BROWSER_NODE_SECRET); `dev llm` / `dev auth site` = chỉ những phần
+ *  được liệt kê. Render node là phần phụ: thiếu thì radar vẫn chạy, chỉ các nguồn `render` tạm nghỉ. */
 function dev(only = []) {
-    const want = only.length ? only : [...Object.keys(WORKERS), 'site'];
-    const bad = want.filter(n => n !== 'site' && !WORKERS[n]);
-    if (bad.length) fail(`không có "${bad.join(', ')}" — dùng: ${Object.keys(WORKERS).join(' | ')} | site`);
+    const autoRender = !only.length && existsSync(RENDER_PY);
+    if (autoRender && !renderSecretOk()) log(`bỏ qua render node — ${BROWSER_NODE_SECRET_HINT}. Nguồn "render" sẽ tạm nghỉ.`);
+    const want = only.length ? only : [...Object.keys(WORKERS), 'site', ...(autoRender && renderSecretOk() ? ['render'] : [])];
+    const bad = want.filter(n => n !== 'site' && n !== 'render' && !WORKERS[n]);
+    if (bad.length) fail(`không có "${bad.join(', ')}" — dùng: ${Object.keys(WORKERS).join(' | ')} | site | render`);
+    if (want.includes('render') && !existsSync(RENDER_PY)) fail('render node chưa cài — chạy `pnpm run setup:render` trước.');
+    if (want.includes('render') && !renderSecretOk()) fail(`render node: ${BROWSER_NODE_SECRET_HINT}.`);
     for (const n of want) if (WORKERS[n] && !existsSync(join(WORKERS[n].dir, 'node_modules'))) fail(`${n}-worker chưa cài deps — chạy \`pnpm run setup\` trước.`);
     process.on('SIGINT', () => shutdown(0));
     process.on('SIGTERM', () => shutdown(0));
@@ -172,7 +190,7 @@ function dev(only = []) {
         urls.push(`${name} http://localhost:${w.port}`);
     }
     if (want.includes('site')) {
-        // PUBLIC_<WORKER>_URL thiếu trong .env → client gọi nhầm vào chính site (404).
+        // PUBLIC_<WORKER>_URL thiếu trong .env (vd .env tạo trước khi có radar) → client gọi nhầm vào chính site (404).
         // Dev thì điền sẵn URL local của worker cho tiến trình site — Vite đọc PUBLIC_* từ process.env; .env không bị sửa.
         const dotenv = parseEnv(join(ROOT, '.env'));
         const siteEnv = { ...process.env };
@@ -183,6 +201,11 @@ function dev(only = []) {
         }
         startProc('site', 32, 'pnpm', ['exec', 'astro', 'dev'], ROOT, siteEnv);
         urls.unshift(`site http://localhost:${SITE_PORT}`);
+    }
+    if (want.includes('render')) {
+        // Trong `pnpm run dev` (tất cả) render node là phụ — nó chết không kéo site/worker theo; `dev render` thì vẫn chặt.
+        startProc('render', RENDER.color, `"${RENDER_PY}"`, ['server.py'], RENDER.dir, process.env, { optional: !only.length });
+        urls.push(`render http://127.0.0.1:${RENDER.port}`);
     }
     log(`${urls.join(' · ')} — Ctrl+C để tắt`);
 }
@@ -207,6 +230,7 @@ async function check() {
         await ping('site', `http://localhost:${SITE_PORT}/`),
         await ping('auth', `http://localhost:${WORKERS.auth.port}/v1/data/profiles`),
         await ping('llm',  `http://localhost:${WORKERS.llm.port}/v1/search`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }),
+        await ping('radar', `http://localhost:${WORKERS.radar.port}/v1/radar/status`),
     ];
     if (ok.includes(false)) process.exitCode = 1;
 }
@@ -240,7 +264,7 @@ async function ensureTarget(name) {
     log(`${name}: account đúng (${got}.workers.dev)`);
 }
 
-/** Tên worker từ dòng lệnh (`deploy auth llm`) — trống = cả 2; tên lạ thì dừng trước khi đụng tới Cloudflare. */
+/** Tên worker từ dòng lệnh (`deploy llm radar`) — trống = cả 3; tên lạ thì dừng trước khi đụng tới Cloudflare. */
 function pickWorkers(names) {
     const bad = names.filter((n) => !WORKERS[n]);
     if (bad.length) fail(`không có worker "${bad.join(', ')}" — dùng: ${Object.keys(WORKERS).join(' | ')}`);
@@ -361,7 +385,7 @@ function setWranglerValue(name, re, value, label) {
     if (next !== text) { writeFileSync(wranglerFile(name), next); log(`${name}/wrangler.jsonc: ${label} = ${value}`); }
 }
 
-/** D1 duy nhất của 1 worker (auth: ALL_DB, llm: LLM_DB) — id hiện tại còn trong account thì giữ. */
+/** D1 duy nhất của 1 worker (auth: ALL_DB, llm: LLM_DB, radar: RADAR_DB) — id hiện tại còn trong account thì giữ. */
 function provisionD1(name, fallbackName) {
     const text = readWrangler(name);
     const binding = text.match(/"binding"\s*:\s*"([A-Z_]+)"\s*,\s*"database_name"/)?.[1] || 'D1';
@@ -395,6 +419,7 @@ ${out}`);
 const PROVISION = {
     auth: () => provisionD1('auth', 'mega-all'),
     llm: () => { provisionD1('llm', 'mega-llm'); provisionVectorize(); },
+    radar: () => provisionD1('radar', 'mega-radar'),
 };
 
 function provision(names = Object.keys(WORKERS)) {
@@ -402,11 +427,22 @@ function provision(names = Object.keys(WORKERS)) {
     for (const name of names) PROVISION[name]();
 }
 
+// ── render node (Camoufox) ───────────────────────────────────────────────────
+
+/** venv + requirements.txt (bản ghim) + tải binary Camoufox. Chạy lại được: venv có rồi thì chỉ cài/tải bù. */
+function renderSetup() {
+    if (!existsSync(RENDER_PY)) run(IS_WIN ? 'python' : 'python3', ['-m', 'venv', '.venv'], RENDER.dir);
+    run(`"${RENDER_PY}"`, ['-m', 'pip', 'install', '-r', 'requirements.txt'], RENDER.dir);
+    run(`"${RENDER_PY}"`, ['-m', 'camoufox', 'fetch'], RENDER.dir);
+    log('render node sẵn sàng — cần BROWSER_NODE_SECRET (≥ 32 ký tự) trong .env, dùng chung với radar.');
+}
+
 // ── main ──────────────────────────────────────────────────────────────────────
 
 const [cmd, ...rest] = process.argv.slice(2);
 const commands = {
     setup,
+    'render-setup': renderSetup,
     dev: () => dev(rest),
     check,
     provision: async () => { const names = pickWorkers(rest); ensureLogin(names); for (const n of names) await ensureTarget(n); provision(names); },

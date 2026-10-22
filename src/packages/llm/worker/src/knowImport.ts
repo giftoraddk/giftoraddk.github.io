@@ -229,6 +229,21 @@ export async function deleteKnow(env: KnowImportEnv, owner: string, ids: string[
   return deleted;
 }
 
+/**
+ * Soft-deletes `owner`'s rows written by `source` that a full re-sync did not touch (updated_at < `before`, the sync's
+ * start) — e.g. products removed from the shop since the last sync. upsertKnow stamps updated_at on every row it
+ * writes, unchanged content included, so "not written since `before`" = "no longer sent by the source".
+ */
+export async function pruneKnow(env: KnowImportEnv, owner: string, source: string, before: string): Promise<number> {
+  if (!source) return 0;
+  const { results } = await env.LLM_DB
+    .prepare(`SELECT id FROM know WHERE owner = ? AND source = ? AND updated_at < ? AND deleted_at IS NULL`)
+    .bind(owner, source, before)
+    .all();
+  const ids = ((results ?? []) as Rec[]).map(r => String(r.id));
+  return ids.length ? deleteKnow(env, owner, ids) : 0;
+}
+
 // ── Reads ────────────────────────────────────────────────────────────────────
 
 export async function listKnow(env: KnowImportEnv, owner: string, opts: { type?: string; status?: string; limit?: number; sector?: string; fn?: string } = {}) {
@@ -293,7 +308,7 @@ export interface UrlMapping {
   url: string;
   itemsPath?: string;
   headers?: Record<string, string>;
-  fields?: { title?: string; description?: string | string[]; id?: string; tags?: string };
+  fields?: { title?: string; description?: string | string[]; id?: string; tags?: string; url?: string };
   type?: string;
   limit?: number;
 }
@@ -303,6 +318,18 @@ const GUESS = {
   description: ['description', 'content', 'body', 'answer', 'summary', 'text', 'details', 'excerpt'],
   id: ['id', '_id', 'uuid', 'slug', 'sku', 'code', 'key'],
   tags: ['tags', 'categories', 'category', 'keywords'],
+  // the item's own page — appended as a "Link:" line, so the assistant can hand it to the visitor (it only gives links found in the knowledge)
+  url: ['url', 'link', 'href', 'permalink', 'product_url', 'page_url'],
+};
+
+/** An item's page as an absolute http(s) URL ("chatzui.com/x" → https), or '' — never javascript: / data: / credentials. */
+const pageUrl = (v: unknown): string => {
+  const s = typeof v === 'string' ? v.trim() : '';
+  if (!s || s.length > 500) return '';
+  try {
+    const u = new URL(/^https?:\/\//i.test(s) ? s : /^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(s) ? `https://${s}` : 'x:');
+    return /^https?:$/.test(u.protocol) && !u.username && !u.password ? u.href : '';
+  } catch { return ''; }
 };
 
 /** First array in the response, breadth-first (root, then data/items/results…), with its path. */
@@ -373,6 +400,7 @@ export async function readUrl(m: UrlMapping): Promise<{ items: KnowItem[]; mappi
     description: m.fields?.description ?? GUESS.description.filter(n => sample[n] != null),
     id: m.fields?.id || guessField(sample, GUESS.id),
     tags: m.fields?.tags || guessField(sample, GUESS.tags),
+    url: m.fields?.url || guessField(sample, GUESS.url),
   };
   if (!fields.title) throw new ToolError(`Couldn't guess the title field (tried ${GUESS.title.join(', ')}) — pass fields.title.`);
   const descPaths = Array.isArray(fields.description) ? fields.description : [fields.description];
@@ -380,12 +408,13 @@ export async function readUrl(m: UrlMapping): Promise<{ items: KnowItem[]; mappi
   const limit = Math.min(Number(m.limit) || MAX_ITEMS, MAX_ITEMS);
   const items = found.list.slice(0, limit).map(raw => {
     const externalId = fields.id ? pick(raw, fields.id) : undefined;
+    const link = fields.url ? pageUrl(pick(raw, fields.url)) : '';
     return {
       // host prefix: the same external id from two different APIs stays two rows
       id: externalId != null && externalId !== '' ? `${parsed.hostname}-${externalId}` : undefined,
       type: m.type,
       title: plainText(pick(raw, fields.title)),
-      description: descPaths.map(p => plainText(pick(raw, p))).filter(Boolean).join('\n\n'),
+      description: [...descPaths.map(p => plainText(pick(raw, p))), link && `Link: ${link}`].filter(Boolean).join('\n\n'),
       tags: fields.tags ? (pick(raw, fields.tags) as string | string[]) : undefined,
     } as KnowItem;
   }).filter(item => item.title);

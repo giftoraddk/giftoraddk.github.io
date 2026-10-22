@@ -7,6 +7,7 @@
  * Worker không sort/search/phân trang → áp phía client (applyQueryOpts).
  */
 import { getPath, ulid } from '@/services/tools/util.js';
+import { RANK_FIELD, compareRank } from '@/services/tools/rank.js';
 import { requester } from './requester.js';
 
 const POLL_MS = 5000;
@@ -22,7 +23,10 @@ export function applyQueryOpts(rows, opts = {}) {
         const q = String(searchValue).toLowerCase();
         out = out.filter(r => String(getPath(r, searchField) ?? '').toLowerCase().startsWith(q));
     }
-    if (sortBy) {
+    if (sortBy === RANK_FIELD) {
+        // Thứ tự thủ công (tools/rank.js): nhóm ưu tiên theo rank, rồi updated_at mới trước — `order` không áp dụng
+        out = [...out].sort(compareRank);
+    } else if (sortBy) {
         const dir = order === 'desc' ? -1 : 1;
         out = [...out].sort((a, b) => dir * _cmp(getPath(a, sortBy), getPath(b, sortBy)));
     }
@@ -31,10 +35,14 @@ export function applyQueryOpts(rows, opts = {}) {
     return out;
 }
 
+// Đọc tĩnh từng biến — `import.meta.env[key]` (key động) khiến Vite nhét CẢ object env (mọi PUBLIC_*, kể cả key AI)
+// vào bundle client.
+const BASES = { PUBLIC_AUTH_URL: import.meta.env.PUBLIC_AUTH_URL, PUBLIC_LLM_URL: import.meta.env.PUBLIC_LLM_URL };
+
 class WorkerAdapter {
     constructor(envKey) { this._envKey = envKey; }
 
-    get _base() { return import.meta.env[this._envKey]; }
+    get _base() { return BASES[this._envKey]; }
 
     async _req(method, path, body) {
         // Bearer token do requester tự gắn (session Supabase)

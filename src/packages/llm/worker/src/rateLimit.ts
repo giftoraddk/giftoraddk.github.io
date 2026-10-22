@@ -38,6 +38,7 @@ export async function allowPublicRead(env: PublicReadEnv, request: Request): Pro
   return success;
 }
 
+
 export async function allowAi(env: RateLimitEnv, request: Request, userId: string): Promise<boolean> {
   const { success } = userId
     ? await env.AI_USER_LIMIT.limit({ key: `user:${userId}` })

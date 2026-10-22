@@ -5,6 +5,7 @@
 // đang dừng → `resume-step`; duyệt kết quả → `approve` { expertReview? }, kèm ô xác nhận khi ngành đòi chuyên gia ký);
 // lúc này host có attribute `collapsed` để nơi chứa ghim nó (sticky). Nút "more" mở phần đầy đủ: vì sao phòng này được
 // giao, bàn giao nhận / gửi (kèm bản hiện hành). Slot mặc định = Chạy lại / Vẫn dùng được do svc-talk đặt vào.
+// Job đã duyệt của phòng có bảng output (outline.recordable): icon lưu → `record`; đã lưu (createdPostId) → icon check.
 // Thuần hiển thị — svc-talk nghe event rồi gọi service/talk.js.
 import { LitElement, html, unsafeCSS } from 'lit'
 import 'iconify-icon'
@@ -104,6 +105,20 @@ export class SvcJobCard extends LitElement {
         this._emit('approve', this.outline.review ? { expertReview: { confirmed: true, by: this._signOffBy.trim() } } : {})
     }
 
+    _rfRecord(t) {
+        if (!this.job.approved || !this.outline.recordable) return ''
+        const saved = !!this.job.createdPostId
+        const busy = !saved && this.busy
+        const label = (saved ? t.recorded : t.record).replace('{table}', this.outline.output?.table ?? '')
+        return html`
+            <button class="cd-icon-btn cd-record ${saved ? 'is-saved' : ''}" title=${label} aria-label=${label} ?disabled=${saved || busy}
+                @click=${() => this._emit('record')}>
+                <iconify-icon class=${busy ? 'cd-spin' : ''}
+                    icon=${busy ? 'ri:loader-4-line' : 'ri:database-2-line'}></iconify-icon>
+            </button>
+        `
+    }
+
     render() {
         if (!this.job || !this.outline) return html``
         const t = { ...cardTxt(this.lang), ...(TXT[this.lang] ?? TXT.vi) }
@@ -129,6 +144,7 @@ export class SvcJobCard extends LitElement {
                     </div>
                     <div class="cd-head-side">
                         ${level ? chip(t.level[level], LEVEL_TONE[level]) : ''}
+                        ${this._rfRecord(t)}
                         <button class="cd-icon-btn" aria-expanded=${this._more ? 'true' : 'false'}
                             title=${this._more ? t.less : t.more} aria-label=${this._more ? t.less : t.more}
                             @click=${() => { this._more = !this._more }}>

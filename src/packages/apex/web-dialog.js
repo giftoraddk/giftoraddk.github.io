@@ -7,6 +7,7 @@
 import { LitElement, html, nothing, unsafeCSS } from 'lit'
 import styles from './css/web-dialog.css?inline'
 import { a11yTxt } from './tool/a11y.js'
+import './web-button.js'
 import pastelStyles from './css/pastel.css?inline'
 
 const TXT_STD = {
@@ -110,14 +111,14 @@ export class WebDialog extends LitElement {
     this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }))
   }
 
+  // "Không đóng được" — nhún nhẹ tại chỗ. Web Animations trên property `scale` (không phải class đổi `animation`/`transform`):
+  // đổi `animation` bằng class thì lúc gỡ class, animation vào của sheet (translateY + opacity) chạy lại từ đầu → sheet giật/nhấp nháy.
+  // Sheet scale neo ở mép dưới (transform-origin, xem css) nên đứng yên tại chỗ, chỉ phồng lên.
   _fxContent() {
     const el = this.shadowRoot.querySelector('.web-dialog-content')
-    if (!el) return
-    el.classList.remove('is-persistent-fx')
-    // force reflow so removing+re-adding the class restarts the animation
-    void el.offsetWidth
-    el.classList.add('is-persistent-fx')
-    el.addEventListener('animationend', () => el.classList.remove('is-persistent-fx'), { once: true })
+    if (!el?.animate || matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    this._fx?.cancel()
+    this._fx = el.animate([{ scale: 1 }, { scale: 1.03 }, { scale: 1 }], { duration: 180, easing: 'cubic-bezier(.25,.8,.25,1)' })
   }
 
   _handleCancel() {
@@ -157,12 +158,8 @@ export class WebDialog extends LitElement {
             <slot name="header">
               <div class="title${!this.persistent ? ' truncate' : ''}" id="dialog-title">${this.title}</div>
               ${!this.persistent ? html`
-                <button type="button" class="close-btn" aria-label=${a11yTxt('close')} @click=${() => this.close()}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20" aria-hidden="true">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
-                </button>
+                <web-button class="close-btn" type="ghost" color="base-content" square rounded="50%" height="32px" ui=${this.ui}
+                  prefix="ri:close-line" iconSize="1.25rem" label=${a11yTxt('close')} @click=${() => this.close()}></web-button>
               ` : ''}
             </slot>
           </div>
@@ -171,12 +168,8 @@ export class WebDialog extends LitElement {
           </div>
           <div class="dialog-footer">
             ${this.persistent ? html`
-              <button type="button" class="dialog-btn dialog-btn-cancel" ?disabled=${this.disabled} @click=${this._handleCancel}>
-                ${this._txt.cancel}
-              </button>
-              <button type="button" class="dialog-btn dialog-btn-confirm" ?disabled=${this.disabled} @click=${this._handleConfirm}>
-                ${this._txt.confirm}
-              </button>
+              <web-button type="ghost" color="error" ui=${this.ui} ?disabled=${this.disabled} @click=${this._handleCancel}>${this._txt.cancel}</web-button>
+              <web-button type="soft" color="primary" ui=${this.ui} ?disabled=${this.disabled} @click=${this._handleConfirm}>${this._txt.confirm}</web-button>
             ` : html`<slot name="footer"></slot>`}
           </div>
         </div>

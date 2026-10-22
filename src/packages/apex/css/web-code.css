@@ -1,0 +1,52 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 1rem 0;
+}
+
+.header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.45rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #c678dd;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-family: system-ui, sans-serif;
+}
+
+.editor-wrap {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#cm { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+
+/* ── CodeMirror overrides ───────────────────────────────── */
+.cm-editor         { flex: 1; min-height: 0; font-size: 0.83rem; }
+.cm-editor.cm-focused { outline: none !important; }
+.cm-scroller {
+    font-family: 'Fira Code', 'Cascadia Code', Consolas, Monaco, monospace !important;
+    line-height: 1.6 !important;
+    overflow: auto !important;
+}
+
+/* Thin scrollbar */
+.cm-scroller::-webkit-scrollbar         { width: 6px; height: 6px; }
+.cm-scroller::-webkit-scrollbar-track   { background: transparent; }
+.cm-scroller::-webkit-scrollbar-thumb   { background: rgba(255,255,255,0.12); border-radius: 3px; }
+.cm-scroller::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.22); }

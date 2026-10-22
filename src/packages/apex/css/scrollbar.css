@@ -1,0 +1,25 @@
+::-webkit-scrollbar {
+  display: block;
+  width: 4px;  /* Vertical scrollbar width */
+  height: 4px; /* Horizontal scrollbar height */
+}
+
+/* Vertical scrollbar thumb */
+::-webkit-scrollbar-thumb {
+    background-color: #aaa;
+    border-radius: 4px;
+}
+
+/* Horizontal scrollbar track */
+::-webkit-scrollbar-track {
+    background: transparent; /* Optional: background for the scrollbar track */
+}
+
+/* Horizontal scrollbar thumb */
+::-webkit-scrollbar-thumb:horizontal {
+    background-color: #aaa; /* Same or different color for horizontal scrollbar */
+    border-radius: 4px;
+}
+::-webkit-scrollbar-corner {
+  display: none
+}

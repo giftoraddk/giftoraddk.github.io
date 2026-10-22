@@ -1,7 +1,8 @@
 /**
  * /v1/fn/* — the chat side of a sector (Phase 2). routes.ts asks this file first; the pipeline routes stay there.
  *   GET  /v1/fn/sectors[?owner=]  public — sector groups + departments + their editable faces (name, avatar, on/off)
- *   POST /v1/fn/log               { sector, from, content } → the chat row ('boss' or a department of that sector)
+ *   POST /v1/fn/log               { sector, from, content, task? } → the chat row ('boss' or a department of that sector);
+ *                                 `task` ties a Secretary line to the caller's own task ("the whole plan is done" → its PDF)
  *   POST /v1/fn/chat              { division, content, lang? } → { lang, reply, isTask, topic } — one head's decision, no write
  *   POST /v1/fn/aide              public { division, content, history?, owner?, types?, lang? } → { lang, reply, sources }
  *   GET  /v1/fn/jobs/:id          one job of the caller (the client's runner re-reads it after each step)
@@ -48,6 +49,14 @@ async function facesOf(env: FnEnv, sector: string, owner: string): Promise<FnVie
   return mergeFaces(sectorFaces().filter(s => s.id === sector), await faceRows(env, owner), owner)[0]?.functions ?? [];
 }
 
+/** The caller (owner + account) has a job in `task` — a chat row is only ever tied to one of its own tasks. */
+async function ownsTask(env: FnEnv, caller: Caller, task: string): Promise<boolean> {
+  const row = await env.LLM_DB
+    .prepare("SELECT 1 FROM talks WHERE owner = ? AND user_id = ? AND task = ? AND kind = 'job' AND deleted_at IS NULL LIMIT 1")
+    .bind(caller.owner, caller.userId, task).first();
+  return !!row;
+}
+
 async function appendLog(env: FnEnv, request: Request, caller: Caller, b: Rec): Promise<Response> {
   const sector = str(b.sector, 64);
   if (!sectorOf(sector)) throw new HttpError(404, 'Unknown sector');
@@ -57,11 +66,13 @@ async function appendLog(env: FnEnv, request: Request, caller: Caller, b: Rec): 
   if (raw !== 'boss' && parsed?.sector !== sector) throw new HttpError(400, 'from must be boss or a department of this sector');
   const content = str(b.content, CONTENT_MAX);
   if (!content) throw new HttpError(400, 'content required');
+  const task = str(b.task, 64);
+  if (task && !(await ownsTask(env, caller, task))) throw new HttpError(400, 'unknown task');
   if (!(await allowAi(env, request, caller.userId))) return rateLimited();
   const add = () => {
     const at = now();
     return new D1Client(env.LLM_DB).add('talks', {
-      kind: 'chat', from: parsed ? `${parsed.sector}.${parsed.fn}` : 'boss', content,
+      kind: 'chat', from: parsed ? `${parsed.sector}.${parsed.fn}` : 'boss', content, task,
       owner: caller.owner, user_id: caller.userId, sector, created_at: at, updated_at: at, deleted_at: null,
     });
   };

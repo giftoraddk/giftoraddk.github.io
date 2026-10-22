@@ -43,7 +43,6 @@ export const ECOMMERCE: SectorAdapter = {
   review: null,
   functions: {
     product: {
-      output: { table: 'products', fields: ['title', 'description', 'content', 'tags', 'pics'], status: 'draft' },
       steps: [
         {
           key: 'concept',

@@ -11,6 +11,9 @@
 //     see worker-adapter.js applyQueryOpts), off = filters the loaded rows (contains). Plus a filter/sort
 //     menu (same dropdown as the column picker), reorder toggle, `actions` slot and a segmented quick filter
 //     (first `filterable` column with opts)
+//   - reorder mode (orderable): drag handle per row — Pointer Events, so mouse, touch and pen alike, auto-scrolls the
+//     nearest scroller; ↑/↓ on the focused handle moves one step. Plus "to top" and "unpin" (tools/rank.js: a row
+//     without `rank` falls back to sorting by last edit). Emits wt-move { id, prevId | nextId } / { id, direction }.
 //   - list card: sticky LEAD cell (thumbnail + title + status pill), remaining columns scroll sideways,
 //     sticky chevron; tap a header to sort (asc → desc → off)
 //   - tap a row → detail/edit view in place (RecordTable's fields, sticky Save), back returns to that row
@@ -22,7 +25,9 @@
 
 import { html, nothing, unsafeCSS } from 'lit';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
+import { repeat } from 'lit/directives/repeat.js';
 import { txtLingo, getPath } from '@/services/tools/util.js';
+import { RANK_FIELD } from '@/services/tools/rank.js';
 import { RecordTable, TXT_STD as BASE_TXT } from './app/record-table.js';
 import { initialsOf, toneOf, optsOf, toneOfOpt, trackOf, thumbSrcOf } from '@/packages/apex/web-table.js';
 import '@/packages/apex/web-pagination.js';
@@ -38,7 +43,7 @@ const TXT_STD = {
         server: 'Server', serverOn: 'Tìm trên toàn bảng (máy chủ)', serverOff: 'Chỉ lọc dữ liệu đã tải', clearSearch: 'Xoá tìm kiếm', filters: 'Lọc & sắp xếp', asc: 'Tăng dần', desc: 'Giảm dần',
         sortBy: 'Sắp xếp theo', clear: 'Xoá bộ lọc', reorder: 'Sắp xếp thứ tự', newRow: 'Thêm mới', back: 'Quay lại',
         delete: 'Xoá', noPerm: 'Không có quyền', view: 'Xem nội dung', close: 'Đóng',
-        up: 'Lên trên', down: 'Xuống dưới', top: 'Lên đầu', bottom: 'Xuống cuối',
+        top: 'Lên đầu', drag: 'Kéo để đổi thứ tự (phím ↑/↓)', unpin: 'Bỏ ưu tiên — về sắp theo ngày sửa', auto: 'Tự động — sắp theo ngày sửa',
     },
     en: {
         ...BASE_TXT.en,
@@ -48,22 +53,29 @@ const TXT_STD = {
         server: 'Server', serverOn: 'Searches the whole table (server)', serverOff: 'Filters the loaded rows only', clearSearch: 'Clear search', filters: 'Filter & sort', asc: 'Ascending', desc: 'Descending',
         sortBy: 'Sort by', clear: 'Clear filters', reorder: 'Reorder', newRow: 'New', back: 'Back',
         delete: 'Delete', noPerm: 'No permission', view: 'View content', close: 'Close',
-        up: 'Move up', down: 'Move down', top: 'Move to top', bottom: 'Move to bottom',
+        top: 'Move to top', drag: 'Drag to reorder (↑/↓ keys)', unpin: 'Unpin — back to sorting by last edit', auto: 'Automatic — sorted by last edit',
     },
 };
 
-const MOVES = [
-    { dir: 'top',    icon: 'ri:arrow-up-double-line'   },
-    { dir: 'up',     icon: 'ri:arrow-up-s-line'        },
-    { dir: 'down',   icon: 'ri:arrow-down-s-line'      },
-    { dir: 'bottom', icon: 'ri:arrow-down-double-line' },
-];
 const NOT_SEARCHABLE = ['photor', 'password', 'repeater', 'editor'];
 const END_W = 44;     // chevron column
-const END_REORDER_W = 136;
+const END_REORDER_W = 112; // top · pin · drag handle
 const SEARCH_DEBOUNCE_MS = 380;
+const DRAG_EDGE = 56;      // px from the scroller's edge where a drag auto-scrolls
+const DRAG_SPEED = 18;     // max px per frame
 
 const fill = (s, vars) => s.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
+
+/** Nearest vertically scrolling ancestor, across shadow roots and slots (svc-node popover, dialog, page). */
+function scrollParentOf(node) {
+    for (let n = node; n;) {
+        n = n.assignedSlot || n.parentElement || n.getRootNode?.().host || null;
+        if (!n || n === document.documentElement || n === document.body) break;
+        const oy = getComputedStyle(n).overflowY;
+        if ((oy === 'auto' || oy === 'scroll') && n.scrollHeight > n.clientHeight) return n;
+    }
+    return document.scrollingElement || document.documentElement;
+}
 
 export class SvcList extends RecordTable {
     static styles = [unsafeCSS(css), unsafeCSS(pmCss)];
@@ -105,6 +117,10 @@ export class SvcList extends RecordTable {
         this._resizeObs = null;
         this._stuckObs = null;
         this._returnTo = null; // row id to scroll back to when the detail view closes
+        this._drag = null;     // live drag (plain field — rows move by inline transform, no re-render mid-drag)
+        this._onDragMove = this._onDragMove.bind(this);
+        this._onDragEnd = this._onDragEnd.bind(this);
+        this._onDragCancel = this._onDragCancel.bind(this);
     }
 
     // ── RecordTable overrides ──────────────────────────────────────────────────────
@@ -136,6 +152,7 @@ export class SvcList extends RecordTable {
         this._resizeObs = null;
         this._stuckObs?.disconnect();
         this._stuckObs = null;
+        this._dragFinish(false);
     }
 
     updated(changed) {
@@ -294,6 +311,127 @@ export class SvcList extends RecordTable {
         this._dhColSort(col.field, cur === 'asc' || cur === 'desc' ? 'desc' : 'asc');
     }
 
+    /** Reorder works on the list in its own (rank) order — a column sort would make "the row above" meaningless. */
+    _dhReorder() {
+        this._reorder = !this._reorder;
+        if (!this._reorder || !this._colSort) return;
+        const server = this._colsByField[this._colSort.field]?.serverExecutor;
+        this._colSort = null;
+        if (server) this._emitQueryChange();
+    }
+
+    /** Picking a sort leaves reorder mode. */
+    _dhColSort(field, dir) {
+        this._reorder = false;
+        super._dhColSort(field, dir);
+    }
+
+    // ── Reorder: drag (Pointer Events — mouse / touch / pen) ─────────────────────
+
+    _dhDragStart(e, id) {
+        if (this._drag || (e.pointerType === 'mouse' && e.button !== 0)) return;
+        const rowEl = e.currentTarget.closest('.sl-row');
+        const rows = [...this.renderRoot.querySelectorAll('.sl-scroll > .sl-row[data-id]')];
+        const from = rows.indexOf(rowEl);
+        if (from < 0) return;
+        e.preventDefault();
+        e.stopPropagation();
+        e.currentTarget.setPointerCapture?.(e.pointerId);
+        const scroller = scrollParentOf(this);
+        this._drag = {
+            id, from, to: from, rows, rowEl, scroller,
+            pointerId: e.pointerId, startY: e.clientY, y: e.clientY, top0: scroller.scrollTop, raf: 0,
+            h: rowEl.getBoundingClientRect().height,
+            mids: rows.map(r => { const b = r.getBoundingClientRect(); return b.top + b.height / 2; }),
+        };
+        rowEl.classList.add('is-drag');
+        rowEl.parentElement.classList.add('is-sorting');
+        window.addEventListener('pointermove', this._onDragMove);
+        window.addEventListener('pointerup', this._onDragEnd);
+        window.addEventListener('pointercancel', this._onDragCancel);
+    }
+
+    _onDragMove(e) {
+        const d = this._drag;
+        if (!d || e.pointerId !== d.pointerId) return;
+        e.preventDefault();
+        d.y = e.clientY;
+        this._dragLayout();
+        this._dragAutoScroll();
+    }
+
+    _onDragEnd(e) { if (e.pointerId === this._drag?.pointerId) this._dragFinish(true); }
+    _onDragCancel(e) { if (e.pointerId === this._drag?.pointerId) this._dragFinish(false); }
+
+    /** Dragged row follows the pointer (+ whatever the scroller scrolled); rows it passes slide one row-height over. */
+    _dragLayout() {
+        const d = this._drag;
+        const dy = d.y - d.startY + (d.scroller.scrollTop - d.top0);
+        const center = d.mids[d.from] + dy;
+        let to = d.from;
+        for (let j = d.from + 1; j < d.rows.length && center > d.mids[j]; j++) to = j;
+        for (let j = d.from - 1; j >= 0 && center < d.mids[j]; j--) to = j;
+        d.to = to;
+        d.rows.forEach((r, j) => {
+            const shift = j === d.from ? dy : j > d.from && j <= to ? -d.h : j < d.from && j >= to ? d.h : 0;
+            r.style.transform = shift ? `translateY(${shift}px)` : '';
+        });
+    }
+
+    _dragAutoScroll() {
+        const d = this._drag;
+        cancelAnimationFrame(d.raf);
+        const isDoc = d.scroller === document.scrollingElement || d.scroller === document.documentElement;
+        const box = isDoc ? { top: 0, bottom: window.innerHeight } : d.scroller.getBoundingClientRect();
+        const over = d.y < box.top + DRAG_EDGE ? d.y - (box.top + DRAG_EDGE)
+            : d.y > box.bottom - DRAG_EDGE ? d.y - (box.bottom - DRAG_EDGE) : 0;
+        if (!over) return;
+        const step = Math.max(-DRAG_SPEED, Math.min(DRAG_SPEED, over / 3));
+        d.raf = requestAnimationFrame(() => {
+            if (this._drag !== d) return;
+            d.scroller.scrollTop += step;
+            this._dragLayout();
+            this._dragAutoScroll();
+        });
+    }
+
+    _dragFinish(commit) {
+        const d = this._drag;
+        if (!d) return;
+        this._drag = null;
+        cancelAnimationFrame(d.raf);
+        window.removeEventListener('pointermove', this._onDragMove);
+        window.removeEventListener('pointerup', this._onDragEnd);
+        window.removeEventListener('pointercancel', this._onDragCancel);
+        // is-sorting (the slide transition) goes first, so clearing the transforms snaps instead of animating back
+        d.rowEl.parentElement?.classList.remove('is-sorting');
+        d.rowEl.classList.remove('is-drag');
+        d.rows.forEach(r => { r.style.transform = ''; });
+        if (commit && d.to !== d.from) this._emitMove(d.id, d.rows.map(r => r.dataset.id), d.to);
+    }
+
+    /** ↑/↓ on the focused handle = one step, Home = to the top. */
+    _dhDragKey(e, id) {
+        if (e.key === 'Home') { e.preventDefault(); this._doMove(id, { direction: 'top' }); return; }
+        const step = { ArrowUp: -1, ArrowDown: 1 }[e.key];
+        if (!step) return;
+        e.preventDefault();
+        const order = this._pagedData.map(r => r.id);
+        const from = order.indexOf(id), to = from + step;
+        if (from < 0 || to < 0 || to >= order.length) return;
+        this._emitMove(id, order, to);
+        // repeat() moves the row's node — moving a focused node drops focus, so hand it back to the same handle
+        this.updateComplete.then(() => this.renderRoot.querySelector(`.sl-row[data-id="${CSS.escape(id)}"] .sl-handle`)?.focus());
+    }
+
+    /** `order` = row ids as shown; `id` moves to index `to` → tell the parent its new neighbour (it may be filtered). */
+    _emitMove(id, order, to) {
+        const ids = order.filter(x => x !== id);
+        ids.splice(to, 0, id);
+        const prevId = ids[to - 1], nextId = ids[to + 1];
+        this._doMove(id, prevId ? { prevId } : { nextId });
+    }
+
     _dhClearAll() {
         const q = this._serverQuery;
         const server = Object.keys(q.searches).length || Object.values(q.filters).some(v => v || v === 0) || q.sort;
@@ -356,7 +494,7 @@ export class SvcList extends RecordTable {
             <div class="sl-card">
                 <div class="sl-scroll ${this._scrolled ? 'is-scrolled' : ''} ${this._more ? 'has-more' : ''}" style=${this._gridVars} @scroll=${this._dhScroll}>
                     ${this._rfHead()}
-                    ${this._pagedData.map((row, i) => this._rfRow(row, i, hasThumbs))}
+                    ${repeat(this._pagedData, row => row.id, (row, i) => this._rfRow(row, i, hasThumbs))}
                 </div>
                 ${filtered.length === 0 ? html`
                     <div class="sl-empty">
@@ -396,7 +534,7 @@ export class SvcList extends RecordTable {
                     ${this.orderable ? html`
                         <button type="button" class="sl-icon-btn ${this._reorder ? 'is-on' : ''}" title=${this._perms.sort ? t.reorder : t.noPerm}
                             aria-label=${t.reorder} aria-pressed=${this._reorder} ?disabled=${!this._perms.sort}
-                            @click=${() => (this._reorder = !this._reorder)}>
+                            @click=${this._dhReorder}>
                             <iconify-icon icon=${this._perms.sort ? 'ri:drag-move-2-line' : 'ri:lock-line'}></iconify-icon>
                         </button>` : nothing}
                     <slot name="actions"></slot>
@@ -551,7 +689,7 @@ export class SvcList extends RecordTable {
     }
 
     _rfRow(row, i, hasThumbs) {
-        const t = this._txt, lead = this._lead;
+        const lead = this._lead;
         const open = !this._reorder && this.editable;
         const title = this._cellVal(lead, row);
         return html`
@@ -568,15 +706,30 @@ export class SvcList extends RecordTable {
                 </div>
                 ${this._scrollCols.map(col => this._rfCell(col, row))}
                 <div class="sl-cell sl-end">
-                    ${this._reorder
-                        ? html`<div class="sl-moves">${MOVES.map(({ dir, icon }) => html`
-                            <button type="button" class="sl-icon-btn sl-move" title=${t[dir]} aria-label=${t[dir]}
-                                @click=${(e) => { e.stopPropagation(); this._doMove(row.id, dir); }}>
-                                <iconify-icon icon=${icon}></iconify-icon></button>`)}</div>`
+                    ${this._reorder ? this._rfMoves(row)
                         : open ? html`<span class="sl-chevron"><iconify-icon icon="ri:arrow-right-s-line"></iconify-icon></span>` : nothing}
                 </div>
             </div>
         `;
+    }
+
+    _rfMoves(row) {
+        const t = this._txt, pinned = Boolean(row[RANK_FIELD]);
+        return html`
+            <div class="sl-moves">
+                <button type="button" class="sl-icon-btn sl-move" title=${t.top} aria-label=${t.top}
+                    @click=${(e) => { e.stopPropagation(); this._doMove(row.id, { direction: 'top' }); }}>
+                    <iconify-icon icon="ri:arrow-up-double-line"></iconify-icon></button>
+                <button type="button" class="sl-icon-btn sl-move ${pinned ? 'is-pinned' : ''}" title=${pinned ? t.unpin : t.auto}
+                    aria-label=${pinned ? t.unpin : t.auto} ?disabled=${!pinned}
+                    @click=${(e) => { e.stopPropagation(); this._doMove(row.id, { direction: 'unpin' }); }}>
+                    <iconify-icon icon=${pinned ? 'ri:pushpin-2-fill' : 'ri:pushpin-2-line'}></iconify-icon></button>
+                <button type="button" class="sl-icon-btn sl-move sl-handle" title=${t.drag} aria-label=${t.drag}
+                    @pointerdown=${(e) => this._dhDragStart(e, row.id)}
+                    @keydown=${(e) => this._dhDragKey(e, row.id)}
+                    @click=${(e) => e.stopPropagation()}>
+                    <iconify-icon icon="ri:draggable"></iconify-icon></button>
+            </div>`;
     }
 
     _colorOf(col, row) {
@@ -606,7 +759,7 @@ export class SvcList extends RecordTable {
     // ── Detail / edit ───────────────────────────────────────────────────────────
 
     _rfDetail() {
-        const t = this._txt, isNew = this._editId === 'new';
+        const t = this._txt, isNew = this._editId === 'new', canDelete = this._perms.delete;
         const row = isNew ? this._newDraft : (this.data || []).find(r => r.id === this._editId);
         if (!row) return this._rfList();
         const title = isNew ? t.newRow : (this._cellVal(this._lead, row) || t.newRow);
@@ -621,8 +774,22 @@ export class SvcList extends RecordTable {
                         <span class="sl-title">${title}</span>
                         ${isNew ? nothing : this._rfPill(row)}
                     </div>
-                    ${isNew ? html`<div class="sl-detail-actions"><slot name="new-actions"></slot></div>` : nothing}
+                    ${isNew ? html`<div class="sl-detail-actions"><slot name="new-actions"></slot></div>`
+                        : this.deletable ? html`
+                            <div class="sl-detail-actions">
+                                <button type="button" class="sl-icon-btn sl-del ${this._deleteId === row.id ? 'is-on' : ''}"
+                                    title=${canDelete ? t.delete : t.noPerm} aria-label=${t.delete} ?disabled=${!canDelete}
+                                    @click=${() => (this._deleteId = this._deleteId === row.id ? null : row.id)}>
+                                    <iconify-icon icon=${canDelete ? 'ri:delete-bin-line' : 'ri:lock-line'}></iconify-icon></button>
+                            </div>` : nothing}
                 </div>
+                ${!isNew && this._deleteId === row.id ? html`
+                    <div class="sl-confirm" role="alert">
+                        <iconify-icon icon="ri:error-warning-line"></iconify-icon>
+                        <span>${t.confirmDel}</span>
+                        <button type="button" class="sl-btn" @click=${() => (this._deleteId = null)}>${t.no}</button>
+                        <button type="button" class="sl-btn is-danger" @click=${() => this._doDelete(row.id)}>${t.yes}</button>
+                    </div>` : nothing}
                 ${this._rfEditRow(row, isNew && this.aiLoading)}
             </div>
         `;
@@ -630,8 +797,9 @@ export class SvcList extends RecordTable {
 
     /** The edit form: `.wt-edit-inner` is where RecordTable's _collectFlat() reads the fields. */
     _rfEditRow(row, aiOverlay = false) {
-        const t = this._txt, canEdit = this._perms.edit, canDelete = this._perms.delete;
-        const extras = row?.id && (this.history || (this.deletable && !this.single));
+        const t = this._txt, canEdit = this._perms.edit;
+        // Delete lives in the detail header (_rfDetail) — `single` has no header, and never had delete
+        const extras = row?.id && this.history;
         return html`
             <div class="sl-form-wrap">
                 ${aiOverlay ? html`
@@ -643,19 +811,8 @@ export class SvcList extends RecordTable {
 
                 ${extras ? html`
                     <div class="sl-extras">
-                        ${this.history ? html`<button type="button" class="sl-action" @click=${() => this._emit('wt-open-history', { id: row.id })}>
-                            <iconify-icon icon="ri:history-line"></iconify-icon>${t.history}</button>` : nothing}
-                        ${this.deletable && !this.single ? html`<button type="button" class="sl-action is-danger" ?disabled=${!canDelete}
-                            @click=${() => (this._deleteId = this._deleteId === row.id ? null : row.id)}>
-                            <iconify-icon icon=${canDelete ? 'ri:delete-bin-line' : 'ri:lock-line'}></iconify-icon>${t.delete}</button>` : nothing}
-                    </div>` : nothing}
-
-                ${this._deleteId && this._deleteId === row?.id ? html`
-                    <div class="sl-confirm" role="alert">
-                        <iconify-icon icon="ri:error-warning-line"></iconify-icon>
-                        <span>${t.confirmDel}</span>
-                        <button type="button" class="sl-btn" @click=${() => (this._deleteId = null)}>${t.no}</button>
-                        <button type="button" class="sl-btn is-danger" @click=${() => this._doDelete(row.id)}>${t.yes}</button>
+                        <button type="button" class="sl-action" @click=${() => this._emit('wt-open-history', { id: row.id })}>
+                            <iconify-icon icon="ri:history-line"></iconify-icon>${t.history}</button>
                     </div>` : nothing}
 
                 <div class="sl-foot">

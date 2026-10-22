@@ -11,7 +11,7 @@ import '@/packages/apex/web-button.js'
 import './app/svc-progress.js'
 import './service/service.js'
 import { subscribe as cdSubscribe } from '@/services/core/conductor.js'
-import { txtLingo } from '@/services/tools/util.js'
+import { txtLingo, toastEmit } from '@/services/tools/util.js'
 import { DEFAULT_CHAIN } from '@/services/shared/tensor-api.js'
 import { auth } from '@/packages/auth/service/service.js'
 import { parseRoles } from '@/packages/auth/tool/roles.js'
@@ -20,6 +20,7 @@ import { canonicalDivision, sectorOfDivision } from './tool/divisions.js'
 import { fnIcon } from './tool/sectors.js'
 import { takeCommand } from './tool/command.js'
 import { trialLine } from './tool/trial.js'
+import { downloadJobPdf } from './service/pdf.js'
 import styles from './css/svc-fn.css?inline'
 
 const MAX_JOBS = 30 // job gần nhất của phòng hiện trong danh sách — cũ hơn vẫn xem được trong nhóm chat của ngành
@@ -32,6 +33,8 @@ const TXT_STD = {
         unavailable: 'Phòng ban này chưa mở cho tài khoản của bạn.',
         back: 'Quay lại',
         more: 'Xem đầy đủ', less: 'Thu gọn',
+        pdf: 'Tải PDF', pdfFailed: 'Không xuất được PDF — thử lại sau',
+        record: 'Lưu vào dữ liệu ({table})', recorded: 'Đã lưu vào dữ liệu ({table})',
         status: { running: 'Đang làm', review: 'Chờ duyệt bước', done: 'Chờ duyệt', approved: 'Đã duyệt', error: 'Lỗi' },
     },
     en: {
@@ -41,6 +44,8 @@ const TXT_STD = {
         unavailable: 'This department is not open to your account yet.',
         back: 'Back',
         more: 'Show all', less: 'Show less',
+        pdf: 'Download PDF', pdfFailed: 'Couldn\'t export the PDF — try again later',
+        record: 'Save to your data ({table})', recorded: 'Saved to your data ({table})',
         status: { running: 'Working', review: 'Step review', done: 'To approve', approved: 'Approved', error: 'Error' },
     },
 }
@@ -82,6 +87,7 @@ export class SvcFn extends LitElement {
         _admin:    { state: true },
         _starting: { state: true },
         _aboutOpen: { state: true }, // mô tả phòng: 1 dòng "…" ↔ đầy đủ
+        _pdfId:    { state: true }, // job đang xuất PDF, '' = không
     }
 
     constructor() {
@@ -99,6 +105,7 @@ export class SvcFn extends LitElement {
         this._admin = false
         this._starting = false
         this._aboutOpen = false
+        this._pdfId = ''
         this._dcSync({})
         this._dcPerms = this._dcPerms.bind(this)
     }
@@ -185,16 +192,38 @@ export class SvcFn extends LitElement {
         this._dhStart()
     }
 
-    // Duyệt xong → phát 'fn-approved' { division, jobId, recordId } (bubbles, composed) — nơi nhúng panel (vd <svc-records>
-    // "Tạo bằng AI") tải lại bảng Worker vừa ghi. recordId = id bản ghi mới ('' nếu phòng không ghi bảng nào).
+    // Duyệt xong → phát 'fn-approved' { division, jobId } (bubbles, composed). Về danh sách — dòng job hiện nút lưu vào
+    // bảng output (_dhRecord) nếu phòng có bảng và người dùng được ghi.
     async _dhApprove(jobId, expertReview) {
         await this._talk.approve(jobId, expertReview)
         const job = this._jobs.find((j) => j.id === jobId)
         if (!job?.approved) return // lỗi (vd thiếu xác nhận) → giữ chi tiết mở
         this._openId = ''
-        this.dispatchEvent(new CustomEvent('fn-approved', {
-            detail: { division: this._id, jobId, recordId: job.createdPostId ?? '' }, bubbles: true, composed: true,
+        this.dispatchEvent(new CustomEvent('fn-approved', { detail: { division: this._id, jobId }, bubbles: true, composed: true }))
+    }
+
+    // Lưu xong → phát 'fn-recorded' { division, jobId, table, recordId } (bubbles, composed) — nơi nhúng panel (vd
+    // <svc-records> "Tạo bằng AI") tải lại bảng Worker vừa ghi.
+    async _dhRecord(job) {
+        const recordId = await this._talk.record(job.id)
+        if (!recordId) return
+        this.dispatchEvent(new CustomEvent('fn-recorded', {
+            detail: { division: this._id, jobId: job.id, table: this._dept?.outline?.output?.table ?? '', recordId }, bubbles: true, composed: true,
         }))
+    }
+
+    // Topic đã xong (chờ duyệt hoặc đã duyệt) → PDF đúng nội dung trong "Xem chi tiết".
+    async _dhPdf(job) {
+        if (this._pdfId) return
+        this._pdfId = job.id
+        try {
+            await downloadJobPdf({ job, outline: this._dept?.outline, department: this._dept?.title || '', lang: this.lang })
+        } catch (err) {
+            console.error('[llm/fn] PDF export failed:', err)
+            toastEmit(this._txt.pdfFailed, 'error')
+        } finally {
+            this._pdfId = ''
+        }
     }
 
     // ── Computed ───────────────────────────────────────────────────────────────
@@ -273,11 +302,42 @@ export class SvcFn extends LitElement {
     }
 
     _rfJob(job) {
+        const t = this._txt
         const state = stateOf(job)
+        const done = job.status === 'done' && !job.error
+        const open = () => { this._openId = job.id }
+        // Cả dòng bấm được (mở chi tiết); nút PDF nằm trong dòng nên dòng là div role=button — không lồng <button>.
         return html`
-            <button class="fn-job" @click=${() => { this._openId = job.id }}>
+            <div class="fn-job" role="button" tabindex="0" @click=${open}
+                @keydown=${(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); open() } }}>
                 <span class="fn-job-topic">${job.topic}</span>
-                <span class="fn-badge is-${state}">${this._txt.status[state]}</span>
+                <span class="fn-job-side">
+                    ${done ? html`
+                        <button class="fn-pdf" title=${t.pdf} aria-label=${t.pdf} ?disabled=${!!this._pdfId}
+                            @click=${(e) => { e.stopPropagation(); this._dhPdf(job) }}>
+                            <iconify-icon class=${this._pdfId === job.id ? 'is-spin' : ''} icon=${this._pdfId === job.id ? 'ri:loader-4-line' : 'ri:file-pdf-2-line'}></iconify-icon>
+                        </button>
+                    ` : nothing}
+                    ${this._rfRecord(job)}
+                    <span class="fn-badge is-${state}">${t.status[state]}</span>
+                </span>
+            </div>
+        `
+    }
+
+    // Job đã duyệt của phòng có bảng output (products, posts…) mà người dùng được ghi: icon lưu → đã lưu thì màu success (disabled).
+    _rfRecord(job) {
+        const outline = this._dept?.outline
+        if (!job.approved || !outline?.recordable) return nothing
+        const t = this._txt
+        const saved = !!job.createdPostId
+        const busy = !saved && this._pendingJobs.has(job.id)
+        const label = (saved ? t.recorded : t.record).replace('{table}', outline.output?.table ?? '')
+        return html`
+            <button class="fn-pdf fn-record ${saved ? 'is-saved' : ''}" title=${label} aria-label=${label} ?disabled=${saved || busy}
+                @click=${(e) => { e.stopPropagation(); this._dhRecord(job) }}>
+                <iconify-icon class=${busy ? 'is-spin' : ''}
+                    icon=${busy ? 'ri:loader-4-line' : 'ri:database-2-line'}></iconify-icon>
             </button>
         `
     }

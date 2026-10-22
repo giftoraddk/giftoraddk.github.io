@@ -13,32 +13,35 @@ import { site } from './src/services/tools/site.ts';
 // 'ssg' (mặc định) — mọi route bake tĩnh lúc build.
 // 'isr' (`PUBLIC_RENDER=isr pnpm build`, xem package.json "build:isr") — các route ở PUBLIC_RENDER_ROUTES chuyển
 // sang on-demand + cache theo thời gian (Vercel ISR, xem renderModeIntegration bên dưới); mọi route khác vẫn tĩnh 100%.
-// Biến PUBLIC_ nên client cũng đọc được qua import.meta.env.PUBLIC_RENDER.
+// Biến PUBLIC_ nên client cũng đọc được qua import.meta.env.PUBLIC_RENDER (vd detailHref() của radar/everyday).
 const PUBLIC_RENDER = process.env.PUBLIC_RENDER === 'isr' ? 'isr' : 'ssg';
 
 // Route có biến thể ISR ở `_render-modes/<tên>.isr.astro` cạnh nó. Route đã có file (bản SSG) → ISR đè lên; route
-// CHƯA có file → chỉ tồn tại ở chế độ ISR. Không gộp được bằng 1 `export const prerender = <biểu thức>` vì SSG cần
+// CHƯA có file → chỉ tồn tại ở chế độ ISR (radar detail: không bake được lúc build vì dữ liệu đổi theo giờ — bản
+// SSG dùng view/?id= tải ở trình duyệt). Không gộp được bằng 1 `export const prerender = <biểu thức>` vì SSG cần
 // getStaticPaths còn ISR đọc Astro.params lúc request — xem Context trong từng file .isr.astro.
 const PUBLIC_RENDER_ROUTES = [
 	'product/[slug].astro',
 	'product/tag/[tag].astro',
 	'post/[slug].astro',
 	'post/tag/[tag].astro',
+	'radar/[domain]/[slug].astro',
 ];
 
-// Trang đọc posts/products (fetchCollection) mà CÙNG 1 file chạy được cả 2 chế độ (không dùng props của getStaticPaths)
-// — PUBLIC_RENDER=isr chỉ cần bật on-demand qua hook astro:route:setup, không cần biến thể .isr.astro. Thiếu các trang
-// này thì trang chủ / danh sách / shop / sitemap đứng yên ở dữ liệu lúc build: bài/sản phẩm mới không có link nào dẫn tới.
-// Trang có getStaticPaths ở đây chỉ dùng nó để liệt kê params — on-demand thì Astro bỏ qua nó, trang tự trả 404 với
-// params lạ (Astro.isPrerendered).
+// Trang đọc posts/products lúc render (fetchCollection) mà CÙNG 1 file chạy được cả 2 chế độ (không dùng props của
+// getStaticPaths) — PUBLIC_RENDER=isr chỉ cần bật on-demand qua hook astro:route:setup, không cần biến thể .isr.astro.
+// Thiếu các trang này thì danh sách / shop / trang chủ gift / sitemap đứng yên ở dữ liệu lúc build: bài/sản phẩm mới
+// không có link nào dẫn tới. Trang có getStaticPaths ở đây chỉ dùng nó để liệt kê params — on-demand thì Astro bỏ qua
+// nó, trang tự trả 404 với params lạ (Astro.isPrerendered). Trang system/radar không có ở đây: không đọc dữ liệu lúc
+// render (nội dung tĩnh trong modules/, dữ liệu động do svc-* tải ở trình duyệt) — ISR không làm chúng mới hơn.
 const PUBLIC_RENDER_PAGES = [
-	'index.astro',
+	'index.astro', // trang chủ Giftora — best-seller + bài mới (modules/gift/index.js); /gift/ chỉ chuyển về đây (tĩnh)
+	'gift/shop.astro',
+	'gift/[group].astro',
 	'product/index.astro',
 	'product/tag/index.astro',
 	'post/index.astro',
 	'post/tag/index.astro',
-	'gift/shop.astro',
-	'gift/[group].astro',
 	'sitemap.xml.ts',
 	'rss.xml.ts',
 	'llms.txt.ts',
@@ -144,18 +147,16 @@ export default defineConfig({
 	// 	svgo: true,
 	// },
 	output: 'static',
-	outDir: './docs',
 	// Khu quản trị chỉ có 1 trang động pages/admin/[table].astro — /admin/ về trang đầu tiên của modules/admin PAGES.
+	// Văn bản pháp lý chỉ có pages/system/legal/[slug].astro (không có trang mục lục) — /system/legal/ về Điều khoản dịch vụ
+	// (link chatzui.com/system/legal nằm trong kiến thức / llms.txt, modules/system/legal.js legalPath).
 	redirects: {
 		'/admin': '/admin/users/',
-		// Trang chủ Giftora nằm ở gốc '/' (src/pages/index.astro) — link cũ /gift/ chuyển về đó.
-		'/gift': '/',
+		'/system/legal': '/system/legal/terms/',
 	},
 	// Chỉ route `export const prerender = false` (các route ISR do renderModeIntegration chép vào) chạy qua adapter —
 	// mọi route khác vẫn build tĩnh. Adapter chỉ gắn ở chế độ ISR nên `pnpm build` mặc định không nạp nó.
-	// expiration 60 giây — sửa/thêm sản phẩm, bài viết hiện trên site sau ~1 phút. Vercel ISR là stale-while-revalidate:
-	// request đầu tiên sau khi hết hạn vẫn nhận bản cũ (tức thì) và kích hoạt render lại ở nền, request sau nhận bản mới —
-	// nên mỗi trang chỉ chạy function tối đa ~1 lần / phút dù traffic nhiều cỡ nào (1 giờ cũ quá chậm cho người quản trị).
+	// expiration 60s: cache 60s, sau đó Vercel gọi lại route để dựng mới (ISR). Không dùng `revalidate` vì nó chỉ áp dụng cho route có getStaticPaths, còn route on-demand không có getStaticPaths thì Vercel bỏ qua.
 	adapter: PUBLIC_RENDER === 'isr' ? vercel({ isr: { expiration: 60 } }) : undefined,
 	// Uncomment the line below if you want to deploy to a subdirectory like /mvp/
 	// base: '/mvp/',

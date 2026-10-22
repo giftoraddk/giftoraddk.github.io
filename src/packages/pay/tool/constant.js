@@ -224,23 +224,17 @@ export const CANCEL_TXT = {
 };
 
 // ── Payment methods ──────────────────────────────────────────────────────────────────────────
-// Tiền mặt luôn đứng đầu — momo/bank chỉ hiện thêm nếu wallet đã có cấu hình tương ứng.
+// Tiền mặt luôn đứng đầu — bank chỉ hiện thêm nếu wallet đã có cấu hình tương ứng.
 export const PAY_METHODS = [
     { value: 'cash', label: 'Tiền mặt',     icon: 'ion:cash-outline' },
-    { value: 'momo', label: 'MoMo',         icon: 'ri:heart-2-line'  },
     { value: 'bank', label: 'Chuyển khoản', icon: 'ri:bank-line'     },
 ];
 
 export const hasWalletAccount = (wallet, method) => {
     if (method === 'cash') return true;
     const account = wallet?.[method] ?? {};
-    return !!(account.accountNo ?? account.phone);
+    return !!account.accountNo;
 };
-
-// Số tài khoản/số điện thoại nhận tiền theo method — momo dùng `phone`, bank dùng `accountNo`.
-// Dùng chung bởi svc-pay-booking.js/svc-pay-valider.js (trước đây mỗi file tự viết 1 biểu thức
-// hơi khác nhau, rủi ro lệch nếu shape wallet đổi).
-export const resolveAccountNo = (method, account = {}) => method === 'momo' ? (account.phone ?? '') : (account.accountNo ?? '');
 
 // Handler tracking tilde `getTime~name~phone~reason[~media]` — ghi bởi service.js's _encodeHandler.
 export function parseHandler(str) {

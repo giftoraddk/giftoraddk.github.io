@@ -97,4 +97,37 @@ export class DocStore {
     `).bind(path, delta, new Date().toISOString(), table, id).first<{ value: number }>();
     return r ? Number(r.value) : null;
   }
+
+  /** +1 nguyên tử cho field số (top-level) chỉ khi còn < `limit` — trả giá trị mới, null nếu đã chạm trần / không có row. */
+  async incrementBelow(table: string, id: string, field: string, limit: number): Promise<number | null> {
+    const path = _path(field);
+    const r = await this.db.prepare(`
+      UPDATE docs SET doc = json_set(doc, ?1, COALESCE(json_extract(doc, ?1), 0) + 1), updated_at = ?2
+      WHERE tbl = ?3 AND id = ?4 AND deleted_at IS NULL AND COALESCE(json_extract(doc, ?1), 0) < ?5
+      RETURNING json_extract(doc, ?1) AS value
+    `).bind(path, new Date().toISOString(), table, id, limit).first<{ value: number }>();
+    return r ? Number(r.value) : null;
+  }
+
+  /** Đổi `field` từ `from` sang `to` (+ merge `patch`) chỉ khi đang là `from` — true = chính lần gọi này đổi được (CAS). */
+  async claim(table: string, id: string, field: string, from: string, to: string, patch: Doc = {}): Promise<boolean> {
+    const path = _path(field);
+    const r = await this.db.prepare(`
+      UPDATE docs SET doc = json_set(json_patch(doc, json(?1)), ?2, ?3), updated_at = ?4
+      WHERE tbl = ?5 AND id = ?6 AND deleted_at IS NULL AND json_extract(doc, ?2) = ?7
+      RETURNING id
+    `).bind(JSON.stringify(patch), path, to, new Date().toISOString(), table, id, from).first<{ id: string }>();
+    return !!r;
+  }
+
+  /** Thời hạn (ms epoch, top-level) = max(hạn hiện tại, `now`) + `ms` — nguyên tử; trả hạn mới, null nếu không có row. */
+  async extendTime(table: string, id: string, field: string, ms: number, now = Date.now()): Promise<number | null> {
+    const path = _path(field);
+    const r = await this.db.prepare(`
+      UPDATE docs SET doc = json_set(doc, ?1, MAX(COALESCE(json_extract(doc, ?1), 0), ?2) + ?3), updated_at = ?4
+      WHERE tbl = ?5 AND id = ?6 AND deleted_at IS NULL
+      RETURNING json_extract(doc, ?1) AS value
+    `).bind(path, now, ms, new Date().toISOString(), table, id).first<{ value: number }>();
+    return r ? Number(r.value) : null;
+  }
 }

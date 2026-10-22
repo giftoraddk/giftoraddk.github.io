@@ -5,7 +5,8 @@ export const PRODUCT: FnSpec = {
   fn: 'product', kind: 'pipeline',
   title: { vi: 'Sản phẩm & Đổi mới', en: 'Product & Innovation' },
   description: { vi: 'Phân tích khách hàng, thiết kế sản phẩm/dịch vụ, quy trình và tiêu chuẩn chất lượng.', en: 'Customer analysis, product/service design, process and quality bar.' },
-  output: null,
+  // Every sector's offering lands in the platform's products table (saved by the boss after approve — /record).
+  output: { table: 'products', fields: ['title', 'description', 'content', 'tags', 'pics'], status: 'draft' },
   needs: ['context'],
   uses: ['strategy.brief'],
   produces: [

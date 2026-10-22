@@ -6,11 +6,9 @@ import { LitElement, html, unsafeCSS } from 'lit';
 import 'iconify-icon';
 import '@/packages/apex/web-button.js';
 import css from '../css/svc-pay-valider.css?inline';
-import { PAY_METHODS, resolveAccountNo } from '../tool/constant.js';
+import { PAY_METHODS } from '../tool/constant.js';
 import { generateVietQr } from '../service/vietqr.js';
 import { fmtPrice, parseJson, txtLingo, emit } from '@/services/tools/util.js';
-
-const BIN_STD = { momo: '971025', bank: '' };
 
 const TXT_STD = {
     vi: { cod: 'Thanh toán khi nhận hàng', qrLoading: 'Đang tạo mã QR...', amountLabel: 'Số tiền:', paid: '✓ Xác nhận đã thanh toán', back: '← Quay lại', freeOrder: 'Đơn hàng đã được giảm giá hết — không cần thanh toán thêm' },
@@ -22,12 +20,12 @@ const TXT_STD = {
  * toán" của <svc-pay>). Event `valider:paid` — buyer xác nhận đã thanh toán.
  *
  * Props:
- *   wallet    — { bank: { accountNo, accountName, bankName, bin },
- *                 momo: { phone, accountName, bin } }
+ *   wallet    — { bank: { accountNo, accountName, bankName, bin } }
  *   vietqr    — { clientId, apiKey }
  *   paymentId — mã tham chiếu
+ *   note      — nội dung chuyển khoản (addInfo của QR + dòng "Mã:"), trống = paymentId
  *   amount    — số tiền sau giảm giá
- *   method    — 'cash' | 'momo' | 'bank'
+ *   method    — 'cash' | 'bank'
  *
  * Events:
  *   valider:paid — { paymentId }
@@ -41,6 +39,7 @@ export class SvcPayValider extends LitElement {
         wallet:     { type: Object },
         vietqr:     { type: Object },
         paymentId:  { type: String },
+        note:       { type: String },
         amount:     { type: Number },
         method:     { type: String },
         _qrDataUrl: { state: true },
@@ -57,6 +56,7 @@ export class SvcPayValider extends LitElement {
         this.wallet     = {};
         this.vietqr     = {};
         this.paymentId  = '';
+        this.note       = '';
         this.amount     = 0;
         this.method     = 'cash';
         this._qrDataUrl = '';
@@ -67,20 +67,18 @@ export class SvcPayValider extends LitElement {
     }
 
     updated(changed) {
-        if (changed.has('paymentId') || changed.has('amount') || changed.has('method')) {
+        if (changed.has('paymentId') || changed.has('note') || changed.has('amount') || changed.has('method')) {
             this._fetchQr();
         }
     }
 
     // ── COMPUTED ──────────────────────────────────────────────────────────────
 
+    get _comNote() { return this.note || this.paymentId || ''; }
+
     get _comWallet() { return parseJson(this.wallet, {}); }
 
-    get _comAccount() {
-        const w = this._comWallet;
-        const a = w[this.method] ?? {};
-        return { ...a, accountNo: resolveAccountNo(this.method, a) };
-    }
+    get _comAccount() { return this._comWallet[this.method] ?? {}; }
 
     // `amount <= 0` (đơn được giảm giá hết, vd promo 100%) -> không có gì để chuyển khoản, mở khoá
     // luôn bất kể method — tránh buyer bị kẹt vĩnh viễn ở nút "Xác nhận đã thanh toán" vì
@@ -102,7 +100,7 @@ export class SvcPayValider extends LitElement {
 
         const account = this._comAccount; // [2] PROCESS: gom account/bin cần cho request
         const vqr     = parseJson(this.vietqr, {});
-        const bin     = account.bin ?? BIN_STD[this.method] ?? '';
+        const bin     = account.bin ?? '';
         if (!account.accountNo || !bin) { // [1.b] thiếu account/bin -> không gọi API
             console.warn('[svc-pay-valider] skip QR fetch: missing account.accountNo/bin', { method: this.method, account, bin, wallet: this._comWallet });
             this._qrError = true;
@@ -114,7 +112,7 @@ export class SvcPayValider extends LitElement {
             const json = await generateVietQr({
                 clientId: vqr.clientId, apiKey: vqr.apiKey,
                 accountNo: account.accountNo, accountName: account.accountName,
-                acqId: bin, amount: this.amount, addInfo: this.paymentId,
+                acqId: bin, amount: this.amount, addInfo: this._comNote,
             });
             if (json.code === '00') {
                 this._qrDataUrl = json.data.qrDataURL; // [4] RETURN (state): QR thật
@@ -134,7 +132,7 @@ export class SvcPayValider extends LitElement {
 
     _fallbackUrl(account, bin) {
         const name = encodeURIComponent(account.accountName ?? '');
-        const info = encodeURIComponent(this.paymentId ?? '');
+        const info = encodeURIComponent(this._comNote);
         return `https://img.vietqr.io/image/${bin}-${account.accountNo}-compact2.png?amount=${this.amount}&addInfo=${info}&accountName=${name}`;
     }
 
@@ -188,7 +186,7 @@ export class SvcPayValider extends LitElement {
                         <span class="qr-amount">${fmtPrice(this.amount, this.lang, '')} VND</span>
                     </div>
                 </div>
-                <div class="qr-ref">Mã: ${this.paymentId}</div>
+                <div class="qr-ref">Mã: ${this._comNote}</div>
             </div>
 
             <div class="actions">

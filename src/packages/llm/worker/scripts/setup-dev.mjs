@@ -6,8 +6,8 @@
  * provide (e.g. PRO_KEY) keep whatever was filled in by hand.
  *
  * What this CAN derive automatically:
- *   - OPER_KEY / GROQ_KEY / NVID_KEY / HUGGIN_KEY — read straight off the client's own
- *     PUBLIC_OPER_KEY/PUBLIC_GROQ_KEY/PUBLIC_NVID_KEY/PUBLIC_HUGGIN_KEY (masked
+ *   - OPER_KEY / CLOU_KEY / NVID_KEY — read straight off the client's own
+ *     PUBLIC_OPER_KEY/PUBLIC_CLOU_KEY/PUBLIC_NVID_KEY (masked
  *     tensor-config-string format, unmasked automatically).
  *   - SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY — once you've created the project and pasted these
  *     into the root .env yourself. Note the service role key must NOT be PUBLIC_-prefixed — see
@@ -78,15 +78,17 @@ function deriveSecretsFromRootEnv(rootEnvText) {
         SUPABASE_URL: pick('PUBLIC_SUPABASE_URL'),
         SUPABASE_SERVICE_ROLE_KEY: pick('SUPABASE_SERVICE_ROLE_KEY'),
         // Real source of truth is the client's PUBLIC_*_KEY (masked tensor-config-string format —
-        // e.g. "gs~k!t@d~k_Hde..." unmasks to "gsk_Hde...", the real Groq key ai.ts's
+        // e.g. "cf~k!t@d~ut_Ab..." unmasks to "cfut_Ab...", the real Cloudflare token ai.ts's
         // detectProvider() expects). Bare KEY= as a 2nd fallback covers a future hand-added,
         // already-unmasked value (unmask() is a no-op without the marker, so this is safe either
         // way). PRO_KEY has no PUBLIC_ counterpart — always was Worker-only.
         OPER_KEY: unmask(pick('PUBLIC_OPER_KEY', 'OPER_KEY')),
-        GROQ_KEY: unmask(pick('PUBLIC_GROQ_KEY', 'GROQ_KEY')),
+        CLOU_KEY: unmask(pick('PUBLIC_CLOU_KEY', 'CLOU_KEY')),
         NVID_KEY: unmask(pick('PUBLIC_NVID_KEY', 'NVID_KEY')),
-        HUGGIN_KEY: unmask(pick('PUBLIC_HUGGIN_KEY', 'HUGGIN_KEY')),
         PRO_KEY: pick('PRO_KEY'),
+        // Account của CLOU_KEY (Workers AI chat + ảnh) — cùng nguồn với deploy (scripts/stack.mjs deployVars). Thiếu thì
+        // wrangler.jsonc's CLOU_ACCOUNT (giá trị prod lần deploy trước, có thể là account khác) → mọi model Cloudflare 401.
+        CLOU_ACCOUNT: pick('LLM_ACCOUNT_ID'),
         // /v1/hubs + /mcp — AUTH_URL from the client's PUBLIC_AUTH_URL (billing check); RESEND_API_KEY
         // is Worker-only (never PUBLIC_); MAIL_FROM is the verified Resend sender.
         AUTH_URL: pick('PUBLIC_AUTH_URL'),
@@ -139,10 +141,10 @@ function main() {
     warnIfPublicLookingSecrets(active);
 
     // .env là nguồn chuẩn — giá trị có trong .env luôn đè .dev.vars cũ; default local chỉ lấp chỗ trống.
-    const defaults = { ALLOWED_ORIGIN: DEV_ALLOWED_ORIGIN, AI_FREE_TIMEOUT_MS: '9000' };
+    const defaults = { ALLOWED_ORIGIN: DEV_ALLOWED_ORIGIN, AI_FREE_TIMEOUT_MS: '15000' };
     const merged = { ...defaults, ...existing, ...nonEmpty(derivedSecrets) };
 
-    const ALL_FIELDS = ['ALLOWED_ORIGIN', 'AI_FREE_TIMEOUT_MS', 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'OPER_KEY', 'GROQ_KEY', 'NVID_KEY', 'HUGGIN_KEY', 'PRO_KEY', 'AUTH_URL', 'RESEND_API_KEY', 'MAIL_FROM', 'BILLING_SERVICE_KEY'];
+    const ALL_FIELDS = ['ALLOWED_ORIGIN', 'AI_FREE_TIMEOUT_MS', 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'OPER_KEY', 'CLOU_KEY', 'CLOU_ACCOUNT', 'NVID_KEY', 'PRO_KEY', 'AUTH_URL', 'RESEND_API_KEY', 'MAIL_FROM', 'BILLING_SERVICE_KEY'];
     for (const f of ALL_FIELDS) merged[f] ??= '';
 
     const lines = [
@@ -157,14 +159,15 @@ function main() {
         '# needs a real project first, see README.md §1)',
         `SUPABASE_SERVICE_ROLE_KEY="${merged.SUPABASE_SERVICE_ROLE_KEY}"`,
         '',
-        '# LLM providers (/v1/ai/*) — free chain tried first (Groq/OpenRouter/NVIDIA, see ai.ts\'s',
+        '# LLM providers (/v1/ai/*) — free chain tried first (OpenRouter/NVIDIA/Cloudflare, see ai.ts\'s',
         '# resolveFreeChain()); PRO_KEY is an optional paid-tier fallback (same tilde-config-string',
-        '# format) tried only after AI_FREE_TIMEOUT_MS elapses without a usable free reply — blank is',
+        '# format) tried only once no free model started answering within AI_FREE_TIMEOUT_MS — blank is',
         '# a fully supported no-op, nothing to fill in until a paid provider is actually set up.',
         `OPER_KEY="${merged.OPER_KEY}"`,
-        `GROQ_KEY="${merged.GROQ_KEY}"`,
+        `CLOU_KEY="${merged.CLOU_KEY}"`,
+        // Trống thì không ghi — 1 CLOU_ACCOUNT="" sẽ đè giá trị của wrangler.jsonc và tắt hẳn Cloudflare.
+        ...(merged.CLOU_ACCOUNT ? [`CLOU_ACCOUNT="${merged.CLOU_ACCOUNT}"`] : []),
         `NVID_KEY="${merged.NVID_KEY}"`,
-        `HUGGIN_KEY="${merged.HUGGIN_KEY}"`,
         `PRO_KEY="${merged.PRO_KEY}"`,
         `AI_FREE_TIMEOUT_MS="${merged.AI_FREE_TIMEOUT_MS}"`,
         '',
@@ -194,8 +197,8 @@ function main() {
     if (merged.SUPABASE_URL && merged.SUPABASE_SERVICE_ROLE_KEY) ready.push('/v1/data/* admin routes (Supabase configured)');
     else if (merged.SUPABASE_URL) missing.push('/v1/data/* admin routes (SUPABASE_URL set, still need SUPABASE_SERVICE_ROLE_KEY)');
     else missing.push('/v1/data/* admin routes (needs a Supabase project — see README.md §1)');
-    (merged.OPER_KEY || merged.GROQ_KEY || merged.NVID_KEY ? ready : missing).push('AI chat (/v1/ai/stream)');
-    (merged.HUGGIN_KEY ? ready : missing).push('AI image generation (/v1/ai/image)');
+    (merged.OPER_KEY || merged.CLOU_KEY || merged.NVID_KEY ? ready : missing).push('AI chat (/v1/ai/stream)');
+    (merged.CLOU_KEY ? ready : missing).push('AI image generation (/v1/ai/image — Cloudflare Workers AI, CLOU_KEY)');
     ready.push(merged.PRO_KEY ? 'AI paid-tier fallback (PRO_KEY set)' : 'AI paid-tier fallback (PRO_KEY unset — optional, no-op)');
     (merged.AUTH_URL ? ready : missing).push(merged.AUTH_URL ? 'Hubs / MCP token issue (/v1/hubs)' : 'Hubs / MCP token issue (needs PUBLIC_AUTH_URL)');
     (merged.RESEND_API_KEY && merged.MAIL_FROM ? ready : missing).push('MCP token email (RESEND_API_KEY + MAIL_FROM)');

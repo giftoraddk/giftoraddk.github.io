@@ -83,7 +83,7 @@ export const config = {
                         "alignItems": "center",
                         "gap": "0",
                         "textAlign": "center",
-                        "maxWidth": "54rem",
+                        "maxWidth": "64rem",
                         "margin": "0 auto",
                         "padding": "1.5rem 1rem 0"
                     },

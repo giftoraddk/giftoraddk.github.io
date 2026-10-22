@@ -1,17 +1,18 @@
 ---
 // Trang tổng hợp tag — /post/tag/ (chủ đề) và /product/tag/ (danh mục); nhãn/đường dẫn lấy từ `kind` (kinds.ts).
-// Mỗi tag 1 card: ảnh bìa (record mới nhất có ảnh) + pill số lượng, "# tên" (heading), 2 tiêu đề mới nhất,
-// thời điểm cập nhật. Mobile: card ngang (ảnh vuông trái); ≥640px: card dọc, lưới 2–4 cột.
-// SEO/GEO: link thật tới {base}tag/{slug}/, mỗi tag là 1 heading kèm tên record tiêu biểu (ngữ cảnh cho crawler/AI),
-// JSON-LD CollectionPage + ItemList (URL trang tag) + BreadcrumbList.
-// JS chỉ tăng cường: lọc theo tên + sắp xếp (Phổ biến / A–Z / Mới cập nhật) ngay trên DOM đã render.
+// Mỗi NHÓM tag 1 card (lib.ts tagGroups — các tag có cùng tập record gộp lại, khỏi N card trùng ảnh/tiêu đề): ảnh bìa
+// + pill số lượng, tiêu đề record (heading), ĐỦ mọi tag của nhóm dạng chip, record khác của nhóm, thời điểm cập nhật.
+// Mobile: card ngang (ảnh vuông trái); ≥640px: card dọc, lưới 2–4 cột.
+// SEO/GEO: mỗi tag vẫn là 1 link thật (rel="tag") tới {base}tag/{slug}/, cạnh tên record của nó (ngữ cảnh cho
+// crawler/AI); JSON-LD CollectionPage + ItemList (URL từng trang tag) + BreadcrumbList.
+// JS chỉ tăng cường: lọc theo tên tag (tô chip khớp) + sắp xếp (Phổ biến / A–Z / Mới cập nhật) trên DOM đã render.
 import './catalog.css';
 import Share from './Share.astro';
 import Icon from './Icon.astro';
 import I18nText from '@/components/I18nText.astro';
 import { pickLang, slugify } from '@/services/tools/util';
 import { site } from '@/services/tools/site';
-import { base, toView, tagStats, initialsOf, fmtDate, jsonLdHtml, publisherLd, breadcrumbLd } from './lib';
+import { base, toView, tagStats, tagCards, initialsOf, fmtDate, compactNum, jsonLdHtml, publisherLd, breadcrumbLd } from './lib';
 import type { Kind } from './kinds';
 
 interface Crumb { label: string; href?: string }
@@ -25,7 +26,12 @@ interface Props {
 
 const { kind, items, title, description, breadcrumb } = Astro.props;
 const { t: T } = kind;
-const tags = tagStats(items.map(r => toView(r, kind)), kind);
+const views = items.map(r => toView(r, kind));
+const tags = tagStats(views, kind);
+const groups = tagCards(views, kind);
+const isProduct = kind.id === 'product'; // chân card: sản phẩm = đánh giá ★, bài viết = lượt xem · lượt thích
+const SHOW_TAGS = 3; // chip hiện sẵn — dư thì chip "+N" mở phần còn lại (vẫn nằm trong HTML, crawlable)
+const nameOf = (label: string) => slugify(label).replace(/-/g, ' ');
 const pageUrl = `${base}${kind.base}tag/`;
 const L = (en: string, vi: string) => pickLang({ en, vi });
 const sorts = [
@@ -111,7 +117,7 @@ const jsonLd = {
 				<span class="pf-pill"><Icon name="tag" size={14} /><b>{tags.length}</b> <I18nText text={{ en: T.topics.en.toLowerCase(), vi: T.topics.vi.toLowerCase() }} /></span>
 				<span class="pf-pill"><Icon name="layers" size={14} /><b>{items.length}</b> <I18nText text={T.many} /></span>
 			</div>
-			{tags.length > 1 && (
+			{groups.length > 1 && (
 				<div class="pf-seg" role="group" aria-label={L('Sort by', 'Sắp xếp theo')} data-tag-sort hidden>
 					{sorts.map((s, i) => (
 						<button type="button" data-sort={s.key} aria-pressed={i === 0 ? 'true' : 'false'}><I18nText text={s.text} /></button>
@@ -122,34 +128,68 @@ const jsonLd = {
 
 		{tags.length > 0 ? (
 			<ul class="pf-tags">
-				{tags.map(t => (
-					<li data-name={slugify(t.label).replace(/-/g, ' ')} data-count={t.count} data-latest={t.latest}>
-						<a class={`pf-topic pf-tone-${t.tone}`} href={t.url} rel="tag">
-							<div class="pf-topic-cover">
-								{t.cover
-									? <img src={t.cover} alt="" loading="lazy" decoding="async" />
-									: <span class="pf-topic-fallback" aria-hidden="true">{initialsOf(t.label)}</span>}
-								<span class="pf-topic-count">
-									{t.count} <I18nText text={{ en: t.count > 1 ? T.countShort.en : T.one.en, vi: T.countShort.vi }} />
-								</span>
-							</div>
-							<div class="pf-topic-body">
-								<h2 class="pf-topic-name"><span class="pf-topic-hash" aria-hidden="true">#</span>{t.label}</h2>
-								{t.titles.length > 0 && (
-									<span class="pf-topic-posts">
-										{t.titles.map(title => <span class="pf-topic-post">{title}</span>)}
+				{groups.map(g => {
+					const extra = g.tags.length - SHOW_TAGS;
+					return (
+						<li data-name={[...g.tags.map(t => nameOf(t.label)), nameOf(g.title)].join(' ')}
+							data-sort-name={nameOf(g.tags[0].label)} data-count={g.count} data-latest={g.latest}>
+							<article class={`pf-topic is-group pf-tone-${g.tone}`}>
+								<a class="pf-topic-cover" href={g.url} tabindex="-1" aria-hidden="true">
+									{g.cover
+										? <img src={g.cover} alt="" loading="lazy" decoding="async" />
+										: <span class="pf-topic-fallback">{initialsOf(g.tags[0].label)}</span>}
+									<span class="pf-topic-count">
+										{g.count} <I18nText text={{ en: g.count > 1 ? T.countShort.en : T.one.en, vi: T.countShort.vi }} />
 									</span>
-								)}
-								<span class="pf-topic-meta">
-									{t.latest
-										? <time datetime={t.latest} data-rel>{fmtDate(t.latest)}</time>
-										: <span />}
-									<span class="pf-topic-go" aria-hidden="true"><Icon name="next" size={15} /></span>
-								</span>
-							</div>
-						</a>
-					</li>
-				))}
+								</a>
+								<div class="pf-topic-body">
+									<h2 class="pf-topic-name is-title"><a href={g.url}>{g.title}</a></h2>
+									<ul class="pf-topic-tags" aria-label={pickLang(T.topics)}>
+										{g.tags.map((t, i) => (
+											<li data-extra={i >= SHOW_TAGS ? '' : undefined}>
+												<a class={`pf-topic-tag pf-tone-${t.tone}`} href={t.url} rel="tag" data-name={nameOf(t.label)}>{t.label}</a>
+											</li>
+										))}
+										{extra > 0 && (
+											<li class="pf-topic-more-li">
+												<button type="button" class="pf-topic-tag is-more" data-tags-more aria-expanded="false"
+													aria-label={`+${extra} ${pickLang({ en: T.topics.en.toLowerCase(), vi: T.topics.vi.toLowerCase() })}`}>+{extra}</button>
+											</li>
+										)}
+									</ul>
+									<span class="pf-topic-meta">
+										{g.latest
+											? <time datetime={g.latest} data-rel>{fmtDate(g.latest)}</time>
+											: <span />}
+										<span class="pf-topic-stats">
+											{isProduct ? (
+												g.scoreCount > 0 ? (
+													<span class="pf-topic-stat is-rate" data-tip-en={`${g.scoreCount} reviews`} data-tip-vi={`${g.scoreCount} đánh giá`}>
+														<Icon name="star" size={13} /><span class="sr-only"><I18nText text={{ en: 'Rating', vi: 'Đánh giá' }} />:</span>{g.scoreAvg.toFixed(1)}
+														<span class="pf-topic-stat-sub">({compactNum(g.scoreCount)})</span>
+													</span>
+												) : (
+													<span class="pf-topic-stat is-rate is-empty">
+														<Icon name="star" size={13} /><I18nText text={{ en: 'No reviews yet', vi: 'Chưa có đánh giá' }} />
+													</span>
+												)
+											) : (
+												<>
+													<span class="pf-topic-stat" data-tip-en="Views" data-tip-vi="Lượt xem">
+														<Icon name="eye" size={14} /><span class="sr-only"><I18nText text={{ en: 'Views', vi: 'Lượt xem' }} />:</span>{compactNum(g.views)}
+													</span>
+													<span class="pf-topic-stat is-like" data-tip-en="Likes" data-tip-vi="Lượt thích">
+														<Icon name="heart" size={13} /><span class="sr-only"><I18nText text={{ en: 'Likes', vi: 'Lượt thích' }} />:</span>{compactNum(g.likes)}
+													</span>
+												</>
+											)}
+										</span>
+									</span>
+								</div>
+							</article>
+						</li>
+					);
+				})}
 			</ul>
 		) : (
 			<div class="pf-empty">
@@ -172,9 +212,17 @@ const jsonLd = {
 	const norm = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()
 		.replace(/đ/g, 'd').replace(/[^a-z0-9]+/g, ' ').trim();
 
+	// "+N" → hiện nốt chip đã gập (lib.ts tagCards: chỉ SHOW_TAGS chip đầu hiện sẵn)
+	const openTags = (ul: Element | null) => {
+		if (!ul || ul.classList.contains('is-open')) return;
+		ul.classList.add('is-open');
+		ul.querySelector('[data-tags-more]')?.setAttribute('aria-expanded', 'true');
+	};
+
+	// Cùng thứ tự server render (lib.ts tagCards): count ↓ rồi mới nhất trước
 	const SORTS: Record<string, (a: HTMLElement, b: HTMLElement) => number> = {
-		count:  (a, b) => Number(b.dataset.count) - Number(a.dataset.count) || (a.dataset.name || '').localeCompare(b.dataset.name || ''),
-		name:   (a, b) => (a.dataset.name || '').localeCompare(b.dataset.name || ''),
+		count:  (a, b) => Number(b.dataset.count) - Number(a.dataset.count) || (b.dataset.latest || '').localeCompare(a.dataset.latest || ''),
+		name:   (a, b) => (a.dataset.sortName || '').localeCompare(b.dataset.sortName || ''),
 		latest: (a, b) => (b.dataset.latest || '').localeCompare(a.dataset.latest || ''),
 	};
 
@@ -185,6 +233,13 @@ const jsonLd = {
 		const form = root?.querySelector<HTMLFormElement>('[data-tag-search]');
 		const toggle = root?.querySelector<HTMLButtonElement>('[data-search-toggle]');
 		const seg = root?.querySelector<HTMLElement>('[data-tag-sort]');
+		list?.addEventListener('click', e => {
+			const more = (e.target as Element).closest('[data-tags-more]');
+			if (!more) return;
+			const ul = more.closest('.pf-topic-tags');
+			openTags(ul);
+			ul?.querySelector<HTMLElement>('li[data-extra] a')?.focus(); // nút "+N" biến mất — focus sang chip vừa hiện
+		});
 		if (!root || !list || !form || !toggle) return;
 		toggle.hidden = false;
 		if (seg) seg.hidden = false;
@@ -203,6 +258,14 @@ const jsonLd = {
 				const hit = !q || (li.dataset.name || '').includes(q);
 				li.toggleAttribute('data-miss', !hit);
 				if (hit) n++;
+				// card gộp nhiều tag — tô đúng chip khớp từ khoá; chip khớp nằm trong phần "+N" thì mở luôn
+				let hidden = false;
+				li.querySelectorAll<HTMLElement>('a.pf-topic-tag').forEach(a => {
+					const on = !!q && (a.dataset.name || '').includes(q);
+					a.toggleAttribute('data-hit', on);
+					if (on && a.parentElement?.hasAttribute('data-extra')) hidden = true;
+				});
+				if (hidden) openTags(li.querySelector('.pf-topic-tags'));
 			}
 			if (empty) empty.hidden = n > 0;
 		};

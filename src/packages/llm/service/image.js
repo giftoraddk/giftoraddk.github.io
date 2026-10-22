@@ -68,10 +68,10 @@ export function buildImagePrompt(subject, colorsStr) {
     return `A sophisticated minimalist editorial flat lay featuring ${subject}. Carefully art-directed composition with elegant asymmetry and generous negative space. Premium contemporary aesthetic, refined color theory, harmonious palette of ${palette}, high-quality materials and subtle decorative details. Clean matte surface, soft diffused natural lighting, delicate realistic shadows, restrained styling, carefully balanced visual hierarchy, modern luxury branding, contemporary lifestyle campaign, tasteful botanical accents, subtle cultural influences, plain unbranded packaging with no visible text or logos. Minimal yet visually rich, calm, polished, timeless, premium, photorealistic, high-end commercial photography, top-down view, ultra-detailed, realistic textures.`
 }
 
-// Gửi qua `parameters.negative_prompt` của Hugging Face Inference API — những gì KHÔNG muốn xuất hiện.
+// Gửi qua `negative_prompt` của Workers AI — những gì KHÔNG muốn xuất hiện (chỉ model SDXL dự phòng dùng; FLUX bỏ qua).
 export const IMAGE_NEGATIVE_PROMPT = 'text, watermark, logo, brand name, writing, letters, typography, label text, signature, caption, random text, distorted typography, cluttered composition, excessive decoration, oversaturated colors, harsh lighting, strong reflections, messy arrangement, cheap packaging, excessive props, unrealistic objects, awkward proportions, plastic-looking materials, heavy shadows, busy background, illustration, cartoon, anime, 3d render, cgi, digital art, low quality, blurry, deformed'
 
-/** Model ảnh (HF qua Worker, tự retry cold-start ở server) — concept đã dịch, fallback topic. */
+/** Model ảnh (Cloudflare Workers AI qua Worker, tự chuyển model dự phòng khi lỗi) — concept đã dịch, fallback topic. */
 export const generateImageBlob = (imagePrompt, topic, colors) =>
     generateImage(buildImagePrompt(imagePrompt || topic, colors), IMAGE_NEGATIVE_PROMPT)
 

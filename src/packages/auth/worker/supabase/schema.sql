@@ -26,7 +26,9 @@ create table if not exists public.profiles (
                                                       -- src/webs/auth/tools/service.js's parseRoles()
     connections  text default '',
     meta         jsonb default '{}'::jsonb,          -- provider info, talent-marketplace xuBalance, ...
-    index        integer not null default 0,        -- thứ tự hiển thị thủ công — kéo-thả trong admin (svc-resources.js orderable)
+    index        integer not null default 0,        -- cũ, không còn ghi — thứ tự thủ công giờ là `rank`
+    rank         text not null default '',          -- Fractional Indexing (services/tools/rank.js) — kéo-thả trong admin
+                                                      -- (svc-resources.js orderable); '' = tự động theo updated_at
     actors       text default '',                    -- "userId~iso~action|…" 9 lượt gần nhất — svc-resources.js _comActors()
     notes        text default '',                    -- JSON { nodes: [...] } — node riêng của user trên /system/app (svc-node-builder.js)
     deleted_at   timestamptz,
@@ -37,6 +39,7 @@ create table if not exists public.profiles (
 -- DB đã tạo từ bản schema cũ (chưa có cột actors / notes)
 alter table public.profiles add column if not exists actors text default '';
 alter table public.profiles add column if not exists notes  text default '';
+alter table public.profiles add column if not exists rank   text not null default '';
 
 create index if not exists profiles_email_idx    on public.profiles (email);
 create index if not exists profiles_username_idx on public.profiles (username);

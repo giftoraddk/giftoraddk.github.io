@@ -4,7 +4,7 @@
  * Thêm POST /:id/_bump { field, delta: 1 } — bộ đếm nguyên tử (views/likes), không cần quyền ghi bảng.
  * invoices: ghi theo luật riêng invoices.ts (dựng lại giá từ products, giới hạn bước người mua/người bán), phải đăng nhập.
  * promos: list công khai chỉ thấy mã đang chạy + không riêng tư; mã riêng tư chỉ ra khi tra đúng ?code=.
- * DELETE /:table — xoá THẬT toàn bộ bảng (nút "Xoá toàn bộ" của svc-resources), cần role.
+ * DELETE /:table — xoá THẬT toàn bộ bảng (nút "Xoá toàn bộ" của svc-resources), chỉ role `admin`.
  * Quyền theo tables.ts; roles đọc từ Supabase `profiles` của caller (cùng nguồn với profiles.ts).
  */
 import { requireAuth, AuthError } from './lib/auth';
@@ -85,11 +85,13 @@ export async function handleDataRoute(request: Request, env: DataEnv, table: str
     return json(rows);
   }
 
-  // Thao tác hàng loạt (xoá THẬT cả bảng, _batch) luôn cần quyền bảng — kể cả bảng ghi 'auth'/'staff'
+  // _batch luôn cần quyền bảng — kể cả bảng ghi 'auth'/'staff'
   const bulk: Level = 'role';
 
+  // Xoá THẬT cả bảng: chỉ role `admin` — quyền bảng (`{table}.*`) không đủ
   if (method === 'DELETE' && !id) {
-    _check(bulk, caller, table);
+    if (!caller) throw new AuthError('Missing bearer token');
+    if (!caller.isAdmin) throw new AuthError('Forbidden');
     return json({ deleted: await store.purge(table) });
   }
 

@@ -12,9 +12,10 @@
  *   POST /v1/fn/jobs/:id/resume         (no body read) approve the paused text step → the next one may run
  *   POST /v1/fn/jobs/:id/image          { choice: 'ai'|'skip', pics? } — approved: a new picture (pics) only
  *   POST /v1/fn/jobs/:id/fields         { fields } — the boss edits fields by hand; approved: its output fields only, and
- *                                       the record + knowledge its approve wrote follow (syncApproved)
- *   POST /v1/fn/jobs/:id/approve        { expertReview?: { confirmed, by } } done → platform table (owner '' only) + approved
- *                                       (+ a task job's handoffs); expertReview is required where the sector's review covers it
+ *                                       the record /record wrote + its knowledge follow (syncApproved)
+ *   POST /v1/fn/jobs/:id/approve        { expertReview?: { confirmed, by } } done → approved (+ a task job's handoffs);
+ *                                       expertReview is required where the sector's review covers it
+ *   POST /v1/fn/jobs/:id/record         (no body read) approved → its output table (owner '' only), once — createdPostId
  * Owner = resolveCaller() (JWT); every job read checks it. Status is derived (state.ts jobState), never sent in.
  * Access per sector = fn/trial.ts modeOf (in specFor): full, or trial — a trial job (`trial`) runs each call once.
  */
@@ -29,7 +30,7 @@ import { generateJson } from './generate';
 import { handleTalkRoute } from './talk';
 import { handleAdminRoute } from './admin';
 import { handleTaskRoute, artifactInputs, writeArtifacts } from './tasks';
-import { assertJobQuota, afterApprove, syncKnow } from './jobs';
+import { assertJobQuota, afterApprove, syncKnow, recordKnowId } from './jobs';
 import { parseDivisionId, resolveSpec, promptVars, lensOf, reviewOf } from './registry.ts';
 import { requireMode, withTrial, type Mode, type TrialEnv } from './trial.ts';
 import { toOutline } from './outline.ts';
@@ -49,7 +50,7 @@ import { LANGS, isSystemFn, type FnKey, type FnSpec, type Rec, type StepSpec } f
 export type FnEnv = DataEnv & AiEnv & RateLimitEnv & SearchEnv & TrialEnv & { AUTH_URL?: string };
 
 // 'sectors' is handled entirely by fn/talk.ts (handleTalkRoute, dispatched before this regex ever runs).
-const FN_PATH = /^\/v1\/fn\/(spec|log|jobs)(?:\/([A-Za-z0-9._-]{1,128}))?(?:\/(call|resume|image|fields|approve))?$/;
+const FN_PATH = /^\/v1\/fn\/(spec|log|jobs)(?:\/([A-Za-z0-9._-]{1,128}))?(?:\/(call|resume|image|fields|approve|record))?$/;
 const NOTE_MAX = 2000;
 const SIGNOFF_NAME_MAX = 120; // the reviewer's name as the approver types it
 const STEP_KNOWLEDGE = 3; // passages a `knowledge: true` step's call reads
@@ -284,7 +285,7 @@ async function editFields(env: FnEnv, caller: Caller, jobId: string, b: Rec, ctx
 
 /**
  * An approved job edited afterwards (its output fields, its picture) — BEFORE the job itself is written, so a refused
- * write leaves both as they were: the platform record its approve wrote follows (through auth as the caller, so
+ * write leaves both as they were: the platform record /record wrote (if any) follows (through auth as the caller, so
  * their own rights on that table are checked), then its knowledge, in the background. Its handoffs (artifacts) keep
  * the version that was approved. `partial` = the changed fields, already sanitized.
  */
@@ -295,7 +296,7 @@ async function syncApproved(env: FnEnv, ctx: ExecutionContext, caller: Caller, j
   if (!Object.keys(changed).length) return;
   const recordId = String(job.createdPostId ?? '');
   if (caller.owner === '' && recordId) await authWrite(env, caller, out.table, recordId, { ...changed, updated_at: now() });
-  syncKnow(env, ctx, caller, job, out, { ...(job.fields ?? {}), ...changed }, recordId);
+  syncKnow(env, ctx, caller, job, out, { ...(job.fields ?? {}), ...changed }, recordKnowId(caller, job));
 }
 
 /** Writes through auth AS THE CALLER — it enforces the caller's own table permissions. */
@@ -339,37 +340,55 @@ async function approve(env: FnEnv, caller: Caller, jobId: string, b: Rec, ctx: E
      WHERE id = ? AND approved = 0 AND status = 'done'`,
   ).bind(...(signOff ? [`${signOff.by} (${signOff.role}, ${signOff.at})`] : []), now(), job.id).run();
   if (claim.meta.changes !== 1) throw new HttpError(409, 'Nothing to approve');
-  const out = spec.output;
-  let recordId = '';
-  let table = '';
   let artifacts: Rec[] = [];
   try {
-    // Hubs never write the platform's tables (D9) — their result stays in the job (+ artifacts, Phase 3).
-    if (out && caller.owner === '') {
-      // Legacy jobs (created before html fields were sanitized on write) get sanitized here too. Which keys sanitize
-      // is code's call alone — the base + sector spec, never an admin override (P2-11) — same rule as editFields.
-      const base = resolveSpec(sector, fn)!;
-      const html = new Set(base.steps?.flatMap(s => callsOf(s)).flatMap(c => c.fields).filter(f => f.html).map(f => f.key));
-      const at = now();
-      const payload = Object.fromEntries(out.fields.map(k => [k, html.has(k) ? sanitizeHtml(String(job.fields[k] ?? '')) : String(job.fields[k] ?? '')]));
-      table = out.table;
-      recordId = job.id; // deterministic — a retried approve upserts the same record instead of duplicating it
-      // `sector` tags the new record with the sector that made it — posts from 5 sectors share one table, and knowledge
-      // synced from a record later (client know-sync.js) keeps to that sector.
-      await authWrite(env, caller, table, recordId, {
-        status: out.status || 'draft', scope: 'public', secure: '', tags: '', index: 0, actors: '', user_id: null,
-        ...payload, sector, created_at: at, updated_at: at, deleted_at: null,
-      });
-    }
-    // Inside a task: this job's handoffs become their new versions (P3-8) — in the same try, so a failed write un-approves
-    // the job and the boss simply approves again (the platform write above is an idempotent upsert on recordId = job.id).
+    // Inside a task: this job's handoffs become their new versions (P3-8) — a failed write un-approves the job and the
+    // boss simply approves again.
     if (job.task && spec.produces?.length) artifacts = await writeArtifacts(env, caller, job, spec, signOff);
   } catch (err) {
     await env.LLM_DB.prepare('UPDATE talks SET approved = 0 WHERE id = ?').bind(job.id).run();
     throw err;
   }
-  await afterApprove(env, ctx, caller, job, spec, recordId);
-  return json({ approved: true, table, recordId, artifacts });
+  afterApprove(env, ctx, caller, job, spec);
+  return json({ approved: true, artifacts });
+}
+
+/**
+ * The boss saves an approved result to its department's platform table (spec.output — products, posts…), once. Hubs
+ * never write the platform's tables (D9). The record takes the job's id, so it is the same row its knowledge already
+ * points at (recordKnowId); later edits of the job follow it (syncApproved).
+ */
+async function createRecord(env: FnEnv, caller: Caller, jobId: string): Promise<Response> {
+  const job = await loadJob(env, caller, jobId);
+  if (!job.approved) throw new HttpError(409, 'Approve the result first');
+  if (job.createdPostId) throw new HttpError(409, 'Already saved');
+  const { spec, sector, fn } = await jobSpec(env, caller, job);
+  const out = spec.output;
+  if (!out) throw new HttpError(409, 'This division saves to no table');
+  if (caller.owner !== '') throw new HttpError(403, 'Only platform staff save to platform tables');
+  const recordId = String(job.id);
+  // Claim first — 2 concurrent clicks can't both write; a failed write gives the claim back.
+  const claim = await env.LLM_DB.prepare("UPDATE talks SET createdPostId = ?, updated_at = ? WHERE id = ? AND approved = 1 AND createdPostId = ''")
+    .bind(recordId, now(), job.id).run();
+  if (claim.meta.changes !== 1) throw new HttpError(409, 'Already saved');
+  try {
+    // Legacy jobs (created before html fields were sanitized on write) get sanitized here too. Which keys sanitize
+    // is code's call alone — the base + sector spec, never an admin override (P2-11) — same rule as editFields.
+    const base = resolveSpec(sector, fn)!;
+    const html = new Set(base.steps?.flatMap(s => callsOf(s)).flatMap(c => c.fields).filter(f => f.html).map(f => f.key));
+    const at = now();
+    const payload = Object.fromEntries(out.fields.map(k => [k, html.has(k) ? sanitizeHtml(String(job.fields[k] ?? '')) : String(job.fields[k] ?? '')]));
+    // `sector` tags the new record with the sector that made it — posts from 5 sectors share one table, and knowledge
+    // synced from a record later (client know-sync.js) keeps to that sector.
+    await authWrite(env, caller, out.table, recordId, {
+      status: out.status || 'draft', scope: 'public', secure: '', tags: '', actors: '', user_id: null,
+      ...payload, sector, created_at: at, updated_at: at, deleted_at: null,
+    });
+  } catch (err) {
+    await env.LLM_DB.prepare("UPDATE talks SET createdPostId = '' WHERE id = ?").bind(job.id).run();
+    throw err;
+  }
+  return json({ table: out.table, recordId });
 }
 
 export async function handleFnRoute(request: Request, env: FnEnv, url: URL, ctx: ExecutionContext): Promise<Response | null> {
@@ -382,7 +401,7 @@ export async function handleFnRoute(request: Request, env: FnEnv, url: URL, ctx:
   const caller = await resolveCaller(request, env);
   if (area === 'spec' && method === 'GET' && id) {
     const { spec, sector, fn } = await specFor(env, caller, id);
-    return json(toOutline(spec, { review: reviewOf(sector, fn) }));
+    return json(toOutline(spec, { review: reviewOf(sector, fn), recordable: !!spec.output && caller.owner === '' }));
   }
   if (area === 'log' && method === 'GET' && !id) return listLog(env, caller, str(url.searchParams.get('sector'), 64));
   if (area === 'jobs' && method === 'POST' && !id) return createJob(env, caller, await readBody(request, JOB_BODY_MAX));
@@ -392,6 +411,7 @@ export async function handleFnRoute(request: Request, env: FnEnv, url: URL, ctx:
     if (action === 'image') return image(env, caller, id, await readBody(request, JOB_BODY_MAX), ctx);
     if (action === 'fields') return editFields(env, caller, id, await readBody(request, JOB_BODY_MAX), ctx);
     if (action === 'approve') return approve(env, caller, id, await readBody(request), ctx); // a tiny body: the sign-off
+    if (action === 'record') return createRecord(env, caller, id);
   }
   throw new HttpError(405, 'Unsupported method/path combination');
 }

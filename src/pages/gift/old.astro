@@ -1,0 +1,54 @@
+---
+import Core from '@/layouts/Core.astro';
+import BoardOutline from '@/components/Seo/BoardOutline.astro';
+import { getViews } from '@/modules/gift/index';
+import { variant, bar, socials, contact, menuItems, footerMenuItems, policies } from '@/modules/gift/shop';
+import { GIFT_LANG } from '@/modules/gift/seo.js';
+import { boardPageSeo } from '@/packages/apex/tool/board-seo.js';
+import { site } from '@/services/tools/site';
+
+const views = await getViews();
+const currentView = views.find(v => v.href === '/') ?? views[0];
+
+const bg = { blur: true }
+
+// Bản giao diện cũ của trang chủ (trang chủ thật ở '/', src/pages/index.astro) — noindex: cùng nội dung với '/', để
+// index sẽ thành nội dung trùng lặp chia điểm với trang chủ. Không có trong sitemap / llms.txt.
+
+// SEO/GEO — web-board chỉ render ở client; outline + JSON-LD dựng từ chính sections (gồm best-seller thật
+// lấy lúc build → ItemList link tới trang sản phẩm). Trang chủ thương hiệu → thêm WebSite.
+const page = {
+	path: Astro.url.pathname, // trùng canonical (Head/Base.astro dùng Astro.url.pathname)
+	lang: GIFT_LANG,
+	title: 'Quà Tặng Ý Nghĩa, Đẹp và Tinh Tế',
+	description: 'Khám phá quà tặng ý nghĩa, tinh tế và phù hợp cho mọi dịp tại Giftora DDK. Đa dạng quà tặng cho người yêu, gia đình, bạn bè, đồng nghiệp và doanh nghiệp, giúp bạn dễ dàng chọn món quà đặc biệt.',
+};
+const seo = boardPageSeo(page, currentView.sections, Astro.site ?? Astro.url);
+const jsonLd = [
+	{ '@context': 'https://schema.org', '@type': 'WebSite', name: site.subtitle, url: site.domain, inLanguage: GIFT_LANG },
+	...seo.jsonLd,
+];
+---
+
+<Core
+	title={page.title}
+  description={page.description}
+  image="/images/common/gift-dark.webp"
+	lang={page.lang}
+	noindex
+	jsonLd={jsonLd}
+	menu={{ type: 'top', position: 'prefix', menuItems: menuItems }}
+	footer={{ columns: footerMenuItems, policies, socials, contact, bg, grid: 'grid-cols-1 sm:grid-cols-3' }}
+	bg={variant.bg}
+	theme={variant.theme}
+	variant={variant}
+  bar={bar}
+>
+	<script src='@/packages/apex/web-board.js'></script>
+	<div>
+		<web-board
+			unlock={import.meta.env.PUBLIC_EXP}
+			variant={JSON.stringify(variant)}
+		><script type="application/json" is:inline set:html={JSON.stringify(currentView.sections)}></script><BoardOutline outline={seo.outline} /></web-board>
+	</div>
+</Core>

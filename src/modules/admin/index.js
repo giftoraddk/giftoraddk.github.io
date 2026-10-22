@@ -14,6 +14,7 @@ import inventorySchema from '@/services/schemas/admin/inventory.js';
 import staffSchema from '@/services/schemas/admin/staff.js';
 import relSchema from '@/services/schemas/admin/rel.js';
 import promosSchema from '@/services/schemas/admin/promos.js';
+import { site } from '@/services/tools/site';
 
 export const ROOT = '/admin/';
 // Cặp màu của group "Hệ thống AI" (preset/system.js) — quầng sáng trang + menu.
@@ -51,8 +52,10 @@ const tablePage = (id, extra = {}) => {
     return { slug: id, require: id, title: t.title, desc: t.tooltip, icon: t.icon, panels: [tableNode(t).overlay], ...extra };
 };
 
-// Nạp sản phẩm vào `know` (+ auto-link `rel`) — phát 'learn:done', trang tải lại các lưới cùng trang (pages/admin/[table].astro).
-const learnPanel = component('svc-learn', () => import('@/packages/llm/svc-learn.js'), { ui: 'pastel' });
+// Nạp sản phẩm vào `know` (+ index + `rel`, Worker /v1/hubs/items) — phát 'learn:done', trang tải lại các lưới cùng trang
+// (pages/admin/[table].astro). `site` = site.domain → kho riêng '@<host>' của site — đúng kho <svc-aide site> của trang chủ
+// đọc (components/Gift/Aide.astro) — kèm link trang sản phẩm trong từng mục.
+const learnPanel = component('svc-learn', () => import('@/packages/llm/svc-learn.js'), { ui: 'pastel', site: site.domain });
 
 export const PAGES = [
     tablePage('users'),

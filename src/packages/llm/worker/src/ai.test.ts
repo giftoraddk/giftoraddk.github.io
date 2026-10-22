@@ -2,15 +2,15 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { resolveFreeChain, clampOpts, validMessages, AI_LIMITS } from './ai.ts';
 
-const env = { GROQ_KEY: 'gsk_a', OPER_KEY: 'sk-or-b', NVID_KEY: 'nvapi-c' };
+const env = { OPER_KEY: 'sk-or-b', CLOU_KEY: 'cfut_a', NVID_KEY: 'nvapi-c' };
 
 test('the client can only name symbols — raw keys it sends are ignored', () => {
   const quiet = console.warn; console.warn = () => {};
   try {
-    assert.equal(resolveFreeChain('@default', env), 'gsk_a|sk-or-b|nvapi-c');
-    assert.equal(resolveFreeChain('sk-or-stolen|@default', env), 'gsk_a|sk-or-b|nvapi-c');
-    assert.equal(resolveFreeChain('sk-or-stolen', env), 'gsk_a|sk-or-b|nvapi-c'); // falls back to the default chain
-    assert.equal(resolveFreeChain('', env), 'gsk_a|sk-or-b|nvapi-c');
+    assert.equal(resolveFreeChain('@default', env), 'sk-or-b|nvapi-c|cfut_a');
+    assert.equal(resolveFreeChain('sk-or-stolen|@default', env), 'sk-or-b|nvapi-c|cfut_a');
+    assert.equal(resolveFreeChain('sk-or-stolen', env), 'sk-or-b|nvapi-c|cfut_a'); // falls back to the default chain
+    assert.equal(resolveFreeChain('', env), 'sk-or-b|nvapi-c|cfut_a');
   } finally { console.warn = quiet; }
 });
 

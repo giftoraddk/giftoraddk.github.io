@@ -4,9 +4,8 @@ import { KINDS } from '@/components/Catalog/kinds';
 import Feed from '@/components/Catalog/Feed.astro';
 import { fetchCollection } from '@/services/core/fetcher.server.js';
 import { tagSlugMap, pickLang } from '@/services/tools/util';
-import { site } from '@/services/tools/site';
 import { menuItems, policies, socials } from '@/modules/gift/shop.js'; // footer chung giftoraddk.com
-import { menu as productMenu, tints } from '@/modules/product/index.js';
+import { menu as productMenu, tints, productSeo } from '@/modules/product/index.js';
 
 // Trang sản phẩm theo danh mục (tag) — biến thể SSG (mặc định); bản ISR ở _render-modes/[tag].isr.astro.
 // Cùng giao diện Feed với /product/ (danh mục đang xem active + breadcrumb + JSON-LD CollectionPage).
@@ -24,11 +23,9 @@ export async function getStaticPaths() {
 const { tag, products, allProducts } = Astro.props as { tag: string; products: any[]; allProducts: any[] };
 const tagSlug = Astro.params.tag as string;
 
-const pageTitle = tag;
-const pageDescription = pickLang({
-	en: `${products.length} products in "${tag}" at ${site.subtitle}.`,
-	vi: `${products.length} sản phẩm thuộc danh mục "${tag}" tại ${site.subtitle}.`,
-});
+const seo = productSeo.tag(tag, products.length);
+const pageTitle = pickLang(seo.heading);
+const pageDescription = pickLang(seo.description);
 const breadcrumb = [
 	{ label: pickLang({ en: 'Home', vi: 'Trang chủ' }), href: '/' },
 	{ label: pickLang({ en: 'Products', vi: 'Sản phẩm' }), href: '/product/' },
@@ -39,7 +36,7 @@ const image = products.map((p: any) => String(p.pics || '').split('|').find(Bool
 const bg = null;
 ---
 
-<Core menu={productMenu} tints={tints} title={`${pageTitle} • ${pickLang({ en: 'Products', vi: 'Sản phẩm' })}`} description={pageDescription} image={image} footer={{ columns: menuItems, policies, socials, bg }}>
+<Core menu={productMenu} tints={tints} title={pickLang(seo.title)} description={pageDescription} image={image} footer={{ columns: menuItems, policies, socials, bg }}>
 	<Feed kind={KINDS.product} items={products} allItems={allProducts} title={pageTitle} description={pageDescription}
 		path={`/product/tag/${tagSlug}/`} activeTag={tagSlug} breadcrumb={breadcrumb} />
 </Core>

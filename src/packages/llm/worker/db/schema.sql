@@ -13,8 +13,9 @@ CREATE TABLE IF NOT EXISTS divisions (
   lang         TEXT NOT NULL DEFAULT 'vi',
   ai           TEXT NOT NULL DEFAULT '',
   meta         TEXT NOT NULL DEFAULT '{}',   -- JSON: override PATCH over fn/base + fn/sectors (mergeSpec) — private, never sent to guests
-  "index"      INTEGER NOT NULL DEFAULT 0,
-  sector       TEXT NOT NULL DEFAULT '',     -- '' = legacy row (pre-sector ids 'marketing'…); else a fn/sectors/*.ts id
+  "index"      INTEGER NOT NULL DEFAULT 0,   -- cũ, không còn ghi — thứ tự thủ công giờ là "rank"
+  "rank"       TEXT NOT NULL DEFAULT '',     -- Fractional Indexing (services/tools/rank.js): '' = tự động theo updated_at
+  sector      TEXT NOT NULL DEFAULT '',     -- '' = legacy row (pre-sector ids 'marketing'…); else a fn/sectors/*.ts id
   fn           TEXT NOT NULL DEFAULT '',     -- fn/types.ts FnKey
   owner        TEXT NOT NULL DEFAULT '',     -- '' = platform override; hub id = that customer's own; '@<host>' = 1 site của nền tảng (svc-aide site="…")
   created_at   TEXT NOT NULL,

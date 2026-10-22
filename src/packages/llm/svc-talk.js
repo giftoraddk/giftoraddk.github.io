@@ -20,11 +20,13 @@ import './app/svc-job-card.js'
 import './app/svc-progress.js'
 import './service/service.js'
 import { subscribe as cdSubscribe } from '@/services/core/conductor.js'
-import { txtLingo } from '@/services/tools/util.js'
+import { txtLingo, toastEmit } from '@/services/tools/util.js'
 import { DEFAULT_CHAIN } from '@/services/shared/tensor-api.js'
 import { talkFor, DEFAULT_SECTOR } from './service/talk.js'
 import { SECRETARY_ICON } from './tool/sectors.js'
-import { routingOf, rationaleOf } from './tool/tasks.js'
+import { routingOf, rationaleOf, taskRows, isPlanDoneLine } from './tool/tasks.js'
+import { downloadPlanPdf, downloadJobPdf } from './service/pdf.js'
+import { cardTxt } from './app/card-parts.js'
 import { takeCommand } from './tool/command.js'
 import { trialLine } from './tool/trial.js'
 import styles from './css/svc-talk.css?inline'
@@ -37,6 +39,7 @@ const TXT_STD = {
         auto: 'Tự động', autoHint: 'Tự duyệt từng bước, tự tạo ảnh (lỗi thì bỏ qua — tạo lại sau) và tự chuyển việc sang phòng kế tiếp',
         back: 'Quay lại',
         staleMsg: 'Bàn giao này dựa trên bản cũ của phòng phía trước — cần xác minh lại', rerun: 'Chạy lại', stillValid: 'Vẫn dùng được',
+        planPdf: 'Tải PDF kế hoạch', pdfFailed: 'Không xuất được PDF — thử lại sau',
     },
     en: {
         panelTitle: 'Enterprise AI Assistant',
@@ -45,6 +48,7 @@ const TXT_STD = {
         auto: 'Auto', autoHint: 'Approves each step, generates the images (skips one that fails — redo it later) and hands the work on by itself',
         back: 'Back',
         staleMsg: 'This handoff was built on an older upstream version — it needs re-checking', rerun: 'Re-run', stillValid: 'Still valid',
+        planPdf: 'Download plan PDF', pdfFailed: 'Couldn\'t export the PDF — try again later',
     },
 }
 
@@ -80,6 +84,8 @@ export class SvcTalk extends LitElement {
         // UI cục bộ của instance này
         _draft:        { state: true },
         _previewJobId: { state: true }, // job đang mở view "Xem chi tiết" (thay khung chat), '' = đóng
+        _pdfTask:      { state: true }, // task đang xuất PDF kế hoạch, '' = không
+        _pdfJob:       { state: true }, // job phòng ban đang xuất PDF (card task), '' = không
     }
 
     constructor() {
@@ -94,6 +100,8 @@ export class SvcTalk extends LitElement {
         this._dcSync(this._talk.state)
         this._draft = ''
         this._previewJobId = ''
+        this._pdfTask = ''
+        this._pdfJob = ''
         this._unsub = null
     }
 
@@ -278,7 +286,8 @@ export class SvcTalk extends LitElement {
                         why=${why} ?approvable=${!doc.approved} ?busy=${this._pendingJobs.has(doc.id)}
                         lang=${this.lang} ui=${this.ui} theme=${this.theme}
                         @approve=${(e) => this._dhApproveAndClose(doc.id, e.detail?.expertReview)}
-                        @resume-step=${() => this._talk.resumeStep(doc.id)}>${this._rfDetailActions(doc, division)}</svc-job-card>
+                        @resume-step=${() => this._talk.resumeStep(doc.id)}
+                        @record=${() => this._talk.record(doc.id)}>${this._rfDetailActions(doc, division)}</svc-job-card>
                     <svc-progress .outline=${division.outline} .doc=${doc} .runningSub=${this._runningSub} externalActions
                         .routing=${routing} .faces=${this._comFaces} .titles=${view?.titles || {}}
                         @routing-change=${e => this._talk.setRouting(doc.id, e.detail)}
@@ -302,8 +311,15 @@ export class SvcTalk extends LitElement {
         const byTask = new Map()
         for (const m of this._log) if (m.kind === 'job' && m.task) byTask.set(m.task, [...(byTask.get(m.task) ?? []), m])
         const shown = new Set()
+        let lastTask = ''
         const items = this._log.flatMap(m => {
-            if (m.kind === 'chat') return m.from === 'boss' || this._talk.division(m.from)?.system ? [this._rfMessage(m)] : []
+            if (m.kind === 'chat') {
+                if (m.from !== 'boss' && !this._talk.division(m.from)?.system) return []
+                // "Xong cả kế hoạch" → nút PDF tổng của task đó (câu cũ chưa mang id task: task của job gần nhất phía trên).
+                const plan = m.from !== 'boss' && isPlanDoneLine(m.content) ? m.task || lastTask : ''
+                return [this._rfMessage(m, plan)]
+            }
+            if (m.task) lastTask = m.task
             if (!m.task || shown.has(m.task)) return []
             shown.add(m.task)
             return [this._rfTaskCard(m.task, byTask.get(m.task))]
@@ -320,11 +336,13 @@ export class SvcTalk extends LitElement {
                 <div class="tlk-card">
                     ${host ? html`<span class="tlk-author">${host.title}</span>` : ''}
                     <svc-task-card .view=${view} .jobs=${jobs} topic=${view?.topic || jobs[0]?.topic || ''}
-                        .faces=${this._comFaces} .outlines=${this._comOutlines} .pending=${this._pendingJobs}
+                        .faces=${this._comFaces} .outlines=${this._comOutlines} .pending=${this._pendingJobs} pdfJob=${this._pdfJob}
                         lang=${this.lang} ui=${this.ui} theme=${this.theme} ?no-verdict=${this.noVerdict}
                         @open-job=${e => this._dhPreview(e.detail.jobId)}
                         @approve-job=${e => this._talk.approve(e.detail.jobId)}
-                        @retry-job=${e => this._talk.retry(e.detail.jobId)}></svc-task-card>
+                        @retry-job=${e => this._talk.retry(e.detail.jobId)}
+                        @pdf-job=${e => this._dhJobPdf(e.detail.jobId)}
+                        @record-job=${e => this._talk.record(e.detail.jobId)}></svc-task-card>
                 </div>
             </div>
         `
@@ -354,9 +372,10 @@ export class SvcTalk extends LitElement {
         `
     }
 
-    _rfMessage(m) {
+    _rfMessage(m, planTask = '') {
         const mine = m.from === 'boss'
         const name = mine ? this._bossName : this._comDivisionName(m.from)
+        const t = this._txt
         return html`
             <div class="tlk-msg ${mine ? 'mine' : ''}">
                 <web-avatar src=${mine ? '' : this._comDivisionAvatar(m.from)} name=${name} size="28px"
@@ -364,9 +383,54 @@ export class SvcTalk extends LitElement {
                 <div class="tlk-bubble">
                     <span class="tlk-author">${name}</span>
                     <p class="tlk-content">${m.content}</p>
+                    ${planTask ? html`
+                        <div class="tlk-actions">
+                            <web-button type="soft" color="primary" height="28px" prefix="ri:file-pdf-2-line" ui=${this.ui} theme=${this.theme}
+                                ?loading=${this._pdfTask === planTask} ?disabled=${!!this._pdfTask}
+                                @click=${() => this._dhPlanPdf(planTask)}>${t.planPdf}</web-button>
+                        </div>
+                    ` : ''}
                 </div>
             </div>
         `
+    }
+
+    // PDF 1 dòng đã duyệt trong card task (Thư ký hoặc 1 phòng) — cùng file với icon PDF ở panel riêng của phòng (<svc-fn>).
+    async _dhJobPdf(jobId) {
+        if (this._pdfJob) return
+        const job = this._log.find(d => d.id === jobId)
+        const division = job && this._talk.division(job.division)
+        if (!division?.outline) return
+        this._pdfJob = jobId
+        try {
+            await downloadJobPdf({ job, outline: division.outline, department: division.title || '', lang: this.lang })
+        } catch (err) {
+            console.error('[llm/talk] PDF export failed:', err)
+            toastEmit(this._txt.pdfFailed, 'error')
+        } finally {
+            this._pdfJob = ''
+        }
+    }
+
+    // PDF cả kế hoạch: mỗi phòng có job trong task 1 phần, theo thứ tự task view (Thư ký → các phòng → Tích hợp).
+    async _dhPlanPdf(taskId) {
+        if (this._pdfTask) return
+        this._pdfTask = taskId
+        try {
+            const view = this._tasks?.[taskId] ?? null
+            const jobs = this._log.filter(d => d.kind === 'job' && d.task === taskId)
+            const parts = taskRows(view, jobs).flatMap(({ fn, job }) => {
+                const division = job && this._talk.division(job.division)
+                return division?.outline ? [{ name: division.title || fn, job, outline: division.outline }] : []
+            })
+            const verdict = !this.noVerdict && view?.verdict ? cardTxt(this.lang).verdict[view.verdict] ?? view.verdict : ''
+            await downloadPlanPdf({ topic: view?.topic || jobs[0]?.topic || '', verdict, parts, lang: this.lang })
+        } catch (err) {
+            console.error('[llm/talk] plan PDF export failed:', err)
+            toastEmit(this._txt.pdfFailed, 'error')
+        } finally {
+            this._pdfTask = ''
+        }
     }
 
     _rfTyping(divisionId) {

@@ -102,11 +102,10 @@ export default (lang = 'vi') => {
 		},
 		{
 			label: t.order,
-			field: 'index',
-			type: 'number',
+			field: 'rank', // tools/rank.js — chỉ hiển thị (không type → không vào form), đổi bằng kéo-thả
 			width: '45px',
 			align: 'center',
-			render: (_v, row) => row.index ?? '—',
+			render: (_v, row) => row.rank || '—',
 		},
 	];
 };

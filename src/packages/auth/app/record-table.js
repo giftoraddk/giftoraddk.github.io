@@ -7,7 +7,7 @@
 // fields must sit under `.wt-edit-inner` — that is where _collectFlat() reads them.
 //
 // Split out of apex/web-table.js (now a plain display table: columns + data + tints — it shares cellText()).
-// Events: wt-save { id, data } · wt-delete { id } · wt-move { id, direction } · wt-open-history { id } ·
+// Events: wt-save { id, data } · wt-delete { id } · wt-move { id, prevId | nextId | direction } · wt-open-history { id } ·
 // wt-query-change { filters, sort } (+ `searches` from the subclass's search box).
 
 import { LitElement, html } from 'lit';
@@ -294,7 +294,8 @@ export class RecordTable extends LitElement {
 	}
 
 	_doDelete(id) { this._deleteId = null; this._emit('wt-delete', { id }); }
-	_doMove(id, direction) { this._emit('wt-move', { id, direction }); }
+	/** `to` = { prevId } | { nextId } (new neighbour as shown) or { direction: 'top' | 'unpin' } — svc-resources _dfMove. */
+	_doMove(id, to = {}) { this._emit('wt-move', { id, ...to }); }
 
 	// ── Repeater field (type: 'repeater') ─────────────────────────────────────────
 

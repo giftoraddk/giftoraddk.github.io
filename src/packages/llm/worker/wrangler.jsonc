@@ -22,7 +22,10 @@
     // Comma-separated list of allowed origins for authenticated routes, e.g. "https://<prod-domain>,http://localhost:5000".
     "ALLOWED_ORIGIN": "https://chatzui.com,https://www.chatzui.com,https://giftoraddk.com,https://www.giftoraddk.com,http://localhost:5000",
     "SUPABASE_URL": "https://epiwtyryvbqnsvcossjb.supabase.co",
-    "AI_FREE_TIMEOUT_MS": "9000",
+    "AI_FREE_TIMEOUT_MS": "15000",
+    // Cloudflare account chạy Workers AI cho chain chat + sinh ảnh (src/ai.ts — endpoint REST theo account; token là secret
+    // CLOU_KEY). Điền từ LLM_ACCOUNT_ID của .env mỗi lần `pnpm run deploy` (scripts/stack.mjs deployVars).
+    "CLOU_ACCOUNT": "3446c3ef7f0dd92ffbd648cb9d25e4f4",
     // auth base URL (production) — /v1/hubs/* + billing peek read hub billing from it (src/hubs.ts). Filled from the
     // .env's PUBLIC_AUTH_URL on every `pnpm run deploy` (scripts/stack.mjs deployVars); local dev reads .dev.vars.
     "AUTH_URL": "https://auth.ssoddk.workers.dev",

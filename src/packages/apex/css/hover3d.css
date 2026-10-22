@@ -1,0 +1,146 @@
+/***
+ * hover-3d simple
+ * <div class="hover-3d"><figure class="rounded-xl"><img src="https://img.daisyui.com/images/stock/card-1.webp?x" alt="Tailwind CSS 3D card"></figure> <div></div> <div></div> <div></div> <div></div> <div></div> <div></div> <div></div> <div></div></div>
+ */
+.hover-3d {
+    perspective: 75rem;
+    --transform: 0, 0;
+    --shine: 100% 100%;
+    --shadow: 0rem 0rem 0rem;
+    --ease: linear(0, .931 13.8%, 1.196 21.4%, 1.343 29.8%, 1.378 36%, 1.365 43.2%, 1.059 78%, 1);
+    filter: drop-shadow(var(--shadow).1rem #00000003)drop-shadow(var(--shadow).2rem #00000003)drop-shadow(var(--shadow).3rem #00000003)drop-shadow(var(--shadow).4rem #00000003);
+    transition: filter .4s ease-out;
+    display: inline-grid
+}
+
+.hover-3d>:nth-child(n+2) {
+    isolation: isolate;
+    z-index: 1;
+    scale: 1.2
+}
+
+.hover-3d>:first-child {
+    transform: rotate3d(var(--transform), 0, 10deg);
+    transition: transform var(--ease).5s, scale var(--ease).5s, outline-color ease-out .5s;
+    outline-offset: -1px;
+    outline: .5px solid #0000;
+    grid-area: 1/1/4/4;
+    overflow: hidden
+}
+
+.hover-3d>:first-child:before {
+    content: "";
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    filter: blur(.75rem);
+    width: 33.3333%;
+    height: 33.3333%;
+    scale: 500%;
+    translate: var(--shine);
+    background-image: radial-gradient(circle, #fff3 10%, #0000 50%);
+    transition: translate .4s ease-out, opacity .4s ease-out;
+    position: absolute
+}
+
+.hover-3d:hover {
+    --ease: linear(0, .708 15.2%, .927 23.6%, 1.067 33%, 1.12 41%, 1.13 50.2%, 1.019 83.2%, 1)
+}
+
+.hover-3d:hover>:first-child {
+    outline-color: #fff1
+}
+
+.hover-3d:hover>:first-child:before,
+.hover-3d:hover>:first-child:after {
+    opacity: 1
+}
+
+.hover-3d:hover>:first-child {
+    scale: 1.05
+}
+
+.hover-3d>:nth-child(2) {
+    grid-area: 1/1/2/2
+}
+
+.hover-3d>:nth-child(3) {
+    grid-area: 1/2/2/3
+}
+
+.hover-3d>:nth-child(4) {
+    grid-area: 1/3/2/4
+}
+
+.hover-3d>:nth-child(5) {
+    grid-area: 2/1/3/2
+}
+
+.hover-3d>:nth-child(6) {
+    grid-area: 2/3/3/4
+}
+
+.hover-3d>:nth-child(7) {
+    grid-area: 3/1/4/2
+}
+
+.hover-3d>:nth-child(8) {
+    grid-area: 3/2/4/3
+}
+
+.hover-3d>:nth-child(9) {
+    grid-area: 3/3/4/4
+}
+
+.hover-3d:has(>:nth-child(2):hover) {
+    --transform: -1, 1;
+    --shine: 0% 0%;
+    --shadow: -.5rem -.5rem
+}
+
+.hover-3d:has(>:nth-child(3):hover) {
+    --transform: -1, 0;
+    --shine: 100% 0%;
+    --shadow: 0rem -.5rem
+}
+
+.hover-3d:has(>:nth-child(4):hover) {
+    --transform: -1, -1;
+    --shine: 200% 0%;
+    --shadow: .5rem -.5rem
+}
+
+.hover-3d:has(>:nth-child(5):hover) {
+    --transform: 0, 1;
+    --shine: 0% 100%;
+    --shadow: -.5rem 0rem
+}
+
+.hover-3d:has(>:nth-child(6):hover) {
+    --transform: 0, -1;
+    --shine: 200% 100%;
+    --shadow: .5rem 0rem
+}
+
+.hover-3d:has(>:nth-child(7):hover) {
+    --transform: 1, 1;
+    --shine: 0% 200%;
+    --shadow: -.5rem .5rem
+}
+
+.hover-3d:has(>:nth-child(8):hover) {
+    --transform: 1, 0;
+    --shine: 100% 200%;
+    --shadow: 0rem .5rem
+}
+
+.hover-3d:has(>:nth-child(9):hover) {
+    --transform: 1, -1;
+    --shine: 200% 200%;
+    --shadow: .5rem .5rem
+}
+
+/**
+ * hover-3d card
+ * <div class="hover-3d my-12 mx-2 cursor-pointer"><div class="card w-96 bg-black text-white bg-[radial-gradient(circle_at_bottom_left,#ffffff04_35%,transparent_36%),radial-gradient(circle_at_top_right,#ffffff04_35%,transparent_36%)] bg-size-[4.95em_4.95em]"><div class="card-body font-mono"><div class="flex justify-between mb-10"><div class="font-bold">BANK OF LATVERIA</div> <div class="text-5xl opacity-10">❁</div></div> <div class="text-lg mb-4 opacity-40">0210 8820 1150 0222</div> <div class="flex justify-between"><div><div class="text-xs opacity-20">CARD HOLDER</div> <div>VICTOR VON D.</div></div> <div><div class="text-xs opacity-20">EXPIRES</div> <div>29/08</div></div></div></div></div> <div></div> <div></div> <div></div> <div></div> <div></div> <div></div> <div></div> <div></div></div>
+ */
