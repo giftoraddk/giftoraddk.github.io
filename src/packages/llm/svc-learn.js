@@ -35,7 +35,11 @@ import styles from './css/svc-learn.css?inline'
 
 const productSvc = createService('products', '', serverOf('products'))
 
-const BATCH = 50 // mục mỗi lần gọi /v1/hubs/items — nội dung sản phẩm (HTML dài) vẫn nằm gọn trong giới hạn body
+const BATCH = 50 // tối đa mục mỗi lần gọi /v1/hubs/items (Worker nhận ≤ 200)
+// tối đa byte JSON mỗi lần gọi — dưới xa HUBS_ITEMS_BODY_MAX (2 MB, worker lib/body.ts): nội dung sản phẩm dài cỡ nào
+// cũng chia nhỏ lượt thay vì bị 413 "Body too large"
+const BATCH_BYTES = 512 * 1024
+const DESC_MAX = 20_000 // ký tự mô tả tối đa của 1 mục — đủ cho bài dài, chặn nội dung dán nhầm (base64…) làm phình lượt
 const SOURCE_PRODUCTS = 'sync:products' // tên lượt đồng bộ — `prune` chỉ đụng các mục của nó, không đụng CSV / API khác
 // Kho chung của nền tảng: sản phẩm thuộc ngành thương mại điện tử, phòng sản phẩm (cùng scopeOf của know-sync.js) —
 // trợ lý tư vấn ngành khác không trả lời từ danh mục của shop. Kho riêng 1 site: mọi ngành ('').
@@ -71,12 +75,26 @@ function productItem(p, base) {
         id: String(p.id),
         type: 'product',
         title: String(p.title ?? '').trim(),
-        description,
+        description: description.length > DESC_MAX ? `${description.slice(0, DESC_MAX)}…${url ? `\n\nLink: ${url}` : ''}` : description,
         tags: String(p.tags ?? '').split('|').map((t) => t.trim()).filter(Boolean),
         // pricing cùng dạng "giá~vốn~đơn vị" mà Worker chatPrompt.ts formatPrice đọc (dòng PRICE) — ô vốn để TRỐNG
         meta: { ...(url && { url }), ...(price && { pricing: `${Number(rawPrice)}~~${unit}` }) },
         status: p.status === 'active' ? 'active' : 'draft',
     }
+}
+
+const _enc = new TextEncoder()
+/** Chia `items` thành các lượt ≤ BATCH mục và ≤ BATCH_BYTES byte JSON (1 mục quá lớn vẫn đi 1 lượt riêng). */
+function batchesOf(items) {
+    const out = []
+    let cur = [], size = 0
+    for (const it of items) {
+        const n = _enc.encode(JSON.stringify(it)).length + 1
+        if (cur.length && (cur.length >= BATCH || size + n > BATCH_BYTES)) { out.push(cur); cur = []; size = 0 }
+        cur.push(it); size += n
+    }
+    if (cur.length || !out.length) out.push(cur)
+    return out
 }
 
 /** Cộng dồn kết quả các lượt /v1/hubs/items. */
@@ -151,12 +169,12 @@ export class SvcLearn extends LitElement {
     get _base() { try { return this.site ? new URL(this.site).origin : '' } catch { return '' } }
 
     /**
-     * Gửi `items` theo lượt BATCH tới /v1/hubs/items — `prune` gắn vào lượt CUỐI kèm `since` = startedAt của lượt đầu
+     * Gửi `items` theo lượt (batchesOf) tới /v1/hubs/items — `prune` gắn vào lượt CUỐI kèm `since` = startedAt của lượt đầu
      * (mục của `source` không được ghi trong lần này = đã bị xoá ở nguồn). Trả kết quả cộng dồn; lỗi lượt nào ném luôn.
      */
     async _sendItems(items, { source, type, sector = '', fn = '', prune = false }) {
         let total = {}, since = ''
-        const batches = items.length ? Array.from({ length: Math.ceil(items.length / BATCH) }, (_, i) => items.slice(i * BATCH, (i + 1) * BATCH)) : [[]]
+        const batches = batchesOf(items)
         for (let i = 0; i < batches.length; i++) {
             const last = i === batches.length - 1
             const res = await hub.importItems({
