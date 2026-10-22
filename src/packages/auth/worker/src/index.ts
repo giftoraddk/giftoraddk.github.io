@@ -3,7 +3,6 @@
  *   GET/PATCH /v1/data/profiles[/:id]                     — Supabase `profiles` (profiles.ts)
  *   *         /v1/data/:table[/:id | /_batch | /:id/_bump] — bảng nội dung trên D1 ALL_DB (data.ts)
  *   *         /v1/billing/:action[/:id]                   — PayPal subscriptions (billing.ts)
- *   *         /v1/zap/:product/:action[/:id]              — bản quyền + VietQR của các extension zap-* (zap.ts)
  *
  * corsHeaders()/json() nhận 1 `origin` / `(data, init?)`; AuthError -> 401/403 map ở catch vì
  * lib/http.ts's handleWorkerError không tự xử lý.
@@ -11,18 +10,16 @@
 import { handleProfilesRoute, type ProfilesEnv } from './profiles';
 import { handleDataRoute, type DataEnv } from './data';
 import { handleBillingRoute, type BillingEnv } from './billing';
-import { handleZapRoute, type ZapEnv } from './zap';
 import { AuthError } from './lib/auth';
 import { corsHeaders, withCors, json, handleWorkerError } from './lib/http';
 
-export interface Env extends ProfilesEnv, DataEnv, BillingEnv, ZapEnv {
+export interface Env extends ProfilesEnv, DataEnv, BillingEnv {
   ALLOWED_ORIGIN: string;
 }
 
 const PROFILES_PATH = /^\/v1\/data\/profiles(?:\/([a-zA-Z0-9_-]+))?$/;
 const DATA_PATH     = /^\/v1\/data\/([a-zA-Z0-9_]+)(?:\/([a-zA-Z0-9_-]+))?(?:\/(_bump))?$/;
 const BILLING_PATH  = /^\/v1\/billing\/([a-z]+)(?:\/([a-zA-Z0-9_-]+))?$/; // id = Supabase user uuid (có '-')
-const ZAP_PATH      = /^\/v1\/zap\/([a-z]+)\/([a-z]+)(?:\/([a-zA-Z0-9-]+))?$/; // product / action / mã đơn (ZS… / ZP…) | user uuid
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -38,9 +35,6 @@ export default {
 
       const billing = url.pathname.match(BILLING_PATH);
       if (billing) return withCors(await handleBillingRoute(request, env, billing[1], billing[2]), origin);
-
-      const zap = url.pathname.match(ZAP_PATH);
-      if (zap) return withCors(await handleZapRoute(request, env, zap[1], zap[2], zap[3]), origin);
 
       const data = url.pathname.match(DATA_PATH);
       if (data) return withCors(await handleDataRoute(request, env, data[1], data[2], data[3]), origin);

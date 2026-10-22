@@ -10,8 +10,7 @@
   "vars": {
     "ALLOWED_ORIGIN": "https://chatzui.com,https://www.chatzui.com,https://giftoraddk.com,https://www.giftoraddk.com,http://localhost:5000",
     "SUPABASE_URL": "https://epiwtyryvbqnsvcossjb.supabase.co",
-    // Gốc của PayPal return_url / cancel_url (/system/pricing) + link dự phòng trong tin Telegram Zap Share (zap.ts lấy
-    // Origin của trang nếu có trong ALLOWED_ORIGIN). Local dev lấy APP_URL từ .dev.vars (scripts/setup-dev.mjs).
+    // Gốc của PayPal return_url / cancel_url (/system/pricing). Local dev lấy APP_URL từ .dev.vars (scripts/setup-dev.mjs).
     "APP_URL": "https://chatzui.com",
     // 'sandbox' | 'live' — chọn host API PayPal + planIds trong purchase/tool/plans.js; phải khớp
     // loại app của PAYPAL_CLIENT_ID. Local dev lấy từ .dev.vars.

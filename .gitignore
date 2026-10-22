@@ -9,8 +9,6 @@ dist*
 dest/
 # Embed bundles — vite.standalone.mjs builds them before every `pnpm build`
 public/embed/
-# Chrome extension builds — zap-* (vite.zap-share.mjs, …)
-dist-zap/
 logs/
 
 # Claude

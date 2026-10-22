@@ -95,7 +95,7 @@ function main() {
         '# Secret chung với llm (≥ 32 ký tự) — GET /v1/billing/peek/:userId; trống = route tắt',
         `BILLING_SERVICE_KEY="${merged.BILLING_SERVICE_KEY || ''}"`,
         '',
-        '# Telegram báo đơn mới (src/invoices.ts) + Zap Share báo đã chuyển khoản (src/zap.ts) — trống = không gửi',
+        '# Telegram báo đơn mới (src/invoices.ts) — trống = không gửi',
         `TG_BOT_TOKEN="${merged.TG_BOT_TOKEN || ''}"`,
         `TG_CHAT_ID="${merged.TG_CHAT_ID || ''}"`,
         '',

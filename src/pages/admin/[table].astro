@@ -63,11 +63,11 @@ const DENIED = { vi: 'Tài khoản này không có quyền vào khu quản trị
 		import 'iconify-icon';
 		import '@/packages/apex/web-popover.js';
 		import '@/packages/auth/svc-account.js';
-		import '@/packages/node/app/overlay-component.js';
+		import '@/services/node/overlay-component.js';
 		import '@/services/app.js';
 		import '@/packages/llm/svc-talk.js';
 		import { parseRoles, hasAccess } from '@/packages/auth/tool/roles.js';
-		import { lingo } from '@/packages/node/tool/lingo.js';
+		import { lingo } from '@/services/node/lingo.js';
 		import { PAGES, pageOf, pagePath } from '@/modules/admin/index.js';
 
 		type Overlay = { properties?: Record<string, unknown> } & Record<string, unknown>;

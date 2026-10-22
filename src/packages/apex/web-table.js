@@ -14,7 +14,7 @@
 
 import { LitElement, html, nothing, unsafeCSS } from 'lit';
 import { getPath } from '@/services/tools/util';
-import { resolveTints } from '@/packages/node/tool/tints.js';
+import { resolveTints } from '@/services/tools/tints.js';
 import css from './css/web-table.css?inline';
 import 'iconify-icon';
 

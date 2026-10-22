@@ -1,0 +1,15 @@
+:host {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+}
+
+:host([light]) {
+    display: none;
+}
+
+.overlay-container {
+    width: 100%;
+    height: 100%;
+}

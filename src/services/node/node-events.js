@@ -11,7 +11,7 @@
 // dispatch with `emit(e, name, detail)` from services/tools/util.js.
 
 // Relative (not @/) so node --test can load this file without Vite's alias.
-import { GROUP_PREFIX } from '../../packages/node/tool/group-layout.js'
+import { GROUP_PREFIX } from '@/services/node/group-layout.js'
 
 export const ANY = '*'
 

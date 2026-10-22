@@ -7,8 +7,8 @@
 //   require  = token quyền (tool/roles.js hasAccess: 'products' khớp 'products.*'); null = chỉ Super Admin.
 // Thêm 1 trang = thêm 1 dòng PAGES. Bảng chỉ có ở /admin (không có node trên canvas) khai trong ADMIN_TABLES, cùng định
 // dạng SYSTEM_TABLES. Quyền ghi vẫn do Worker chặn từng request — menu/guard ở đây chỉ để giao diện gọn.
-import { component } from '@/packages/node/preset/shared.js';
-import { SYSTEM_TABLES, tableNode, rolesNode, financeNode } from '@/packages/node/preset/system.js';
+import { component } from '@/services/shared/node.js';
+import { SYSTEM_TABLES, tableNode, rolesNode, financeNode } from '@/services/shared/system.js';
 import ordersSchema from '@/services/schemas/admin/orders.js';
 import inventorySchema from '@/services/schemas/admin/inventory.js';
 import staffSchema from '@/services/schemas/admin/staff.js';

@@ -11,7 +11,6 @@ pnpm build:embed # every src/packages/llm/svc-*.js → public/embed/<tag>.js —
 pnpm preview    # preview the production build
 pnpm run webs   # bundle Lit components (vite.webs.mjs)
 pnpm run mega   # bundle with aggressive minification + obfuscation (vite.mega.mjs)
-pnpm build:zap-share  # Chrome extension — every extension is zap-<name> (src/packages/zap-share/chrome, hook/ZAP-SHARE.rst) → dist-zap/share/dev; build:zap-share:store → dist-zap/share/store + store.zip
 ```
 
 No test runner or linter is configured.
