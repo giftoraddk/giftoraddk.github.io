@@ -23,7 +23,8 @@ import '@/packages/apex/web-select.js';
 import '@/packages/apex/web-datetime.js';
 import css from './css/svc-finance-report.css?inline';
 import { createService } from '@/services/core/crud.js';
-import { txtLingo, watchHtmlAttr } from '@/services/tools/util.js';
+import { txtLingo } from '@/services/tools/lingo.js';
+import { watchHtmlAttr } from '@/services/tools/util.js';
 import { serverOf } from './tool/server.js';
 import {
     buildRows, filterData, calculateDashboard, calculateGrowth, previousPeriod,

@@ -13,7 +13,7 @@ import { supabase } from '@/services/shared/supabase.js'
 import { auth } from './service/service.js'
 import { parseRoles } from './tool/roles.js'
 import styles from './css/svc-auth.css?inline'
-import { txtLingo } from '@/services/tools/util.js'
+import { txtLingo } from '@/services/tools/lingo.js'
 
 const ACCOUNT_API = import.meta.env.PUBLIC_AUTH_URL
 const PASSWORD_MIN = 6 // Supabase Auth's default minimum

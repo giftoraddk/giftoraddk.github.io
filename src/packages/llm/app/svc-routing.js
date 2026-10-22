@@ -11,6 +11,7 @@ import '@/packages/apex/web-button.js'
 import { editRouting, rationaleOf } from '../tool/tasks.js'
 import { cardTxt, chip, LEVEL_TONE } from './card-parts.js'
 import styles from '../css/svc-cards.css?inline'
+import { pickTxt } from '@/services/tools/lingo.js'
 
 const TXT = {
     vi: {
@@ -56,7 +57,7 @@ export class SvcRouting extends LitElement {
 
     render() {
         if (!this.routing?.routing || !this.routing?.plan) return html``
-        const t = { ...cardTxt(this.lang), ...(TXT[this.lang] ?? TXT.vi) }
+        const t = { ...cardTxt(this.lang), ...pickTxt(TXT, this.lang) }
         const { routing, plan } = this.routing
         const why = rationaleOf(this.rationale)
         const run = new Set([...plan.run, ...plan.unavailable])

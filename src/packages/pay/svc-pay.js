@@ -12,7 +12,8 @@ import '@/packages/pay/app/svc-pay-processing.js';
 import '@/packages/pay/app/svc-pay-delivery.js';
 import '@/packages/pay/app/svc-pay-reason.js';
 import css from './css/svc-pay.css?inline';
-import { txtLingo, emit, watchHtmlAttr, toastEmit } from '@/services/tools/util.js';
+import { pickTxt, txtLingo } from '@/services/tools/lingo.js';
+import { emit, watchHtmlAttr, toastEmit } from '@/services/tools/util.js';
 import { NOTES, MAJOR_STEPS, SUB_STEPS, STEP_LABELS, STEP_DESC, TXT_STD, CANCEL_TXT, PAYMENT_WINDOW_MS, DELIVERY_CONFIRM_WINDOW_MS } from './tool/constant.js';
 import {
     setup, startNewOrder, subscribe, get, make, placeOrder, setOrderItems, setFulfillment, promoteToInvoice, listenInvoice,
@@ -295,13 +296,13 @@ export class SvcPay extends LitElement {
 
     // ── Computed ─────────────────────────────────────────────────────────────
 
-    get _stepTxt() { return STEP_LABELS[this.lang] ?? STEP_LABELS.vi; }
-    get _desc() { return STEP_DESC[this.lang] ?? STEP_DESC.vi; }
+    get _stepTxt() { return pickTxt(STEP_LABELS, this.lang); }
+    get _desc() { return pickTxt(STEP_DESC, this.lang); }
     get _txt() { return txtLingo(this.txt, TXT_STD, this.lang); }
-    get _cancelTxt() { return CANCEL_TXT[this.lang] ?? CANCEL_TXT.vi; }
+    get _cancelTxt() { return pickTxt(CANCEL_TXT, this.lang); }
     // `notes` (prop) là override — Shop.astro/1 số nơi mount truyền sẵn danh sách riêng; không
     // truyền (null/[]) thì rơi về mặc định theo `lang` (xem NOTES ở tools/constant.js).
-    get _comNotes() { return (this.notes?.length ? this.notes : null) ?? NOTES[this.lang] ?? NOTES.vi; }
+    get _comNotes() { return (this.notes?.length ? this.notes : null) ?? pickTxt(NOTES, this.lang); }
 
     // Nguồn sự thật cho major/sub — ưu tiên invoice (Firestore, dùng chung buyer/seller) một khi
     // đã tồn tại; trước đó (chưa xác nhận thanh toán lần nào) chỉ có state local `_order`.
@@ -582,7 +583,7 @@ export class SvcPay extends LitElement {
         requestReturn(this.invoiceId, reason, handler); // [3] EXECUTE
     }
 
-    get _loginTxt() { return LOGIN_TXT[this.lang] ?? LOGIN_TXT.vi; }
+    get _loginTxt() { return pickTxt(LOGIN_TXT, this.lang); }
 
     // svc-auth (embedded) đăng nhập xong → gắn người mua rồi đi tiếp đúng lần "Đặt hàng" đang chờ
     _dhLoginSuccess(e) {

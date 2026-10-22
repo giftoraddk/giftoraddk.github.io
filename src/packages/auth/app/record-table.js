@@ -11,7 +11,8 @@
 // wt-query-change { filters, sort } (+ `searches` from the subclass's search box).
 
 import { LitElement, html } from 'lit';
-import { dataInit, txtLingo, emit, getPath } from '@/services/tools/util';
+import { txtLingo } from '@/services/tools/lingo.js';
+import { dataInit, emit, getPath } from '@/services/tools/util';
 import { cellText } from '@/packages/apex/web-table.js';
 import { DEFAULT_CHAIN } from '@/services/shared/tensor-api.js';
 import 'iconify-icon';

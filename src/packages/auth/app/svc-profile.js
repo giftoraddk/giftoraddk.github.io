@@ -24,7 +24,7 @@ import {
     listIdentities, linkProvider, touchDevice, signOutOtherDevices, currentDeviceId, fetchProfile,
 } from '../service/profile.js'
 import styles from '../css/svc-profile.css?inline'
-import { txtLingo } from '@/services/tools/util.js'
+import { pickTxt, txtLingo } from '@/services/tools/lingo.js'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -403,7 +403,7 @@ export class SvcProfile extends LitElement {
     /** One row per table: "posts · Biên tập · Duyệt · Của mình" (hook/AUTH_V2.rst) — bundle tables with the same
      *  access fold into their main table's row. The account status only shows when it keeps roles from applying. */
     _roles(u) {
-        const t = this._txt, a = ACCESS_TXT[this.lang] ?? ACCESS_TXT.vi
+        const t = this._txt, a = pickTxt(ACCESS_TXT, this.lang)
         const inactive = u.status && u.status !== 'active'
             ? html`<div class="pf-muted pf-role-note">${t.notActive} (${u.status})</div>` : nothing
         if (parseRoles(u).isAdmin) return html`

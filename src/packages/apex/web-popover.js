@@ -1,6 +1,7 @@
 import { LitElement, html, unsafeCSS } from 'lit';
 import styles from './css/web-popover.css?inline';
 import pastelStyles from './css/pastel.css?inline';
+import { txtLingo } from '@/services/tools/lingo.js';
 
 // Inlined from astro-micro's src/services/helper.js — that file isn't ported to astro-mega (same
 // gap already documented/fixed the same way in src/packages/adopted/svc-player.js).
@@ -135,8 +136,7 @@ export class WebPopover extends LitElement {
 	}
 
 	get _txt() {
-		const d = this.txt ?? TXT_STD;
-		return d[this.lang] ?? d.vi ?? {};
+		return txtLingo(this.txt, TXT_STD, this.lang);
 	}
 
 	_toggleFullscreen(e) {

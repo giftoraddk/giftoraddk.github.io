@@ -1,5 +1,3 @@
-import { site } from './site.ts';
-
 const LOCALE_MAP = { vi: 'vi-VN', en: 'en-US' };
 
 export const camelToCap = (txt) => {
@@ -23,16 +21,6 @@ export const cssInline = (style) => {
 		.filter(([_, value]) => value !== undefined && value !== null && value !== '')
 		.map(([key, value]) => `${camelToKebab(key)}: ${value}`)
 		.join('; ');
-};
-
-
-// Chọn 1 chuỗi từ cặp song ngữ { vi, en } cho những chỗ KHÔNG dual-render được bằng I18nText —
-// <title>/meta description/JSON-LD là plain string, không phải DOM content nên CSS ([lang] +
-// .i18n-vi/.i18n-en, xem I18nText.astro) không toggle được. English luôn là bản chuẩn (fallback
-// cuối cùng) — xem site.defaultLang (services/tools/site.ts).
-export const pickLang = (pair, lang = site.defaultLang) => {
-	if (!pair || typeof pair !== 'object') return pair ?? '';
-	return pair[lang] ?? pair.en ?? pair.vi ?? '';
 };
 
 // ULID: 48-bit timestamp + 80-bit randomness, base32-encoded, 26 chars.
@@ -230,16 +218,6 @@ export const watchHtmlAttr = (name, onChange) => {
     const observer = new MutationObserver(() => onChange(document.documentElement.getAttribute(name)));
     observer.observe(document.documentElement, { attributes: true, attributeFilter: [name] });
     return () => observer.disconnect();
-};
-
-/**
- * Resolve a component's i18n text object: `txt` prop override (nếu có) -> lang hiện tại ->
- * fallback 'vi' -> object rỗng. Dùng cho pattern `get _txt()`/`get _t()` lặp lại ở hầu hết
- * svc-*.js (mỗi component tự có `TXT_STD` module-level, chỉ truyền vào đây).
- */
-export const txtLingo = (txt, defaultTxt, lang) => {
-    const d = txt ?? defaultTxt;
-    return d[lang] ?? d.vi ?? {};
 };
 
 /** Dispatch a bubbling, composed CustomEvent (vượt Shadow DOM) từ 1 element — hoặc từ `currentTarget`

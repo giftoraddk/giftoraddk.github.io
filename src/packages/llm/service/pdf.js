@@ -9,6 +9,7 @@
 // mục lục. Ảnh trong `content` được nhúng nếu tải được (CORS), không thì bỏ ảnh đó — phần chữ vẫn xuất đủ.
 import { site } from '@/services/tools/site'
 import { jobSections, textBlocks, pdfName, pdfText } from '../tool/report.js'
+import { pickTxt } from '@/services/tools/lingo.js'
 
 const TXT = {
     vi: {
@@ -22,7 +23,7 @@ const TXT = {
         approved: 'Approved', pending: 'To approve',
     },
 }
-const txt = (lang) => TXT[lang] ?? TXT.vi
+const txt = (lang) => pickTxt(TXT, lang)
 
 // Tông vàng theo logo (trăng + sao vàng) trên nền giấy trắng.
 const C = { ink: '#1f2937', body: '#374151', muted: '#6b7280', gold: '#b7791f', goldSoft: '#fbf4e2', line: '#e7e1d3' }

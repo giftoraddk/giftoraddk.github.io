@@ -5,6 +5,7 @@
 // chỉ html``, không state; CSS ở css/svc-cards.css (cả 3 component cùng nạp).
 import { html } from 'lit'
 import { styleMap } from 'lit/directives/style-map.js'
+import { pickTxt } from '@/services/tools/lingo.js'
 
 export const CARD_TXT = {
     vi: {
@@ -42,7 +43,7 @@ export const CARD_TXT = {
         proposed: (n) => `${n} departments proposed`, subSteps: (done, total) => `${done}/${total} sub-steps`,
     },
 }
-export const cardTxt = (lang) => CARD_TXT[lang] ?? CARD_TXT.vi
+export const cardTxt = (lang) => pickTxt(CARD_TXT, lang)
 
 export const LEVEL_TONE = { lead: 'primary', REQUIRED: 'warning', RELEVANT: 'info', CONDITIONAL: 'neutral', NOT_MATERIAL: 'muted' }
 export const STATE_TONE = {

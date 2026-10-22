@@ -34,7 +34,7 @@ Components:
   Mobile first; panel của node `roles` (group System) (cũng là trang /admin/roles) hoặc `fab` = nút nổi + màn full.
 - `svc-resources` — bảng quản trị CRUD cho 1 `dataTable` (web-table): thêm/sửa/xoá mềm, sắp xếp, CSV
   import/export, mở `svc-diffs`/`svc-marketing`/`svc-production`. Schema cột ở
-  `src/services/schemas/admin/*.js`.
+  `src/services/presets/admin/*.js`.
 - `app/svc-diffs` — lịch sử chỉnh sửa (bảng `revisions` trên D1 của auth): `svc-resources` gọi
   `capture()` sau mỗi lần tạo / sửa / xoá / khôi phục thành công. So với bản trước hoặc bản hiện tại,
   khôi phục phiên bản (`manage_versions`), mobile first (danh sách → chi tiết, từ 760px chia 2 cột).

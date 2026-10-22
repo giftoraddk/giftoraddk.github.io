@@ -53,6 +53,9 @@
 .aid-msg.mine .aid-bubble { background: color-mix(in oklab, var(--color-primary) 25%, transparent); }
 .aid-content { margin: 0; font-size: .875rem; white-space: pre-wrap; word-break: break-word; }
 .aid-sources { margin: .3rem 0 0; font-size: .68rem; opacity: .6; }
+/* Link trong câu trả lời (svc-aide.js _rfContent): chữ đậm, gạch dưới, màu info — mở tab mới */
+.aid-link { color: var(--color-info); text-decoration: underline; }
+.aid-link:hover { font-weight: 700; }
 .aid-typing { letter-spacing: .02em; animation: aid-typing-pulse 1.2s ease-in-out infinite; }
 @keyframes aid-typing-pulse { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
 

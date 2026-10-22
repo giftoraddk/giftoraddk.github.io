@@ -8,7 +8,8 @@ import '@/packages/apex/web-button.js';
 import css from '../css/svc-pay-valider.css?inline';
 import { PAY_METHODS } from '../tool/constant.js';
 import { generateVietQr } from '../service/vietqr.js';
-import { fmtPrice, parseJson, txtLingo, emit } from '@/services/tools/util.js';
+import { txtLingo } from '@/services/tools/lingo.js';
+import { fmtPrice, parseJson, emit } from '@/services/tools/util.js';
 
 const TXT_STD = {
     vi: { cod: 'Thanh toán khi nhận hàng', qrLoading: 'Đang tạo mã QR...', amountLabel: 'Số tiền:', paid: '✓ Xác nhận đã thanh toán', back: '← Quay lại', freeOrder: 'Đơn hàng đã được giảm giá hết — không cần thanh toán thêm' },

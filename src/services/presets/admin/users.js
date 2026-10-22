@@ -1,4 +1,5 @@
 import { accessRows } from '@/packages/auth/tool/roles.js';
+import { pickTxt } from '@/services/tools/lingo.js';
 
 // `password` field removed — user identity now lives in Supabase Auth (see
 // hook/cloudflare-worker.md, svc-auth.js), which owns credential storage itself. There's no
@@ -36,7 +37,7 @@ function accessLabel({ table, levels, scope, custom }, t) {
 }
 
 export default (lang = 'vi') => {
-	const t = TXT[lang] ?? TXT.vi;
+	const t = pickTxt(TXT, lang);
 	return [
 		{
 			label: t.status,

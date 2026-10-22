@@ -15,7 +15,7 @@ import { PURCHASE, findPlan, trialDaysOf } from './tool/plans.js'
 import { hasActivePlan } from './tool/billing.js'
 import { formatMoney, localize, monthlyAmount, yearlySavings } from './tool/format.js'
 import styles from './css/svc-purchase-plans.css?inline'
-import { txtLingo } from '@/services/tools/util.js'
+import { txtLingo } from '@/services/tools/lingo.js'
 
 const TXT_STD = {
     vi: {

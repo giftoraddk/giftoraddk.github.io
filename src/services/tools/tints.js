@@ -1,3 +1,7 @@
+// tints.js — cặp màu theme [a, b] dùng chung mọi nơi: svc-node (tile/group/panel), svc-ask, svc-radar, web-table, layout
+// trang (tools/page.js). Chỉ nhận tên màu theme (TINT_COLORS) — chuỗi lạ rơi về cặp mặc định, nên giá trị từ config/
+// dữ liệu không chèn được CSS tuỳ ý vào style.
+
 // Theme colors a `tints` pair may use — anything else falls back to TINT_DEFAULT slot by slot.
 export const TINT_COLORS = ['primary', 'secondary', 'accent', 'info', 'success', 'warning', 'error'];
 export const TINT_DEFAULT = ['primary', 'secondary'];
@@ -19,9 +23,11 @@ export function groupTintsByType(nodes) {
     return map;
 }
 
-/** Inline custom props read by css/svc-node-style.css — '' when unset, so the inherited pair applies. */
-export function tintVars(tints) {
+/** Inline custom props `<prefix>-a` / `<prefix>-b` — '' when unset, so the inherited pair applies.
+ *  Default prefix = --color-tint (css/svc-node-style.css, apex/css/pastel.css); web-table: --wt,
+ *  layout: --layout-tint. */
+export function tintVars(tints, prefix = '--color-tint') {
     if (tints == null) return '';
     const [a, b] = resolveTints(tints);
-    return `--color-tint-a:var(--color-${a}); --color-tint-b:var(--color-${b});`;
+    return `${prefix}-a:var(--color-${a}); ${prefix}-b:var(--color-${b});`;
 }

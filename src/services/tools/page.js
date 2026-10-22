@@ -1,6 +1,6 @@
 // page.js — logic dùng chung của các layout trang (src/layouts/Core.astro, CoreShop.astro): bộ màu tints,
 // class bố cục theo kiểu menu, CSS biến màu theo theme từ `variant`. Hàm thuần, chạy lúc build/SSR (frontmatter).
-import { resolveTints } from '@/services/tools/tints.js';
+import { resolveTints, tintVars } from './tints.js';
 
 /**
  * tints: cặp màu theme [a, b] cho cả layout (vd ['info', 'accent'], cùng định dạng `tints` của svc-node) —
@@ -14,9 +14,7 @@ import { resolveTints } from '@/services/tools/tints.js';
  */
 export function layoutTints(tints, bg) {
 	const tintPair = tints ? resolveTints(tints) : null;
-	const tintStyle = tintPair
-		? `--layout-tint-a: var(--color-${tintPair[0]}); --layout-tint-b: var(--color-${tintPair[1]});`
-		: undefined;
+	const tintStyle = tintPair ? tintVars(tintPair, '--layout-tint') : undefined;
 	return { tintPair, tintStyle, showUnderlay: bg !== null && !tintPair };
 }
 

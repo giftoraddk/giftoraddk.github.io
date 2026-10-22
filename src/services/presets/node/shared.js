@@ -1,7 +1,7 @@
-// src/services/shared/node.js
+// src/services/presets/node/shared.js
 //
 // What every preset builds its nodes with. A node is plain config (service/models.js SvcNode); these only save typing.
-// Any text a node shows may be { vi, en } — preset/mount.js says it in the page's language (tool/lingo.js).
+// Any text a node shows may be { vi, en } — preset/mount.js says it in the page's language (services/tools/lingo.js).
 
 // Who opens a panel — a node's `roles` (tool/access.js): signed-out visitors and plain 'user' accounts get a notice in
 // the panel instead. 'admin' = Super Admin; a table name = any `{table}.*` role (svc-roles.js grants them); '*' = anyone
@@ -11,7 +11,7 @@ export const ADMIN = ['admin'];
 
 /**
  * A component panel. `load` imports the module that registers `tagName` — on the panel's first open, not with the
- * page (overlay-component.js). The page adds `theme` / `lang` to `properties` (preset/index.js).
+ * page (adopted/svc-overlay.js). The page adds `theme` / `lang` to `properties` (preset/index.js).
  */
 export const component = (tagName, load, properties = {}, extra = {}) => ({ type: 'component', tagName, load, properties, ...extra });
 

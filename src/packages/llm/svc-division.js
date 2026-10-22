@@ -29,7 +29,7 @@ import { LitElement, html, nothing, unsafeCSS } from 'lit'
 import { keyed } from 'lit/directives/keyed.js'
 import 'iconify-icon'
 import { createService } from '@/services/core/crud.js'
-import { txtLingo } from '@/services/tools/util.js'
+import { pickTxt, txtLingo } from '@/services/tools/lingo.js'
 import { auth } from '@/packages/auth/service/service.js'
 import { parseRoles, hasAccess } from '@/packages/auth/tool/roles.js'
 import { LLM_DB } from './tool/server.js'
@@ -491,7 +491,7 @@ export class SvcDivision extends LitElement {
     get _steps() { return this._outline?.steps ?? [] }
     get _personaNow() { return this._override?.persona ?? null }
 
-    _label(obj, fallback = '') { return obj?.[this.lang] ?? obj?.vi ?? obj?.en ?? fallback }
+    _label(obj, fallback = '') { return pickTxt(obj, this.lang) ?? fallback }
 
     get _filteredKnows() {
         const q = this._query.trim().toLowerCase()

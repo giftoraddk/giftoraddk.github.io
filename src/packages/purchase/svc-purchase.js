@@ -16,7 +16,7 @@ import { clearPendingCheckout, savePendingCheckout } from './tool/pending-checko
 import { hasActivePlan } from './tool/billing.js'
 import { formatDate, formatMoney, localize } from './tool/format.js'
 import styles from './css/svc-purchase.css?inline'
-import { txtLingo } from '@/services/tools/util.js'
+import { txtLingo } from '@/services/tools/lingo.js'
 
 const TXT_STD = {
     vi: {

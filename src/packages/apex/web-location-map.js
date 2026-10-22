@@ -1,6 +1,7 @@
 import { LitElement, html, unsafeCSS } from 'lit'
 import '@/packages/apex/web-text.js'
 import css from './css/web-location-map.css?inline'
+import { txtLingo } from '@/services/tools/lingo.js'
 
 // ── Leaflet loader ────────────────────────────────────────────────────────────
 const LEAFLET_V   = '1.9.4'
@@ -456,7 +457,7 @@ export class WebLocationMap extends LitElement {
         return this._suggested || '—'
     }
 
-    get _txt() { const d = this.txt ?? TXT_STD; return d[this.lang] ?? d.vi ?? {} }
+    get _txt() { return txtLingo(this.txt, TXT_STD, this.lang) }
 
     // ── RENDER ────────────────────────────────────────────────────────────────
 

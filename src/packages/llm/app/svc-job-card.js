@@ -17,6 +17,7 @@ import { hideCodes } from '../tool/codes.js'
 import { jobProgress, rowState, routingOf } from '../tool/tasks.js'
 import { cardTxt, chip, segBar, LEVEL_TONE, STATE_TONE } from './card-parts.js'
 import styles from '../css/svc-cards.css?inline'
+import { pickTxt } from '@/services/tools/lingo.js'
 
 const TXT = {
     vi: {
@@ -121,14 +122,14 @@ export class SvcJobCard extends LitElement {
 
     render() {
         if (!this.job || !this.outline) return html``
-        const t = { ...cardTxt(this.lang), ...(TXT[this.lang] ?? TXT.vi) }
+        const t = { ...cardTxt(this.lang), ...pickTxt(TXT, this.lang) }
         const fn = this._fn
         const name = this.face?.title || this.outline.title?.[this.lang] || this.outline.title?.vi || fn
         const state = rowState(this.view?.fns?.find((s) => s.jobId === this.job.id), this.job)
         const r = routingOf(this.view)
         const level = r && fn in r.routing.levels ? (fn === r.routing.lead ? 'lead' : r.routing.levels[fn]) : null
         const progress = jobProgress(this.outline, this.job)
-        const steps = (this.outline.steps ?? []).map((s) => ({ state: this._stepState(s), label: s[this.lang] ?? s.vi }))
+        const steps = (this.outline.steps ?? []).map((s) => ({ state: this._stepState(s), label: pickTxt(s, this.lang) }))
         return html`
             <div class="cd-card is-job">
                 <div class="cd-head">

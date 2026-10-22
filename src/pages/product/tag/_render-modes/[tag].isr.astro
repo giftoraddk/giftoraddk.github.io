@@ -5,7 +5,9 @@ import Core from '@/layouts/Core.astro';
 import { KINDS } from '@/components/Catalog/kinds';
 import Feed from '@/components/Catalog/Feed.astro';
 import { fetchCollection } from '@/services/core/fetcher.server.js';
-import { tagSlugMap, pickLang } from '@/services/tools/util';
+import { pickLang } from '@/services/tools/lingo.js';
+import { tagSlugMap } from '@/services/tools/util';
+import { site } from '@/services/tools/site';
 import { menuItems, policies, socials } from '@/modules/gift/shop.js'; // footer chung giftoraddk.com
 import { menu as productMenu, tints, productSeo } from '@/modules/product/index.js';
 import I18nText from '@/components/I18nText.astro';

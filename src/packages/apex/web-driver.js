@@ -30,6 +30,7 @@ import 'iconify-icon'
 import '@/packages/apex/web-button.js'
 import styles from './css/web-driver.css?inline'
 import pastelStyles from './css/pastel.css?inline'
+import { pickTxt } from '@/services/tools/lingo.js'
 
 // Phải khớp đúng thời lượng transition khai báo trong web-driver.css (.wdr-stage/.wdr-popover)
 const FADE_MS = 200
@@ -75,7 +76,7 @@ export class WebDriver extends LitElement {
         _visible:      { state: true }, // fade+zoom cả spotlight lẫn popover như 1 khối
     }
 
-    get _t() { return TXT[this.lang] ?? TXT.vi }
+    get _t() { return pickTxt(TXT, this.lang) }
 
     constructor() {
         super()

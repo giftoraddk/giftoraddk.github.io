@@ -1,6 +1,7 @@
 import { LitElement, html, unsafeCSS } from 'lit'
 import styles from './css/web-select.css?inline'
 import pastelStyles from './css/pastel.css?inline'
+import { txtLingo } from '@/services/tools/lingo.js'
 
 const TXT_STD = {
   vi: { ph: 'Chọn...', searchPh: 'Tìm kiếm...', noResults: 'Không có kết quả' },
@@ -266,7 +267,7 @@ export class WebSelect extends LitElement {
     }
   }
 
-  get _txt() { const d = this.txt ?? TXT_STD; return d[this.lang] ?? d.vi ?? {} }
+  get _txt() { return txtLingo(this.txt, TXT_STD, this.lang) }
 
   render() {
     const filteredOptions = this.options.filter((opt) => {

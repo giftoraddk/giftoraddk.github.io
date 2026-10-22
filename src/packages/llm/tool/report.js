@@ -4,8 +4,9 @@
 // (outline `hidden`) bỏ đi, mã máy [CODE] ẩn (tool/codes.js), step ảnh bỏ qua (ảnh đã nằm đầu `content`). Không biết
 // gì về pdfmake — service/pdf.js dựng tài liệu từ đây.
 import { hideCodes } from './codes.js'
+import { pickTxt } from '@/services/tools/lingo.js'
 
-const label = (o, lang) => o?.[lang] ?? o?.vi ?? ''
+const label = (o, lang) => pickTxt(o, lang) ?? ''
 
 // Giá trị 1 field như sếp đọc: `content` giữ HTML, `tags` nối bằng dấu phẩy, còn lại là chữ thuần.
 function valueOf(key, raw) {

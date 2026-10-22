@@ -14,7 +14,7 @@ import 'iconify-icon';
 import './web-calendar.js';
 import { parseDateValue } from './web-calendar.js';
 import styles from './css/web-datetime.css?inline';
-import { txtLingo } from '@/services/tools/util.js';
+import { txtLingo } from '@/services/tools/lingo.js';
 import pastelStyles from './css/pastel.css?inline';
 
 const TXT_STD = {

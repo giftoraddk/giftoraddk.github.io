@@ -2,6 +2,7 @@ import { LitElement, html, unsafeCSS } from 'lit'
 import css from './css/web-photor.css?inline'
 import './web-cropper.js'
 import pastelStyles from './css/pastel.css?inline'
+import { txtLingo } from '@/services/tools/lingo.js'
 
 const TXT_STD = {
   vi: { add: 'Thêm ảnh', cropTitle: 'Chỉnh ảnh', cancel: 'Hủy', done: 'Xong' },
@@ -132,7 +133,7 @@ export class WebPhotor extends LitElement {
     this._dispatch()
   }
 
-  get _txt() { const d = this.txt ?? TXT_STD; return d[this.lang] ?? d.vi ?? {} }
+  get _txt() { return txtLingo(this.txt, TXT_STD, this.lang) }
 
   // ── Render ──────────────────────────────────────────────────────────────────
 

@@ -5,7 +5,7 @@
 // Điều hướng nằm ở `menu` của modules/post|product/index.js truyền vào Core.astro, không ở đây.
 import Icon from './Icon.astro';
 import I18nText from '@/components/I18nText.astro';
-import { pickLang } from '@/services/tools/util';
+import { pickLang } from '@/services/tools/lingo.js';
 
 const label = (en: string, vi: string) => pickLang({ en, vi });
 ---

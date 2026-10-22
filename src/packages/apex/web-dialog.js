@@ -9,6 +9,7 @@ import styles from './css/web-dialog.css?inline'
 import { a11yTxt } from './tool/a11y.js'
 import './web-button.js'
 import pastelStyles from './css/pastel.css?inline'
+import { txtLingo } from '@/services/tools/lingo.js'
 
 const TXT_STD = {
   vi: { cancel: 'Huỷ', confirm: 'Xác nhận' },
@@ -102,8 +103,7 @@ export class WebDialog extends LitElement {
   }
 
   get _txt() {
-    const d = this.txt ?? TXT_STD
-    return d[this.lang] ?? d.vi ?? {}
+    return txtLingo(this.txt, TXT_STD, this.lang)
   }
 
   close() {

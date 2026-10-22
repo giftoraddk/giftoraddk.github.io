@@ -19,7 +19,8 @@
 import { LitElement, html, unsafeCSS } from 'lit'
 import css from './css/svc-player-embed.css?inline'
 import './svc-player.js'
-import { txtLingo, emit } from '@/services/tools/util.js'
+import { txtLingo } from '@/services/tools/lingo.js'
+import { emit } from '@/services/tools/util.js'
 import pastelStyles from '@/packages/apex/css/pastel.css?inline'
 
 /**

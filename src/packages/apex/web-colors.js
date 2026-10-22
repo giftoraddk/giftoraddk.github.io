@@ -1,5 +1,6 @@
 import { LitElement, html, unsafeCSS } from 'lit'
 import css from './css/web-colors.css?inline'
+import { txtLingo } from '@/services/tools/lingo.js'
 
 const COLORS_STD = ['#2ebd85', '#f5465c', '#a855f7', '#00c7d4', '#fbbf24']
 const HEX_RE = /^#[0-9a-fA-F]{6}$/
@@ -130,7 +131,7 @@ export class WebColors extends LitElement {
         `
     }
 
-    get _txt() { const d = this.txt ?? TXT_STD; return d[this.lang] ?? d.vi ?? {} }
+    get _txt() { return txtLingo(this.txt, TXT_STD, this.lang) }
 
     render() {
         if (this.single) {

@@ -28,4 +28,4 @@ Components:
 Trang: `/system/pricing` — trang mua gói duy nhất (AI Operations): bảng giá + thanh toán + "Gói của bạn" (tự sang
 `complete` khi PayPal chuyển về) + `<svc-account>` nổi; `?plan=<id>[&interval=]` mở sẵn thanh toán — nút "Chọn …" ở
 trang chủ `/` dẫn tới đây. Demo trong canvas node:
-`src/pages/system/app.astro` (node Plans → group Purchase System: Checkout + Quản lý gói — `src/packages/node/preset/purchase.js`).
+`src/pages/system/app.astro` (node Plans → group Purchase System: Checkout + Quản lý gói — `src/services/presets/node/purchase.js`).

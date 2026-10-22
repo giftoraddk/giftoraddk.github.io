@@ -8,7 +8,7 @@
 // Mobile first, Shadow DOM — mọi breakpoint là container query trên chính component (nó nằm trong panel svc-node
 // hẹp lẫn màn full của /admin). Chỉ Super Admin: auth (profiles.ts) chỉ cho admin ghi `roles`.
 //
-//   <svc-roles lang="vi">                           panel — node `roles` của group System (node/preset/system.js), /admin/roles
+//   <svc-roles lang="vi">                           panel — node `roles` của group System (services/presets/node/system.js), /admin/roles
 //   <svc-roles fab tables='["posts","products"]'>   nút nổi + màn full
 //     tables    — JSON array hoặc chuỗi phân tách dấu phẩy (mặc định ROLE_TABLES)
 //     dataTable — bảng user (mặc định 'profiles'), server mặc định 'DB_ACC' (auth)
@@ -19,7 +19,7 @@ import css from './css/svc-roles.css?inline';
 import { auth } from './service/service.js';
 import { parseRoles, tableAccess, withTableAccess, LEVEL_ORDER, SCOPES, ROLE_TABLES, TABLE_BUNDLES, ACCESS_TXT } from './tool/roles.js';
 import { createService } from '@/services/core/crud.js';
-import { txtLingo } from '@/services/tools/util.js';
+import { txtLingo } from '@/services/tools/lingo.js';
 
 const TXT_STD = {
     vi: {

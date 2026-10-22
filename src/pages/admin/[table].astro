@@ -7,7 +7,7 @@ import { plainText } from '@/services/tools/util';
 // Trang DUY NHẤT của khu quản trị: /admin/<slug>/ cho mọi trang trong modules/admin PAGES.
 // Khung kiểu /radar/ (layouts/CoreMobile.astro: thanh menu đáy trên mobile) + menu trái trên desktop (`aside`). Nội dung
 // = panel của node tương ứng trong group "Hệ thống AI" (svc-records / svc-roles / svc-finance-report…), mount bằng
-// <svc-overlay-component> của svc-node ở script bên dưới — cấu hình panel nằm trong JS (schema là hàm) nên không đi
+// <svc-overlay> của svc-node ở script bên dưới — cấu hình panel nằm trong JS (schema là hàm) nên không đi
 // qua HTML. Đăng nhập ngay tại trang bằng <svc-account> (như node `account` trên canvas): panel chỉ mount khi đã đăng
 // nhập và có quyền trang này. /admin/ → /admin/users/ (redirects trong astro.config.mjs).
 export function getStaticPaths() {
@@ -63,11 +63,11 @@ const DENIED = { vi: 'Tài khoản này không có quyền vào khu quản trị
 		import 'iconify-icon';
 		import '@/packages/apex/web-popover.js';
 		import '@/packages/auth/svc-account.js';
-		import '@/services/node/overlay-component.js';
+		import '@/packages/adopted/svc-overlay.js';
 		import '@/services/app.js';
 		import '@/packages/llm/svc-talk.js';
+		import { lingo } from '@/services/tools/lingo.js';
 		import { parseRoles, hasAccess } from '@/packages/auth/tool/roles.js';
-		import { lingo } from '@/services/node/lingo.js';
 		import { PAGES, pageOf, pagePath } from '@/modules/admin/index.js';
 
 		type Overlay = { properties?: Record<string, unknown> } & Record<string, unknown>;
@@ -127,14 +127,14 @@ const DENIED = { vi: 'Tài khoản này không có quyền vào khu quản trị
 			const mount = () => {
 				if (panels.length) return;
 				panels = page.panels.map((overlay: Overlay, i: number) => {
-					const host = document.createElement('svc-overlay-component') as Host;
+					const host = document.createElement('svc-overlay') as Host;
 					slots[i].replaceChildren(host);
 					host.overlay = said(overlay);
 					host.activate();
 					return { host, overlay };
 				});
 			};
-			// Đăng xuất / đổi sang tài khoản không có quyền → gỡ panel (overlay-component destroy) để không còn dữ liệu cũ.
+			// Đăng xuất / đổi sang tài khoản không có quyền → gỡ panel (svc-overlay destroy) để không còn dữ liệu cũ.
 			const unmount = () => {
 				slots.forEach((s) => s.replaceChildren());
 				panels = [];

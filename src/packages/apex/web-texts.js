@@ -1,6 +1,7 @@
 import { LitElement, html, unsafeCSS } from 'lit'
 import css from './css/web-texts.css?inline'
 import './web-text.js'
+import { txtLingo } from '@/services/tools/lingo.js'
 
 const TXT_STD = {
   vi: { add: 'Thêm', delete: 'Xóa' },
@@ -119,7 +120,7 @@ export class WebTexts extends LitElement {
         ></web-text>`
     }
 
-    get _txt() { const d = this.txt ?? TXT_STD; return d[this.lang] ?? d.vi ?? {} }
+    get _txt() { return txtLingo(this.txt, TXT_STD, this.lang) }
 
     render() {
         // segments mode: fixed tilde-separated inputs, no +/× buttons

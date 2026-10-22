@@ -1,8 +1,13 @@
+// src/packages/adopted/svc-overlay.js
+//
+// <svc-overlay overlay=… node=…> — mount 1 `overlay` dạng component ({ tagName, properties, attributes, load,
+// light?, ready? }) với vòng đời activate/suspend/destroy (tool/overlay-lifecycle-mixin.js). Dùng chung: panel của
+// <svc-popover> (packages/node) và trang /admin (pages/admin/[table].astro) mount cùng 1 cấu hình panel.
 import { LitElement, html, nothing, unsafeCSS } from 'lit';
 import { createRef, ref } from 'lit/directives/ref.js';
-import styles from './overlay-component.css?inline';
-import { OverlayLifecycleMixin } from './overlay-lifecycle-mixin.js';
-import { isLightOverlay, overlaySlotName } from './overlay-slot.js';
+import styles from './css/svc-overlay.css?inline';
+import { OverlayLifecycleMixin } from './tool/overlay-lifecycle-mixin.js';
+import { isLightOverlay, overlaySlotName } from './tool/overlay-slot.js';
 
 // Never handlers, markup or the prototype chain — `properties` of a saved node come from the database.
 const UNSAFE_KEYS = new Set(['innerHTML', 'outerHTML', 'innerText', 'outerText', 'textContent', 'srcdoc', '__proto__', 'constructor', 'prototype']);
@@ -13,12 +18,12 @@ function assignProperties(el, properties) {
         try {
             el[key] = value;
         } catch (err) {
-            console.warn(`[node/overlay-component] <${el.localName}>.${key} not set:`, err.message); // a getter-only one
+            console.warn(`[adopted/svc-overlay] <${el.localName}>.${key} not set:`, err.message); // a getter-only one
         }
     }
 }
 
-export class SvcOverlayComponent extends OverlayLifecycleMixin(LitElement) {
+export class SvcOverlay extends OverlayLifecycleMixin(LitElement) {
     static shadowRootOptions = { mode: 'open' };
     static styles = [unsafeCSS(styles)];
 
@@ -45,7 +50,7 @@ export class SvcOverlayComponent extends OverlayLifecycleMixin(LitElement) {
         const { tagName, properties, attributes, load } = this.overlay;
         // A custom element only (a name with a dash) — never <script>, <iframe>, <object>…
         if (typeof tagName !== 'string' || !/^[a-z][a-z0-9]*(-[a-z0-9]+)+$/.test(tagName)) {
-            console.error(`[node/overlay-component] "${tagName}" is not a custom element name`);
+            console.error(`[adopted/svc-overlay] "${tagName}" is not a custom element name`);
             return null;
         }
         if (load && !customElements.get(tagName)) this._define(tagName, load);
@@ -62,7 +67,7 @@ export class SvcOverlayComponent extends OverlayLifecycleMixin(LitElement) {
     // just its canvas. The element made meanwhile upgrades once it lands (Lit keeps the properties set before).
     _define(tagName, load) {
         Promise.resolve().then(load).catch((err) => {
-            console.error(`[node/overlay-component] could not load <${tagName}>:`, err);
+            console.error(`[adopted/svc-overlay] could not load <${tagName}>:`, err);
             this.markReady(); // never defined → no ready signal of its own; don't leave the panel loading forever
         });
     }
@@ -123,8 +128,8 @@ export class SvcOverlayComponent extends OverlayLifecycleMixin(LitElement) {
     }
 }
 
-if (!customElements.get('svc-overlay-component')) {
-    customElements.define('svc-overlay-component', SvcOverlayComponent);
+if (!customElements.get('svc-overlay')) {
+    customElements.define('svc-overlay', SvcOverlay);
 }
 
-export default SvcOverlayComponent;
+export default SvcOverlay;

@@ -30,7 +30,8 @@ import { IMAGE_SUBSTEP_LABELS, buildImagePrompt } from '../service/image.js'
 import { hideCodes } from '../tool/codes.js'
 import { textBlocks } from '../tool/report.js'
 import { COPYABLE, copyText } from '../tool/copy.js'
-import { txtLingo, toastEmit } from '@/services/tools/util.js'
+import { pickTxt, txtLingo } from '@/services/tools/lingo.js'
+import { toastEmit } from '@/services/tools/util.js'
 import styles from '../css/svc-progress.css?inline'
 
 const TXT_STD = {
@@ -398,7 +399,7 @@ export class SvcProgress extends LitElement {
     render() {
         if (!this.outline || !this.doc) return html``
         const steps = this.outline.steps
-        const items = steps.map(s => ({ id: String(s.id), label: s[this.lang] ?? s.vi, status: this._webStatus(this._stepState(s)) }))
+        const items = steps.map(s => ({ id: String(s.id), label: pickTxt(s, this.lang), status: this._webStatus(this._stepState(s)) }))
         return html`
             ${this.doc.error && !this.doc.approved ? html`
                 <div class="prg-error">
@@ -452,7 +453,7 @@ export class SvcProgress extends LitElement {
     _rfSubSteps(step) {
         const subs = step.type === 'image' ? IMAGE_SUBSTEP_LABELS : step.calls
         if (!subs?.length) return ''
-        const items = subs.map(s => ({ id: s.key, label: s[this.lang] ?? s.vi, status: this._subStatus(step, s.key) }))
+        const items = subs.map(s => ({ id: s.key, label: pickTxt(s, this.lang), status: this._subStatus(step, s.key) }))
         if (items.every(i => i.status === 'pending')) return ''
         const active = items.find(i => i.status === 'active' || i.status === 'open')?.id
             ?? [...items].reverse().find(i => i.status === 'done')?.id
@@ -494,7 +495,7 @@ export class SvcProgress extends LitElement {
             <div class="prg-sub">
                 ${shown.map(f => this.doc.fields[f.key] ? html`
                     <div class="prg-item">
-                        <div class="prg-label">${f[this.lang] ?? f.vi}</div>
+                        <div class="prg-label">${pickTxt(f, this.lang)}</div>
                         ${this._rfFieldValue(f)}
                     </div>
                 ` : '')}
@@ -530,7 +531,7 @@ export class SvcProgress extends LitElement {
     // CHỈ field OUTPUT (trong outline.output.fields — title/description/content ở
     // marketing) sửa được, khi `editable` true. `content` giữ HTML đầy đủ + <svc-editor> (đủ
     // rich-text); `tags` dùng <web-texts> (multi-value, tách/nối bằng '|' — KHỚP schema thật của
-    // posts/products.tags, xem services/schemas/admin/*.js's `multi:true`); field output khác
+    // posts/products.tags, xem services/presets/admin/*.js's `multi:true`); field output khác
     // (title/description...) dùng <web-textarea>. Field trung gian (không nằm trong output.fields)
     // LUÔN chỉ hiển thị text, dù `editable` true.
     // Giá trị 1 field + nút Sao chép (title / description / content / tags) khi có nội dung.

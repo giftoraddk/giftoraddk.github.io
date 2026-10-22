@@ -6,7 +6,8 @@
 // ':' — tên channel `state:<section>` của bus chỉ cho đúng 1 dấu ':').
 import { createService } from '@/services/core/crud.js'
 import { get as cdGet, patch as cdPatch } from '@/services/core/conductor.js'
-import { toastEmit, pickLang } from '@/services/tools/util.js'
+import { pickLang } from '@/services/tools/lingo.js'
+import { toastEmit } from '@/services/tools/util.js'
 import { fnApiFor } from './fn-api.js'
 import { onOwnerChange } from './hub.js'
 import { JobRunner } from './runner.js'

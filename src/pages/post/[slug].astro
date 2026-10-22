@@ -3,7 +3,8 @@ import Core from '@/layouts/Core.astro';
 import { KINDS } from '@/components/Catalog/kinds';
 import PostDetailBody from '@/components/Catalog/Detail.astro';
 import { fetchCollection } from '@/services/core/fetcher.server.js';
-import { postSlug, pickLang } from '@/services/tools/util';
+import { pickLang } from '@/services/tools/lingo.js';
+import { postSlug } from '@/services/tools/util';
 import { menuItems, policies, socials } from '@/modules/gift/shop.js'; // footer chung giftoraddk.com
 import { menu as postMenu, tints } from '@/modules/post/index.js';
 

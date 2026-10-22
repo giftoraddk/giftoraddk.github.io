@@ -7,7 +7,7 @@ import '@/packages/apex/web-expansion.js';
 import '@/packages/apex/web-location.js';
 import css from '../css/svc-pay-customer.css?inline';
 import { setupCustomer, initCustomer, saveCustomer, customerSubscribe, newCustomerEntry } from '../service/service.js';
-import { txtLingo } from '@/services/tools/util.js';
+import { txtLingo } from '@/services/tools/lingo.js';
 import pastelStyles from '@/packages/apex/css/pastel.css?inline';
 
 const TXT_STD = {

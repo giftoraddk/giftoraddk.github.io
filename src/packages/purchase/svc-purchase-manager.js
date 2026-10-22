@@ -27,7 +27,7 @@ import { ACTIVE_STATUSES, hasActivePlan } from './tool/billing.js'
 import { PURCHASE, findPlan, findPrice } from './tool/plans.js'
 import { formatDate, formatMoney, localize, monthlyAmount } from './tool/format.js'
 import styles from './css/svc-purchase-manager.css?inline'
-import { txtLingo } from '@/services/tools/util.js'
+import { txtLingo } from '@/services/tools/lingo.js'
 
 const POLL_MS = 1500
 const POLL_MAX = 8 // ~12s — PayPal normally moves an approved subscription to ACTIVE within seconds

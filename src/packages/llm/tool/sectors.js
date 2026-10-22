@@ -8,7 +8,7 @@
  * Theo thứ tự nhóm trên canvas — khớp worker fn/sectors/index.ts SECTORS.
  * `released` chép lại cờ cùng tên của Worker (worker fn/sectors/<id>.ts) — CHỈ cho giao diện: node Tư vấn có mặt trước
  * khi /v1/fn/sectors trả lời, nên ngành chưa mở thì node đó hiện bảng "cần quyền" ngay thay vì để khách gặp lỗi 403
- * (page /system/<sector> mở cho mọi tài khoản đã đăng nhập ở chế độ thử — node/preset/sector.js `trial`).
+ * (page /system/<sector> mở cho mọi tài khoản đã đăng nhập ở chế độ thử — services/presets/node/sector.js `trial`).
  * Worker vẫn tự chặn mọi lời gọi; mở 1 ngành = đổi cả 2 nơi.
  */
 export const SECTOR_FACES = [

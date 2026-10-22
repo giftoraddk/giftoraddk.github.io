@@ -1,3 +1,5 @@
+import { pickTxt } from '@/services/tools/lingo.js';
+
 const TXT = {
 	vi: {
 		status: 'Trạng thái', name: 'Họ tên', description: 'Ghi chú',
@@ -18,7 +20,7 @@ const TXT = {
 };
 
 export default (lang = 'vi') => {
-	const t = TXT[lang] ?? TXT.vi;
+	const t = pickTxt(TXT, lang);
 	const ROLES  = { manager: t.manager, barista: t.barista, cashier: t.cashier };
 	const SHIFTS = { morning: t.morning, afternoon: t.afternoon, full: t.full };
 	return [

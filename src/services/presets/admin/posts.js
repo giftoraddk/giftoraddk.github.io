@@ -1,3 +1,5 @@
+import { pickTxt } from '@/services/tools/lingo.js';
+
 const TXT = {
 	vi: {
 		status: 'Trạng thái', title: 'Tiêu đề', description: 'Mô tả',
@@ -16,7 +18,7 @@ const TXT = {
 };
 
 export default (lang = 'vi') => {
-	const t = TXT[lang] ?? TXT.vi;
+	const t = pickTxt(TXT, lang);
 	return [
 		{
 			label: t.status,

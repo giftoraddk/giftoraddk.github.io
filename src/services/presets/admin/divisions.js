@@ -1,8 +1,11 @@
-// src/services/schemas/admin/divisions.js
+// src/services/presets/admin/divisions.js
 //
 // Field phẳng cho <svc-resources dataTable='divisions'> — chỉ "face" của phòng ban (tên, mô tả, avatar, ngôn ngữ, bật/tắt,
 // thứ tự). Chuyên môn (override patch trong `meta`) KHÔNG sửa ở đây: Worker giấu + khoá cột meta/ai trên /v1/data
 // (tablePolicy privateCols/lockedCols) — persona sửa trong <svc-division>, các bước là code ở Worker (fn/base, fn/sectors).
+
+import { pickTxt } from '@/services/tools/lingo.js';
+
 const TXT = {
     vi: {
         status: 'Trạng thái', title: 'Tên phòng ban', description: 'Mô tả chuyên môn',
@@ -17,7 +20,7 @@ const TXT = {
 };
 
 export default (lang = 'vi') => {
-    const t = TXT[lang] ?? TXT.vi;
+    const t = pickTxt(TXT, lang);
     return [
         {
             label: t.status,

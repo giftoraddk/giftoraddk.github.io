@@ -4,6 +4,7 @@
 // chờ xác minh lại, task nào cần tải lại, dữ liệu của card task + bảng phân công. Không có chuyên môn: nhãn + trạng
 // thái đều do Worker tính (P3-16).
 import { callDone } from './waves.js'
+import { pickTxt } from '@/services/tools/lingo.js'
 
 const TXT = {
     vi: {
@@ -35,7 +36,7 @@ const TXT = {
         depth: { simple: 'simple', standard: 'standard', complex: 'complex' },
     },
 }
-const txt = (lang) => TXT[lang] ?? TXT.vi
+const txt = (lang) => pickTxt(TXT, lang)
 const labelOf = (map, key, lang) => map?.[key]?.[lang] || map?.[key]?.vi || key
 
 /** Tên 1 function: tên phòng trong nhóm chat (face) nếu có → nhãn Worker gửi kèm view → chính key. */

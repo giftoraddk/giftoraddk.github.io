@@ -14,7 +14,7 @@
 
 import { LitElement, html, nothing, unsafeCSS } from 'lit';
 import { getPath } from '@/services/tools/util';
-import { resolveTints } from '@/services/tools/tints.js';
+import { tintVars } from '@/services/tools/tints.js';
 import css from './css/web-table.css?inline';
 import 'iconify-icon';
 
@@ -116,9 +116,7 @@ export class WebTable extends LitElement {
 	}
 
 	get _tintVars() {
-		if (!this.tints) return '';
-		const [a, b] = resolveTints(this.tints);
-		return `--wt-a:var(--color-${a});--wt-b:var(--color-${b});`;
+		return this.tints ? tintVars(this.tints, '--wt') : '';
 	}
 
 	get _rows() {

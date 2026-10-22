@@ -1,4 +1,4 @@
-// src/services/schemas/admin/rel.js
+// src/services/presets/admin/rel.js
 //
 // Field phẳng cho <svc-resources dataTable='rel' server='DB_LLMD1'> — quan hệ giữa 2 `know` entry
 // (hook/knowledge_database_cloudflare_d1_vectorize.md §5/§18, xem worker/packages/llm/src/search.ts's
@@ -7,6 +7,9 @@
 // ngay phía trên cùng trang /admin/knowledge để tra id) — chưa có dynamic-select tra cứu theo
 // title (web-table chỉ hỗ trợ `opts` tĩnh, không có kiểu lookup động), để cải thiện sau nếu cần.
 // `type` cũng text tự do (part_of/has_symptom/caused_by/related_to/...), cùng tinh thần know.type.
+
+import { pickTxt } from '@/services/tools/lingo.js';
+
 const TXT = {
     vi: { fromId: 'Từ (know.id)', toId: 'Đến (know.id)', type: 'Loại quan hệ', meta: 'Meta (JSON)' },
     en: { fromId: 'From (know.id)', toId: 'To (know.id)', type: 'Relation type', meta: 'Meta (JSON)' },
@@ -18,7 +21,7 @@ function _renderJson(v) {
 }
 
 export default (lang = 'vi') => {
-    const t = TXT[lang] ?? TXT.vi;
+    const t = pickTxt(TXT, lang);
     return [
         {
             label: t.fromId,

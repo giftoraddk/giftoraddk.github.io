@@ -22,6 +22,9 @@
 //   ở đây map sang 2 tín hiệu THẬT có sẵn: đơn đang CHỜ seller xác nhận đã nhận tiền
 //   (`isPendingPayment` — rủi ro buyer tự nhận đã trả nhưng chưa xác minh) và đơn CẦN hoàn tiền
 //   (`needsRefund` — nợ THẬT phải trả lại khách, huỷ/trả hàng nhưng chưa hoàn tiền).
+
+import { pickTxt } from '@/services/tools/lingo.js';
+
 function parseInvoiceItems(itemsStr) {
     return (itemsStr || '').split('|').filter(Boolean).map(p => {
         const [name, price, unit, qty] = p.split('~');
@@ -132,7 +135,7 @@ const _RISK_TXT = {
 // `lang` — chỉ ảnh hưởng NGÔN NGỮ của `reasons` (UI hiển thị); `level` luôn là 1 trong 4 mã cố
 // định, không dịch.
 export function assessRisk(invoices, { target = 0, lang = 'vi' } = {}) {
-    const t = _RISK_TXT[lang] ?? _RISK_TXT.vi;
+    const t = pickTxt(_RISK_TXT, lang);
     const order = ['GREEN', 'YELLOW', 'ORANGE', 'RED'];
     let level = 'GREEN';
     const reasons = [];

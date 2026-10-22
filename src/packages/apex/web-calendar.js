@@ -18,7 +18,7 @@
 import { LitElement, html, nothing, unsafeCSS } from 'lit';
 import 'iconify-icon';
 import styles from './css/web-calendar.css?inline';
-import { txtLingo } from '@/services/tools/util.js';
+import { txtLingo } from '@/services/tools/lingo.js';
 
 const TXT_STD = {
 	vi: {

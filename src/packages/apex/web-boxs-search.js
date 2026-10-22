@@ -6,6 +6,7 @@ import './web-select.js';
 import './web-button.js';
 import './web-ranger.js';
 import './web-tooltip.js';
+import { txtLingo } from '@/services/tools/lingo.js';
 
 const TXT_STD = {
     vi: { ph: 'Tìm kiếm...', clear: 'Xoá lọc',      filter: 'Lọc theo nhãn',  more: 'Xem thêm nhãn' },
@@ -167,7 +168,7 @@ export class WebBoxsSearch extends LitElement {
         }));
     }
 
-    get _txt() { const d = this.txt ?? TXT_STD; return d[this.lang] ?? d.vi ?? {} }
+    get _txt() { return txtLingo(this.txt, TXT_STD, this.lang) }
 
     // ── Render ────────────────────────────────────────────────────────────────
 

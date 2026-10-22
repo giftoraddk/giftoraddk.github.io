@@ -9,7 +9,8 @@ import '@/packages/apex/web-dialog.js';
 import '@/packages/apex/web-text.js';
 import '@/packages/apex/web-button.js';
 import css from '../css/svc-pay-promo.css?inline';
-import { fmtPrice, txtLingo, emit } from '@/services/tools/util.js';
+import { txtLingo } from '@/services/tools/lingo.js';
+import { fmtPrice, emit } from '@/services/tools/util.js';
 import { PROMO_CODES, SPECIAL_PROMO_CODES } from '../tool/constant.js';
 
 const TXT_STD = {

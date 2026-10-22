@@ -17,7 +17,8 @@
 // thế — dữ liệu này LUÔN có thật trên mọi invoice.
 import { LitElement, html, nothing, unsafeCSS } from 'lit';
 import css from '../css/svc-pay-watch-paper.css?inline';
-import { txtLingo, fmtPrice } from '@/services/tools/util.js';
+import { txtLingo } from '@/services/tools/lingo.js';
+import { fmtPrice } from '@/services/tools/util.js';
 import { listenInvoice, parseInvoiceItems, parseInvoiceSeller, parseInvoiceBuyer } from '../service/service.js';
 import { fmtDateTime } from '../tool/render.js';
 

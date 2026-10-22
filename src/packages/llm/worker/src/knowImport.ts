@@ -32,7 +32,7 @@ const MAX_TAG_GROUP = 40; // a tag shared by more rows than this is too generic 
 const MAX_EDGES = 500;
 const OWNER_SCAN = 1000; // existing rows of the owner considered for tag links
 
-// Suggested know.type values — same list as services/schemas/admin/know.js; any other string works too.
+// Suggested know.type values — same list as services/presets/admin/know.js; any other string works too.
 export const KNOW_TYPES = ['product', 'law', 'faq', 'medical', 'technical', 'finance', 'post', 'other'];
 
 export class ToolError extends Error {}

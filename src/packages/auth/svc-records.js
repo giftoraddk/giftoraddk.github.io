@@ -22,7 +22,7 @@
 import { LitElement, html, nothing, unsafeCSS } from 'lit';
 import 'iconify-icon';
 import css from './css/svc-records.css?inline';
-import { txtLingo } from '@/services/tools/util.js';
+import { txtLingo } from '@/services/tools/lingo.js';
 import { SvcResources, TXT_STD as ADMIN_TXT } from './svc-resources.js';
 import './svc-list.js';
 

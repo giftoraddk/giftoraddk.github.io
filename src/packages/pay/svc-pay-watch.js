@@ -8,7 +8,7 @@ import '@/packages/apex/web-button.js';
 import '@/packages/pay/app/svc-pay-watch-paper.js';
 import '@/packages/pay/svc-pay.js';
 import css from './css/svc-pay-watch.css?inline';
-import { txtLingo } from '@/services/tools/util';
+import { txtLingo } from '@/services/tools/lingo.js';
 
 const TXT_STD = {
     vi: {

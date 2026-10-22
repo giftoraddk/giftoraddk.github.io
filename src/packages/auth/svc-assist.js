@@ -13,7 +13,8 @@ import '@/packages/apex/web-dialog.js'
 import '@/packages/apex/web-select.js'
 import { generateText } from '@/services/shared/tensor-api.js'
 import TOPIC_GROUPS from './tool/topic-groups.json'
-import { buildNested, txtLingo } from '@/services/tools/util.js'
+import { pickTxt, txtLingo } from '@/services/tools/lingo.js'
+import { buildNested } from '@/services/tools/util.js'
 import styles from './css/svc-assist.css?inline'
 
 // Field kiểu này AI không nên tự sinh — ảnh (bịa URL vô nghĩa), toạ độ (bịa vị trí sai), rich
@@ -126,8 +127,8 @@ export class SvcAssist extends LitElement {
         return Object.entries(TOPIC_GROUPS)
             .filter(([key]) => !this._selectedGroup || key === this._selectedGroup)
             .map(([, group]) => ({
-                label: group.lang?.[this.lang] ?? group.lang?.vi,
-                items: (group.items ?? []).map(it => it.lang?.[this.lang] ?? it.lang?.vi),
+                label: pickTxt(group.lang, this.lang),
+                items: (group.items ?? []).map(it => pickTxt(it.lang, this.lang)),
             }))
     }
 
@@ -137,7 +138,7 @@ export class SvcAssist extends LitElement {
         return [
             { value: '', label: this._txt.allGroups },
             ...Object.entries(TOPIC_GROUPS).map(([key, group]) => ({
-                value: key, label: group.lang?.[this.lang] ?? group.lang?.vi,
+                value: key, label: pickTxt(group.lang, this.lang),
             })),
         ]
     }

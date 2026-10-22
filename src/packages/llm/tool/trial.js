@@ -4,6 +4,8 @@
 // ({ mode, limits: { task, job, chat, log }, used: { task, chat, log, jobs: { [fn]: n } } }, worker fn/trial.ts).
 // Chỉ để hiển thị — Worker tự đếm và chặn mọi lượt.
 
+import { pickTxt } from '@/services/tools/lingo.js'
+
 const TXT = {
     vi: { trial: 'Dùng thử', task: 'việc cả nhóm', job: 'việc riêng phòng này', chat: 'tin nhắn', left: 'còn', none: 'đã dùng hết', plan: 'chọn gói để dùng tiếp' },
     en: { trial: 'Trial', task: 'team task', job: 'department job', chat: 'messages', left: '', none: 'used up', plan: 'choose a plan to keep going' },
@@ -17,7 +19,7 @@ const left = (limit, used) => Math.max(0, (Number(limit) || 0) - (Number(used) |
  */
 export function trialLine(usage, lang = 'vi', fn = '') {
     if (usage?.mode !== 'trial') return ''
-    const t = TXT[lang] ?? TXT.vi
+    const t = pickTxt(TXT, lang)
     const count = (n, of) => (n ? `${t.left ? `${t.left} ` : ''}${n}/${of}` : t.none)
     const { limits = {}, used = {} } = usage
     const parts = fn

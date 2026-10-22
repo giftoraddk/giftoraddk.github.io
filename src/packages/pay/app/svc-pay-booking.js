@@ -6,7 +6,8 @@ import { LitElement, html, unsafeCSS } from 'lit';
 import 'iconify-icon';
 import css from '../css/svc-pay-booking.css?inline';
 import { PAY_METHODS, hasWalletAccount } from '../tool/constant.js';
-import { parseJson, txtLingo, emit } from '@/services/tools/util.js';
+import { txtLingo } from '@/services/tools/lingo.js';
+import { parseJson, emit } from '@/services/tools/util.js';
 
 const TXT_STD = {
     vi: { label: 'Hình thức thanh toán', bank: 'Chuyển khoản', cash: 'Tiền mặt', cod: 'Thanh toán khi nhận hàng', defaultBank: 'Ngân hàng', vietqr: 'VietQR' },

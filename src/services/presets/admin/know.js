@@ -1,4 +1,4 @@
-// src/services/schemas/admin/know.js
+// src/services/presets/admin/know.js
 //
 // Field phẳng cho <svc-resources dataTable='know' server='DB_LLMD1'> — kho tri thức đa lĩnh vực
 // (hook/knowledge_database_cloudflare_d1_vectorize.md) mà <svc-aide> đọc làm ngữ cảnh trả lời khách,
@@ -10,11 +10,14 @@
 // `description` (không phải `content`) là cột nội dung chính — xem know-sync.js's buildKnowContent.
 //
 // `meta` KHÔNG hiện thành 1 field JSON thô — tách từng field con qua `key: 'meta.xxx'`, ĐÚNG pattern
-// products.js đã dùng cho meta.sku/meta.unit/meta.stock (xem services/schemas/admin/products.js).
+// products.js đã dùng cho meta.sku/meta.unit/meta.stock (xem services/presets/admin/products.js).
 // Các key dưới đây khớp CHÍNH XÁC những gì know-sync.js's buildKnowMeta() thực sự ghi — tags (mọi
 // type), pricing/promo/quantity (type='product'), risk/decision (type='finance'); field không áp
 // dụng cho type của 1 row cụ thể thì đơn giản để trống, cùng cách products.js's sku/unit/stock vẫn
 // hiện cho mọi sản phẩm dù không phải món nào cũng cần điền.
+
+import { pickTxt } from '@/services/tools/lingo.js'
+
 const TXT = {
     vi: {
         status: 'Trạng thái', type: 'Loại', title: 'Tiêu đề', content: 'Nội dung',
@@ -35,7 +38,7 @@ const TXT = {
 };
 
 export default (lang = 'vi') => {
-    const t = TXT[lang] ?? TXT.vi;
+    const t = pickTxt(TXT, lang);
     return [
         {
             label: t.status,

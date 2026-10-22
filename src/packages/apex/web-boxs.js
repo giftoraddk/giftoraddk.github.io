@@ -1,5 +1,6 @@
 import { LitElement, html } from "lit";
-import { dataInit, injectStyles, txtLingo, watchHtmlAttr, productSlug, postSlug } from "@/services/tools/util.js";
+import { txtLingo } from "@/services/tools/lingo.js";
+import { dataInit, injectStyles, watchHtmlAttr, productSlug, postSlug } from "@/services/tools/util.js";
 import { loadKey } from "@/services/core/crud";
 import { all as conductorAll, more as conductorMore, get as conductorGet, subscribe as conductorSubscribe } from "@/services/core/conductor";
 import { bgTemplate } from "@/packages/adopted/svc-underlay.js";

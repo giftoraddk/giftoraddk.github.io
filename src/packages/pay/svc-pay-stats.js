@@ -26,7 +26,8 @@ import '@/packages/apex/web-fab.js';
 import '@/packages/adopted/svc-graph.js';
 import '@/packages/adopted/svc-pie.js';
 import css from './css/svc-pay-stats.css?inline';
-import { fmtPrice, txtLingo, watchHtmlAttr } from '@/services/tools/util.js';
+import { txtLingo } from '@/services/tools/lingo.js';
+import { fmtPrice, watchHtmlAttr } from '@/services/tools/util.js';
 import { loadSellerInvoices, parseInvoiceItems } from './service/service.js';
 
 const TXT_STD = {

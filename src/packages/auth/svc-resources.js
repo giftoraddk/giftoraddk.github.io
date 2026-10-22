@@ -23,7 +23,8 @@ import { auth } from './service/service.js';
 import { can, parseRoles } from './tool/roles.js';
 import { RANK_FIELD, compareRank, rankPlace } from '@/services/tools/rank.js';
 import { triggerRebuild } from './service/rebuild.js';
-import { ulid, buildNested, injectStyles, txtLingo, toastEmit, isObject } from '@/services/tools/util.js';
+import { txtLingo } from '@/services/tools/lingo.js';
+import { ulid, buildNested, injectStyles, toastEmit, isObject } from '@/services/tools/util.js';
 import {
     deepMerge, asObject, parseCsvText, recordsToCsv, downloadCsv, csvWriteCols, csvRowToFlat,
 } from '@/services/tools/records.js';

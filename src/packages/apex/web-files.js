@@ -1,6 +1,7 @@
 import { LitElement, html, unsafeCSS } from 'lit'
 import styles from './css/web-files.css?inline'
 import pastelStyles from './css/pastel.css?inline'
+import { txtLingo } from '@/services/tools/lingo.js'
 
 const TXT_STD = {
   vi: { dropLabel: 'Click hoặc kéo thả để tải lên' },
@@ -87,7 +88,7 @@ export class WebFiles extends LitElement {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
-  get _txt() { const d = this.txt ?? TXT_STD; return d[this.lang] ?? d.vi ?? {} }
+  get _txt() { return txtLingo(this.txt, TXT_STD, this.lang) }
 
   render() {
     const uiConfig = this.constructor.uiConfigs[this.ui || 'modern']

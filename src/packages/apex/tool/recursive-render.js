@@ -22,11 +22,12 @@
 //   - `records` : the section's top-level record list — the target of `each: '$records'`.
 
 import { normText } from '../../../services/tools/util.js';
+import { pickTxt } from '@/services/tools/lingo.js';
 
 /** Any field may be a plain value OR a `{ vi, en, … }` bag: val[lang] → val.vi → first key → val itself. */
 export function resolveLocale(val, lang = 'vi') {
     if (val && typeof val === 'object' && !Array.isArray(val) && (val.vi !== undefined || val.en !== undefined)) {
-        return val[lang] ?? val.vi ?? Object.values(val)[0];
+        return pickTxt(val, lang) ?? Object.values(val)[0];
     }
     return val;
 }

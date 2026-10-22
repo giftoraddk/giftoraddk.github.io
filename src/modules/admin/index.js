@@ -1,23 +1,23 @@
 // Khu quản trị /admin/* — MỘT trang (pages/admin/[table].astro) cho mọi bảng:
 // danh sách trang + menu (thanh đáy mobile, menu trái desktop — layouts/CoreMobile.astro `aside`) + quyền từng trang
-// (trang tự kiểm khi <svc-account> báo user). Panel của mỗi trang CHÍNH LÀ panel của node trong group "Hệ thống AI" (packages/node/preset/system.js:
-// SYSTEM_TABLES / tableNode, rolesNode, financeNode) — trang mount `overlay` của node bằng <svc-overlay-component> như
+// (trang tự kiểm khi <svc-account> báo user). Panel của mỗi trang CHÍNH LÀ panel của node trong group "Hệ thống AI" (services/presets/node/system.js:
+// SYSTEM_TABLES / tableNode, rolesNode, financeNode) — trang mount `overlay` của node bằng <svc-overlay> như
 // <svc-popover> của svc-node, nên sửa panel ở 1 chỗ là cả canvas lẫn /admin cùng đổi.
 //   PAGES[i] = { slug, require, title, desc, icon, panels: [overlay…] }   — text { vi, en }
 //   require  = token quyền (tool/roles.js hasAccess: 'products' khớp 'products.*'); null = chỉ Super Admin.
 // Thêm 1 trang = thêm 1 dòng PAGES. Bảng chỉ có ở /admin (không có node trên canvas) khai trong ADMIN_TABLES, cùng định
 // dạng SYSTEM_TABLES. Quyền ghi vẫn do Worker chặn từng request — menu/guard ở đây chỉ để giao diện gọn.
-import { component } from '@/services/shared/node.js';
-import { SYSTEM_TABLES, tableNode, rolesNode, financeNode } from '@/services/shared/system.js';
-import ordersSchema from '@/services/schemas/admin/orders.js';
-import inventorySchema from '@/services/schemas/admin/inventory.js';
-import staffSchema from '@/services/schemas/admin/staff.js';
-import relSchema from '@/services/schemas/admin/rel.js';
-import promosSchema from '@/services/schemas/admin/promos.js';
+import { component } from '@/services/presets/node/shared.js';
+import { SYSTEM_TABLES, tableNode, rolesNode, financeNode } from '@/services/presets/node/system.js';
+import ordersSchema from '@/services/presets/admin/orders.js';
+import inventorySchema from '@/services/presets/admin/inventory.js';
+import staffSchema from '@/services/presets/admin/staff.js';
+import relSchema from '@/services/presets/admin/rel.js';
+import promosSchema from '@/services/presets/admin/promos.js';
 import { site } from '@/services/tools/site';
 
 export const ROOT = '/admin/';
-// Cặp màu của group "Hệ thống AI" (preset/system.js) — quầng sáng trang + menu.
+// Cặp màu của group "Hệ thống AI" (services/presets/node/system.js) — quầng sáng trang + menu.
 export const TINTS = ['info', 'accent'];
 
 export const ADMIN_TABLES = [

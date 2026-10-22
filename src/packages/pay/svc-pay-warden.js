@@ -12,6 +12,7 @@ import '@/packages/pay/svc-pay.js';
 import css from './css/svc-pay-warden.css?inline';
 import { fmtPrice, fmtBadgeCount, watchHtmlAttr } from '@/services/tools/util.js';
 import { STEP_LABELS, CANCEL_TXT } from './tool/constant.js';
+import { pickTxt } from '@/services/tools/lingo.js';
 import {
     loadSellerInvoices, listenSellerInvoices, loadBuyerInvoices, listenBuyerInvoices,
     confirmReceivedMoney, confirmReceived, acceptCancel, rejectCancel, confirmRefund,
@@ -245,8 +246,8 @@ export class SvcPayWarden extends LitElement {
 
     // ── COMPUTED ──────────────────────────────────────────────────────────────
 
-    get _txt() { return CANCEL_TXT[this.lang] ?? CANCEL_TXT.vi; }
-    get _stepTxt() { return STEP_LABELS[this.lang] ?? STEP_LABELS.vi; }
+    get _txt() { return pickTxt(CANCEL_TXT, this.lang); }
+    get _stepTxt() { return pickTxt(STEP_LABELS, this.lang); }
 
     // Số đơn đang cần NGƯỜI DÙNG HIỆN TẠI xử lý — seller: chờ xác nhận thanh toán/xử lý yêu cầu
     // huỷ; buyer: CHỈ tới bước "đã giao hàng" cần xác nhận nhận hàng. Hiện thành badge trên nút

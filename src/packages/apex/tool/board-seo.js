@@ -11,6 +11,7 @@
 // muốn đưa dữ liệu bảng (vd sản phẩm) vào outline thì dựng trước bằng boardStaticSections() bên dưới.
 
 import { filterRecords } from './recursive-render.js';
+import { pickTxt } from '@/services/tools/lingo.js';
 
 /**
  * Kiểu dữ liệu outline — components/Seo/BoardOutline.astro import thẳng các typedef này (`import type`).
@@ -24,7 +25,7 @@ import { filterRecords } from './recursive-render.js';
 const raw = (v, lang) => {
 	if (v == null) return '';
 	if (typeof v === 'string' || typeof v === 'number') return String(v);
-	if (typeof v === 'object') return raw(v[lang] ?? v.vi ?? v.en, lang);
+	if (typeof v === 'object') return raw(pickTxt(v, lang), lang);
 	return '';
 };
 // Bỏ thẻ HTML (vd `content` sản phẩm là HTML) — outline chỉ cần chữ; Astro vẫn escape khi in.

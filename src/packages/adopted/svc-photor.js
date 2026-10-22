@@ -23,6 +23,7 @@ import css from './css/svc-photor.css?inline'
 import '@/packages/apex/web-cropper.js'
 import { uploadImageBlob } from './service/photor.js'
 import pastelStyles from '@/packages/apex/css/pastel.css?inline'
+import { txtLingo } from '@/services/tools/lingo.js'
 
 const TXT_STD = {
   vi: { ph: 'Upload hoặc dán ảnh (Ctrl+V) để lấy URL...', delete: 'Xóa', pick: 'Chọn ảnh để upload', cropTitle: 'Chỉnh ảnh trước khi upload', cancel: 'Hủy', submit: 'Upload' },
@@ -234,7 +235,7 @@ export class SvcPhotor extends LitElement {
     }))
   }
 
-  get _txt() { const d = this.txt ?? TXT_STD; return d[this.lang] ?? d.vi ?? {} }
+  get _txt() { return txtLingo(this.txt, TXT_STD, this.lang) }
 
   // ── Render ───────────────────────────────────────────────────────────────────
 

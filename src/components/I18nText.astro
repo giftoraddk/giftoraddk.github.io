@@ -5,7 +5,7 @@
 // phải render cả hai để BtnLang.astro's client-side toggle (đổi <html lang>, không reload) có
 // tác dụng ngay. String thường (không đa ngôn ngữ) render thẳng, không bọc span thừa.
 // English là bản CHUẨN (bắt buộc) — vi tuỳ chọn, fallback về en nếu thiếu bản dịch (xem
-// site.defaultLang, services/tools/site.ts — cùng quy ước với pickLang(), services/tools/util.js).
+// site.defaultLang, services/tools/site.ts — cùng quy ước với pickLang(), services/tools/lingo.js).
 export interface Props {
 	text: string | { en: string; vi?: string }
 }

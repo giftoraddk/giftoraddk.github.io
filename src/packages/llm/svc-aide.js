@@ -22,7 +22,7 @@ import '@/packages/apex/web-avatar.js'
 import '@/packages/apex/web-text.js'
 import '@/packages/apex/web-button.js'
 import './svc-division.js'
-import { txtLingo, pickLang } from '@/services/tools/util.js'
+import { pickLang, pickTxt, txtLingo } from '@/services/tools/lingo.js'
 import { cacheGet, cacheSet, cacheRemove } from '@/services/core/storager.js'
 import { fnApi, fnApiFor } from './service/fn-api.js'
 import { resolveOwner, siteHost, onLocalHost, onOwnerChange, hubDenied } from './service/hub.js'
@@ -78,6 +78,41 @@ const _chatLang = (log, fallback) => {
     return /\p{L}/u.test(guest + reply) ? 'en' : fallback
 }
 
+// Link trong câu trả lời → <a> mở tab mới. Link markdown [nhãn](url) giữ nhãn; URL trần hiện chữ "tại đây" / "here"
+// (txt.linkHere) thay cho cả chuỗi URL — câu đã có sẵn "tại đây:" ngay trước URL thì chính cụm đó thành link, không lặp.
+// Chỉ http(s), dựng bằng template Lit (không innerHTML) — nội dung AI không chèn được thẻ / javascript: nào. Dấu câu
+// cuối câu không thuộc link.
+const LINK_RE = /\[([^\]\n]{1,120})\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s<>"'`]+)/g
+const TRAILING = /[.,;:!?…'"”’)\]}>]+$/
+const HERE_BEFORE = /(tại đây|ở đây|here)\s*:?\s*$/i
+
+/** `content` → mảng chuỗi + { url, label } theo thứ tự; `here` = nhãn của URL trần. */
+const _linkParts = (content, here) => {
+    const text = String(content ?? '')
+    const parts = []
+    let at = 0
+    for (const m of text.matchAll(LINK_RE)) {
+        let url = m[2] ?? m[3]
+        let tail = ''
+        if (m[3]) { tail = url.match(TRAILING)?.[0] ?? ''; url = url.slice(0, url.length - tail.length) }
+        let safe = null
+        try { safe = /^https?:$/.test(new URL(url).protocol) ? url : null } catch { /* URL hỏng → để nguyên chữ */ }
+        if (!safe) continue
+        let before = text.slice(at, m.index)
+        let label = m[1]?.trim()
+        if (!label) {
+            const said = before.match(HERE_BEFORE)
+            if (said) { label = said[1]; before = before.slice(0, said.index) } else label = here
+        }
+        if (before) parts.push(before)
+        parts.push({ url: safe, label })
+        if (tail) parts.push(tail)
+        at = m.index + m[0].length
+    }
+    if (at < text.length) parts.push(text.slice(at))
+    return parts
+}
+
 const TXT_STD = {
     vi: {
         panelTitle: 'Trợ lý tri thức',
@@ -91,6 +126,8 @@ const TXT_STD = {
         },
         errGeneric: 'Có lỗi xảy ra, thử lại giúp mình nhé',
         sourcesPrefix: 'Nguồn',
+        openLink: 'Mở trong tab mới',
+        linkHere: 'tại đây',
         // Hỏi lại khi khách im lặng — [lần 1, lần 2, lần 3] × 3 cách nói (hỏi còn thắc mắc → gỡ băn khoăn → chào kết)
         follow: [
             ['Bạn còn thắc mắc gì thêm không ạ? Mình sẵn sàng giải đáp ngay cho bạn nhé!',
@@ -116,6 +153,8 @@ const TXT_STD = {
         },
         errGeneric: 'Something went wrong, please try again',
         sourcesPrefix: 'Source',
+        openLink: 'Open in a new tab',
+        linkHere: 'here',
         follow: [
             ['Is there anything else you would like to know? I am happy to help!',
                 'Did that answer your question? Is anything still unclear?',
@@ -461,7 +500,7 @@ export class SvcAide extends LitElement {
             if (this._busy || document.visibilityState === 'hidden') { this._followTimer = setTimeout(fire, FOLLOW_RETRY_MS); return }
             // Theo ngôn ngữ khách đang chat (_chatLang); txt riêng không khai follow → mẫu chuẩn
             const lang = _chatLang(this._log, this.lang)
-            const steps = txtLingo(this.txt, TXT_STD, lang).follow ?? (TXT_STD[lang] ?? TXT_STD.vi).follow
+            const steps = txtLingo(this.txt, TXT_STD, lang).follow ?? pickTxt(TXT_STD, lang).follow
             const options = steps?.[today] ?? []
             const content = options[Math.floor(Math.random() * options.length)]
             if (!content) return // để trống câu lần n = dừng chuỗi ở đó
@@ -534,11 +573,19 @@ export class SvcAide extends LitElement {
                 ${!mine ? html`<web-avatar src=${this._division?.pics || ''} icon=${CONSULT_ICON} name=${this._division?.title || ''} size="26px"
                     ui=${this.ui} theme=${this.theme}></web-avatar>` : ''}
                 <div class="aid-bubble">
-                    <p class="aid-content">${m.content}</p>
+                    <p class="aid-content">${mine ? m.content : this._rfContent(m.content)}</p>
                     ${m.sources?.length ? html`<p class="aid-sources">${this._txt.sourcesPrefix}: ${m.sources.join(', ')}</p>` : ''}
                 </div>
             </div>
         `
+    }
+
+    // Câu trả lời của trợ lý: link → <a> tab mới (noopener — trang đích không chạm được window.opener). Tin của khách
+    // in nguyên văn.
+    _rfContent(content) {
+        const t = this._txt
+        return _linkParts(content, t.linkHere).map((p) => typeof p === 'string' ? p : html`<a class="aid-link" href=${p.url}
+            target="_blank" rel="noopener noreferrer" title=${`${t.openLink}: ${p.url}`}>${p.label}</a>`)
     }
 
     _rfTyping() {

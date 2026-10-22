@@ -14,7 +14,8 @@ import {
     setupCart, initCart, removeCartItem, setCartQty, toggleCartNote,
     serverPromos, promoDiscount, subscribe, make,
 } from './service/service.js';
-import { fmtPrice, parseJson, fmtBadgeCount, txtLingo, emit, toastEmit } from '@/services/tools/util.js';
+import { txtLingo } from '@/services/tools/lingo.js';
+import { fmtPrice, parseJson, fmtBadgeCount, emit, toastEmit } from '@/services/tools/util.js';
 
 const TXT_STD = {
     vi: { items: 'món', cart: 'Giỏ hàng', empty: 'Chưa có món nào trong giỏ', subtotal: 'Tạm tính', discount: 'Khuyến mãi', delete: 'Xoá', notesLabel: 'Yêu cầu đặc biệt', notesPh: 'Ghi chú thêm...', total: 'Tổng tiền', btnCheckout: 'Đặt hàng →', btnClear: 'Xóa tất cả' },

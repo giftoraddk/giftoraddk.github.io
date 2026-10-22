@@ -26,7 +26,8 @@
 import { html, nothing, unsafeCSS } from 'lit';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { repeat } from 'lit/directives/repeat.js';
-import { txtLingo, getPath } from '@/services/tools/util.js';
+import { txtLingo } from '@/services/tools/lingo.js';
+import { getPath } from '@/services/tools/util.js';
 import { RANK_FIELD } from '@/services/tools/rank.js';
 import { RecordTable, TXT_STD as BASE_TXT } from './app/record-table.js';
 import { initialsOf, toneOf, optsOf, toneOfOpt, trackOf, thumbSrcOf } from '@/packages/apex/web-table.js';

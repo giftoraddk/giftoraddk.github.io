@@ -3,6 +3,7 @@ import '@/packages/apex/web-text.js'
 import '@/packages/apex/web-location-map.js'
 import css from './css/web-location.css?inline'
 import pastelStyles from './css/pastel.css?inline'
+import { txtLingo } from '@/services/tools/lingo.js'
 
 const TXT_STD = {
     vi: {
@@ -128,7 +129,7 @@ export class WebLocation extends LitElement {
         }))
     }
 
-    get _txt() { const d = this.txt ?? TXT_STD; return d[this.lang] ?? d.vi ?? {} }
+    get _txt() { return txtLingo(this.txt, TXT_STD, this.lang) }
 
     // ── RENDER BODY ──────────────────────────────────────────────────────────
 

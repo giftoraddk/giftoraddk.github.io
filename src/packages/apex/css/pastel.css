@@ -1,5 +1,5 @@
 /* ui="pastel" — token dùng chung cho mọi web-* (nạp trước CSS riêng của component: static styles = [pastel, ...]).
-   Cặp tint lấy từ chủ gần nhất: --color-tint-a/b (đặt tay, hoặc panel svc-node qua tool/tints.js) → layout
+   Cặp tint lấy từ chủ gần nhất: --color-tint-a/b (đặt tay, hoặc panel svc-node qua services/tools/tints.js) → layout
    Core/CoreShop (--layout-tint-a/b) → primary/secondary.
    - Nút hành động (button, toggle, checkbox, radio, tab active…): tô gradient tint a → b, chữ base-100.
    - Ô nhập (text, textarea, select, expansion, currency, datetime, files…): nền --pastel-corner — glow 2 góc như header

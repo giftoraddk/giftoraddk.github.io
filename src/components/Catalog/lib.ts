@@ -2,7 +2,8 @@
 // Chuẩn hoá 1 record `posts` | `products` (meta có thể là JSON string, pics/tags nối bằng '|', score 'avg~count',
 // pricing 'giá~vốn~đơn vị') thành dữ liệu hiển thị phẳng, cùng các builder JSON-LD (SEO/GEO) dùng chung.
 // Khác biệt theo loại (đường dẫn, slug, nhãn…) đọc từ `kind` — xem kinds.ts.
-import { slugify, pickLang, toPrice } from '@/services/tools/util';
+import { pickLang } from '@/services/tools/lingo.js';
+import { slugify, toPrice } from '@/services/tools/util';
 import { site } from '@/services/tools/site';
 import type { Kind } from './kinds';
 

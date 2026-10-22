@@ -1,4 +1,7 @@
 // Money/date/i18n helpers — pure, shared by the components and auth (PayPal amount parsing).
+
+import { pickTxt } from '@/services/tools/lingo.js'
+
 const LOCALES = { vi: 'vi-VN', en: 'en-US' }
 
 /** Minor-unit digits of a currency (usd 2, vnd/jpy 0). */
@@ -31,7 +34,7 @@ export function yearlySavings(prices) {
 /** `{ vi, en }` (or a plain string) → the string for `lang`. */
 export function localize(value, lang = 'vi') {
     if (value == null || typeof value !== 'object' || Array.isArray(value)) return value ?? ''
-    return value[lang] ?? value.vi ?? value.en ?? ''
+    return pickTxt(value, lang) ?? ''
 }
 
 /** Unix seconds → a short localized date. */

@@ -1,4 +1,4 @@
-// src/services/schemas/admin/customers.js
+// src/services/presets/admin/customers.js
 //
 // Field phẳng cho <svc-resources dataTable='customers'> (Supabase) — lead khách vãng lai để lại số điện
 // thoại khi chat. astro-mega chưa port svc-sale.js nên hiện chưa có luồng nào tự ghi bảng này.
@@ -6,6 +6,9 @@
 // Ghi tự động DUY NHẤT bởi svc-sale.js — admin ở đây CHỈ để xem/tra cứu lại + cập nhật `status`
 // theo dõi đã liên hệ hay chưa. Doc id = chính `phone` (idempotent — khách nhắn lại số cũ chỉ cập
 // nhật `name`/`topic`/`updated_at`, không tạo trùng bản ghi).
+
+import { pickTxt } from '@/services/tools/lingo.js'
+
 const TXT = {
     vi: {
         status: 'Trạng thái', phone: 'Số điện thoại', name: 'Họ tên', topic: 'Vấn đề quan tâm',
@@ -20,7 +23,7 @@ const TXT = {
 };
 
 export default (lang = 'vi') => {
-    const t = TXT[lang] ?? TXT.vi;
+    const t = pickTxt(TXT, lang);
     return [
         {
             label: t.status,

@@ -1,5 +1,6 @@
 import { LitElement, html } from 'lit'
-import { _Fusion, injectStyles, watchHtmlAttr, cssInline, txtLingo } from '@/services/tools/util'
+import { txtLingo } from '@/services/tools/lingo.js'
+import { _Fusion, injectStyles, watchHtmlAttr, cssInline } from '@/services/tools/util'
 import { state as conductorState, all as conductorAll, get as conductorGet } from '@/services/core/conductor'
 import { cacheGet as _layoutGet, cacheSet as _layoutSet } from '@/services/core/crud'
 import boxStyles   from './css/web-box.css?inline'

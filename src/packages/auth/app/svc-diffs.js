@@ -25,7 +25,7 @@ import css from '../css/svc-diffs.css?inline';
 import { auth } from '../service/service.js';
 import { can } from '../tool/roles.js';
 import { createService } from '@/services/core/crud.js';
-import { txtLingo } from '@/services/tools/util.js';
+import { pickTxt, txtLingo } from '@/services/tools/lingo.js';
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -407,7 +407,7 @@ export class SvcDiffs extends LitElement {
     _comLabel(key) {
         const own = this.labels?.[key];
         if (own) return own;
-        const fl = FL[this.lang] ?? FL.vi;
+        const fl = pickTxt(FL, this.lang);
         if (fl[key]) return fl[key];
         const dot = key.indexOf('.');
         return dot > 0 ? key.slice(dot + 1) : key;
@@ -515,7 +515,7 @@ export class SvcDiffs extends LitElement {
                 <span class="dx-item-main">
                     <span class="dx-item-top">
                         <b>v${rev.version}</b>
-                        <span class="dx-badge">${info.label[this.lang] ?? info.label.vi}</span>
+                        <span class="dx-badge">${pickTxt(info.label, this.lang)}</span>
                         ${i === 0 ? html`<span class="dx-current">${this._txt.current}</span>` : nothing}
                         <time class="dx-time">${timeAgo(rev.created_at, this.lang)}</time>
                     </span>
@@ -546,7 +546,7 @@ export class SvcDiffs extends LitElement {
                 </button>
                 <div class="dx-detail-title">
                     <span class="dx-range">${range}</span>
-                    <span class="dx-badge" style="--tone:${info.color};--tone-bg:${info.bg}">${info.label[this.lang] ?? info.label.vi}</span>
+                    <span class="dx-badge" style="--tone:${info.color};--tone-bg:${info.bg}">${pickTxt(info.label, this.lang)}</span>
                 </div>
                 <div class="dx-muted">${t.by} <strong>${this._comName(sel)}</strong>${ts
                     ? ` · ${ts.toLocaleString(this.lang === 'vi' ? 'vi-VN' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}` : ''}</div>
